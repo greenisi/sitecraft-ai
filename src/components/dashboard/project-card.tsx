@@ -21,6 +21,7 @@ const STATUS_VARIANTS: Record<string, 'default' | 'secondary' | 'success' | 'war
   generating: 'warning',
   generated: 'success',
   deployed: 'success',
+  published: 'default',
   error: 'destructive',
 };
 
@@ -62,10 +63,10 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
                   Edit
                 </Link>
               </DropdownMenuItem>
-              {project.vercel_deployment_url && (
+              {(project.published_url || project.vercel_deployment_url) && (
                 <DropdownMenuItem asChild>
                   <a
-                    href={project.vercel_deployment_url}
+                    href={project.published_url || project.vercel_deployment_url!}
                     target="_blank"
                     rel="noopener noreferrer"
                   >

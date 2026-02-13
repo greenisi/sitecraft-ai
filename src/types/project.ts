@@ -12,9 +12,29 @@ export interface Project {
   blueprint: PageBlueprint | null;
   vercel_project_id: string | null;
   vercel_deployment_url: string | null;
+  vercel_project_name: string | null;
   custom_domain: string | null;
+  published_url: string | null;
+  published_at: string | null;
   thumbnail_url: string | null;
   last_generated_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type DomainType = 'temporary' | 'purchased' | 'external';
+export type DomainStatus = 'pending' | 'active' | 'failed' | 'expired';
+
+export interface Domain {
+  id: string;
+  project_id: string;
+  user_id: string;
+  domain: string;
+  domain_type: DomainType;
+  status: DomainStatus;
+  dns_configured: boolean;
+  verification_token: string | null;
+  namecom_order_id: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -17,7 +17,7 @@ export const SITE_TYPE_DESCRIPTIONS: Record<SiteType, string> = {
   'local-service': 'Website for plumbers, electricians, landscapers, cleaners, and other local service businesses with service areas, booking, and reviews',
 };
 
-export const PROJECT_STATUSES = ['draft', 'generating', 'generated', 'deployed', 'error'] as const;
+export const PROJECT_STATUSES = ['draft', 'generating', 'generated', 'deployed', 'published', 'error'] as const;
 export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
 
 export const STYLE_OPTIONS = ['minimal', 'bold', 'elegant', 'playful', 'corporate', 'dark', 'vibrant'] as const;

@@ -1,0 +1,200 @@
+import { createAdminClient } from '@/lib/supabase/admin';
+import { deployToVercel } from '@/lib/export/vercel-deployer';
+import { buildScaffoldingTree } from '@/lib/export/file-tree';
+import { addDomainToProject, getVercelProject } from '@/lib/export/vercel-domains';
+import type { DesignSystem } from '@/types/project';
+
+const PLATFORM_TOKEN = process.env.VERCEL_PLATFORM_TOKEN!;
+const TEAM_ID = process.env.VERCEL_TEAM_ID!;
+const PLATFORM_DOMAIN = process.env.PLATFORM_DOMAIN || 'innovated.site';
+
+export interface PublishResult {
+  url: string;
+  domain: string;
+  deploymentId: string;
+  vercelProjectName: string;
+}
+
+/**
+ * Publish a project to a temporary subdomain: <slug>.innovated.site
+ */
+export async function publishToSubdomain(
+  projectId: string,
+  userId: string
+): Promise<PublishResult> {
+  const admin = createAdminClient();
+
+  // 1. Fetch project
+  const { data: project, error: projectError } = await admin
+    .from('projects')
+    .select('*')
+    .eq('id', projectId)
+    .single();
+
+  if (projectError || !project) {
+    throw new Error('Project not found');
+  }
+
+  // 2. Get latest completed generation version
+  const { data: version } = await admin
+    .from('generation_versions')
+    .select('id')
+    .eq('project_id', projectId)
+    .eq('status', 'complete')
+    .order('version_number', { ascending: false })
+    .limit(1)
+    .single();
+
+  if (!version) {
+    throw new Error('No completed generation found. Generate a website first.');
+  }
+
+  // 3. Get generated files
+  const { data: files } = await admin
+    .from('generated_files')
+    .select('file_path, content, file_type')
+    .eq('version_id', version.id);
+
+  if (!files || files.length === 0) {
+    throw new Error('No generated files found');
+  }
+
+  // 4. Build file tree
+  const defaultDesignSystem: DesignSystem = {
+    colors: { primary: {}, secondary: {}, accent: {}, neutral: {} },
+    typography: { headingFont: 'Inter', bodyFont: 'Inter', scale: {} },
+    spacing: {},
+    borderRadius: {},
+    shadows: {},
+  };
+
+  const tree = buildScaffoldingTree(
+    project.generation_config,
+    project.design_system || defaultDesignSystem
+  );
+
+  for (const file of files) {
+    tree.addFile(file.file_path, file.content, file.file_type);
+  }
+
+  // 5. Derive Vercel project name from slug (must be unique, lowercase, alphanumeric + hyphens)
+  const vercelProjectName = project.vercel_project_name || `sc-${project.slug}`;
+  const subdomain = `${project.slug}.${PLATFORM_DOMAIN}`;
+
+  // 6. Deploy to Vercel using platform token
+  const deployment = await deployToVercel(tree, {
+    vercelToken: PLATFORM_TOKEN,
+    projectName: vercelProjectName,
+    teamId: TEAM_ID,
+  });
+
+  // 7. Add subdomain alias to the Vercel project
+  // Wait a moment for project to be created if it's new
+  try {
+    await addDomainToProject(vercelProjectName, subdomain, {
+      token: PLATFORM_TOKEN,
+      teamId: TEAM_ID,
+    });
+  } catch (domainError) {
+    // Domain might already be added from a previous publish — that's OK
+    console.warn('Domain alias may already exist:', domainError);
+  }
+
+  // 8. Update project in DB
+  await admin
+    .from('projects')
+    .update({
+      status: 'published',
+      published_url: `https://${subdomain}`,
+      published_at: new Date().toISOString(),
+      vercel_project_name: vercelProjectName,
+      vercel_project_id: deployment.deploymentId,
+      vercel_deployment_url: deployment.url,
+    })
+    .eq('id', projectId);
+
+  // 9. Upsert domain record
+  // Delete any existing temporary domain for this project first
+  await admin
+    .from('domains')
+    .delete()
+    .eq('project_id', projectId)
+    .eq('domain_type', 'temporary');
+
+  await admin.from('domains').insert({
+    project_id: projectId,
+    user_id: userId,
+    domain: subdomain,
+    domain_type: 'temporary',
+    status: 'active',
+    dns_configured: true,
+  });
+
+  return {
+    url: `https://${subdomain}`,
+    domain: subdomain,
+    deploymentId: deployment.deploymentId,
+    vercelProjectName,
+  };
+}
+
+/**
+ * Add a custom domain to an already-published project.
+ */
+export async function addCustomDomain(
+  projectId: string,
+  userId: string,
+  customDomain: string,
+  domainType: 'purchased' | 'external'
+): Promise<{ verificationNeeded: boolean; instructions?: string[] }> {
+  const admin = createAdminClient();
+
+  // Get project's Vercel project name
+  const { data: project } = await admin
+    .from('projects')
+    .select('vercel_project_name')
+    .eq('id', projectId)
+    .single();
+
+  if (!project?.vercel_project_name) {
+    throw new Error('Project must be published first');
+  }
+
+  // Add domain to Vercel
+  const domainInfo = await addDomainToProject(
+    project.vercel_project_name,
+    customDomain,
+    { token: PLATFORM_TOKEN, teamId: TEAM_ID }
+  );
+
+  // Create domain record
+  const verificationToken = crypto.randomUUID();
+  await admin.from('domains').insert({
+    project_id: projectId,
+    user_id: userId,
+    domain: customDomain,
+    domain_type: domainType,
+    status: domainInfo.verified ? 'active' : 'pending',
+    dns_configured: domainInfo.configured,
+    verification_token: verificationToken,
+  });
+
+  // Update project custom_domain
+  await admin
+    .from('projects')
+    .update({ custom_domain: customDomain })
+    .eq('id', projectId);
+
+  if (!domainInfo.verified) {
+    return {
+      verificationNeeded: true,
+      instructions: [
+        `Add a CNAME record for "${customDomain}" pointing to "cname.vercel-dns.com"`,
+        `DNS propagation typically takes 5-30 minutes`,
+        `Click "Verify" once you've added the DNS record`,
+      ],
+    };
+  }
+
+  return { verificationNeeded: false };
+}
