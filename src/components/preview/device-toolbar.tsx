@@ -1,6 +1,6 @@
 'use client';
 
-import { Monitor, Tablet, Smartphone, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
+import { Monitor, Tablet, Smartphone, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils/cn';
 import { usePreviewStore } from '@/stores/preview-store';
@@ -21,7 +21,7 @@ interface DeviceToolbarProps {
 }
 
 export function DeviceToolbar({ pages = [] }: DeviceToolbarProps) {
-  const { viewport, zoom, autoFit, activePage, setViewport, setZoom, setAutoFit, setActivePage } = usePreviewStore();
+  const { viewport, autoFit, activePage, setViewport, setAutoFit, setActivePage } = usePreviewStore();
 
   const hasMultiplePages = pages.length > 1;
 
@@ -67,43 +67,19 @@ export function DeviceToolbar({ pages = [] }: DeviceToolbarProps) {
           ))}
         </div>
 
-        <div className="flex items-center gap-1.5">
-          <Button
-            variant={autoFit ? 'default' : 'ghost'}
-            size="sm"
-            className={cn(
-              'h-8 px-2 text-xs gap-1',
-              autoFit && 'bg-primary text-primary-foreground'
-            )}
-            onClick={() => setAutoFit(!autoFit)}
-            title="Auto-fit preview to container"
-          >
-            <Maximize2 className="h-3.5 w-3.5" />
-            Fit
-          </Button>
-          <div className="w-px h-5 bg-border" />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => setZoom(Math.max(0.25, zoom - 0.1))}
-            disabled={zoom <= 0.25}
-          >
-            <ZoomOut className="h-4 w-4" />
-          </Button>
-          <span className="text-xs text-muted-foreground w-10 text-center">
-            {autoFit ? 'Fit' : `${Math.round(zoom * 100)}%`}
-          </span>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => setZoom(Math.min(1, zoom + 0.1))}
-            disabled={zoom >= 1}
-          >
-            <ZoomIn className="h-4 w-4" />
-          </Button>
-        </div>
+        <Button
+          variant={autoFit ? 'default' : 'ghost'}
+          size="sm"
+          className={cn(
+            'h-8 px-2 text-xs gap-1',
+            autoFit && 'bg-primary text-primary-foreground'
+          )}
+          onClick={() => setAutoFit(!autoFit)}
+          title="Fit preview to available width"
+        >
+          <Maximize2 className="h-3.5 w-3.5" />
+          Fit
+        </Button>
       </div>
     </div>
   );
