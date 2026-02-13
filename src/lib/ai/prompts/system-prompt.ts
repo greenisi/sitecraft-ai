@@ -232,12 +232,12 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile menu overlay */}
+      {/* Mobile menu overlay — MUST use solid opaque background, never transparent */}
       <div className={\`fixed inset-0 top-16 bg-white z-40 transition-all duration-300 \${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}\`}>
         <div className="flex flex-col p-6 gap-4">
           {navLinks.map((link) => (
             <Link key={link.href} href={link.href}
-              className="text-lg font-medium text-gray-800 hover:text-primary-600 py-3 border-b border-gray-100 transition-colors"
+              className="text-lg font-semibold text-gray-900 hover:text-primary-600 py-3 border-b border-gray-200 transition-colors"
               onClick={() => setIsOpen(false)}>
               {link.label}
             </Link>
@@ -258,6 +258,10 @@ export default function Navbar() {
 - Hamburger icon: use \`Menu\` and \`X\` from \`lucide-react\`
 - Toggle with \`useState\` — MUST be a 'use client' component
 - Mobile menu: full-screen overlay below navbar, smooth opacity transition
+- **CRITICAL: Mobile menu overlay MUST use a SOLID, FULLY OPAQUE background color — NEVER transparent or semi-transparent.**
+  Use \`bg-white\` (NOT \`bg-white/80\` or any opacity variant). The glassmorphism transparency is ONLY for the navbar bar itself, NEVER for the mobile menu overlay.
+- **CRITICAL: Mobile menu link text MUST be large and high-contrast.** Use \`text-lg font-semibold text-gray-900\` (dark text on white bg). NEVER use light or muted colors for mobile nav links. They must be immediately readable.
+- Each nav link should have \`py-3 border-b border-gray-200\` for clear visual separation and large tap targets
 - Clicking any link closes the menu (\`onClick={() => setIsOpen(false)}\`)
 - \`aria-expanded\` and \`aria-label\` for accessibility
 - Hidden on md+ screens (\`md:hidden\` on button, \`hidden md:flex\` on desktop nav)
