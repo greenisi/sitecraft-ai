@@ -9,6 +9,7 @@ import {
   Loader2,
   ExternalLink,
   CheckCircle2,
+  MousePointerClick,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +22,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useProject } from '@/lib/hooks/use-project';
+import { useVisualEditorStore } from '@/stores/visual-editor-store';
 import { toast } from 'sonner';
 
 interface EditorTopbarProps {
@@ -38,7 +40,13 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
   const [vercelToken, setVercelToken] = useState('');
   const [vercelProjectName, setVercelProjectName] = useState('');
 
+  const { isVisualEditorActive, toggleVisualEditor, hasUnsavedChanges } =
+    useVisualEditorStore();
+
   const isExportable =
+    project && ['generated', 'deployed'].includes(project.status);
+
+  const isEditable =
     project && ['generated', 'deployed'].includes(project.status);
 
   const handleDownload = async () => {
@@ -130,6 +138,23 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
         </div>
 
         <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
+          <Button
+            variant={isVisualEditorActive ? 'default' : 'outline'}
+            size="sm"
+            className={`h-8 px-2 md:px-3 relative ${
+              isVisualEditorActive
+                ? 'bg-primary text-primary-foreground'
+                : ''
+            }`}
+            onClick={toggleVisualEditor}
+            disabled={!isEditable}
+          >
+            <MousePointerClick className="h-3 w-3 md:mr-2" />
+            <span className="hidden md:inline">Edit</span>
+            {hasUnsavedChanges() && (
+              <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-orange-500 border-2 border-background" />
+            )}
+          </Button>
           <Button
             variant="outline"
             size="sm"

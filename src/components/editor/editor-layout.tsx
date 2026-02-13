@@ -1,10 +1,13 @@
 'use client';
 
 import { useRef, useState, useCallback } from 'react';
-import { MessageSquare, Eye } from 'lucide-react';
+import { MessageSquare, Eye, MousePointerClick } from 'lucide-react';
 import { EditorTopbar } from './editor-topbar';
 import { ChatPanel } from './chat-panel';
 import { PreviewPanel } from './preview-panel';
+import { PropertiesPanel } from '@/components/visual-editor/properties-panel';
+import { useVisualEditorStore } from '@/stores/visual-editor-store';
+import { useVisualEditorSave } from '@/lib/hooks/use-visual-editor-save';
 import { cn } from '@/lib/utils/cn';
 
 interface EditorLayoutProps {
@@ -20,6 +23,9 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
   const [mobileView, setMobileView] = useState<'chat' | 'preview'>('chat');
   const isDragging = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const { isVisualEditorActive } = useVisualEditorStore();
+  const { save } = useVisualEditorSave(projectId);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     isDragging.current = true;
@@ -46,6 +52,17 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
     document.addEventListener('mouseup', handleMouseUp);
   }, []);
 
+  // Left panel content — either Chat or Properties
+  const leftPanel = isVisualEditorActive ? (
+    <PropertiesPanel onSave={save} />
+  ) : (
+    <ChatPanel projectId={projectId} />
+  );
+
+  // Mobile left tab label and icon
+  const mobileLeftLabel = isVisualEditorActive ? 'Properties' : 'Chat';
+  const MobileLeftIcon = isVisualEditorActive ? MousePointerClick : MessageSquare;
+
   return (
     <div className="flex h-[100dvh] flex-col">
       <EditorTopbar projectId={projectId} />
@@ -56,7 +73,7 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
           className="flex-shrink-0 border-r"
           style={{ width: chatWidth }}
         >
-          <ChatPanel projectId={projectId} />
+          {leftPanel}
         </div>
         <div
           className={cn(
@@ -73,7 +90,7 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
       {/* Mobile: single panel with toggle */}
       <div className="flex flex-1 flex-col overflow-hidden md:hidden">
         <div className={cn('flex-1 overflow-hidden', mobileView !== 'chat' && 'hidden')}>
-          <ChatPanel projectId={projectId} />
+          {leftPanel}
         </div>
         <div className={cn('flex-1 overflow-hidden', mobileView !== 'preview' && 'hidden')}>
           <PreviewPanel projectId={projectId} />
@@ -90,8 +107,8 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
                 : 'text-muted-foreground'
             )}
           >
-            <MessageSquare className="h-5 w-5" />
-            Chat
+            <MobileLeftIcon className="h-5 w-5" />
+            {mobileLeftLabel}
           </button>
           <button
             onClick={() => setMobileView('preview')}

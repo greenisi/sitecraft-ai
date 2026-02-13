@@ -2,6 +2,9 @@
 
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { usePreviewStore } from '@/stores/preview-store';
+import { useVisualEditorStore } from '@/stores/visual-editor-store';
+import { getIframeBridgeScript } from '@/lib/visual-editor/iframe-bridge';
+import { setPreviewIframe, sendToPreviewIframe } from '@/lib/visual-editor/iframe-ref';
 import { DeviceToolbar } from './device-toolbar';
 import { Loader2 } from 'lucide-react';
 
@@ -23,12 +26,21 @@ interface PreviewFrameProps {
 
 export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
   const { viewport, zoom, activePage, setActivePage } = usePreviewStore();
+  const { isVisualEditorActive, setSelectedElement, setInlineEditing, addPendingChange } =
+    useVisualEditorStore();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [loading, setLoading] = useState(true);
   const [iframeKey, setIframeKey] = useState(0);
   const [pages, setPages] = useState<PageInfo[]>([]);
+  const bridgeInjectedRef = useRef(false);
 
   const hasFiles = Object.keys(files).length > 0;
+
+  // Register iframe ref in singleton so PropertiesPanel can reach it
+  useEffect(() => {
+    setPreviewIframe(iframeRef.current);
+    return () => setPreviewIframe(null);
+  }, [iframeKey]);
 
   // Derive pages from file keys
   useEffect(() => {
@@ -59,6 +71,7 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
     if (hasFiles) {
       setIframeKey((k) => k + 1);
       setLoading(true);
+      bridgeInjectedRef.current = false;
     }
   }, [hasFiles, Object.keys(files).length]);
 
@@ -67,22 +80,84 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
     if (hasFiles) {
       setIframeKey((k) => k + 1);
       setLoading(true);
+      bridgeInjectedRef.current = false;
     }
   }, [activePage, hasFiles]);
 
-  // Listen for postMessage navigation events from the iframe
-  const handleMessage = useCallback((event: MessageEvent) => {
-    if (event.data?.type === 'sitecraft:navigate') {
-      const targetPage = event.data.page as string;
-      setActivePage(targetPage);
-    }
-    if (event.data?.type === 'sitecraft:pages') {
-      const iframePages = event.data.pages as PageInfo[];
-      if (iframePages && iframePages.length > 0) {
-        setPages(iframePages);
+  // Inject or destroy bridge script when visual editor toggles or iframe loads
+  useEffect(() => {
+    if (!iframeRef.current) return;
+
+    if (isVisualEditorActive && !loading && !bridgeInjectedRef.current) {
+      // Inject bridge script
+      try {
+        const doc = iframeRef.current.contentDocument;
+        if (doc) {
+          const script = doc.createElement('script');
+          script.textContent = getIframeBridgeScript();
+          doc.body.appendChild(script);
+          bridgeInjectedRef.current = true;
+        }
+      } catch {
+        // Cross-origin or other error — can't inject
+        console.warn('Could not inject visual editor bridge into iframe');
       }
+    } else if (!isVisualEditorActive && bridgeInjectedRef.current) {
+      // Destroy bridge
+      sendToPreviewIframe({ type: 'sitecraft:destroy' });
+      bridgeInjectedRef.current = false;
     }
-  }, [setActivePage]);
+  }, [isVisualEditorActive, loading]);
+
+  // Listen for postMessage events from the iframe
+  const handleMessage = useCallback(
+    (event: MessageEvent) => {
+      const data = event.data;
+      if (!data?.type) return;
+
+      switch (data.type) {
+        case 'sitecraft:navigate': {
+          const targetPage = data.page as string;
+          setActivePage(targetPage);
+          break;
+        }
+        case 'sitecraft:pages': {
+          const iframePages = data.pages as PageInfo[];
+          if (iframePages && iframePages.length > 0) {
+            setPages(iframePages);
+          }
+          break;
+        }
+        case 'sitecraft:element-selected': {
+          if (data.data) {
+            setSelectedElement(data.data);
+          }
+          break;
+        }
+        case 'sitecraft:inline-edit-start': {
+          setInlineEditing(true);
+          break;
+        }
+        case 'sitecraft:inline-edit-end': {
+          setInlineEditing(false);
+          if (data.data) {
+            addPendingChange({
+              type: 'text',
+              cssPath: data.data.cssPath,
+              oldText: data.data.oldText,
+              newText: data.data.newText,
+            });
+          }
+          break;
+        }
+        case 'sitecraft:inline-edit-cancel': {
+          setInlineEditing(false);
+          break;
+        }
+      }
+    },
+    [setActivePage, setSelectedElement, setInlineEditing, addPendingChange]
+  );
 
   useEffect(() => {
     window.addEventListener('message', handleMessage);
@@ -121,6 +196,17 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
           ))}
         </div>
       )}
+
+      {/* Visual editor active indicator */}
+      {isVisualEditorActive && (
+        <div className="flex items-center gap-2 border-b px-3 py-1.5 bg-violet-50 dark:bg-violet-950/20">
+          <div className="h-2 w-2 rounded-full bg-violet-500 animate-pulse" />
+          <span className="text-[11px] text-violet-700 dark:text-violet-300 font-medium">
+            Visual editing mode — click to select, double-click text to edit
+          </span>
+        </div>
+      )}
+
       <div className="flex flex-1 overflow-hidden">
         {/* Mobile: full-width iframe, no scaling */}
         <div className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-900 md:p-2">
@@ -151,7 +237,11 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
               }}
               title="Website Preview"
               sandbox="allow-scripts allow-same-origin"
-              onLoad={() => setLoading(false)}
+              onLoad={() => {
+                setLoading(false);
+                // Update iframe ref singleton after load
+                setPreviewIframe(iframeRef.current);
+              }}
             />
           </div>
         </div>
