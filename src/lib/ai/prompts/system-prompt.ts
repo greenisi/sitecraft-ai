@@ -127,14 +127,18 @@ function useScrollAnimation() {
 Apply to sections with: \`className={clsx('transition-all duration-700', isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8')}\`
 Stagger children with delay: \`delay-100\`, \`delay-200\`, \`delay-300\`, etc.
 
-**Gradient & Decorative Elements:**
-- Hero sections: gradient overlay on background \`bg-gradient-to-br from-primary-600 via-primary-500 to-secondary-500\`
-- Add decorative blurred circles behind hero: \`absolute -top-40 -right-40 w-96 h-96 bg-primary-500/20 rounded-full blur-3xl\`
+**Gradient & Decorative Elements (use when appropriate for the hero style):**
+- Gradient backgrounds: \`bg-gradient-to-br from-primary-600 via-primary-500 to-secondary-500\`
+- Decorative blurred circles: \`absolute -top-40 -right-40 w-96 h-96 bg-primary-500/20 rounded-full blur-3xl\`
 - Section dividers: subtle gradient lines or decorative dot patterns
-- Use \`bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent\` for accent headings
+- Gradient text: \`bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent\` for accent headings
+- Dark hero overlays: \`bg-black/60\` over images, or \`bg-gray-950\` backgrounds with light text
+- NOTE: Not every hero needs a gradient. Match the hero style to the DESIGN VARIETY instructions.
 
-**Glassmorphism Navbar (REQUIRED):**
-- Navbar MUST use: \`fixed top-0 w-full z-50 backdrop-blur-md bg-white/80 dark:bg-gray-900/80 border-b border-gray-200/50 shadow-sm\`
+**Navbar Styling (FLEXIBLE — follow the DESIGN VARIETY instructions):**
+- Default style: \`fixed top-0 w-full z-50 backdrop-blur-md bg-white/80 border-b border-gray-200/50 shadow-sm\`
+- But navbars can also be: solid white, dark (bg-gray-950 text-white), transparent-over-hero, or brand-colored
+- If the DESIGN VARIETY instructions specify a navbar style, use THAT style instead of the default
 - Transitions on scroll: can add \`shadow-md\` on scroll down
 - Logo should use gradient text or the primary brand color
 
@@ -147,6 +151,7 @@ Stagger children with delay: \`delay-100\`, \`delay-200\`, \`delay-300\`, etc.
 
 === FOOTER REQUIREMENTS ===
 Every website MUST have a professional, content-rich footer. NEVER generate a minimal 1-line footer.
+The footer style should complement the overall site design — dark is default but can be adapted.
 
 **Structure (4-Column Minimum):**
 \`\`\`

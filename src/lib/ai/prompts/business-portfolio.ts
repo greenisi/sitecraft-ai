@@ -45,9 +45,9 @@ ${sectionList}
 
 **Shared Components**
 
-1. \`src/components/Navbar.tsx\` -- Fixed glassmorphism navigation bar:
+1. \`src/components/Navbar.tsx\` -- Fixed navigation bar (follow DESIGN VARIETY navbar style):
    - \`'use client'\` component with useState for mobile menu toggle
-   - Glassmorphism: \`fixed top-0 w-full z-50 backdrop-blur-md bg-white/80 border-b border-gray-200/50 shadow-sm\`
+   - Use the navbar style from DESIGN VARIETY instructions (glassmorphism, dark, transparent, solid, or colored)
    - Logo/business name with primary brand color
    - Desktop nav links: Home, About, Services, Contact using \`next/link\`
    - CTA button in nav with hover:scale-105 effect
@@ -69,11 +69,11 @@ ${sectionList}
 
 **Home Page**
 
-4. \`src/components/Hero.tsx\` -- Premium hero section:
-   - Bold gradient background or professional image
-   - Decorative blurred circles: \`absolute -top-40 -right-40 w-96 h-96 bg-primary-500/20 rounded-full blur-3xl\`
-   - Large headline with gradient text effect for key words
+4. \`src/components/Hero.tsx\` -- Premium hero section (follow DESIGN VARIETY hero style):
+   - Use the hero layout from the DESIGN VARIETY instructions (gradient, split, dark, minimal, etc.)
+   - Large, impactful headline
    - Two CTA buttons: primary (filled, hover:scale-105, hover:shadow-lg) and secondary (outlined)
+   - Decorative elements appropriate to the hero style
    - Subtle floating animation on decorative elements
 
 5. \`src/components/ServicesPreview.tsx\` -- Service preview with scroll-triggered animations:
@@ -133,14 +133,15 @@ ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 - Every section MUST have scroll-triggered fade-in animations using IntersectionObserver
 - All buttons MUST have hover:scale-105 and transition effects
 - Cards MUST have hover:-translate-y-1 hover:shadow-xl effects
-- Hero MUST have gradient backgrounds and decorative blur elements
-- Navbar MUST be glassmorphism style (backdrop-blur-md bg-white/80)
-- Footer MUST be 4-column dark themed with newsletter signup
+- The hero style should follow the DESIGN VARIETY instructions (gradient, split, dark, minimal, etc.)
+- The navbar style should follow the DESIGN VARIETY instructions (glassmorphism, dark, transparent, etc.)
+- Footer MUST be 4-column with newsletter signup
 - Mobile hamburger menu MUST work with useState toggle
 - Use realistic, industry-appropriate content — NEVER lorem ipsum
 - All navigation links must use \`next/link\` with correct paths (/, /about, /services, /contact)
 - Pages must feel cohesive: consistent colors, typography, spacing
 - Add \`pt-16\` to page content to account for fixed navbar
+- CRITICAL: Follow the DESIGN VARIETY instructions at the end of this prompt for hero, navbar, features layout, and testimonial style. Each website MUST look unique.
 - Generate ALL files listed above in a single response
 `;
 }

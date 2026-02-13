@@ -72,9 +72,9 @@ Dashboard shell: ${hasDashboard ? 'Yes' : 'No'}
 
 **Marketing -- Shared Components**
 
-1. \`src/components/marketing/Navbar.tsx\` -- Fixed glassmorphism navigation bar:
+1. \`src/components/marketing/Navbar.tsx\` -- Fixed navigation bar (follow DESIGN VARIETY navbar style):
    - \`'use client'\` component with useState for mobile menu toggle
-   - Glassmorphism: \`fixed top-0 w-full z-50 backdrop-blur-md bg-white/80 border-b border-gray-200/50 shadow-sm\`
+   - Use the navbar style from DESIGN VARIETY instructions (glassmorphism, dark, transparent, solid, or colored)
    - Logo with gradient or primary brand color
    - Links: Features, Pricing, ${hasAuth ? 'Sign In' : 'Contact'}
    - Primary CTA button: "Get Started" / "Start Free Trial" with hover:scale-105
@@ -92,9 +92,9 @@ Dashboard shell: ${hasDashboard ? 'Yes' : 'No'}
 
 **Marketing -- Home / Landing Page**
 
-3. \`src/components/marketing/Hero.tsx\` -- Premium SaaS hero:
-   - Bold gradient background with decorative blur elements
-   - Large headline with gradient text effect on key words
+3. \`src/components/marketing/Hero.tsx\` -- Premium SaaS hero (follow DESIGN VARIETY hero style):
+   - Use the hero layout from DESIGN VARIETY instructions (gradient, split, dark, minimal, etc.)
+   - Large headline with impactful typography
    - Sub-headline with supporting copy
    - Email capture or CTA button with hover:scale-105 and glow effect
    - Product screenshot/mockup placeholder with subtle floating animation
@@ -181,8 +181,8 @@ ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 - Every section MUST have scroll-triggered fade-in animations using IntersectionObserver
 - All buttons MUST have hover:scale-105 and transition effects
 - Cards MUST have hover:-translate-y-1 hover:shadow-xl effects
-- Hero MUST have gradient backgrounds and decorative blur elements
-- Navbar MUST be glassmorphism style (backdrop-blur-md bg-white/80)
+- The hero style should follow the DESIGN VARIETY instructions (gradient, split, dark, minimal, etc.)
+- The navbar style should follow the DESIGN VARIETY instructions (glassmorphism, dark, transparent, etc.)
 - Footer MUST be 4-column dark themed with newsletter signup
 - Mobile hamburger menu MUST work with useState toggle
 - Add \`pt-16\` to page content for fixed navbar
@@ -192,6 +192,7 @@ ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 - Use realistic SaaS copy appropriate for "${business.industry}"
 - Pricing toggle should switch between monthly and yearly prices (yearly = monthly * 10)
 - Organize files into route groups: (marketing), (auth), (dashboard)
+- CRITICAL: Follow the DESIGN VARIETY instructions at the end of this prompt for hero, navbar, features layout, and testimonial style. Each website MUST look unique.
 - Generate ALL files listed above in a single response
 `;
 }

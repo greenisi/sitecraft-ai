@@ -51,9 +51,9 @@ ${sectionList}
 
 **Shared Components**
 
-1. \`src/components/Navbar.tsx\` -- Fixed glassmorphism navigation bar:
+1. \`src/components/Navbar.tsx\` -- Fixed navigation bar (follow DESIGN VARIETY navbar style):
    - \`'use client'\` component with useState for mobile menu toggle
-   - Glassmorphism: \`fixed top-0 w-full z-50 backdrop-blur-md bg-white/80 border-b border-gray-200/50 shadow-sm\`
+   - Use the navbar style from DESIGN VARIETY instructions (glassmorphism, dark, transparent, solid, or colored)
    - Logo/business name with primary brand color
    - Desktop nav links: Home, Services, About, Contact using \`next/link\`
    - Prominently-styled "Call Now" phone number link on desktop (with Phone icon)
@@ -77,13 +77,13 @@ ${sectionList}
 
 **Home Page (/)**
 
-4. \`src/components/Hero.tsx\` -- Bold hero section:
+4. \`src/components/Hero.tsx\` -- Bold hero section (follow DESIGN VARIETY hero style):
    - Strong headline emphasizing core service and locality (e.g., "Trusted ${business.industry} in [City]")
-   - Gradient background or professional background image placeholder
-   - Decorative blur elements behind hero content
+   - Use the hero layout from DESIGN VARIETY instructions (gradient, split, dark, full-bleed image, etc.)
    - Prominent "Call Now" CTA button with Phone icon (\`tel:\` link, hover:scale-105)
    - Secondary "Get a Free Quote" CTA button
    - Trust statement strip: "Licensed & Insured | 15+ Years | 5-Star Rated"
+   - Decorative elements appropriate to the hero style
    - Subtle animation on hero elements
 
 5. \`src/components/TrustBadges.tsx\` -- Horizontal trust indicators strip:
@@ -201,8 +201,8 @@ ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 - Every section MUST have scroll-triggered fade-in animations using IntersectionObserver
 - All buttons MUST have hover:scale-105 and transition effects
 - Cards MUST have hover:-translate-y-1 hover:shadow-xl effects
-- Hero MUST have gradient backgrounds and decorative blur elements
-- Navbar MUST be glassmorphism style (backdrop-blur-md bg-white/80)
+- The hero style should follow the DESIGN VARIETY instructions (gradient, split, dark, minimal, etc.)
+- The navbar style should follow the DESIGN VARIETY instructions (glassmorphism, dark, transparent, etc.)
 - Footer MUST be 4-column dark themed
 - Mobile hamburger menu MUST work with useState toggle
 - Phone numbers MUST use \`tel:\` links for click-to-call on mobile
@@ -210,6 +210,7 @@ ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 - All nav links must use \`next/link\` with correct paths (/, /services, /about, /contact)
 - The tone should be trustworthy, professional, and locally-focused
 - Emphasize ease of contact: phone and CTA visible on every page
+- CRITICAL: Follow the DESIGN VARIETY instructions at the end of this prompt for hero, navbar, features layout, and testimonial style. Each website MUST look unique.
 - Generate ALL files listed above in a single response
 `;
 }

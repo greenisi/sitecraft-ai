@@ -77,9 +77,9 @@ ${productsInfo}
 
 **Shared Components**
 
-3. \`src/components/Navbar.tsx\` -- Fixed glassmorphism navigation bar:
+3. \`src/components/Navbar.tsx\` -- Fixed navigation bar (follow DESIGN VARIETY navbar style):
    - \`'use client'\` component with useState for mobile menu and cart count
-   - Glassmorphism: \`fixed top-0 w-full z-50 backdrop-blur-md bg-white/80 border-b border-gray-200/50 shadow-sm\`
+   - Use the navbar style from DESIGN VARIETY instructions (glassmorphism, dark, transparent, solid, or colored)
    - Logo/brand name, links (Home, Shop, Cart), cart icon with animated item count badge
    - Mobile hamburger menu with Menu/X icons
    - \`aria-expanded\` and \`aria-label\` for accessibility
@@ -95,10 +95,9 @@ ${productsInfo}
 
 **Home / Landing**
 
-5. \`src/components/Hero.tsx\` -- Premium e-commerce hero:
-   - Bold gradient or lifestyle image background
-   - Decorative blur elements
-   - Strong headline with gradient text effect
+5. \`src/components/Hero.tsx\` -- Premium e-commerce hero (follow DESIGN VARIETY hero style):
+   - Use the hero layout from DESIGN VARIETY instructions (gradient, split, dark, full-bleed image, etc.)
+   - Strong headline with impactful typography
    - "Shop Now" CTA button with hover:scale-105 and glow effect
    - Trust badges or promo banner below hero
 
@@ -161,8 +160,8 @@ ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 - Every section MUST have scroll-triggered fade-in animations using IntersectionObserver
 - All buttons MUST have hover:scale-105 and transition effects
 - Product cards MUST have hover:-translate-y-1 hover:shadow-xl effects
-- Hero MUST have gradient backgrounds and decorative blur elements
-- Navbar MUST be glassmorphism style (backdrop-blur-md bg-white/80)
+- The hero style should follow the DESIGN VARIETY instructions (gradient, split, dark, minimal, etc.)
+- The navbar style should follow the DESIGN VARIETY instructions (glassmorphism, dark, transparent, etc.)
 - Footer MUST be 4-column dark themed with newsletter signup
 - Mobile hamburger menu MUST work with useState toggle
 - Add \`pt-16\` to page content for fixed navbar
@@ -170,6 +169,7 @@ ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 - Price formatting: use \`Intl.NumberFormat\` with locale and currency "${currency}".
 - Use realistic product names, descriptions, and placeholder images for "${business.industry}".
 - The cart store must use Zustand; import from 'zustand' and 'zustand/middleware'.
+- CRITICAL: Follow the DESIGN VARIETY instructions at the end of this prompt for hero, navbar, features layout, and testimonial style. Each website MUST look unique.
 - Generate ALL files listed above in a single response
 `;
 }

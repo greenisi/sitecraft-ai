@@ -20,7 +20,7 @@ export const SITE_TYPE_DESCRIPTIONS: Record<SiteType, string> = {
 export const PROJECT_STATUSES = ['draft', 'generating', 'generated', 'deployed', 'error'] as const;
 export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
 
-export const STYLE_OPTIONS = ['minimal', 'bold', 'elegant', 'playful', 'corporate'] as const;
+export const STYLE_OPTIONS = ['minimal', 'bold', 'elegant', 'playful', 'corporate', 'dark', 'vibrant'] as const;
 export type StyleOption = (typeof STYLE_OPTIONS)[number];
 
 export const SECTION_TYPES = [

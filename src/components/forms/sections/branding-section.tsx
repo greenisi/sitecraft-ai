@@ -21,6 +21,8 @@ const STYLE_DESCRIPTIONS: Record<StyleOption, string> = {
   elegant: 'Refined details, serif fonts, sophisticated palette',
   playful: 'Rounded shapes, bright colors, friendly feel',
   corporate: 'Professional, structured, trustworthy appearance',
+  dark: 'Dark backgrounds, glowing accents, cinematic feel',
+  vibrant: 'Saturated colors, gradients, energetic personality',
 };
 
 const STYLE_ICONS: Record<StyleOption, string> = {
@@ -29,6 +31,8 @@ const STYLE_ICONS: Record<StyleOption, string> = {
   elegant: 'E',
   playful: 'P',
   corporate: 'C',
+  dark: 'D',
+  vibrant: 'V',
 };
 
 interface BrandingSectionProps {

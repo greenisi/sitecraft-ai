@@ -13,6 +13,7 @@ import { generateTailwindConfig } from '@/lib/templates/base/tailwind-config';
 import { generatePackageJson } from '@/lib/templates/base/package-json';
 import { generateNextConfig } from '@/lib/templates/base/next-config';
 import { generateTsConfig } from '@/lib/templates/base/tsconfig';
+import { getDesignVariety, buildVarietyInstructions } from './design-variety';
 
 // --------------------------------------------------------------------------
 // Stage 1: Assemble Config
@@ -47,7 +48,7 @@ function assembleConfig(config: GenerationConfig): GenerationConfig {
 async function generateDesignSystem(config: GenerationConfig): Promise<DesignSystem> {
   const client = getAnthropicClient();
 
-  const systemPrompt = `You are a design system expert. Given a business description and branding preferences, generate a comprehensive Tailwind CSS design system as a JSON object.
+  const systemPrompt = `You are a design system expert who creates UNIQUE, visually distinctive color systems for each project. Given a business description and branding preferences, generate a comprehensive Tailwind CSS design system as a JSON object.
 
 Return ONLY valid JSON -- no markdown, no explanation, no code fences.
 
@@ -78,16 +79,24 @@ The JSON must match this exact structure:
   "shadows": { "sm": "...", "md": "...", "lg": "...", "xl": "..." }
 }
 
-Generate color scales that harmonize with the provided brand colors. Each scale needs shades from 50 (lightest) through 950 (darkest). The provided hex colors should map to the 500 shade.`;
+CRITICAL RULES:
+- Generate color scales that harmonize with the provided brand colors. Each scale needs shades from 50 (lightest) through 950 (darkest).
+- The provided hex colors should map to the 500 shade.
+- The PRIMARY and SECONDARY colors should have CLEAR VISUAL CONTRAST — they should not look similar.
+- The ACCENT color should POP — it's used for CTA buttons and attention-grabbing elements.
+- The NEUTRAL palette should complement the primary, not just be generic gray. For warm primaries use warm neutrals (stone, amber tints). For cool primaries use cool neutrals (slate, blue-gray).
+- Make each color scale RICH with distinct shades — the 50 should be very light, the 950 very dark.`;
 
-  const userPrompt = `Generate a design system for:
+  const userPrompt = `Generate a UNIQUE, distinctive design system for:
 Business: "${config.business.name}" (${config.business.industry})
 Style: ${config.branding.style}
 Primary color: ${config.branding.primaryColor}
 Secondary color: ${config.branding.secondaryColor}
 Accent color: ${config.branding.accentColor}
 Heading font: ${config.branding.fontHeading}
-Body font: ${config.branding.fontBody}`;
+Body font: ${config.branding.fontBody}
+
+Make the colors rich and distinctive for this specific business type. The palette should evoke the right mood for a ${config.business.industry} business.`;
 
   const response = await client.messages.create({
     model: GENERATION_MODEL,
@@ -210,8 +219,18 @@ async function* generateComponents(
   const client = getAnthropicClient();
   const promptBuilder = getPromptBuilder(config.siteType);
 
+  // Get unique design variety based on business identity
+  const variety = getDesignVariety(
+    config.business.name,
+    config.business.industry,
+    config.business.description
+  );
+  const varietyInstructions = buildVarietyInstructions(variety);
+
   const systemPrompt = buildSystemPrompt(designSystem);
-  const userPrompt = promptBuilder(config);
+  // Inject variety instructions into the user prompt so each site gets unique layouts
+  const baseUserPrompt = promptBuilder(config);
+  const userPrompt = `${baseUserPrompt}\n${varietyInstructions}`;
 
   // Track expected components from blueprint
   const expectedComponents = new Set<string>();

@@ -46,9 +46,9 @@ ${sectionList}
 
 **Shared Components**
 
-1. \`src/components/Navbar.tsx\` -- Fixed glassmorphism navigation bar:
+1. \`src/components/Navbar.tsx\` -- Fixed navigation bar (follow DESIGN VARIETY navbar style):
    - \`'use client'\` component with useState for mobile menu toggle
-   - Glassmorphism style: \`fixed top-0 w-full z-50 backdrop-blur-md bg-white/80 border-b border-gray-200/50 shadow-sm\`
+   - Use the navbar style from the DESIGN VARIETY instructions (glassmorphism, dark, transparent, solid, or colored)
    - Logo/business name with gradient or primary brand color
    - Desktop nav links: Home, About, Pricing, Contact using \`next/link\` with \`href="/about"\` etc.
    - CTA button in nav: "Get Started" with hover:scale-105 effect
@@ -72,13 +72,13 @@ ${sectionList}
 
 **Home Page (/)**
 
-4. \`src/components/Hero.tsx\` -- Premium hero section:
-   - Bold gradient background: \`bg-gradient-to-br from-primary-600 via-primary-500 to-secondary-500\` or professional image
-   - Decorative blurred circles: \`absolute -top-40 -right-40 w-96 h-96 bg-primary-500/20 rounded-full blur-3xl\`
-   - Large headline with gradient text effect for key words
+4. \`src/components/Hero.tsx\` -- Premium hero section (follow DESIGN VARIETY hero style):
+   - Use the hero layout specified in the DESIGN VARIETY instructions
+   - Large, impactful headline (gradient text, white on dark, or dark on light — depending on hero style)
    - Supporting sub-headline
    - Two CTA buttons: primary (filled, hover:scale-105, hover:shadow-lg) and secondary (outlined)
    - Trust indicators below CTAs (e.g., "No credit card required", "14-day free trial")
+   - Decorative elements appropriate to the hero style (blur circles, shapes, overlays, etc.)
    - Subtle floating animation on decorative elements
 
 5. \`src/components/Features.tsx\` -- Feature grid with scroll-triggered animations:
@@ -171,13 +171,14 @@ ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 - Every section MUST have scroll-triggered fade-in animations
 - All buttons MUST have hover:scale-105 and transition effects
 - Cards MUST have hover:-translate-y-1 hover:shadow-xl effects
-- The hero MUST have gradient backgrounds and decorative blur elements
-- The navbar MUST be glassmorphism style (backdrop-blur-md bg-white/80)
-- The footer MUST be 4-column dark themed with newsletter signup
+- The hero style should follow the DESIGN VARIETY instructions (gradient, split, dark, minimal, etc.)
+- The navbar style should follow the DESIGN VARIETY instructions (glassmorphism, dark, transparent, etc.)
+- The footer MUST be 4-column with newsletter signup
 - Mobile hamburger menu MUST work with useState toggle
 - Use realistic, industry-appropriate content — NEVER lorem ipsum
 - All navigation links must use \`next/link\` with correct paths (/, /about, /pricing, /contact)
 - Pages must feel cohesive: consistent colors, typography, spacing
+- CRITICAL: Follow the DESIGN VARIETY instructions at the end of this prompt for hero, navbar, features layout, and testimonial style. Each website MUST look unique.
 - Generate ALL files listed above in a single response
 `;
 }
