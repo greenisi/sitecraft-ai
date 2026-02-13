@@ -132,6 +132,11 @@ export function getIframeBridgeScript(): string {
       borderRadius: cs.borderRadius,
       borderColor: cs.borderColor,
       borderWidth: cs.borderWidth,
+      opacity: cs.opacity,
+      boxShadow: cs.boxShadow,
+      display: cs.display,
+      overflow: cs.overflow,
+      cursor: cs.cursor,
     };
   }
 

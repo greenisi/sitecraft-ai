@@ -27,6 +27,11 @@ export interface SelectedElement {
     borderRadius: string;
     borderColor: string;
     borderWidth: string;
+    opacity: string;
+    boxShadow: string;
+    display: string;
+    overflow: string;
+    cursor: string;
   };
 }
 
@@ -45,7 +50,7 @@ export interface PendingChange {
   newValue?: string;
 }
 
-type PropertiesTab = 'style' | 'spacing' | 'typography';
+type PropertiesTab = 'style' | 'spacing' | 'typography' | 'effects';
 
 interface VisualEditorState {
   // State

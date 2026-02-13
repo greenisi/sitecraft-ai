@@ -3,6 +3,8 @@
 import { useState, useCallback, useMemo } from 'react';
 import type {
   UseFormRegister,
+  UseFormSetValue,
+  UseFormWatch,
   FieldErrors,
   Control,
 } from 'react-hook-form';
@@ -21,7 +23,6 @@ import {
   sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
-  arrayMove,
 } from '@dnd-kit/sortable';
 import { GripVertical, Trash2, Plus, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -38,8 +39,18 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   SECTION_TYPES,
   SECTION_LABELS,
+  SECTION_VARIANTS,
+  SECTION_MAX_ITEMS,
+  SECTION_ITEM_TYPE,
   MAX_SECTIONS,
   type SectionType,
 } from '@/lib/utils/constants';
@@ -120,9 +131,42 @@ const SECTION_CONTENT_FIELDS: Record<SectionType, { key: string; label: string; 
   ],
 };
 
+// Item field definitions per section type
+const ITEM_FIELDS: Record<string, { key: string; label: string; type: 'input' | 'textarea' }[]> = {
+  faq: [
+    { key: 'question', label: 'Question', type: 'input' },
+    { key: 'answer', label: 'Answer', type: 'textarea' },
+  ],
+  testimonial: [
+    { key: 'name', label: 'Name', type: 'input' },
+    { key: 'role', label: 'Role/Company', type: 'input' },
+    { key: 'quote', label: 'Quote', type: 'textarea' },
+  ],
+  feature: [
+    { key: 'title', label: 'Title', type: 'input' },
+    { key: 'description', label: 'Description', type: 'textarea' },
+  ],
+  team: [
+    { key: 'name', label: 'Name', type: 'input' },
+    { key: 'role', label: 'Role', type: 'input' },
+    { key: 'bio', label: 'Bio', type: 'textarea' },
+  ],
+  pricing: [
+    { key: 'name', label: 'Plan Name', type: 'input' },
+    { key: 'price', label: 'Price', type: 'input' },
+    { key: 'features', label: 'Features (comma separated)', type: 'textarea' },
+  ],
+  stat: [
+    { key: 'number', label: 'Number/Value', type: 'input' },
+    { key: 'label', label: 'Label', type: 'input' },
+  ],
+};
+
 interface ContentSectionsProps {
   control: Control<GenerationConfigFormValues>;
   register: UseFormRegister<GenerationConfigFormValues>;
+  setValue: UseFormSetValue<GenerationConfigFormValues>;
+  watch: UseFormWatch<GenerationConfigFormValues>;
   errors: FieldErrors<GenerationConfigFormValues>;
 }
 
@@ -131,6 +175,8 @@ interface SortableItemProps {
   index: number;
   sectionType: SectionType;
   register: UseFormRegister<GenerationConfigFormValues>;
+  setValue: UseFormSetValue<GenerationConfigFormValues>;
+  watch: UseFormWatch<GenerationConfigFormValues>;
   onRemove: () => void;
   isExpanded: boolean;
   onToggleExpand: () => void;
@@ -141,6 +187,8 @@ function SortableSectionItem({
   index,
   sectionType,
   register,
+  setValue,
+  watch,
   onRemove,
   isExpanded,
   onToggleExpand,
@@ -162,6 +210,34 @@ function SortableSectionItem({
   };
 
   const contentFields = SECTION_CONTENT_FIELDS[sectionType] || [];
+  const variants = SECTION_VARIANTS[sectionType];
+  const currentVariant = watch(`sections.${index}.variant`);
+  const itemType = SECTION_ITEM_TYPE[sectionType];
+  const maxItems = SECTION_MAX_ITEMS[sectionType] || 0;
+  const currentItems = watch(`sections.${index}.items`) || [];
+
+  const handleAddItem = useCallback(() => {
+    if (!itemType || currentItems.length >= maxItems) return;
+    const newItems = [
+      ...currentItems,
+      { _type: itemType } as Record<string, string>,
+    ];
+    setValue(`sections.${index}.items` as `sections.${number}.content`, newItems as unknown as Record<string, string>, {
+      shouldValidate: true,
+    });
+  }, [itemType, currentItems, maxItems, setValue, index]);
+
+  const handleRemoveItem = useCallback(
+    (itemIndex: number) => {
+      const newItems = currentItems.filter((_: unknown, i: number) => i !== itemIndex);
+      setValue(`sections.${index}.items` as `sections.${number}.content`, newItems as unknown as Record<string, string>, {
+        shouldValidate: true,
+      });
+    },
+    [currentItems, setValue, index]
+  );
+
+  const itemFields = itemType ? ITEM_FIELDS[itemType] : null;
 
   return (
     <div
@@ -199,6 +275,11 @@ function SortableSectionItem({
           <Badge variant="outline" className="text-xs">
             {sectionType}
           </Badge>
+          {currentVariant && (
+            <Badge variant="secondary" className="text-[10px]">
+              {currentVariant}
+            </Badge>
+          )}
         </button>
 
         <span className="text-xs text-muted-foreground tabular-nums">
@@ -217,36 +298,172 @@ function SortableSectionItem({
       </div>
 
       {/* Expandable Content Fields */}
-      {isExpanded && contentFields.length > 0 && (
+      {isExpanded && (
         <div className="border-t px-4 py-4 space-y-4">
-          <p className="text-xs text-muted-foreground">
-            Provide optional content hints. Leave blank to let AI generate content.
-          </p>
-          {contentFields.map((field) => (
-            <div key={field.key} className="space-y-1.5">
-              <Label htmlFor={`sections.${index}.content.${field.key}`} className="text-sm">
-                {field.label}
-              </Label>
-              {field.type === 'input' ? (
-                <Input
-                  id={`sections.${index}.content.${field.key}`}
-                  placeholder={`Optional ${field.label.toLowerCase()}...`}
-                  {...register(
-                    `sections.${index}.content.${field.key}` as `sections.${number}.content.${string}`
+          {/* Variant Selector */}
+          {variants && variants.length > 0 && (
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">Layout Variant</Label>
+              <Select
+                value={currentVariant || ''}
+                onValueChange={(val) =>
+                  setValue(`sections.${index}.variant`, val || undefined, {
+                    shouldValidate: true,
+                  })
+                }
+              >
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="Auto (AI decides)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {variants.map((v) => (
+                    <SelectItem key={v.value} value={v.value}>
+                      {v.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[10px] text-muted-foreground">
+                Leave blank to let AI choose the best layout.
+              </p>
+            </div>
+          )}
+
+          {/* Content fields */}
+          {contentFields.length > 0 && (
+            <>
+              <p className="text-xs text-muted-foreground">
+                Provide optional content hints. Leave blank to let AI generate content.
+              </p>
+              {contentFields.map((field) => (
+                <div key={field.key} className="space-y-1.5">
+                  <Label htmlFor={`sections.${index}.content.${field.key}`} className="text-sm">
+                    {field.label}
+                  </Label>
+                  {field.type === 'input' ? (
+                    <Input
+                      id={`sections.${index}.content.${field.key}`}
+                      placeholder={`Optional ${field.label.toLowerCase()}...`}
+                      {...register(
+                        `sections.${index}.content.${field.key}` as `sections.${number}.content.${string}`
+                      )}
+                    />
+                  ) : (
+                    <Textarea
+                      id={`sections.${index}.content.${field.key}`}
+                      placeholder={`Optional ${field.label.toLowerCase()}...`}
+                      rows={2}
+                      {...register(
+                        `sections.${index}.content.${field.key}` as `sections.${number}.content.${string}`
+                      )}
+                    />
                   )}
-                />
+                </div>
+              ))}
+            </>
+          )}
+
+          {/* Section Items (FAQ, testimonials, features, team, pricing, stats) */}
+          {itemFields && maxItems > 0 && (
+            <div className="space-y-3 mt-4 pt-4 border-t">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium capitalize">
+                  {itemType} Items
+                </Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">
+                    {currentItems.length} / {maxItems}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={handleAddItem}
+                    disabled={currentItems.length >= maxItems}
+                  >
+                    <Plus className="mr-1 h-3 w-3" />
+                    Add
+                  </Button>
+                </div>
+              </div>
+
+              {currentItems.length > 0 ? (
+                <div className="space-y-3">
+                  {currentItems.map((item: Record<string, string>, itemIdx: number) => (
+                    <div
+                      key={itemIdx}
+                      className="rounded-md border bg-muted/30 p-3 space-y-2"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-muted-foreground">
+                          #{itemIdx + 1}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                          onClick={() => handleRemoveItem(itemIdx)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                      {itemFields.map((field) => (
+                        <div key={field.key} className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">
+                            {field.label}
+                          </Label>
+                          {field.type === 'input' ? (
+                            <Input
+                              placeholder={field.label}
+                              defaultValue={item[field.key] || ''}
+                              onChange={(e) => {
+                                const newItems = [...currentItems];
+                                newItems[itemIdx] = {
+                                  ...newItems[itemIdx],
+                                  [field.key]: e.target.value,
+                                };
+                                setValue(
+                                  `sections.${index}.items` as `sections.${number}.content`,
+                                  newItems as unknown as Record<string, string>,
+                                  { shouldValidate: true }
+                                );
+                              }}
+                              className="h-8 text-sm"
+                            />
+                          ) : (
+                            <Textarea
+                              placeholder={field.label}
+                              defaultValue={item[field.key] || ''}
+                              onChange={(e) => {
+                                const newItems = [...currentItems];
+                                newItems[itemIdx] = {
+                                  ...newItems[itemIdx],
+                                  [field.key]: e.target.value,
+                                };
+                                setValue(
+                                  `sections.${index}.items` as `sections.${number}.content`,
+                                  newItems as unknown as Record<string, string>,
+                                  { shouldValidate: true }
+                                );
+                              }}
+                              rows={2}
+                              className="text-sm"
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <Textarea
-                  id={`sections.${index}.content.${field.key}`}
-                  placeholder={`Optional ${field.label.toLowerCase()}...`}
-                  rows={2}
-                  {...register(
-                    `sections.${index}.content.${field.key}` as `sections.${number}.content.${string}`
-                  )}
-                />
+                <p className="text-xs text-muted-foreground text-center py-2">
+                  No items added. AI will generate sample {itemType} content.
+                </p>
               )}
             </div>
-          ))}
+          )}
         </div>
       )}
     </div>
@@ -256,6 +473,8 @@ function SortableSectionItem({
 export function ContentSections({
   control,
   register,
+  setValue,
+  watch,
   errors,
 }: ContentSectionsProps) {
   const { fields, append, remove, move } = useFieldArray({
@@ -371,6 +590,8 @@ export function ContentSections({
                   index={index}
                   sectionType={field.type}
                   register={register}
+                  setValue={setValue}
+                  watch={watch}
                   onRemove={() => handleRemove(index, field.id)}
                   isExpanded={expandedSections.has(field.id)}
                   onToggleExpand={() => toggleExpand(field.id)}

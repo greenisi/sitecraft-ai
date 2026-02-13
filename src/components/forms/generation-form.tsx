@@ -18,6 +18,7 @@ import { BusinessInfoSection } from './sections/business-info-section';
 import { BrandingSection } from './sections/branding-section';
 import { ContentSections } from './sections/content-sections';
 import { AiPromptSection } from './sections/ai-prompt-section';
+import { NavigationSection } from './sections/navigation-section';
 
 interface GenerationFormProps {
   projectId: string;
@@ -38,6 +39,7 @@ const DEFAULT_VALUES: GenerationConfigFormValues = {
     primaryColor: '#0f172a',
     secondaryColor: '#64748b',
     accentColor: '#3b82f6',
+    surfaceColor: '#ffffff',
     fontHeading: 'Inter',
     fontBody: 'Inter',
     logoUrl: '',
@@ -46,6 +48,12 @@ const DEFAULT_VALUES: GenerationConfigFormValues = {
   sections: [],
   aiPrompt: '',
   referenceUrls: [],
+  navigation: {
+    navbarStyle: undefined,
+    navbarPosition: undefined,
+    footerStyle: undefined,
+    socialLinks: [],
+  },
 };
 
 export function GenerationForm({
@@ -89,6 +97,7 @@ export function GenerationForm({
           primaryColor: config.branding.primaryColor || '#0f172a',
           secondaryColor: config.branding.secondaryColor || '#64748b',
           accentColor: config.branding.accentColor || '#3b82f6',
+          surfaceColor: config.branding.surfaceColor || '#ffffff',
           fontHeading: config.branding.fontHeading || 'Inter',
           fontBody: config.branding.fontBody || 'Inter',
           logoUrl: config.branding.logoUrl || '',
@@ -98,11 +107,18 @@ export function GenerationForm({
           id: s.id || `section-${i}-${Date.now()}`,
           type: s.type,
           content: s.content || {},
+          items: s.items,
           variant: s.variant,
           order: s.order ?? i,
         })),
         aiPrompt: config.aiPrompt || '',
         referenceUrls: config.referenceUrls || [],
+        navigation: config.navigation || {
+          navbarStyle: undefined,
+          navbarPosition: undefined,
+          footerStyle: undefined,
+          socialLinks: [],
+        },
       });
     }
   }, [project, reset]);
@@ -155,7 +171,7 @@ export function GenerationForm({
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
       <Tabs defaultValue="business" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="business" className="text-xs sm:text-sm">
             Business
             {errors.business && (
@@ -173,6 +189,9 @@ export function GenerationForm({
             {errors.sections && (
               <span className="ml-1.5 inline-flex h-2 w-2 rounded-full bg-destructive" />
             )}
+          </TabsTrigger>
+          <TabsTrigger value="layout" className="text-xs sm:text-sm">
+            Layout
           </TabsTrigger>
           <TabsTrigger value="ai" className="text-xs sm:text-sm">
             AI Prompt
@@ -213,6 +232,21 @@ export function GenerationForm({
               <ContentSections
                 control={control}
                 register={register}
+                setValue={setValue}
+                watch={watch}
+                errors={errors}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="layout">
+          <Card>
+            <CardContent className="pt-6">
+              <NavigationSection
+                control={control}
+                setValue={setValue}
+                watch={watch}
                 errors={errors}
               />
             </CardContent>

@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { FONT_OPTIONS, STYLE_OPTIONS, type StyleOption } from '@/lib/utils/constants';
+import { FONT_OPTIONS, STYLE_OPTIONS, COLOR_PALETTE_PRESETS, type StyleOption } from '@/lib/utils/constants';
 import type { GenerationConfigFormValues } from '@/lib/utils/validators';
 import { cn } from '@/lib/utils/cn';
 
@@ -52,12 +52,23 @@ export function BrandingSection({
   const primaryColor = watch('branding.primaryColor');
   const secondaryColor = watch('branding.secondaryColor');
   const accentColor = watch('branding.accentColor');
+  const surfaceColor = watch('branding.surfaceColor') || '#ffffff';
   const headingFont = watch('branding.fontHeading');
   const bodyFont = watch('branding.fontBody');
 
   const handleStyleSelect = useCallback(
     (style: StyleOption) => {
       setValue('branding.style', style, { shouldValidate: true });
+    },
+    [setValue]
+  );
+
+  const handlePaletteSelect = useCallback(
+    (preset: (typeof COLOR_PALETTE_PRESETS)[number]) => {
+      setValue('branding.primaryColor', preset.primary, { shouldValidate: true });
+      setValue('branding.secondaryColor', preset.secondary, { shouldValidate: true });
+      setValue('branding.accentColor', preset.accent, { shouldValidate: true });
+      setValue('branding.surfaceColor', preset.surface, { shouldValidate: true });
     },
     [setValue]
   );
@@ -71,10 +82,45 @@ export function BrandingSection({
         </p>
       </div>
 
+      {/* Color Palette Presets */}
+      <div className="space-y-3">
+        <Label className="text-base font-medium">Quick Palettes</Label>
+        <p className="text-xs text-muted-foreground">
+          Click a preset to apply all 4 colors instantly, or customize individually below.
+        </p>
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+          {COLOR_PALETTE_PRESETS.map((preset) => (
+            <button
+              key={preset.name}
+              type="button"
+              onClick={() => handlePaletteSelect(preset)}
+              className={cn(
+                'group flex flex-col items-center gap-1.5 rounded-lg border-2 p-2 transition-all hover:border-primary/50 hover:shadow-sm shrink-0',
+                primaryColor === preset.primary &&
+                  secondaryColor === preset.secondary &&
+                  accentColor === preset.accent
+                  ? 'border-primary bg-primary/5'
+                  : 'border-muted bg-background'
+              )}
+            >
+              <div className="flex gap-0.5 rounded overflow-hidden">
+                <div className="h-6 w-5" style={{ backgroundColor: preset.primary }} />
+                <div className="h-6 w-5" style={{ backgroundColor: preset.secondary }} />
+                <div className="h-6 w-5" style={{ backgroundColor: preset.accent }} />
+                <div className="h-6 w-5 border-r" style={{ backgroundColor: preset.surface }} />
+              </div>
+              <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap">
+                {preset.name}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Colors */}
       <div className="space-y-4">
         <Label className="text-base font-medium">Brand Colors</Label>
-        <div className="grid gap-6 sm:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {/* Primary Color */}
           <div className="space-y-2">
             <Label htmlFor="branding.primaryColor" className="text-sm">
@@ -197,6 +243,47 @@ export function BrandingSection({
               </p>
             )}
           </div>
+
+          {/* Surface Color */}
+          <div className="space-y-2">
+            <Label htmlFor="branding.surfaceColor" className="text-sm">
+              Surface / BG
+            </Label>
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <input
+                  type="color"
+                  id="branding.surfaceColor"
+                  value={surfaceColor}
+                  onChange={(e) =>
+                    setValue('branding.surfaceColor', e.target.value, {
+                      shouldValidate: true,
+                    })
+                  }
+                  className="h-10 w-10 cursor-pointer rounded-md border border-input bg-transparent p-0.5"
+                />
+              </div>
+              <Input
+                value={surfaceColor}
+                onChange={(e) =>
+                  setValue('branding.surfaceColor', e.target.value, {
+                    shouldValidate: true,
+                  })
+                }
+                className={cn(
+                  'flex-1 font-mono text-sm uppercase',
+                  errors.branding?.surfaceColor &&
+                    'border-destructive focus-visible:ring-destructive'
+                )}
+                maxLength={7}
+              />
+            </div>
+            {errors.branding?.surfaceColor && (
+              <p className="text-sm text-destructive">
+                {errors.branding.surfaceColor.message}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Color Preview */}
@@ -210,8 +297,12 @@ export function BrandingSection({
             style={{ backgroundColor: secondaryColor }}
           />
           <div
-            className="h-8 flex-1 rounded-r-md"
+            className="h-8 flex-1"
             style={{ backgroundColor: accentColor }}
+          />
+          <div
+            className="h-8 flex-1 rounded-r-md border"
+            style={{ backgroundColor: surfaceColor }}
           />
         </div>
       </div>

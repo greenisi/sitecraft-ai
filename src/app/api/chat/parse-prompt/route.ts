@@ -29,6 +29,7 @@ Return ONLY valid JSON (no markdown, no explanation) with this exact structure:
       "primaryColor": "#hex - choose a UNIQUE color that matches the business type and mood",
       "secondaryColor": "#hex - complementary or contrasting color",
       "accentColor": "#hex - accent color for CTAs — should pop against primary",
+      "surfaceColor": "#hex - background color (light like #ffffff or dark like #0f0f23)",
       "fontHeading": "string - one of: Inter, DM Sans, Space Grotesk, Plus Jakarta Sans, Outfit, Sora, Poppins, Manrope, Playfair Display, Lora",
       "fontBody": "string - one of the same font options (should differ from heading font for variety)",
       "style": "minimal" | "bold" | "elegant" | "playful" | "corporate" | "dark" | "vibrant"
@@ -36,6 +37,11 @@ Return ONLY valid JSON (no markdown, no explanation) with this exact structure:
     "sections": [
       { "id": "unique-id", "type": "hero" | "features" | "pricing" | "testimonials" | "cta" | "contact" | "about" | "gallery" | "faq" | "stats" | "team" | "blog-preview" | "product-grid" | "custom", "order": 0 }
     ],
+    "navigation": {
+      "navbarStyle": "transparent" | "solid" | "glassmorphism" | "dark" | "colored",
+      "navbarPosition": "fixed" | "sticky" | "static",
+      "footerStyle": "multi-column" | "simple" | "centered" | "minimal"
+    },
     "aiPrompt": "string - a detailed description of the website to generate, including design preferences, content style, and any specific requirements mentioned by the user. Include notes about desired mood, visual approach, and unique design elements."
   },
   "projectName": "string - a good project name based on the business",

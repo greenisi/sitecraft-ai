@@ -9,16 +9,26 @@ export function buildLandingPagePrompt(config: GenerationConfig): string {
 
   const sectionList = sections
     .sort((a, b) => a.order - b.order)
-    .map(
-      (s) =>
-        `- ${s.type}${s.variant ? ` (variant: ${s.variant})` : ''}${
-          s.content
-            ? ` | hints: ${Object.entries(s.content)
-                .map(([k, v]) => `${k}="${v}"`)
-                .join(', ')}`
-            : ''
-        }`
-    )
+    .map((s) => {
+      let line = `- ${s.type}${s.variant ? ` (variant: ${s.variant})` : ''}`;
+      if (s.content) {
+        const hints = Object.entries(s.content)
+          .map(([k, v]) => `${k}="${v}"`)
+          .join(', ');
+        if (hints) line += ` | hints: ${hints}`;
+      }
+      if (s.items && s.items.length > 0) {
+        const itemLines = s.items.map((item) => {
+          const entries = Object.entries(item)
+            .filter(([k]) => k !== '_type')
+            .map(([k, v]) => `${k}: "${v}"`)
+            .join(', ');
+          return `    * ${entries}`;
+        });
+        line += `\n${itemLines.join('\n')}`;
+      }
+      return line;
+    })
     .join('\n');
 
   return `Generate a complete, production-ready MULTI-PAGE marketing website.
@@ -36,6 +46,7 @@ Style: ${branding.style}
 Primary color: ${branding.primaryColor}
 Secondary color: ${branding.secondaryColor}
 Accent color: ${branding.accentColor}
+${branding.surfaceColor ? `Surface/background color: ${branding.surfaceColor}` : ''}
 Heading font: ${branding.fontHeading}
 Body font: ${branding.fontBody}
 
@@ -166,6 +177,12 @@ ${sectionList}
 19. \`src/app/globals.css\` -- Tailwind directives (@tailwind base, components, utilities)
     plus custom smooth scrolling and any global styles.
 
+${config.navigation ? `=== NAVIGATION CONFIG ===
+${config.navigation.navbarStyle ? `Navbar style: ${config.navigation.navbarStyle}` : ''}
+${config.navigation.navbarPosition ? `Navbar position: ${config.navigation.navbarPosition}` : ''}
+${config.navigation.footerStyle ? `Footer style: ${config.navigation.footerStyle}` : ''}
+${config.navigation.socialLinks?.length ? `Social links: ${config.navigation.socialLinks.map((l) => `${l.platform}: ${l.url}`).join(', ')}` : ''}
+` : ''}
 ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 === QUALITY REQUIREMENTS ===
 - Every section MUST have scroll-triggered fade-in animations

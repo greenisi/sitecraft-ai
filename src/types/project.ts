@@ -1,4 +1,4 @@
-import type { SiteType, ProjectStatus, StyleOption, SectionType } from '@/lib/utils/constants';
+import type { SiteType, ProjectStatus, StyleOption, SectionType, NavbarStyle, NavbarPosition, FooterStyle, SocialPlatform } from '@/lib/utils/constants';
 
 export interface Project {
   id: string;
@@ -32,6 +32,7 @@ export interface GenerationConfig {
     primaryColor: string;
     secondaryColor: string;
     accentColor: string;
+    surfaceColor?: string;
     fontHeading: string;
     fontBody: string;
     logoUrl?: string;
@@ -52,14 +53,68 @@ export interface GenerationConfig {
   };
   aiPrompt: string;
   referenceUrls?: string[];
+  navigation?: {
+    navbarStyle?: NavbarStyle;
+    navbarPosition?: NavbarPosition;
+    footerStyle?: FooterStyle;
+    socialLinks?: { platform: SocialPlatform; url: string }[];
+  };
 }
 
 export interface SectionConfig {
   id: string;
   type: SectionType;
   content?: Record<string, string>;
+  items?: SectionItemConfig[];
   variant?: string;
   order: number;
+}
+
+export type SectionItemConfig =
+  | FaqItemConfig
+  | TestimonialItemConfig
+  | FeatureItemConfig
+  | TeamMemberConfig
+  | PricingTierItemConfig
+  | StatItemConfig;
+
+export interface FaqItemConfig {
+  _type: 'faq';
+  question: string;
+  answer: string;
+}
+
+export interface TestimonialItemConfig {
+  _type: 'testimonial';
+  name: string;
+  role: string;
+  quote: string;
+}
+
+export interface FeatureItemConfig {
+  _type: 'feature';
+  title: string;
+  description: string;
+}
+
+export interface TeamMemberConfig {
+  _type: 'team';
+  name: string;
+  role: string;
+  bio?: string;
+}
+
+export interface PricingTierItemConfig {
+  _type: 'pricing';
+  name: string;
+  price: string;
+  features: string;
+}
+
+export interface StatItemConfig {
+  _type: 'stat';
+  number: string;
+  label: string;
 }
 
 export interface ProductConfig {

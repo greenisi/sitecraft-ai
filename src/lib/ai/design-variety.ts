@@ -1,3 +1,5 @@
+import type { GenerationConfig } from '@/types/project';
+
 /**
  * Design Variety System
  *
@@ -548,4 +550,41 @@ CRITICAL: Each website must look and feel DIFFERENT. DO NOT use the same layout 
 The hero, navbar, features section, and testimonials MUST follow the specific variants described above.
 This creates a unique visual identity for "${variety.palette.name}" style.
 `;
+}
+
+/**
+ * Override auto-picked variety with user-selected choices from the form.
+ */
+export function overrideVarietyWithUserChoices(
+  variety: DesignVariety,
+  config: GenerationConfig
+): DesignVariety {
+  const result = { ...variety };
+
+  // Override hero variant if user selected one
+  const heroSection = config.sections.find((s) => s.type === 'hero');
+  if (heroSection?.variant) {
+    const matched = HERO_VARIANTS.find((h) => h.id === heroSection.variant);
+    if (matched) {
+      result.heroVariant = matched;
+    }
+  }
+
+  // Override navbar style from navigation config
+  if (config.navigation?.navbarStyle) {
+    const navbarMap: Record<string, string> = {
+      transparent: 'transparent-hero',
+      solid: 'solid-white',
+      glassmorphism: 'glassmorphism',
+      dark: 'dark-nav',
+      colored: 'colored-nav',
+    };
+    const navId = navbarMap[config.navigation.navbarStyle] || config.navigation.navbarStyle;
+    const matchedNav = NAVBAR_VARIANTS.find((n) => n.id === navId);
+    if (matchedNav) {
+      result.navbarVariant = matchedNav;
+    }
+  }
+
+  return result;
 }

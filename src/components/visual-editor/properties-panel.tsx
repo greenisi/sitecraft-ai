@@ -12,6 +12,7 @@ import { sendToPreviewIframe } from '@/lib/visual-editor/iframe-ref';
 import { ColorPicker } from './color-picker';
 import { SpacingEditor } from './spacing-editor';
 import { TypographyControls } from './typography-controls';
+import { EffectsControls } from './effects-controls';
 
 interface PropertiesPanelProps {
   onSave: () => void;
@@ -126,7 +127,7 @@ export function PropertiesPanel({ onSave }: PropertiesPanelProps) {
           <Tabs
             value={propertiesPanelTab}
             onValueChange={(v) =>
-              setPropertiesPanelTab(v as 'style' | 'spacing' | 'typography')
+              setPropertiesPanelTab(v as 'style' | 'spacing' | 'typography' | 'effects')
             }
             className="flex-1 flex flex-col overflow-hidden"
           >
@@ -140,6 +141,9 @@ export function PropertiesPanel({ onSave }: PropertiesPanelProps) {
                 </TabsTrigger>
                 <TabsTrigger value="typography" className="flex-1 text-xs">
                   Type
+                </TabsTrigger>
+                <TabsTrigger value="effects" className="flex-1 text-xs">
+                  FX
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -209,6 +213,17 @@ export function PropertiesPanel({ onSave }: PropertiesPanelProps) {
                     lineHeight={selectedElement.styles.lineHeight}
                     letterSpacing={selectedElement.styles.letterSpacing}
                     textAlign={selectedElement.styles.textAlign}
+                    onChange={handleStyleChange}
+                  />
+                </TabsContent>
+
+                <TabsContent value="effects" className="mt-0">
+                  <EffectsControls
+                    opacity={selectedElement.styles.opacity}
+                    boxShadow={selectedElement.styles.boxShadow}
+                    display={selectedElement.styles.display}
+                    overflow={selectedElement.styles.overflow}
+                    cursor={selectedElement.styles.cursor}
                     onChange={handleStyleChange}
                   />
                 </TabsContent>

@@ -13,7 +13,7 @@ import { generateTailwindConfig } from '@/lib/templates/base/tailwind-config';
 import { generatePackageJson } from '@/lib/templates/base/package-json';
 import { generateNextConfig } from '@/lib/templates/base/next-config';
 import { generateTsConfig } from '@/lib/templates/base/tsconfig';
-import { getDesignVariety, buildVarietyInstructions } from './design-variety';
+import { getDesignVariety, buildVarietyInstructions, overrideVarietyWithUserChoices } from './design-variety';
 
 // --------------------------------------------------------------------------
 // Stage 1: Assemble Config
@@ -93,6 +93,7 @@ Style: ${config.branding.style}
 Primary color: ${config.branding.primaryColor}
 Secondary color: ${config.branding.secondaryColor}
 Accent color: ${config.branding.accentColor}
+${config.branding.surfaceColor ? `Surface/background color: ${config.branding.surfaceColor}` : ''}
 Heading font: ${config.branding.fontHeading}
 Body font: ${config.branding.fontBody}
 
@@ -225,7 +226,9 @@ async function* generateComponents(
     config.business.industry,
     config.business.description
   );
-  const varietyInstructions = buildVarietyInstructions(variety);
+  // Let user choices override auto-picked variety
+  const finalVariety = overrideVarietyWithUserChoices(variety, config);
+  const varietyInstructions = buildVarietyInstructions(finalVariety);
 
   const systemPrompt = buildSystemPrompt(designSystem);
   // Inject variety instructions into the user prompt so each site gets unique layouts
