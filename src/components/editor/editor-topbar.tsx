@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import { useProject } from '@/lib/hooks/use-project';
 import { useVisualEditorStore } from '@/stores/visual-editor-store';
+import { useVisualEditorSave } from '@/lib/hooks/use-visual-editor-save';
 import { toast } from 'sonner';
 
 interface EditorTopbarProps {
@@ -39,15 +40,25 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
   const [deployUrl, setDeployUrl] = useState<string | null>(null);
   const [vercelToken, setVercelToken] = useState('');
   const [vercelProjectName, setVercelProjectName] = useState('');
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
 
-  const { isVisualEditorActive, toggleVisualEditor, hasUnsavedChanges } =
+  const { isVisualEditorActive, toggleVisualEditor, hasUnsavedChanges, pendingChanges, clearPendingChanges } =
     useVisualEditorStore();
+  const { save } = useVisualEditorSave(projectId);
 
   const isExportable =
     project && ['generated', 'deployed'].includes(project.status);
 
   const isEditable =
     project && ['generated', 'deployed'].includes(project.status);
+
+  const handleToggleEditor = useCallback(() => {
+    if (isVisualEditorActive && hasUnsavedChanges()) {
+      setShowUnsavedDialog(true);
+    } else {
+      toggleVisualEditor();
+    }
+  }, [isVisualEditorActive, hasUnsavedChanges, toggleVisualEditor]);
 
   const handleDownload = async () => {
     setDownloading(true);
@@ -146,7 +157,7 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
                 ? 'bg-primary text-primary-foreground'
                 : ''
             }`}
-            onClick={toggleVisualEditor}
+            onClick={handleToggleEditor}
             disabled={!isEditable}
           >
             <MousePointerClick className="h-3 w-3 md:mr-2" />
@@ -181,6 +192,7 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
         </div>
       </div>
 
+      {/* Deploy Dialog */}
       <Dialog open={deployDialogOpen} onOpenChange={setDeployDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -249,6 +261,40 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
                 {deploying ? 'Deploying...' : 'Deploy'}
               </Button>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Unsaved Changes Dialog */}
+      <Dialog open={showUnsavedDialog} onOpenChange={setShowUnsavedDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Unsaved Changes</DialogTitle>
+            <DialogDescription>
+              You have {pendingChanges.length} unsaved{' '}
+              {pendingChanges.length === 1 ? 'change' : 'changes'}. What would you like to do?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                clearPendingChanges();
+                toggleVisualEditor();
+                setShowUnsavedDialog(false);
+              }}
+            >
+              Discard Changes
+            </Button>
+            <Button
+              onClick={async () => {
+                await save();
+                toggleVisualEditor();
+                setShowUnsavedDialog(false);
+              }}
+            >
+              Save & Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -118,9 +118,10 @@ export function applyVisualEdits(
         }
 
         if (cssProperties.length > 0) {
-          // Convert CSS path to a CSS selector
-          // The cssPath from the bridge uses nth-of-type which works directly
-          const selector = cssPath;
+          // Strip div#root > prefix from CSS path (preview wraps in #root but exported app may not)
+          let selector = cssPath;
+          selector = selector.replace(/^div#root\s*>\s*/, '');
+          selector = selector.replace(/^div#__next\s*>\s*/, '');
           cssOverrides += `${selector} {\n${cssProperties.join('\n')}\n}\n`;
         }
       }

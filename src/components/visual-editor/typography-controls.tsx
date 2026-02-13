@@ -16,6 +16,7 @@ import {
   AlignRight,
   AlignJustify,
 } from 'lucide-react';
+import { FONT_OPTIONS } from '@/lib/utils/constants';
 
 interface TypographyControlsProps {
   fontSize: string;
@@ -42,6 +43,11 @@ const FONT_WEIGHTS = [
 function parsePx(val: string): string {
   const num = parseFloat(val);
   return isNaN(num) ? '' : String(Math.round(num * 10) / 10);
+}
+
+function parseFontFamily(val: string): string {
+  // Extract the first font name from a CSS font-family string, e.g. "'Inter', sans-serif" → "Inter"
+  return val.split(',')[0]?.replace(/['"]/g, '').trim() || '';
 }
 
 export function TypographyControls({
@@ -84,16 +90,30 @@ export function TypographyControls({
     { value: 'justify', icon: AlignJustify },
   ];
 
+  const currentFont = parseFontFamily(fontFamily);
+
   return (
     <div className="space-y-3">
-      {/* Font Family (read-only display) */}
+      {/* Font Family */}
       <div className="flex items-center gap-2">
         <Label className="text-xs text-muted-foreground w-20 flex-shrink-0">
           Font
         </Label>
-        <div className="flex-1 text-xs font-mono text-foreground truncate bg-muted/50 rounded px-2 py-1.5">
-          {fontFamily.split(',')[0]?.replace(/['"]/g, '').trim() || 'System'}
-        </div>
+        <Select
+          value={currentFont}
+          onValueChange={(v) => onChange('fontFamily', `'${v}', sans-serif`)}
+        >
+          <SelectTrigger className="h-8 text-xs flex-1">
+            <SelectValue placeholder="System" />
+          </SelectTrigger>
+          <SelectContent>
+            {FONT_OPTIONS.map((font) => (
+              <SelectItem key={font.value} value={font.value} className="text-xs">
+                {font.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Font Size */}

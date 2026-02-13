@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { usePreviewStore } from '@/stores/preview-store';
 import { useVisualEditorStore } from '@/stores/visual-editor-store';
 import { getIframeBridgeScript } from '@/lib/visual-editor/iframe-bridge';
@@ -25,13 +25,15 @@ interface PreviewFrameProps {
 }
 
 export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
-  const { viewport, zoom, activePage, setActivePage } = usePreviewStore();
+  const { viewport, zoom, autoFit, activePage, setActivePage } = usePreviewStore();
   const { isVisualEditorActive, setSelectedElement, setInlineEditing, addPendingChange } =
     useVisualEditorStore();
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [iframeKey, setIframeKey] = useState(0);
   const [pages, setPages] = useState<PageInfo[]>([]);
+  const [containerWidth, setContainerWidth] = useState(0);
   const bridgeInjectedRef = useRef(false);
 
   const hasFiles = Object.keys(files).length > 0;
@@ -41,6 +43,29 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
     setPreviewIframe(iframeRef.current);
     return () => setPreviewIframe(null);
   }, [iframeKey]);
+
+  // Track container width with ResizeObserver for auto-fit
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setContainerWidth(entry.contentRect.width);
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Compute effective zoom: auto-fit scales down to fit container
+  const effectiveZoom = useMemo(() => {
+    if (typeof window === 'undefined' || window.innerWidth < 768) return 1;
+    if (!autoFit) return zoom;
+    const targetWidth = VIEWPORT_WIDTHS[viewport];
+    const available = containerWidth - 16; // subtract md:p-2 padding (8px each side)
+    if (available <= 0 || available >= targetWidth) return zoom;
+    return Math.min(zoom, available / targetWidth);
+  }, [autoFit, zoom, viewport, containerWidth]);
 
   // Derive pages from file keys
   useEffect(() => {
@@ -103,8 +128,14 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
         console.warn('Could not inject visual editor bridge into iframe');
       }
     } else if (!isVisualEditorActive && bridgeInjectedRef.current) {
-      // Destroy bridge
-      sendToPreviewIframe({ type: 'sitecraft:destroy' });
+      // Destroy bridge with safety fallback
+      try {
+        sendToPreviewIframe({ type: 'sitecraft:destroy' });
+      } catch {
+        // If destroy fails, force reload
+        setIframeKey((k) => k + 1);
+        setLoading(true);
+      }
       bridgeInjectedRef.current = false;
     }
   }, [isVisualEditorActive, loading]);
@@ -152,6 +183,28 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
         }
         case 'sitecraft:inline-edit-cancel': {
           setInlineEditing(false);
+          break;
+        }
+        case 'sitecraft:toolbar-action': {
+          const { action, property, value, cssPath } = data;
+          if (action === 'style' && property && value !== undefined) {
+            addPendingChange({
+              type: 'style',
+              cssPath: cssPath || '',
+              property,
+              oldValue: '',
+              newValue: value,
+            });
+          }
+          if (action === 'hide' && cssPath) {
+            addPendingChange({
+              type: 'style',
+              cssPath,
+              property: 'display',
+              oldValue: '',
+              newValue: 'none',
+            });
+          }
           break;
         }
       }
@@ -208,13 +261,13 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
       )}
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Mobile: full-width iframe, no scaling */}
-        <div className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-900 md:p-2">
+        {/* Preview container with overflow-hidden to prevent horizontal scroll */}
+        <div ref={containerRef} className="flex-1 overflow-hidden bg-gray-100 dark:bg-gray-900 md:p-2">
           <div
             className="mx-auto transition-all duration-300 origin-top bg-white md:rounded-lg md:shadow-sm overflow-hidden"
             style={{
               width: typeof window !== 'undefined' && window.innerWidth < 768 ? '100%' : VIEWPORT_WIDTHS[viewport],
-              transform: typeof window !== 'undefined' && window.innerWidth < 768 ? 'none' : `scale(${zoom})`,
+              transform: typeof window !== 'undefined' && window.innerWidth < 768 ? 'none' : `scale(${effectiveZoom})`,
               transformOrigin: 'top center',
             }}
           >

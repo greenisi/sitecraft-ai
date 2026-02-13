@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback } from 'react';
-import { X, MousePointerClick, Save, Trash2 } from 'lucide-react';
+import { useCallback, useEffect } from 'react';
+import { X, MousePointerClick, Save, Trash2, Undo2, Redo2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -29,7 +29,44 @@ export function PropertiesPanel({ onSave }: PropertiesPanelProps) {
     exitVisualEditor,
     addPendingChange,
     clearPendingChanges,
+    undo,
+    redo,
+    undoStack,
+    redoStack,
+    isVisualEditorActive,
   } = useVisualEditorStore();
+
+  // ── Keyboard shortcuts for undo/redo ──────────────────────────────────
+  useEffect(() => {
+    if (!isVisualEditorActive) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isMod = e.ctrlKey || e.metaKey;
+      if (!isMod) return;
+
+      // Ctrl+Shift+Z or Ctrl+Y → redo
+      if ((e.key === 'z' || e.key === 'Z') && e.shiftKey) {
+        e.preventDefault();
+        redo();
+        return;
+      }
+
+      if (e.key === 'y' || e.key === 'Y') {
+        e.preventDefault();
+        redo();
+        return;
+      }
+
+      // Ctrl+Z → undo
+      if (e.key === 'z' || e.key === 'Z') {
+        e.preventDefault();
+        undo();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isVisualEditorActive, undo, redo]);
 
   const sendToIframe = useCallback(
     (property: string, value: string) => {
@@ -71,6 +108,72 @@ export function PropertiesPanel({ onSave }: PropertiesPanelProps) {
     return isNaN(num) ? '0' : String(Math.round(num));
   };
 
+  // ── Size helpers ──────────────────────────────────────────────────────
+  const parseSizeValue = (val: string): string => {
+    if (!val || val === 'auto') return '';
+    const num = parseFloat(val);
+    return isNaN(num) ? '' : String(Math.round(num));
+  };
+
+  const handleSizeChange = useCallback(
+    (property: 'width' | 'height', rawValue: string) => {
+      const cleaned = rawValue.trim();
+      if (cleaned === '' || cleaned.toLowerCase() === 'auto') {
+        handleStyleChange(property, 'auto');
+      } else {
+        const numeric = cleaned.replace(/[^0-9.]/g, '');
+        if (numeric) handleStyleChange(property, `${numeric}px`);
+      }
+    },
+    [handleStyleChange]
+  );
+
+  // ── Border helpers ────────────────────────────────────────────────────
+  const parseBorderWidth = (val: string): string => {
+    const num = parseFloat(val);
+    return isNaN(num) ? '0' : String(Math.round(num));
+  };
+
+  const handleBorderStyleChange = useCallback(
+    (newStyle: string) => {
+      handleStyleChange('borderStyle', newStyle);
+      // When switching from 'none' to a visible style, auto-set borderWidth to 1px if currently 0px
+      if (newStyle !== 'none' && selectedElement) {
+        const currentBorderWidth = selectedElement.styles.borderWidth || '0px';
+        if (parseBorderWidth(currentBorderWidth) === '0') {
+          handleStyleChange('borderWidth', '1px');
+        }
+      }
+    },
+    [handleStyleChange, selectedElement]
+  );
+
+  const handleBorderWidthChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const raw = e.target.value.replace(/[^0-9.]/g, '');
+      if (raw) handleStyleChange('borderWidth', `${raw}px`);
+    },
+    [handleStyleChange]
+  );
+
+  // ── Close with unsaved-changes guard ──────────────────────────────────
+  const handleClose = useCallback(() => {
+    if (hasUnsavedChanges()) {
+      const confirmed = window.confirm(
+        'You have unsaved changes. Are you sure you want to close the visual editor? All changes will be lost.'
+      );
+      if (!confirmed) return;
+    }
+    exitVisualEditor();
+  }, [hasUnsavedChanges, exitVisualEditor]);
+
+  const borderStyles: { value: string; label: string }[] = [
+    { value: 'none', label: 'None' },
+    { value: 'solid', label: 'Solid' },
+    { value: 'dashed', label: 'Dashed' },
+    { value: 'dotted', label: 'Dotted' },
+  ];
+
   return (
     <div className="flex h-full flex-col bg-background">
       {/* Header */}
@@ -79,14 +182,36 @@ export function PropertiesPanel({ onSave }: PropertiesPanelProps) {
           <MousePointerClick className="h-4 w-4 text-primary" />
           <span className="text-sm font-semibold">Visual Editor</span>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7"
-          onClick={exitVisualEditor}
-        >
-          <X className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-0.5">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={undo}
+            disabled={undoStack.length === 0}
+            title="Undo (Ctrl+Z)"
+          >
+            <Undo2 className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={redo}
+            disabled={redoStack.length === 0}
+            title="Redo (Ctrl+Shift+Z)"
+          >
+            <Redo2 className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={handleClose}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {!selectedElement ? (
@@ -166,6 +291,55 @@ export function PropertiesPanel({ onSave }: PropertiesPanelProps) {
                     value={selectedElement.styles.borderColor}
                     onChange={(v) => handleStyleChange('borderColor', v)}
                   />
+
+                  {/* Border Style */}
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">
+                      Border Style
+                    </Label>
+                    <div className="flex gap-0.5 bg-muted rounded-md p-0.5">
+                      {borderStyles.map((bs) => (
+                        <button
+                          key={bs.value}
+                          onClick={() => handleBorderStyleChange(bs.value)}
+                          className={`flex-1 px-1.5 py-1 rounded text-[10px] font-medium transition-colors ${
+                            (selectedElement.styles.borderStyle || 'none') === bs.value
+                              ? 'bg-background shadow-sm text-foreground'
+                              : 'text-muted-foreground hover:text-foreground'
+                          }`}
+                        >
+                          {bs.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Border Width */}
+                  <div className="flex items-center gap-2">
+                    <Label className="text-xs text-muted-foreground w-24 flex-shrink-0">
+                      Border W.
+                    </Label>
+                    <div className="flex items-center gap-1.5 flex-1">
+                      <input
+                        type="range"
+                        min="0"
+                        max="10"
+                        value={parseBorderWidth(selectedElement.styles.borderWidth || '0')}
+                        onChange={handleBorderWidthChange}
+                        className="flex-1 h-1.5 accent-primary"
+                      />
+                      <Input
+                        value={parseBorderWidth(selectedElement.styles.borderWidth || '0')}
+                        onChange={handleBorderWidthChange}
+                        className="h-8 text-xs font-mono w-14"
+                      />
+                      <span className="text-[10px] text-muted-foreground">
+                        px
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Border Radius */}
                   <div className="flex items-center gap-2">
                     <Label className="text-xs text-muted-foreground w-24 flex-shrink-0">
                       Radius
@@ -187,6 +361,35 @@ export function PropertiesPanel({ onSave }: PropertiesPanelProps) {
                       <span className="text-[10px] text-muted-foreground">
                         px
                       </span>
+                    </div>
+                  </div>
+
+                  {/* Size (Width & Height) */}
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">Size</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] text-muted-foreground font-medium w-4">
+                          W
+                        </span>
+                        <Input
+                          value={parseSizeValue(selectedElement.styles.width || '')}
+                          onChange={(e) => handleSizeChange('width', e.target.value)}
+                          className="h-8 text-xs font-mono flex-1"
+                          placeholder="auto"
+                        />
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] text-muted-foreground font-medium w-4">
+                          H
+                        </span>
+                        <Input
+                          value={parseSizeValue(selectedElement.styles.height || '')}
+                          onChange={(e) => handleSizeChange('height', e.target.value)}
+                          className="h-8 text-xs font-mono flex-1"
+                          placeholder="auto"
+                        />
+                      </div>
                     </div>
                   </div>
                 </TabsContent>

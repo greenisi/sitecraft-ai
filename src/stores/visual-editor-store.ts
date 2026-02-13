@@ -13,6 +13,8 @@ export interface SelectedElement {
     fontSize: string;
     fontWeight: string;
     fontFamily: string;
+    fontStyle: string;
+    textDecoration: string;
     lineHeight: string;
     letterSpacing: string;
     textAlign: string;
@@ -27,6 +29,11 @@ export interface SelectedElement {
     borderRadius: string;
     borderColor: string;
     borderWidth: string;
+    borderStyle: string;
+    width: string;
+    height: string;
+    maxWidth: string;
+    minHeight: string;
     opacity: string;
     boxShadow: string;
     display: string;
@@ -61,6 +68,10 @@ interface VisualEditorState {
   pendingChanges: PendingChange[];
   isSaving: boolean;
 
+  // Undo/Redo
+  undoStack: PendingChange[][];
+  redoStack: PendingChange[][];
+
   // Derived
   hasUnsavedChanges: () => boolean;
 
@@ -73,6 +84,8 @@ interface VisualEditorState {
   addPendingChange: (change: Omit<PendingChange, 'id'>) => void;
   clearPendingChanges: () => void;
   setSaving: (saving: boolean) => void;
+  undo: () => void;
+  redo: () => void;
 }
 
 let changeCounter = 0;
@@ -84,6 +97,8 @@ export const useVisualEditorStore = create<VisualEditorState>((set, get) => ({
   propertiesPanelTab: 'style',
   pendingChanges: [],
   isSaving: false,
+  undoStack: [],
+  redoStack: [],
 
   hasUnsavedChanges: () => get().pendingChanges.length > 0,
 
@@ -118,6 +133,9 @@ export const useVisualEditorStore = create<VisualEditorState>((set, get) => ({
         id: `change-${changeCounter}-${Date.now()}`,
       };
 
+      // Push current state to undo stack before mutation
+      const newUndoStack = [...state.undoStack, [...state.pendingChanges]];
+
       // For style changes on the same element+property, replace the old one
       if (change.type === 'style' && change.property) {
         const filtered = state.pendingChanges.filter(
@@ -128,13 +146,46 @@ export const useVisualEditorStore = create<VisualEditorState>((set, get) => ({
               c.property === change.property
             )
         );
-        return { pendingChanges: [...filtered, newChange] };
+        return {
+          pendingChanges: [...filtered, newChange],
+          undoStack: newUndoStack,
+          redoStack: [],
+        };
       }
 
-      return { pendingChanges: [...state.pendingChanges, newChange] };
+      return {
+        pendingChanges: [...state.pendingChanges, newChange],
+        undoStack: newUndoStack,
+        redoStack: [],
+      };
     }),
 
-  clearPendingChanges: () => set({ pendingChanges: [] }),
+  clearPendingChanges: () =>
+    set({ pendingChanges: [], undoStack: [], redoStack: [] }),
 
   setSaving: (saving) => set({ isSaving: saving }),
+
+  undo: () =>
+    set((state) => {
+      if (state.undoStack.length === 0) return state;
+      const newUndoStack = [...state.undoStack];
+      const previousState = newUndoStack.pop()!;
+      return {
+        undoStack: newUndoStack,
+        redoStack: [...state.redoStack, [...state.pendingChanges]],
+        pendingChanges: previousState,
+      };
+    }),
+
+  redo: () =>
+    set((state) => {
+      if (state.redoStack.length === 0) return state;
+      const newRedoStack = [...state.redoStack];
+      const nextState = newRedoStack.pop()!;
+      return {
+        redoStack: newRedoStack,
+        undoStack: [...state.undoStack, [...state.pendingChanges]],
+        pendingChanges: nextState,
+      };
+    }),
 }));
