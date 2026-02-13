@@ -160,7 +160,9 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
           break;
         }
         case 'sitecraft:toolbar-action': {
-          const { action, property, value, cssPath } = data;
+          // Bridge sends: { type: 'sitecraft:toolbar-action', data: { action, property, value, cssPath } }
+          const actionData = data.data || data;
+          const { action, property, value, cssPath } = actionData;
           if (action === 'style' && property && value !== undefined) {
             addPendingChange({
               type: 'style',

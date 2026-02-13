@@ -475,16 +475,16 @@ export function getIframeBridgeScript(): string {
   let isInlineEditing = false;
   let longPressTimer = null;
 
-  // Elements to ignore
-  const IGNORE_IDS = ['__sc-hover-overlay', '__sc-select-overlay', '__sc-toolbar', '__sc-breadcrumb', '__sc-context-menu', 'root'];
+  // Elements to ignore — overlay IDs that the bridge itself creates
+  const OVERLAY_IDS = ['__sc-hover-overlay', '__sc-select-overlay', '__sc-toolbar', '__sc-breadcrumb', '__sc-context-menu'];
   function shouldIgnore(el) {
     if (!el || el === document.body || el === document.documentElement) return true;
-    if (IGNORE_IDS.includes(el.id)) return true;
+    if (OVERLAY_IDS.includes(el.id)) return true;
     if (el.id && el.id.startsWith('__sc-')) return true;
-    // Walk up to see if we are inside an ignored element
+    // Walk up to see if we are inside an overlay element (NOT #root — that's the app container!)
     var parent = el.parentElement;
-    while (parent) {
-      if (IGNORE_IDS.includes(parent.id)) return true;
+    while (parent && parent !== document.body) {
+      if (OVERLAY_IDS.includes(parent.id)) return true;
       if (parent.id && parent.id.startsWith('__sc-')) return true;
       parent = parent.parentElement;
     }
