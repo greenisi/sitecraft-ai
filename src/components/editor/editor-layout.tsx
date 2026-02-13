@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, useCallback } from 'react';
+import { MessageSquare, Eye } from 'lucide-react';
 import { EditorTopbar } from './editor-topbar';
 import { ChatPanel } from './chat-panel';
 import { PreviewPanel } from './preview-panel';
@@ -16,6 +17,7 @@ const DEFAULT_CHAT_WIDTH = 420;
 
 export function EditorLayout({ projectId }: EditorLayoutProps) {
   const [chatWidth, setChatWidth] = useState(DEFAULT_CHAT_WIDTH);
+  const [mobileView, setMobileView] = useState<'chat' | 'preview'>('chat');
   const isDragging = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -45,18 +47,17 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
   }, []);
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-[100dvh] flex-col">
       <EditorTopbar projectId={projectId} />
-      <div ref={containerRef} className="flex flex-1 overflow-hidden">
-        {/* Chat Panel */}
+
+      {/* Desktop: side-by-side */}
+      <div ref={containerRef} className="hidden md:flex flex-1 overflow-hidden">
         <div
           className="flex-shrink-0 border-r"
           style={{ width: chatWidth }}
         >
           <ChatPanel projectId={projectId} />
         </div>
-
-        {/* Resize Handle */}
         <div
           className={cn(
             'w-1 cursor-col-resize hover:bg-primary/20 active:bg-primary/30 transition-colors flex-shrink-0',
@@ -64,10 +65,46 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
           )}
           onMouseDown={handleMouseDown}
         />
-
-        {/* Preview Panel */}
         <div className="flex-1 min-w-0">
           <PreviewPanel projectId={projectId} />
+        </div>
+      </div>
+
+      {/* Mobile: single panel with toggle */}
+      <div className="flex flex-1 flex-col overflow-hidden md:hidden">
+        <div className={cn('flex-1 overflow-hidden', mobileView !== 'chat' && 'hidden')}>
+          <ChatPanel projectId={projectId} />
+        </div>
+        <div className={cn('flex-1 overflow-hidden', mobileView !== 'preview' && 'hidden')}>
+          <PreviewPanel projectId={projectId} />
+        </div>
+
+        {/* Mobile bottom tab bar */}
+        <div className="flex border-t bg-background flex-shrink-0 safe-area-bottom">
+          <button
+            onClick={() => setMobileView('chat')}
+            className={cn(
+              'flex flex-1 flex-col items-center gap-1 py-2.5 text-xs font-medium transition-colors',
+              mobileView === 'chat'
+                ? 'text-primary'
+                : 'text-muted-foreground'
+            )}
+          >
+            <MessageSquare className="h-5 w-5" />
+            Chat
+          </button>
+          <button
+            onClick={() => setMobileView('preview')}
+            className={cn(
+              'flex flex-1 flex-col items-center gap-1 py-2.5 text-xs font-medium transition-colors',
+              mobileView === 'preview'
+                ? 'text-primary'
+                : 'text-muted-foreground'
+            )}
+          >
+            <Eye className="h-5 w-5" />
+            Preview
+          </button>
         </div>
       </div>
     </div>

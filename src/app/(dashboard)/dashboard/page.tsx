@@ -38,21 +38,21 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
-          <p className="text-muted-foreground">
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Projects</h1>
+          <p className="text-sm text-muted-foreground hidden sm:block">
             Create and manage your AI-generated websites
           </p>
         </div>
 
-        <Button onClick={handleNewProject} disabled={isCreating}>
+        <Button onClick={handleNewProject} disabled={isCreating} className="flex-shrink-0">
           {isCreating ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin sm:mr-2" />
           ) : (
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="h-4 w-4 sm:mr-2" />
           )}
-          New Project
+          <span className="hidden sm:inline">New Project</span>
         </Button>
       </div>
 

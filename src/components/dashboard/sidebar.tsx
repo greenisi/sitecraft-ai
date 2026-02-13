@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -9,6 +10,8 @@ import {
   LogOut,
   Moon,
   Sun,
+  Menu,
+  X,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
@@ -27,6 +30,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -35,13 +39,24 @@ export function Sidebar() {
     router.push('/login');
   };
 
-  return (
-    <div className="flex h-full w-64 flex-col border-r border-sidebar-border bg-sidebar">
-      <div className="flex h-16 items-center gap-2 px-6">
-        <Sparkles className="h-6 w-6 text-primary" />
-        <span className="text-lg font-bold text-sidebar-foreground">
-          SiteCraft AI
-        </span>
+  const sidebarContent = (
+    <>
+      <div className="flex h-14 md:h-16 items-center justify-between px-4 md:px-6">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-6 w-6 text-primary" />
+          <span className="text-lg font-bold text-sidebar-foreground">
+            SiteCraft AI
+          </span>
+        </div>
+        {/* Close button on mobile */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 md:hidden"
+          onClick={() => setMobileOpen(false)}
+        >
+          <X className="h-5 w-5" />
+        </Button>
       </div>
 
       <Separator />
@@ -54,6 +69,7 @@ export function Sidebar() {
               <Link
                 key={item.name}
                 href={item.href}
+                onClick={() => setMobileOpen(false)}
                 className={cn(
                   'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
                   isActive
@@ -90,6 +106,42 @@ export function Sidebar() {
           Sign out
         </Button>
       </div>
-    </div>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile hamburger button — rendered outside sidebar, positioned by layout */}
+      <button
+        className="fixed top-3.5 left-3 z-50 flex h-9 w-9 items-center justify-center rounded-md border bg-background shadow-sm md:hidden"
+        onClick={() => setMobileOpen(true)}
+        aria-label="Open menu"
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* Mobile drawer */}
+      <div
+        className={cn(
+          'fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-sidebar-border bg-sidebar transition-transform duration-200 md:hidden',
+          mobileOpen ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
+        {sidebarContent}
+      </div>
+
+      {/* Desktop sidebar — always visible */}
+      <div className="hidden md:flex h-full w-64 flex-col border-r border-sidebar-border bg-sidebar">
+        {sidebarContent}
+      </div>
+    </>
   );
 }

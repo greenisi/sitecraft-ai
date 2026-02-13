@@ -98,15 +98,37 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-lg border bg-muted">
-      <DeviceToolbar pages={pages} />
+    <div className="flex h-full flex-col overflow-hidden md:rounded-lg md:border bg-muted">
+      {/* Hide device toolbar on mobile — just show page tabs */}
+      <div className="hidden md:block">
+        <DeviceToolbar pages={pages} />
+      </div>
+      {/* Mobile: only page tabs if multiple pages */}
+      {pages.length > 1 && (
+        <div className="flex md:hidden items-center gap-1 border-b px-3 py-1.5 overflow-x-auto bg-background">
+          {pages.map((page) => (
+            <button
+              key={page.path}
+              onClick={() => setActivePage(page.path)}
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
+                activePage === page.path
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+              }`}
+            >
+              {page.title}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="flex flex-1 overflow-hidden">
-        <div className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-900 p-2">
+        {/* Mobile: full-width iframe, no scaling */}
+        <div className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-900 md:p-2">
           <div
-            className="mx-auto transition-all duration-300 origin-top bg-white rounded-lg shadow-sm overflow-hidden"
+            className="mx-auto transition-all duration-300 origin-top bg-white md:rounded-lg md:shadow-sm overflow-hidden"
             style={{
-              width: VIEWPORT_WIDTHS[viewport],
-              transform: `scale(${zoom})`,
+              width: typeof window !== 'undefined' && window.innerWidth < 768 ? '100%' : VIEWPORT_WIDTHS[viewport],
+              transform: typeof window !== 'undefined' && window.innerWidth < 768 ? 'none' : `scale(${zoom})`,
               transformOrigin: 'top center',
             }}
           >

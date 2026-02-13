@@ -69,7 +69,7 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
         )}
       </div>
 
-      {/* Input Area */}
+      {/* Input Area — ChatInput has its own border-t and padding */}
       <ChatInput
         onSend={sendMessage}
         isDisabled={isProcessing}

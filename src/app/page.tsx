@@ -23,31 +23,31 @@ export default function HomePage() {
       </header>
 
       <main className="flex-1">
-        <section className="container mx-auto px-4 py-24 text-center">
-          <h1 className="mx-auto max-w-3xl text-5xl font-bold tracking-tight sm:text-6xl">
+        <section className="container mx-auto px-4 py-16 sm:py-24 text-center">
+          <h1 className="mx-auto max-w-3xl text-3xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
             Generate high-end websites{' '}
             <span className="text-primary">with AI</span>
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
+          <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-base sm:text-lg text-muted-foreground">
             Describe your vision, customize the details, and let AI build a
             production-ready Next.js website. Landing pages, portfolios,
             e-commerce, and SaaS apps — deployed in minutes.
           </p>
-          <div className="mt-10 flex items-center justify-center gap-4">
-            <Button asChild size="lg">
+          <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+            <Button asChild size="lg" className="w-full sm:w-auto">
               <Link href="/signup">
                 Start building
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg">
+            <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
               <Link href="/login">View demo</Link>
             </Button>
           </div>
         </section>
 
         <section className="border-t bg-muted/50">
-          <div className="container mx-auto grid gap-8 px-4 py-24 sm:grid-cols-3">
+          <div className="container mx-auto grid gap-8 px-4 py-16 sm:py-24 sm:grid-cols-3">
             <div className="space-y-3 text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
                 <Zap className="h-6 w-6 text-primary" />

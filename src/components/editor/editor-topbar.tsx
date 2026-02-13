@@ -114,42 +114,44 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
 
   return (
     <>
-      <div className="flex h-14 items-center justify-between border-b px-4 bg-background flex-shrink-0">
-        <div className="flex items-center gap-3">
+      <div className="flex h-12 md:h-14 items-center justify-between border-b px-2 md:px-4 bg-background flex-shrink-0">
+        <div className="flex items-center gap-2 md:gap-3 min-w-0">
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8"
+            className="h-8 w-8 flex-shrink-0"
             onClick={() => router.push('/dashboard')}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-sm font-semibold truncate max-w-[200px]">
+          <h1 className="text-sm font-semibold truncate max-w-[120px] md:max-w-[200px]">
             {project?.name || 'Untitled Project'}
           </h1>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
           <Button
             variant="outline"
             size="sm"
+            className="h-8 px-2 md:px-3"
             onClick={handleDownload}
             disabled={!isExportable || downloading}
           >
             {downloading ? (
-              <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+              <Loader2 className="h-3 w-3 animate-spin md:mr-2" />
             ) : (
-              <Download className="mr-2 h-3 w-3" />
+              <Download className="h-3 w-3 md:mr-2" />
             )}
-            Export
+            <span className="hidden md:inline">Export</span>
           </Button>
           <Button
             size="sm"
+            className="h-8 px-2 md:px-3"
             onClick={() => setDeployDialogOpen(true)}
             disabled={!isExportable}
           >
-            <Rocket className="mr-2 h-3 w-3" />
-            Deploy
+            <Rocket className="h-3 w-3 md:mr-2" />
+            <span className="hidden md:inline">Deploy</span>
           </Button>
         </div>
       </div>
