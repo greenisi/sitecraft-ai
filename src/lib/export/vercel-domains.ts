@@ -41,14 +41,23 @@ export async function addDomainToProject(
     }
   );
 
+  const data = await response.json();
+
   if (!response.ok) {
-    const err = await response.json();
+    const code = data.error?.code || '';
+    // If domain is already added to this project, treat as success
+    if (code === 'domain_already_in_use' || code === 'DOMAIN_ALREADY_EXISTS') {
+      return {
+        name: domain,
+        configured: true,
+        verified: true,
+      };
+    }
     throw new Error(
-      `Failed to add domain ${domain}: ${err.error?.message || response.statusText}`
+      `Failed to add domain ${domain}: ${data.error?.message || response.statusText}`
     );
   }
 
-  const data = await response.json();
   return {
     name: data.name,
     configured: data.configured ?? false,

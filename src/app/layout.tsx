@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'SiteCraft AI — AI-Powered Website Generator',
+  title: 'Innovated Marketing — AI-Powered Website Generator',
   description:
     'Generate high-end websites with AI. Landing pages, portfolios, e-commerce, and SaaS — built with Next.js and Tailwind CSS.',
 };

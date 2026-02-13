@@ -46,7 +46,7 @@ export function ChatInput({ onSend, isDisabled, placeholder, onStop }: ChatInput
   );
 
   return (
-    <div className="relative flex items-end gap-2 p-3 md:p-4 border-t bg-background">
+    <div className="relative flex items-end gap-2 p-3 md:p-4 border-t bg-background flex-shrink-0">
       <div className="relative flex-1">
         <textarea
           ref={textareaRef}

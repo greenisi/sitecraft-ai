@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 import { publishToSubdomain } from '@/lib/export/platform-publisher';
 import { formatErrorResponse } from '@/lib/utils/errors';
 
+export const maxDuration = 300; // 5 minutes for deploy + build + domain setup
+
 export async function POST(request: Request) {
   try {
     const supabase = await createClient();

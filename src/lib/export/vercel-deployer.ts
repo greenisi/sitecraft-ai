@@ -88,7 +88,7 @@ export async function getDeploymentStatus(
 ): Promise<{ readyState: string; url: string }> {
   const teamQuery = teamId ? `?teamId=${teamId}` : '';
   const response = await fetch(
-    `${VERCEL_API}/v13/deployments/${deploymentId}${teamQuery}`,
+    `${VERCEL_API}/v6/deployments/${deploymentId}${teamQuery}`,
     {
       headers: {
         Authorization: `Bearer ${vercelToken}`,

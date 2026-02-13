@@ -8,6 +8,10 @@ const PLATFORM_TOKEN = process.env.VERCEL_PLATFORM_TOKEN!;
 const TEAM_ID = process.env.VERCEL_TEAM_ID!;
 const PLATFORM_DOMAIN = process.env.PLATFORM_DOMAIN || 'innovated.site';
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export interface PublishResult {
   url: string;
   domain: string;
@@ -88,19 +92,54 @@ export async function publishToSubdomain(
     teamId: TEAM_ID,
   });
 
-  // 7. Add subdomain alias to the Vercel project
-  // Wait a moment for project to be created if it's new
+  // 7. Brief wait for Vercel to index the new project, then add domain
+  // The deployment builds asynchronously — we don't need to wait for READY
+  // to add the domain alias. Vercel will serve it once the build finishes.
+  await sleep(2000);
+
+  // 8. Get the actual Vercel project ID (not deployment ID)
+  let vercelProjectId = deployment.deploymentId; // fallback
   try {
-    await addDomainToProject(vercelProjectName, subdomain, {
+    const vercelProject = await getVercelProject(vercelProjectName, {
       token: PLATFORM_TOKEN,
       teamId: TEAM_ID,
     });
-  } catch (domainError) {
-    // Domain might already be added from a previous publish — that's OK
-    console.warn('Domain alias may already exist:', domainError);
+    if (vercelProject) {
+      vercelProjectId = vercelProject.id;
+    }
+  } catch {
+    // Use deployment ID as fallback
   }
 
-  // 8. Update project in DB
+  // 9. Add subdomain alias to the Vercel project with retry
+  let domainAdded = false;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      await addDomainToProject(vercelProjectName, subdomain, {
+        token: PLATFORM_TOKEN,
+        teamId: TEAM_ID,
+      });
+      domainAdded = true;
+      break;
+    } catch (domainError) {
+      const msg = (domainError as Error).message || '';
+      // Domain already exists on this project — that's fine
+      if (msg.includes('already') || msg.includes('DOMAIN_ALREADY_EXISTS')) {
+        domainAdded = true;
+        break;
+      }
+      // Project not ready yet, wait and retry
+      if (attempt < 2) {
+        await sleep(2000);
+      }
+    }
+  }
+
+  if (!domainAdded) {
+    console.error(`Failed to add domain alias ${subdomain} to project ${vercelProjectName}`);
+  }
+
+  // 10. Update project in DB
   await admin
     .from('projects')
     .update({
@@ -108,12 +147,12 @@ export async function publishToSubdomain(
       published_url: `https://${subdomain}`,
       published_at: new Date().toISOString(),
       vercel_project_name: vercelProjectName,
-      vercel_project_id: deployment.deploymentId,
+      vercel_project_id: vercelProjectId,
       vercel_deployment_url: deployment.url,
     })
     .eq('id', projectId);
 
-  // 9. Upsert domain record
+  // 11. Upsert domain record
   // Delete any existing temporary domain for this project first
   await admin
     .from('domains')
@@ -126,8 +165,8 @@ export async function publishToSubdomain(
     user_id: userId,
     domain: subdomain,
     domain_type: 'temporary',
-    status: 'active',
-    dns_configured: true,
+    status: domainAdded ? 'active' : 'pending',
+    dns_configured: domainAdded,
   });
 
   return {

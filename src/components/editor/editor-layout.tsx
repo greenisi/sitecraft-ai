@@ -87,17 +87,17 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
         </div>
       </div>
 
-      {/* Mobile: single panel with toggle */}
-      <div className="flex flex-1 flex-col overflow-hidden md:hidden">
-        <div className={cn('flex-1 overflow-hidden', mobileView !== 'chat' && 'hidden')}>
+      {/* Mobile: single panel with toggle — fully fixed layout */}
+      <div className="flex flex-1 flex-col overflow-hidden md:hidden min-h-0">
+        <div className={cn('flex-1 min-h-0 overflow-hidden', mobileView !== 'chat' && 'hidden')}>
           {leftPanel}
         </div>
-        <div className={cn('flex-1 overflow-hidden', mobileView !== 'preview' && 'hidden')}>
+        <div className={cn('flex-1 min-h-0 overflow-hidden', mobileView !== 'preview' && 'hidden')}>
           <PreviewPanel projectId={projectId} />
         </div>
 
-        {/* Mobile bottom tab bar */}
-        <div className="flex border-t bg-background flex-shrink-0 safe-area-bottom">
+        {/* Mobile bottom tab bar — pinned */}
+        <div className="flex border-t bg-background flex-shrink-0 safe-area-bottom z-50">
           <button
             onClick={() => setMobileView('chat')}
             className={cn(

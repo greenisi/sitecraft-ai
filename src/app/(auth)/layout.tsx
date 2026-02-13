@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Sparkles } from 'lucide-react';
+import Image from 'next/image';
 
 export default function AuthLayout({
   children,
@@ -11,9 +11,16 @@ export default function AuthLayout({
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center">
           <Link href="/" className="flex items-center gap-2 text-foreground">
-            <Sparkles className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold tracking-tight">
-              SiteCraft AI
+            <Image
+              src="/logo.png"
+              alt="Innovated Marketing"
+              width={200}
+              height={50}
+              className="h-10 w-auto dark:invert"
+              priority
+            />
+            <span className="text-xs font-semibold bg-primary text-primary-foreground px-1.5 py-0.5 rounded">
+              BETA
             </span>
           </Link>
         </div>

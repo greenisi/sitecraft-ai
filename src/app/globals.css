@@ -108,7 +108,7 @@
   border-color: hsl(var(--border));
 }
 
-body {
+html, body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
   font-family: var(--font-sans);
@@ -121,8 +121,17 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* Prevent iOS zoom on input focus */
+/* Lock mobile viewport — prevent iOS bounce/overscroll */
 @media (max-width: 767px) {
+  html, body {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent iOS zoom on input focus */
   input, textarea, select {
     font-size: 16px !important;
   }

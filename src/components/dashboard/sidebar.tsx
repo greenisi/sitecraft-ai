@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 import {
   LayoutDashboard,
   Settings,
-  Sparkles,
   LogOut,
   Moon,
   Sun,
@@ -43,9 +43,16 @@ export function Sidebar() {
     <>
       <div className="flex h-14 md:h-16 items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-6 w-6 text-primary" />
-          <span className="text-lg font-bold text-sidebar-foreground">
-            SiteCraft AI
+          <Image
+            src="/logo.png"
+            alt="Innovated Marketing"
+            width={160}
+            height={40}
+            className="h-8 w-auto dark:invert"
+            priority
+          />
+          <span className="text-[10px] font-semibold bg-primary text-primary-foreground px-1.5 py-0.5 rounded">
+            BETA
           </span>
         </div>
         {/* Close button on mobile */}

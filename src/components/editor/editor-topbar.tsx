@@ -106,9 +106,12 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
   const handlePublish = async () => {
     try {
       const result = await publish();
-      setPublishedUrl(result.url);
-    } catch {
-      // Error handled in hook
+      if (result?.url) {
+        setPublishedUrl(result.url);
+      }
+    } catch (error) {
+      // Error toast is shown by the hook's onError handler
+      console.error('Publish failed:', error);
     }
   };
 

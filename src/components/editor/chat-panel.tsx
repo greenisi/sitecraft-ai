@@ -24,9 +24,9 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
   }, [messages, isProcessing]);
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col min-h-0">
       {/* Messages Area */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
         {messages.length === 0 && !isProcessing ? (
           <ChatWelcome onSuggestionClick={sendMessage} />
         ) : (

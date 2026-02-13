@@ -237,38 +237,40 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile menu overlay — MUST use solid opaque background, never transparent */}
-      <div className={\`fixed inset-0 top-16 bg-white z-40 transition-all duration-300 \${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}\`}>
-        <div className="flex flex-col p-6 gap-4">
-          {navLinks.map((link) => (
-            <Link key={link.href} href={link.href}
-              className="text-lg font-semibold text-gray-900 hover:text-primary-600 py-3 border-b border-gray-200 transition-colors"
+      {/* Mobile menu — conditionally rendered, ALWAYS solid bg-white, NEVER transparent */}
+      {isOpen && (
+        <div className="fixed inset-x-0 top-16 bottom-0 z-50 bg-white shadow-2xl overflow-y-auto md:hidden">
+          <nav className="flex flex-col p-6 gap-2">
+            {navLinks.map((link) => (
+              <Link key={link.href} href={link.href}
+                className="text-lg font-semibold text-gray-900 hover:text-primary-600 py-3 border-b border-gray-100 transition-colors"
+                onClick={() => setIsOpen(false)}>
+                {link.label}
+              </Link>
+            ))}
+            <Link href="/contact"
+              className="mt-4 px-6 py-3 bg-primary-600 text-white rounded-lg text-center font-medium hover:bg-primary-700 transition-all"
               onClick={() => setIsOpen(false)}>
-              {link.label}
+              Get Started
             </Link>
-          ))}
-          <Link href="/contact"
-            className="mt-4 px-6 py-3 bg-primary-600 text-white rounded-lg text-center font-medium hover:bg-primary-700 transition-all"
-            onClick={() => setIsOpen(false)}>
-            Get Started
-          </Link>
+          </nav>
         </div>
-      </div>
+      )}
     </nav>
   );
 }
 \`\`\`
 
-**Mobile Nav Requirements:**
+**Mobile Nav Requirements (MANDATORY — follow exactly):**
 - Hamburger icon: use \`Menu\` and \`X\` from \`lucide-react\`
 - Toggle with \`useState\` — MUST be a 'use client' component
-- Mobile menu: full-screen overlay below navbar, smooth opacity transition
-- **CRITICAL: Mobile menu overlay MUST use a SOLID, FULLY OPAQUE background color — NEVER transparent or semi-transparent.**
-  Use \`bg-white\` (NOT \`bg-white/80\` or any opacity variant). The glassmorphism transparency is ONLY for the navbar bar itself, NEVER for the mobile menu overlay.
-- **CRITICAL: Mobile menu link text MUST be large and high-contrast.** Use \`text-lg font-semibold text-gray-900\` (dark text on white bg). NEVER use light or muted colors for mobile nav links. They must be immediately readable.
-- Each nav link should have \`py-3 border-b border-gray-200\` for clear visual separation and large tap targets
+- Mobile menu: Use conditional rendering \`{isOpen && (...)}\` — do NOT use opacity transitions on the menu container
+- **CRITICAL: The mobile menu panel MUST ALWAYS use \`bg-white\` as its background. This applies regardless of the navbar style (dark, colored, glassmorphism, etc). The mobile menu is ALWAYS white background with dark text. NEVER use the navbar's background color for the mobile menu. NEVER use transparent, semi-transparent, bg-opacity, or any opacity variant.**
+- **CRITICAL: Mobile menu link text MUST use \`text-gray-900\` (dark text on white bg). NEVER use white text, light text, or muted text colors in the mobile menu. They MUST be immediately readable.**
+- Each nav link: \`text-lg font-semibold text-gray-900 py-3 border-b border-gray-100\` for clear separation and large tap targets
 - Clicking any link closes the menu (\`onClick={() => setIsOpen(false)}\`)
-- \`aria-expanded\` and \`aria-label\` for accessibility
+- Add \`md:hidden\` on the mobile menu container so it never shows on desktop
+- \`aria-expanded\` and \`aria-label\` on the hamburger button for accessibility
 - Hidden on md+ screens (\`md:hidden\` on button, \`hidden md:flex\` on desktop nav)
 - Add \`pt-16\` or \`mt-16\` to the page content below the fixed navbar
 `;

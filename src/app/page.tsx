@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { Sparkles, ArrowRight, Globe, Zap, Download } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowRight, Globe, Zap, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function HomePage() {
@@ -8,8 +9,17 @@ export default function HomePage() {
       <header className="border-b">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-primary" />
-            <span className="text-lg font-bold">SiteCraft AI</span>
+            <Image
+              src="/logo.png"
+              alt="Innovated Marketing"
+              width={160}
+              height={40}
+              className="h-8 w-auto dark:invert"
+              priority
+            />
+            <span className="text-[10px] font-semibold bg-primary text-primary-foreground px-1.5 py-0.5 rounded">
+              BETA
+            </span>
           </div>
           <div className="flex items-center gap-4">
             <Button asChild variant="ghost">
@@ -84,7 +94,7 @@ export default function HomePage() {
 
       <footer className="border-t py-8">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          SiteCraft AI — Built with Next.js, Tailwind CSS, and Claude
+          Innovated Marketing — Built with Next.js, Tailwind CSS, and Claude
         </div>
       </footer>
     </div>
