@@ -6,7 +6,6 @@ import { useVisualEditorStore } from '@/stores/visual-editor-store';
 import { getIframeBridgeScript } from '@/lib/visual-editor/iframe-bridge';
 import { setPreviewIframe, sendToPreviewIframe } from '@/lib/visual-editor/iframe-ref';
 import { DeviceToolbar } from './device-toolbar';
-import { Loader2 } from 'lucide-react';
 
 const VIEWPORT_WIDTHS = {
   desktop: 1440,
@@ -250,11 +249,55 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
             }}
           >
             {loading && (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                <span className="ml-2 text-sm text-muted-foreground">
-                  Loading preview...
-                </span>
+              <div className="animate-pulse p-0">
+                {/* Skeleton navbar */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                  <div className="h-5 w-28 bg-gray-200 rounded" />
+                  <div className="flex gap-4">
+                    <div className="h-4 w-14 bg-gray-100 rounded" />
+                    <div className="h-4 w-14 bg-gray-100 rounded" />
+                    <div className="h-4 w-14 bg-gray-100 rounded" />
+                    <div className="h-8 w-24 bg-gray-200 rounded-md" />
+                  </div>
+                </div>
+                {/* Skeleton hero */}
+                <div className="px-6 py-16 space-y-4 max-w-2xl mx-auto text-center">
+                  <div className="h-3 w-32 bg-gray-100 rounded mx-auto" />
+                  <div className="h-8 w-3/4 bg-gray-200 rounded mx-auto" />
+                  <div className="h-8 w-1/2 bg-gray-200 rounded mx-auto" />
+                  <div className="h-4 w-2/3 bg-gray-100 rounded mx-auto mt-4" />
+                  <div className="h-4 w-1/2 bg-gray-100 rounded mx-auto" />
+                  <div className="flex gap-3 justify-center mt-6">
+                    <div className="h-10 w-32 bg-gray-200 rounded-md" />
+                    <div className="h-10 w-32 bg-gray-100 rounded-md" />
+                  </div>
+                </div>
+                {/* Skeleton content blocks */}
+                <div className="px-6 py-10 border-t border-gray-50">
+                  <div className="grid grid-cols-3 gap-6 max-w-3xl mx-auto">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="space-y-3 p-4">
+                        <div className="h-10 w-10 bg-gray-100 rounded-lg" />
+                        <div className="h-4 w-2/3 bg-gray-200 rounded" />
+                        <div className="h-3 w-full bg-gray-100 rounded" />
+                        <div className="h-3 w-4/5 bg-gray-100 rounded" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Second section skeleton */}
+                <div className="px-6 py-8 border-t border-gray-50">
+                  <div className="h-6 w-48 bg-gray-200 rounded mx-auto mb-6" />
+                  <div className="grid grid-cols-2 gap-6 max-w-2xl mx-auto">
+                    <div className="h-40 bg-gray-100 rounded-lg" />
+                    <div className="space-y-3 p-2">
+                      <div className="h-5 w-3/4 bg-gray-200 rounded" />
+                      <div className="h-3 w-full bg-gray-100 rounded" />
+                      <div className="h-3 w-full bg-gray-100 rounded" />
+                      <div className="h-3 w-2/3 bg-gray-100 rounded" />
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
             <iframe

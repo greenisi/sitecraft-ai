@@ -312,23 +312,55 @@ tailwind.config = {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Preview</title>
-  <script src="https://cdn.tailwindcss.com"><\/script>
-  <script>
-${tailwindExtendScript}
-  <\/script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Sora:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin><\/script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin><\/script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
   <style>
     body { margin: 0; padding: 0; }
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    #__loading { font-family: system-ui, sans-serif; }
+    #__loading .bar { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; }
     ${cleanedCss}
   </style>
 </head>
 <body>
   <div id="root"></div>
+  <div id="__loading">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid #f0f0f0">
+      <div class="bar" style="height:20px;width:120px"></div>
+      <div style="display:flex;gap:16px;align-items:center">
+        <div class="bar" style="height:14px;width:50px"></div>
+        <div class="bar" style="height:14px;width:50px"></div>
+        <div class="bar" style="height:14px;width:50px"></div>
+        <div class="bar" style="height:32px;width:90px;border-radius:6px"></div>
+      </div>
+    </div>
+    <div style="padding:64px 24px;text-align:center">
+      <div class="bar" style="height:12px;width:120px;margin:0 auto 16px"></div>
+      <div class="bar" style="height:36px;width:70%;margin:0 auto 8px;max-width:480px"></div>
+      <div class="bar" style="height:36px;width:50%;margin:0 auto 16px;max-width:340px"></div>
+      <div class="bar" style="height:14px;width:60%;margin:0 auto 8px;max-width:400px"></div>
+      <div class="bar" style="height:14px;width:45%;margin:0 auto 24px;max-width:300px"></div>
+      <div style="display:flex;gap:12px;justify-content:center">
+        <div class="bar" style="height:40px;width:120px;border-radius:6px"></div>
+        <div class="bar" style="height:40px;width:120px;border-radius:6px"></div>
+      </div>
+    </div>
+    <div style="padding:40px 24px;border-top:1px solid #f5f5f5">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;max-width:700px;margin:0 auto">
+        <div style="padding:16px"><div class="bar" style="height:40px;width:40px;border-radius:8px;margin-bottom:12px"></div><div class="bar" style="height:16px;width:70%;margin-bottom:8px"></div><div class="bar" style="height:12px;width:100%;margin-bottom:4px"></div><div class="bar" style="height:12px;width:80%"></div></div>
+        <div style="padding:16px"><div class="bar" style="height:40px;width:40px;border-radius:8px;margin-bottom:12px"></div><div class="bar" style="height:16px;width:60%;margin-bottom:8px"></div><div class="bar" style="height:12px;width:100%;margin-bottom:4px"></div><div class="bar" style="height:12px;width:75%"></div></div>
+        <div style="padding:16px"><div class="bar" style="height:40px;width:40px;border-radius:8px;margin-bottom:12px"></div><div class="bar" style="height:16px;width:65%;margin-bottom:8px"></div><div class="bar" style="height:12px;width:100%;margin-bottom:4px"></div><div class="bar" style="height:12px;width:85%"></div></div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.tailwindcss.com"><\/script>
+  <script>
+${tailwindExtendScript}
+  <\/script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin><\/script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin><\/script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
 
   <script id="app-source" type="text/plain">
     // React hooks destructured for component-scope access
@@ -459,8 +491,14 @@ ${[...allIconNames].map((name) => `    const ${name} = createIcon('${name}');`).
         // Hooks are already destructured inside the source code itself
         var fn = new Function('React', 'ReactDOM', result.code);
         fn(React, ReactDOM);
+
+        // Hide the loading skeleton now that React has rendered
+        var loadingEl = document.getElementById('__loading');
+        if (loadingEl) loadingEl.style.display = 'none';
       } catch (err) {
         console.error('Preview compilation/execution error:', err);
+        var loadingEl2 = document.getElementById('__loading');
+        if (loadingEl2) loadingEl2.style.display = 'none';
         rootEl.innerHTML = '<div style="padding:24px;font-family:monospace;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;margin:16px;white-space:pre-wrap;font-size:13px;max-height:80vh;overflow:auto;"><strong>Preview Error:</strong>\\n\\n' + String(err.message || err) + '</div>';
       }
     })();
