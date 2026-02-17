@@ -10,7 +10,7 @@ export interface PremiumTemplate {
   previewGradient: string;
   accentColor: string;
   tags: string[];
-  config: Omit<GenerationConfig, 'aiPrompt'> & { aiPrompt: string };
+  config: GenerationConfig;
 }
 
 export const PREMIUM_TEMPLATES: PremiumTemplate[] = [
@@ -57,16 +57,21 @@ export const PREMIUM_TEMPLATES: PremiumTemplate[] = [
         footerStyle: 'multi-column',
       },
       saas: {
-        features: ['AI Automation', 'Team Collaboration', 'Analytics Dashboard', 'API Access', 'Integrations', 'Security'],
+        features: [
+          { title: 'AI Automation', description: 'Automate repetitive workflows with intelligent AI agents.' },
+          { title: 'Team Collaboration', description: 'Real-time collaboration tools built for modern teams.' },
+          { title: 'Analytics Dashboard', description: 'Powerful insights and reporting at your fingertips.' },
+          { title: 'API Access', description: 'Full REST and GraphQL API for seamless integrations.' },
+        ],
         pricingTiers: [
-          { name: 'Starter', price: 29, features: ['5 projects', '10GB storage', 'Basic analytics', 'Email support'] },
-          { name: 'Pro', price: 79, features: ['Unlimited projects', '100GB storage', 'Advanced analytics', 'Priority support', 'API access'] },
-          { name: 'Enterprise', price: 299, features: ['Everything in Pro', 'Custom integrations', 'SSO', 'Dedicated support', 'SLA guarantee'] },
+          { name: 'Starter', price: 29, interval: 'month', features: ['5 projects', '10GB storage', 'Basic analytics', 'Email support'] },
+          { name: 'Pro', price: 79, interval: 'month', features: ['Unlimited projects', '100GB storage', 'Advanced analytics', 'Priority support', 'API access'], highlighted: true },
+          { name: 'Enterprise', price: 299, interval: 'month', features: ['Everything in Pro', 'Custom integrations', 'SSO', 'Dedicated support', 'SLA guarantee'] },
         ],
         hasAuth: true,
         hasDashboard: true,
       },
-      aiPrompt: 'Create a STUNNING dark-mode SaaS website. HERO: Full-screen dark (bg-zinc-950) with animated gradient mesh in violet/cyan. Large bold headline with gradient text. Floating UI preview card with glassmorphism (bg-white/5 backdrop-blur border border-white/10). Decorative glow orbs in violet/indigo at corners. FEATURES: Dark glass-morphism cards with gradient icon backgrounds and hover glow border. STATS: Large gradient numbers with count-up animation. PRICING: Dark cards with Most Popular tier highlighted with gradient border glow. OVERALL: Scroll-triggered fade-in animations on every section. Decorative dot/grid patterns as background texture. Ultra-premium dark aesthetic throughout.',
+      aiPrompt: 'Create a STUNNING dark-mode SaaS website. HERO: Full-screen dark (bg-zinc-950) with animated gradient mesh in violet/cyan. Large bold headline with gradient text. Floating UI preview card with glassmorphism (bg-white/5 backdrop-blur border border-white/10). Decorative glow orbs in violet/indigo at corners. FEATURES: Dark glass-morphism cards with gradient icon backgrounds and hover glow border. STATS: Large gradient numbers with count-up animation. PRICING: Dark cards with Most Popular tier highlighted with gradient border glow. OVERALL: Scroll-triggered fade-in animations on every section. Ultra-premium dark aesthetic throughout.',
     },
   },
   {
@@ -338,16 +343,16 @@ export const PREMIUM_TEMPLATES: PremiumTemplate[] = [
       },
       ecommerce: {
         products: [
-          { name: 'Essential Tee', price: 85, category: 'Clothing' },
-          { name: 'Linen Trousers', price: 195, category: 'Clothing' },
-          { name: 'Leather Bag', price: 340, category: 'Accessories' },
-          { name: 'Cashmere Sweater', price: 280, category: 'Clothing' },
-          { name: 'Canvas Sneakers', price: 150, category: 'Footwear' },
-          { name: 'Silk Scarf', price: 120, category: 'Accessories' },
+          { name: 'Essential Tee', description: 'Minimalist cotton tee in seasonal colors', price: 85, category: 'Clothing' },
+          { name: 'Linen Trousers', description: 'Relaxed-fit linen trousers for every occasion', price: 195, category: 'Clothing' },
+          { name: 'Leather Tote', description: 'Full-grain leather tote with brass hardware', price: 340, category: 'Accessories' },
+          { name: 'Cashmere Sweater', description: 'Luxuriously soft Grade A cashmere', price: 280, category: 'Clothing' },
+          { name: 'Canvas Sneakers', description: 'Clean canvas sneakers in neutral tones', price: 150, category: 'Footwear' },
+          { name: 'Silk Scarf', description: 'Hand-rolled Italian silk scarf', price: 120, category: 'Accessories' },
         ],
-        cartEnabled: true,
-        checkoutEnabled: false,
         currency: 'USD',
+        cartEnabled: true,
+        checkoutType: 'simple',
       },
       aiPrompt: 'Create an ULTRA-MINIMAL editorial e-commerce website inspired by Celine and Muji. HERO: Oversized full-bleed photography, minimal text overlay, thin-weight headline, simple text-link CTA with arrow. PRODUCT GRID: Clean 3-4 column grid with generous whitespace. Hover reveals name and price only. No card backgrounds. GALLERY: Full editorial spread with asymmetric mixed-size image layout. OVERALL: 90% white space. Stone-50 background. Stone-900 text. Almost no color. Thin horizontal rules (border-t border-stone-200) between sections. Typography does all the work.',
     },
@@ -395,7 +400,7 @@ export const PREMIUM_TEMPLATES: PremiumTemplate[] = [
         navbarPosition: 'sticky',
         footerStyle: 'multi-column',
       },
-      aiPrompt: 'Create an AUTHORITATIVE professional services website. HERO: Deep navy background (bg-slate-900) with professional image and dark overlay. Playfair Display serif headline in white. Two CTAs: navy filled and ghost white border. Trust badges: bar association logos, years established. FEATURES: Clean white cards on slate-50. Navy icon squares, Playfair Display headings. STATS: Dark navy section with large white numbers and blue accent text. "250+ Cases Won", "30+ Years", "98% Success Rate". TEAM: Professional headshots in square frames with clear titles and credentials. OVERALL: Navy (#1e3a5f) and white palette. Blue for accents only. Professional dignified fade-in animations.',
+      aiPrompt: 'Create an AUTHORITATIVE professional services website. HERO: Deep navy background (bg-slate-900) with professional image and dark overlay. Playfair Display serif headline in white. Two CTAs: navy filled and ghost white border. Trust badges: bar association logos, years established. FEATURES: Clean white cards on slate-50. Navy icon squares, Playfair Display headings. STATS: Dark navy section with large white numbers and blue accent text. TEAM: Professional headshots with clear titles and credentials. OVERALL: Navy (#1e3a5f) and white palette. Blue for accents only. Professional dignified fade-in animations.',
     },
   },
 ];
@@ -420,4 +425,3 @@ export const TEMPLATE_CATEGORIES = [
   'E-Commerce',
   'Professional Services',
 ];
-
