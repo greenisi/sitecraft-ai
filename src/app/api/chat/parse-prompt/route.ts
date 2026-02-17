@@ -122,6 +122,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
+    // ── Check subscription plan ─────────────────────────────────────────
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('generation_credits, plan')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile) {
+          return NextResponse.json(
+            { error: 'Profile not found' },
+            { status: 404 }
+                );
+    }
+
+    if (profile.plan === 'free') {
+          return NextResponse.json(
+            { error: 'subscription_required', message: 'Please subscribe to the Beta plan to use AI features.' },
+            { status: 402 }
+                );
+    }
+
+    if (profile.generation_credits <= 0) {
+          return NextResponse.json(
+            { error: 'No generation credits remaining' },
+            { status: 402 }
+                );
+    }
+
   try {
     const anthropic = getAnthropicClient();
 
