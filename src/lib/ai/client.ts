@@ -47,7 +47,7 @@ export function getAnthropicClient(): Anthropic {
 }
 
 /** The model identifier used for all generation calls. */
-export const GENERATION_MODEL = 'claude-opus-4-6';
+export const GENERATION_MODEL = 'claude-sonnet-4-20250514';
 
 /** Token limits for different generation stages. */
 export const TOKEN_LIMITS = {
