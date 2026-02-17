@@ -59,7 +59,7 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
     const state = get();
 
     // Append to event log (keep last 200 events to prevent memory issues)
-    const events = [...state.events, event].slice(-200);
+    const events = [...state.events, event].slice(-2000);
 
     switch (event.type) {
       case 'stage-start': {
