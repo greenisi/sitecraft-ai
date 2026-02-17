@@ -10,12 +10,17 @@ interface PreviewPanelProps {
   projectId: string;
 }
 
-// Syntax-highlight token categories for coloring
-function tokenColor(line: string): string {
-  if (/^(import|export|from|const|let|var|function|return|default|type|interface|class|extends|implements|async|await|if|else|for|while|switch|case|break|new|typeof|keyof|void|null|undefined|true|false)\b/.test(line.trim())) return '#c792ea';
-  if (/^(//|/*)/.test(line.trim())) return '#546e7a';
-  if (/className=|style=|onClick=|onChange=/.test(line)) return '#82aaff';
-  if (/<[A-Z]/.test(line)) return '#ffcb6b';
+// Simple token coloring without complex regexes
+function getLineColor(line: string): string {
+  const t = line.trim();
+  if (t.startsWith('//') || t.startsWith('*') || t.startsWith('/*')) return '#546e7a';
+  if (t.startsWith('import ') || t.startsWith('export ') || t.startsWith('const ') ||
+      t.startsWith('let ') || t.startsWith('return ') || t.startsWith('function ') ||
+      t.startsWith('type ') || t.startsWith('interface ') || t.startsWith('async ') ||
+      t.startsWith('await ') || t.startsWith('if (') || t.startsWith('} else') ||
+      t.startsWith('class ') || t.startsWith('default ')) return '#c792ea';
+  if (t.includes('className=') || t.includes('style=') || t.includes('onClick=')) return '#82aaff';
+  if (/^<[A-Z]/.test(t) || t.startsWith('</')) return '#ffcb6b';
   return '#eeffff';
 }
 
@@ -32,66 +37,60 @@ export function PreviewPanel({ projectId }: PreviewPanelProps) {
 
   const terminalRef = useRef<HTMLDivElement>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const codeBuffer = useRef<string[]>([]);
+  const processedEvents = useRef(0);
 
-  // Collect streaming code lines from component-chunk events
-  const codeLines = useRef<string[]>([]);
-  const lastEventCount = useRef(0);
-
-  // Process new chunk events into lines
-  const chunkEvents = events.filter(e => e.type === 'component-chunk' || e.type === 'component-complete' || e.type === 'component-start' || e.type === 'stage-start');
-  if (chunkEvents.length > lastEventCount.current) {
-    const newEvents = chunkEvents.slice(lastEventCount.current);
-    lastEventCount.current = chunkEvents.length;
-    for (const ev of newEvents) {
+  // Process streaming chunk events into display lines
+  const totalEvents = events.length;
+  if (totalEvents > processedEvents.current) {
+    const newEvs = events.slice(processedEvents.current);
+    processedEvents.current = totalEvents;
+    for (const ev of newEvs) {
       if (ev.type === 'stage-start' && ev.stage) {
-        codeLines.current.push(``, `// ── Stage: ${ev.stage} ───────────────────────────────────────`, ``);
+        codeBuffer.current.push('', '// ── ' + ev.stage.toUpperCase() + ' ──────────────────────────────────', '');
       } else if (ev.type === 'component-start' && ev.componentName) {
-        codeLines.current.push(``, `// ┌─ ${ev.componentName} ─────────────────────────────────────`);
+        codeBuffer.current.push('', '// generating: ' + ev.componentName);
       } else if (ev.type === 'component-complete' && ev.file) {
-        codeLines.current.push(`// └─ ${ev.file.path} ✓`, ``);
+        codeBuffer.current.push('// done: ' + ev.file.path, '');
       } else if (ev.type === 'component-chunk' && ev.chunk) {
-        const raw = ev.chunk.replace(/\r/g, '');
-        const parts = raw.split('\n');
-        for (const part of parts) {
-          if (part !== '') codeLines.current.push(part);
+        const lines = ev.chunk.split('\n');
+        for (const l of lines) {
+          if (l !== '') codeBuffer.current.push(l);
         }
       }
     }
   }
 
-  // When generation completes, wait a beat then show preview
+  // After generation ends, briefly show animation then switch to preview
   useEffect(() => {
     if (!isGenerating && Object.keys(realtimeFiles).length > 0) {
-      const timer = setTimeout(() => setShowPreview(true), 800);
-      return () => clearTimeout(timer);
+      const t = setTimeout(() => setShowPreview(true), 900);
+      return () => clearTimeout(t);
     }
-    if (isGenerating) {
-      setShowPreview(false);
-    }
+    if (isGenerating) setShowPreview(false);
   }, [isGenerating, realtimeFiles]);
 
-  // Reset on new generation start
+  // Reset code buffer on new generation
   useEffect(() => {
     if (isGenerating && currentStage === 'config-assembly') {
-      codeLines.current = [];
-      lastEventCount.current = 0;
+      codeBuffer.current = [];
+      processedEvents.current = 0;
       setShowPreview(false);
     }
   }, [isGenerating, currentStage]);
 
-  // Auto-scroll terminal to bottom
+  // Auto-scroll terminal
   useEffect(() => {
     if (terminalRef.current && isGenerating) {
       terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
     }
-  }, [events.length, isGenerating]);
+  });
 
-  // Determine what files to show in the preview frame
   const hasRealtimeFiles = Object.keys(realtimeFiles).length > 0;
   const files = hasRealtimeFiles ? realtimeFiles : (generated?.files || {});
   const hasFiles = Object.keys(files).length > 0;
 
-  // --- Empty state ---
+  // Empty state
   if (!hasFiles && !isGenerating) {
     return (
       <div className="flex h-full flex-col items-center justify-center bg-muted/30">
@@ -110,99 +109,79 @@ export function PreviewPanel({ projectId }: PreviewPanelProps) {
     );
   }
 
-  // --- Code animation during generation ---
+  // Code animation during generation
   if (isGenerating && !showPreview) {
-    const progressPercent = progress.total > 0
-      ? Math.round((progress.completed / progress.total) * 100)
-      : 0;
-
+    const pct = progress.total > 0 ? Math.round((progress.completed / progress.total) * 100) : 0;
     const stageLabels: Record<string, string> = {
       'config-assembly': 'Assembling config...',
       'design-system': 'Generating design tokens...',
       blueprint: 'Planning architecture...',
-      components: `Building components (${progress.completed}/${progress.total})`,
+      components: 'Building components (' + progress.completed + '/' + progress.total + ')',
       assembly: 'Assembling project...',
     };
     const stageLabel = currentStage ? (stageLabels[currentStage] ?? currentStage) : 'Starting...';
+    const activeComp = Array.from(components.values()).find(c => c.status === 'generating');
+    const activeFile = activeComp?.filePath ?? activeComp?.name ?? '';
+    const displayLines = codeBuffer.current.slice(-120);
 
-    // Get current component being generated
-    const generatingComp = Array.from(components.values()).find(c => c.status === 'generating');
-    const activeFile = generatingComp?.filePath ?? generatingComp?.name ?? '';
-
-    // Last 120 lines of code
-    const displayLines = codeLines.current.slice(-120);
+    const barWidth = currentStage === 'components' ? pct + '%'
+      : currentStage === 'config-assembly' ? '8%'
+      : currentStage === 'design-system' ? '20%'
+      : currentStage === 'blueprint' ? '35%'
+      : currentStage === 'assembly' ? '95%'
+      : '2%';
 
     return (
       <div className="flex h-full flex-col bg-[#0d1117] font-mono text-xs">
-        {/* Terminal header */}
+        {/* Mac-style terminal header */}
         <div className="flex items-center gap-2 border-b border-[#21262d] bg-[#161b22] px-4 py-2.5 flex-shrink-0">
           <div className="flex gap-1.5">
             <div className="h-3 w-3 rounded-full bg-[#ff5f56]" />
             <div className="h-3 w-3 rounded-full bg-[#ffbd2e]" />
             <div className="h-3 w-3 rounded-full bg-[#27c93f]" />
           </div>
-          <span className="text-[#8b949e] text-xs ml-2">sitecraft-ai — generating</span>
-          <div className="ml-auto flex items-center gap-2">
+          <span className="text-[#8b949e] ml-2 text-[11px]">sitecraft-ai — code generation</span>
+          <div className="ml-auto flex items-center gap-3">
             {activeFile && (
-              <span className="text-[#58a6ff] truncate max-w-[220px] text-[11px]">
-                {activeFile}
-              </span>
+              <span className="text-[#58a6ff] truncate max-w-[200px] text-[11px]">{activeFile}</span>
             )}
             <span className="text-[#3fb950] text-[11px]">{stageLabel}</span>
           </div>
         </div>
 
-        {/* Code output */}
-        <div
-          ref={terminalRef}
-          className="flex-1 overflow-y-auto px-4 py-3 select-none"
-          style={{ scrollBehavior: 'smooth' }}
-        >
+        {/* Scrolling code output */}
+        <div ref={terminalRef} className="flex-1 overflow-y-auto px-4 py-3 leading-5" style={{ overflowAnchor: 'none' }}>
           {displayLines.map((line, i) => {
-            const isComment = line.trim().startsWith('//');
-            const isStageHeader = line.includes('── Stage:') || line.includes('┌─') || line.includes('└─');
+            const isHeader = line.startsWith('// ──') || line.startsWith('// generating:') || line.startsWith('// done:');
             return (
               <div
                 key={i}
-                className="leading-5 whitespace-pre-wrap break-all"
+                className="whitespace-pre-wrap break-all leading-[1.45]"
                 style={{
-                  color: isStageHeader
-                    ? '#58a6ff'
-                    : isComment
-                    ? '#546e7a'
-                    : tokenColor(line),
-                  opacity: i < displayLines.length - 30 ? 0.55 : 1,
+                  color: isHeader ? '#58a6ff' : getLineColor(line),
+                  opacity: i < displayLines.length - 40 ? 0.5 : 1,
+                  transition: 'opacity 0.3s',
                 }}
               >
                 {line || '\u00a0'}
               </div>
             );
           })}
-          {/* Blinking cursor */}
-          <div className="inline-block h-4 w-2 bg-[#58a6ff] animate-pulse ml-0.5" />
+          <span className="inline-block h-[14px] w-[7px] bg-[#58a6ff] animate-pulse align-middle" />
         </div>
 
-        {/* Progress bar */}
-        <div className="border-t border-[#21262d] bg-[#161b22] px-4 py-2 flex-shrink-0">
+        {/* Progress bar footer */}
+        <div className="border-t border-[#21262d] bg-[#161b22] px-4 py-2.5 flex-shrink-0">
           <div className="flex items-center justify-between text-[10px] text-[#8b949e] mb-1.5">
             <span>{stageLabel}</span>
             {progress.total > 0 && (
               <span className="text-[#3fb950]">{progress.completed}/{progress.total} files</span>
             )}
           </div>
-          <div className="h-1 w-full rounded-full bg-[#21262d] overflow-hidden">
+          <div className="h-[3px] w-full rounded-full bg-[#21262d] overflow-hidden">
             <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{
-                width: currentStage === 'components'
-                  ? `${progressPercent}%`
-                  : currentStage === 'config-assembly' ? '8%'
-                  : currentStage === 'design-system' ? '20%'
-                  : currentStage === 'blueprint' ? '35%'
-                  : currentStage === 'assembly' ? '95%'
-                  : '2%',
-                background: 'linear-gradient(90deg, #1f6feb, #388bfd)',
-              }}
+              className="h-full rounded-full transition-all duration-700 ease-out"
+              style={{ width: barWidth, background: 'linear-gradient(90deg, #1f6feb, #58a6ff)' }}
             />
           </div>
         </div>
@@ -210,16 +189,13 @@ export function PreviewPanel({ projectId }: PreviewPanelProps) {
     );
   }
 
-  // --- Preview (after generation or existing files) ---
-  const isStillGenerating = isGenerating && showPreview;
+  // Preview (after generation or existing files)
   return (
     <div className="flex h-full flex-col">
-      {isStillGenerating && (
+      {isGenerating && (
         <div className="flex items-center gap-2 border-b px-4 py-2 bg-primary/5 flex-shrink-0">
-          <div className="h-3 w-3 rounded-full bg-[#3fb950] animate-pulse" />
-          <span className="text-xs text-muted-foreground font-mono">
-            Generation complete — preview ready
-          </span>
+          <div className="h-2.5 w-2.5 rounded-full bg-[#3fb950] animate-pulse" />
+          <span className="text-xs text-muted-foreground font-mono">Generation complete — preview ready</span>
         </div>
       )}
       <div className="flex-1 overflow-hidden">
