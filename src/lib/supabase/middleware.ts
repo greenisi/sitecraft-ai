@@ -33,6 +33,7 @@ export async function updateSession(request: NextRequest) {
   const isProtectedRoute =
     request.nextUrl.pathname.startsWith('/dashboard') ||
     request.nextUrl.pathname.startsWith('/projects') ||
+        request.nextUrl.pathname.startsWith('/templates') ||
       request.nextUrl.pathname.startsWith('/admin');
 
   if (isProtectedRoute && !user) {
