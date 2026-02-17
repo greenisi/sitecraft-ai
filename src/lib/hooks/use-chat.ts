@@ -102,6 +102,9 @@ export function useChat(projectId: string) {
 
         if (!parseResponse.ok) {
           const err = await parseResponse.json();
+                    if (err.error === 'subscription_required') {
+                                  throw new Error('subscription_required');
+                    }
           throw new Error(err.error || 'Failed to parse prompt');
         }
 
@@ -145,6 +148,9 @@ export function useChat(projectId: string) {
           try {
             const errData = await genResponse.json();
             errMsg = errData.error || errMsg;
+                        if (errData.error === 'subscription_required') {
+                                        errMsg = 'subscription_required';
+                        }
           } catch {
             // response might not be JSON
           }
@@ -208,6 +214,23 @@ export function useChat(projectId: string) {
 
         const errorMsg =
           error instanceof Error ? error.message : 'Something went wrong';
+
+                // Handle subscription required error with upgrade prompt
+                if (errorMsg === 'subscription_required') {
+                            const upgradeMessage: ChatMessageLocal = {
+                                          id: crypto.randomUUID(),
+                                          project_id: projectId,
+                                          role: 'assistant',
+                                          content: '🔒 **Beta Plan Required**\n\nTo generate websites with AI, you need to subscribe to our Beta plan. The Beta plan includes credits to build and customize your website.\n\n[Upgrade to Beta Plan →](/settings/billing)',
+                                          metadata: { stage: 'subscription_required' },
+                                          created_at: new Date().toISOString(),
+                            };
+                            addMessage(upgradeMessage);
+                            toast.error('Subscription required', {
+                                          description: 'Please subscribe to the Beta plan to use AI generation.',
+                            });
+                            return;
+                }
 
         const errorMessage: ChatMessageLocal = {
           id: crypto.randomUUID(),
