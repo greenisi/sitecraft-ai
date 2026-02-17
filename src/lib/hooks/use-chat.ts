@@ -69,6 +69,7 @@ export function useChat(projectId: string) {
         metadata: {},
         created_at: new Date().toISOString(),
       };
+
       addMessage(userMessage);
 
       // Persist user message (fire and forget)
@@ -102,9 +103,9 @@ export function useChat(projectId: string) {
 
         if (!parseResponse.ok) {
           const err = await parseResponse.json();
-                    if (err.error === 'subscription_required') {
-                                  throw new Error('subscription_required');
-                    }
+          if (err.error === 'subscription_required') {
+            throw new Error('subscription_required');
+          }
           throw new Error(err.error || 'Failed to parse prompt');
         }
 
@@ -148,9 +149,9 @@ export function useChat(projectId: string) {
           try {
             const errData = await genResponse.json();
             errMsg = errData.error || errMsg;
-                        if (errData.error === 'subscription_required') {
-                                        errMsg = 'subscription_required';
-                        }
+            if (errData.error === 'subscription_required') {
+              errMsg = 'subscription_required';
+            }
           } catch {
             // response might not be JSON
           }
@@ -211,26 +212,36 @@ export function useChat(projectId: string) {
         });
       } catch (error) {
         setProcessing(false, 'error');
+        generationStore.reset();
 
-        const errorMsg =
+        const rawMsg =
           error instanceof Error ? error.message : 'Something went wrong';
 
-                // Handle subscription required error with upgrade prompt
-                if (errorMsg === 'subscription_required') {
-                            const upgradeMessage: ChatMessageLocal = {
-                                          id: crypto.randomUUID(),
-                                          project_id: projectId,
-                                          role: 'assistant',
-                                          content: '🔒 **Beta Plan Required**\n\nTo generate websites with AI, you need to subscribe to our Beta plan. The Beta plan includes credits to build and customize your website.\n\n[Upgrade to Beta Plan →](/settings/billing)',
-                                          metadata: { stage: 'error' },
-                                          created_at: new Date().toISOString(),
-                            };
-                            addMessage(upgradeMessage);
-                            toast.error('Subscription required', {
-                                          description: 'Please subscribe to the Beta plan to use AI generation.',
-                            });
-                            return;
-                }
+        // Provide user-friendly error messages
+        let errorMsg = rawMsg;
+        if (rawMsg === 'Load failed' || rawMsg === 'Failed to fetch' || rawMsg === 'NetworkError when attempting to fetch resource.') {
+          errorMsg =
+            'The generation timed out or the connection was lost. This can happen with complex sites. Please try again — the generation should be faster now.';
+        }
+
+        // Handle subscription required error with upgrade prompt
+        if (rawMsg === 'subscription_required') {
+          const upgradeMessage: ChatMessageLocal = {
+            id: crypto.randomUUID(),
+            project_id: projectId,
+            role: 'assistant',
+            content:
+              'To generate websites with AI, you need to subscribe to our Beta plan. The Beta plan includes credits to build and customize your website.\n\n[Upgrade to Beta Plan](/settings/billing)',
+            metadata: { stage: 'error' },
+            created_at: new Date().toISOString(),
+          };
+          addMessage(upgradeMessage);
+          toast.error('Subscription required', {
+            description:
+              'Please subscribe to the Beta plan to use AI generation.',
+          });
+          return;
+        }
 
         const errorMessage: ChatMessageLocal = {
           id: crypto.randomUUID(),
