@@ -222,7 +222,7 @@ export function useChat(projectId: string) {
                                           project_id: projectId,
                                           role: 'assistant',
                                           content: '🔒 **Beta Plan Required**\n\nTo generate websites with AI, you need to subscribe to our Beta plan. The Beta plan includes credits to build and customize your website.\n\n[Upgrade to Beta Plan →](/settings/billing)',
-                                          metadata: { stage: 'subscription_required' },
+                                          metadata: { stage: 'error' },
                                           created_at: new Date().toISOString(),
                             };
                             addMessage(upgradeMessage);
