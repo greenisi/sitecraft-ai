@@ -115,10 +115,12 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (projectError || !project) {
+        console.error('Project lookup failed:', { projectId, userId: user.id, error: projectError });
     return NextResponse.json({ error: 'Project not found' }, { status: 404 });
   }
 
   if (project.user_id !== user.id) {
+      
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
