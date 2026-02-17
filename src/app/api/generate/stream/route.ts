@@ -6,7 +6,7 @@ import type { GenerationConfig } from '@/types/project';
 import type { GenerationEvent, VirtualFile } from '@/types/generation';
 
 export const runtime = 'nodejs';
-export const maxDuration = 600; // 10 minutes for multi-page generations with 32K tokens
+export const maxDuration = 300; // 5 minutes — Vercel Pro tier limit
 
 interface RequestBody {
     projectId: string;
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
               version_number: nextVersionNumber,
               status: 'generating',
               trigger_type: project.status === 'draft' ? 'initial' : 'full-regenerate',
-              model_used: 'claude-opus-4-6',
+              model_used: 'claude-sonnet-4-20250514',
               total_tokens_used: 0,
       })
       .select('id, version_number')
