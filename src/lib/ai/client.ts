@@ -46,12 +46,16 @@ export function getAnthropicClient(): Anthropic {
   return client;
 }
 
-/** The model identifier used for all generation calls. */
-export const GENERATION_MODEL = 'claude-opus-4-5';
+/**
+ * The model identifier used for all generation calls.
+ * Using claude-sonnet-4 for fast, reliable generations that complete
+ * well within Vercel's function timeout limits.
+ */
+export const GENERATION_MODEL = 'claude-sonnet-4-20250514';
 
 /** Token limits for different generation stages. */
 export const TOKEN_LIMITS = {
   designSystem: 4096,
-  blueprint: 8192,
-  component: 32768,
+  blueprint: 4096,
+  component: 16384,
 } as const;
