@@ -1,7 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { X, Loader2, Monitor, Smartphone, Tablet, Sparkles, ArrowRight } from 'lucide-react';
+import {
+  X,
+  Loader2,
+  Monitor,
+  Smartphone,
+  Tablet,
+  Sparkles,
+  ArrowRight,
+} from 'lucide-react';
 import type { PremiumTemplate } from '@/lib/templates/premium-templates';
 
 interface TemplatePreviewModalProps {
@@ -59,7 +67,11 @@ export function TemplatePreviewModal({
     mobile: '375px',
   };
 
-  const deviceButtons: { mode: DeviceMode; icon: typeof Monitor; label: string }[] = [
+  const deviceButtons: {
+    mode: DeviceMode;
+    icon: typeof Monitor;
+    label: string;
+  }[] = [
     { mode: 'desktop', icon: Monitor, label: 'Desktop' },
     { mode: 'tablet', icon: Tablet, label: 'Tablet' },
     { mode: 'mobile', icon: Smartphone, label: 'Mobile' },
@@ -76,10 +88,10 @@ export function TemplatePreviewModal({
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in" />
 
-      {/* Modal */}
-      <div className="relative z-10 flex flex-col w-full h-full sm:w-[95vw] sm:h-[92vh] sm:max-w-[1600px] sm:rounded-2xl overflow-hidden bg-background border-0 sm:border sm:border-border/50 shadow-2xl shadow-black/50 animate-scale-in">
+      {/* Modal - safe area insets for notches/home indicators */}
+      <div className="relative z-10 flex flex-col w-full h-full sm:w-[95vw] sm:h-[92vh] sm:max-w-[1600px] sm:rounded-2xl overflow-hidden bg-background border-0 sm:border sm:border-border/50 shadow-2xl shadow-black/50 animate-scale-in" style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {/* Header - stacks on mobile */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 px-3 sm:px-5 py-2.5 sm:py-3 border-b border-border/50 bg-background/95 backdrop-blur-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 px-3 sm:px-5 py-2.5 sm:py-3 border-b border-border/50 bg-background/95 backdrop-blur-sm flex-shrink-0">
           {/* Top row on mobile: name + close */}
           <div className="flex items-center justify-between sm:justify-start gap-3">
             <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -88,28 +100,33 @@ export function TemplatePreviewModal({
                 style={{ backgroundColor: template.accentColor }}
               />
               <div className="min-w-0">
-                <h3 className="text-xs sm:text-sm font-semibold text-foreground truncate">{template.name}</h3>
-                <p className="text-[10px] sm:text-xs text-muted-foreground truncate hidden sm:block">{template.description}</p>
+                <h3 className="text-xs sm:text-sm font-semibold text-foreground truncate">
+                  {template.name}
+                </h3>
+                <p className="text-[10px] sm:text-xs text-muted-foreground truncate hidden sm:block">
+                  {template.description}
+                </p>
               </div>
             </div>
+
             {/* Close button visible on mobile in top row */}
             <button
               onClick={onClose}
-              className="flex sm:hidden items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex-shrink-0"
+              className="flex sm:hidden items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex-shrink-0"
             >
-              <X className="h-4 w-4" />
+              <X className="h-5 w-5" />
             </button>
           </div>
 
           {/* Bottom row on mobile: device switcher + use button */}
           <div className="flex items-center justify-between sm:justify-end gap-2">
-            {/* Device Switcher - hidden on very small screens */}
-            <div className="hidden md:flex items-center gap-1 rounded-lg bg-muted p-1">
+            {/* Device Switcher - visible on all screens (compact on mobile) */}
+            <div className="flex items-center gap-0.5 sm:gap-1 rounded-lg bg-muted p-0.5 sm:p-1">
               {deviceButtons.map(({ mode, icon: Icon, label }) => (
                 <button
                   key={mode}
                   onClick={() => setDeviceMode(mode)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
+                  className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-all duration-200 min-h-[32px] ${
                     deviceMode === mode
                       ? 'bg-background text-foreground shadow-sm'
                       : 'text-muted-foreground hover:text-foreground'
@@ -117,7 +134,7 @@ export function TemplatePreviewModal({
                   title={label}
                 >
                   <Icon className="h-3.5 w-3.5" />
-                  <span className="hidden lg:inline">{label}</span>
+                  <span className="hidden sm:inline">{label}</span>
                 </button>
               ))}
             </div>
@@ -126,22 +143,23 @@ export function TemplatePreviewModal({
               <button
                 onClick={() => template && onUseTemplate(template)}
                 disabled={isLoading}
-                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white text-xs sm:text-sm font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-violet-500/25 disabled:opacity-50"
+                className="flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 sm:py-2 rounded-lg bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white text-xs sm:text-sm font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-violet-500/25 disabled:opacity-50 min-h-[36px] sm:min-h-[auto]"
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin" />
+                    <Loader2 className="h-3.5 w-3.5 sm:h-3.5 sm:w-3.5 animate-spin" />
                     <span className="hidden sm:inline">Creating...</span>
                     <span className="sm:hidden">...</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                    <Sparkles className="h-3.5 w-3.5 sm:h-3.5 sm:w-3.5" />
                     <span>Use Template</span>
-                    <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 hidden sm:block" />
+                    <ArrowRight className="h-3.5 w-3.5 sm:h-3.5 sm:w-3.5 hidden sm:block" />
                   </>
                 )}
               </button>
+
               {/* Close button for desktop only (hidden on mobile since it's in top row) */}
               <button
                 onClick={onClose}
@@ -154,7 +172,7 @@ export function TemplatePreviewModal({
         </div>
 
         {/* Preview Area */}
-        <div className="flex-1 bg-muted/30 flex items-start justify-center overflow-hidden p-1.5 sm:p-4">
+        <div className="flex-1 bg-muted/30 flex items-start justify-center overflow-hidden p-1.5 sm:p-4 min-h-0">
           <div
             className="h-full rounded-lg sm:rounded-xl overflow-hidden border border-border/30 bg-background shadow-xl transition-all duration-500 ease-out"
             style={{
@@ -167,7 +185,9 @@ export function TemplatePreviewModal({
                 <div className="relative">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-violet-500/20 border-t-violet-500 animate-spin" />
                 </div>
-                <p className="text-xs sm:text-sm text-muted-foreground animate-pulse">Loading preview...</p>
+                <p className="text-xs sm:text-sm text-muted-foreground animate-pulse">
+                  Loading preview...
+                </p>
               </div>
             )}
             <iframe
