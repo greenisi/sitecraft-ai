@@ -1,154 +1,178 @@
 'use client';
 
-import { Suspense, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Loader2 } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
+import { usePathname } from 'next/navigation';
+import {
+  LayoutDashboard, Settings, LogOut, Moon, Sun, Menu, X,
+  Shield, Sparkles, ChevronRight, Zap,
+} from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils/cn';
+import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
 
-function LoginForm() {
-  const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirect') || '/dashboard';
-  const oauthError = searchParams.get('error');
+const baseNavigation = [
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Templates', href: '/templates', icon: Sparkles, badge: 'NEW' },
+  { name: 'Settings', href: '/settings', icon: Settings },
+];
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(oauthError);
-  const [isLoading, setIsLoading] = useState(false);
+export function Sidebar() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { theme, setTheme } = useTheme();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  async function handleEmailLogin(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError(null);
-
-    if (!email.trim()) {
-      setError('Please enter your email address.');
-      return;
-    }
-    if (!password) {
-      setError('Please enter your password.');
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
+  useEffect(() => {
+    const checkAdmin = async () => {
       const supabase = createClient();
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      if (profile?.role === 'admin') setIsAdmin(true);
+    };
+    checkAdmin();
+  }, []);
 
-      if (signInError) {
-        setError(signInError.message);
-        return;
-      }
+  const navigation = isAdmin
+    ? [...baseNavigation, { name: 'Admin', href: '/admin', icon: Shield }]
+    : baseNavigation;
 
-      window.location.href = redirectTo;
-    } catch {
-      setError('An unexpected error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  const handleSignOut = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.refresh();
+    router.push('/login');
+  };
 
-  return (
-    <div className="rounded-2xl border border-border/50 bg-card p-6 sm:p-8 shadow-xl shadow-black/5 animate-fade-in-up">
-      <div className="text-center mb-6">
-        <h1 className="text-xl font-bold tracking-tight">Welcome back</h1>
-        <p className="text-sm text-muted-foreground mt-1">Sign in to your account to continue</p>
-      </div>
-
-      <div className="space-y-4">
-        {error && (
-          <div className="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive animate-scale-in">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleEmailLogin} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-xs font-medium">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isLoading}
-              autoComplete="email"
-              autoFocus
-              className="h-11 rounded-xl border-border/50 focus:border-primary/30"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="password" className="text-xs font-medium">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={isLoading}
-              autoComplete="current-password"
-              className="h-11 rounded-xl border-border/50 focus:border-primary/30"
-            />
-          </div>
-
-          <Button
-            type="submit"
-            className="w-full h-11 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white border-0 shadow-lg shadow-violet-500/20 transition-all"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Signing in...
-              </>
-            ) : (
-              'Sign in'
-            )}
-          </Button>
-        </form>
-      </div>
-
-      <p className="text-center text-sm text-muted-foreground mt-6">
-        Don&apos;t have an account?{' '}
-        <Link
-          href="/signup"
-          className="font-medium text-violet-600 dark:text-violet-400 hover:underline underline-offset-4"
+  const sidebarContent = (
+    <>
+      {/* Logo */}
+      <div className="flex h-16 items-center gap-3 px-5 border-b border-sidebar-border/50">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10">
+          <Zap className="h-4 w-4 text-white" />
+        </div>
+        <div className="flex flex-col">
+          <span className="text-sm font-semibold text-sidebar-foreground leading-none">SiteCraft</span>
+          <span className="text-[10px] text-sidebar-foreground/40 leading-none mt-0.5">AI Website Builder</span>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 ml-auto md:hidden text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+          onClick={() => setMobileOpen(false)}
         >
-          Sign up
-        </Link>
-      </p>
-    </div>
-  );
-}
-
-function LoginFormFallback() {
-  return (
-    <div className="rounded-2xl border border-border/50 bg-card p-6 sm:p-8 shadow-xl shadow-black/5">
-      <div className="text-center mb-6">
-        <Skeleton className="h-6 w-32 mx-auto" />
-        <Skeleton className="h-4 w-48 mx-auto mt-2" />
+          <X className="h-4 w-4" />
+        </Button>
       </div>
-      <div className="space-y-4">
-        <Skeleton className="h-11 w-full rounded-xl" />
-        <Skeleton className="h-11 w-full rounded-xl" />
-        <Skeleton className="h-11 w-full rounded-xl" />
-      </div>
-    </div>
-  );
-}
 
-export default function LoginPage() {
+      {/* Navigation */}
+      <ScrollArea className="flex-1 px-3 py-4">
+        <div className="space-y-1">
+          <p className="px-3 mb-3 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/30">
+            Menu
+          </p>
+          {navigation.map((item) => {
+            const isActive =
+              pathname === item.href || pathname.startsWith(item.href + '/');
+            const badge = 'badge' in item ? item.badge : null;
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200',
+                  isActive
+                    ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                    : 'text-sidebar-foreground/50 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground/80'
+                )}
+              >
+                <item.icon
+                  className={cn(
+                    'h-4 w-4 transition-colors',
+                    isActive
+                      ? 'text-white'
+                      : 'text-sidebar-foreground/40 group-hover:text-sidebar-foreground/60'
+                  )}
+                />
+                <span className="flex-1">{item.name}</span>
+                {badge && (
+                  <span className="text-[9px] font-bold bg-white/15 text-white/80 px-1.5 py-0.5 rounded-full">
+                    {badge}
+                  </span>
+                )}
+                {isActive && (
+                  <ChevronRight className="h-3 w-3 text-sidebar-foreground/30" />
+                )}
+              </Link>
+            );
+          })}
+        </div>
+      </ScrollArea>
+
+      {/* Bottom actions */}
+      <div className="border-t border-sidebar-border/50 p-3 space-y-0.5">
+        <button
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium text-sidebar-foreground/40 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground/70"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        >
+          <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <span>Toggle theme</span>
+        </button>
+        <button
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium text-sidebar-foreground/40 transition-colors hover:bg-red-500/10 hover:text-red-400"
+          onClick={handleSignOut}
+        >
+          <LogOut className="h-4 w-4" />
+          Sign out
+        </button>
+      </div>
+    </>
+  );
+
   return (
-    <Suspense fallback={<LoginFormFallback />}>
-      <LoginForm />
-    </Suspense>
+    <>
+      {/* Mobile hamburger */}
+      <button
+        className="fixed top-3 left-3 z-50 flex h-10 w-10 items-center justify-center rounded-xl border bg-background shadow-lg md:hidden"
+        onClick={() => setMobileOpen(true)}
+        aria-label="Open menu"
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* Mobile sidebar */}
+      <div
+        className={cn(
+          'fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col bg-sidebar transition-transform duration-300 ease-out md:hidden',
+          mobileOpen ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
+        {sidebarContent}
+      </div>
+
+      {/* Desktop sidebar */}
+      <div className="hidden md:flex h-full w-[240px] flex-col bg-sidebar flex-shrink-0">
+        {sidebarContent}
+      </div>
+    </>
   );
 }
