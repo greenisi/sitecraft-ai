@@ -17,7 +17,8 @@ export default function TemplatesPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [previewTemplate, setPreviewTemplate] = useState<PremiumTemplate | null>(null);
+  const [previewTemplate, setPreviewTemplate] =
+    useState<PremiumTemplate | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const filteredTemplates =
@@ -57,92 +58,92 @@ export default function TemplatesPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 p-8 text-white">
-        <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-white/5 rounded-full blur-2xl" />
+      <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 p-5 sm:p-8 text-white">
+        <div className="absolute -top-20 -right-20 w-48 sm:w-64 h-48 sm:h-64 bg-white/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-10 -left-10 w-36 sm:w-48 h-36 sm:h-48 bg-white/5 rounded-full blur-2xl" />
         <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="h-5 w-5 text-yellow-300" />
-            <span className="text-sm font-medium text-white/80 uppercase tracking-wider">
+          <div className="flex items-center gap-2 mb-2 sm:mb-3">
+            <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-300" />
+            <span className="text-xs sm:text-sm font-medium text-white/80 uppercase tracking-wider">
               Premium Templates
             </span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-3">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-3">
             Launch with a $10,000 Design
           </h1>
-          <p className="text-white/70 text-lg max-w-2xl">
+          <p className="text-white/70 text-sm sm:text-lg max-w-2xl leading-relaxed">
             Choose a professionally designed template, customize it with your
             business details, and let AI generate a stunning website in seconds.
-            Every template includes animations, mobile responsiveness, and
-            conversion-optimized layouts.
           </p>
         </div>
       </div>
 
-      {/* Category filter */}
-      <div className="flex flex-wrap gap-2">
-        {TEMPLATE_CATEGORIES.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-              selectedCategory === cat
-                ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/25'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
+      {/* Category filter - horizontally scrollable on mobile */}
+      <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto scrollbar-none">
+        <div className="flex gap-2 min-w-max sm:min-w-0 sm:flex-wrap pb-1">
+          {TEMPLATE_CATEGORIES.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+                selectedCategory === cat
+                  ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/25'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Templates Grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filteredTemplates.map((template) => (
           <div
             key={template.id}
-            className="group relative flex flex-col rounded-2xl border border-border bg-card overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/10 hover:border-violet-500/30"
+            className="group relative flex flex-col rounded-xl sm:rounded-2xl border border-border bg-card overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/10 hover:border-violet-500/30 active:scale-[0.99]"
             onMouseEnter={() => setHoveredId(template.id)}
             onMouseLeave={() => setHoveredId(null)}
           >
             {/* Preview gradient */}
             <div
-              className={`relative h-40 bg-gradient-to-br ${template.previewGradient} flex items-center justify-center overflow-hidden`}
+              className={`relative h-36 sm:h-40 bg-gradient-to-br ${template.previewGradient} flex items-center justify-center overflow-hidden`}
             >
               {/* Decorative orbs */}
               <div
-                className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-2xl opacity-40"
+                className="absolute -top-8 -right-8 w-24 sm:w-32 h-24 sm:h-32 rounded-full blur-2xl opacity-40"
                 style={{ backgroundColor: template.accentColor }}
               />
               <div
-                className="absolute -bottom-8 -left-8 w-24 h-24 rounded-full blur-2xl opacity-30"
+                className="absolute -bottom-8 -left-8 w-20 sm:w-24 h-20 sm:h-24 rounded-full blur-2xl opacity-30"
                 style={{ backgroundColor: template.accentColor }}
               />
 
               {/* Template name watermark */}
               <div className="relative z-10 text-center px-4">
-                <p className="text-white/30 text-xs uppercase tracking-widest font-medium mb-1">
+                <p className="text-white/30 text-[10px] sm:text-xs uppercase tracking-widest font-medium mb-1">
                   Template
                 </p>
-                <p className="text-white font-bold text-lg leading-tight">
+                <p className="text-white font-bold text-base sm:text-lg leading-tight">
                   {template.name}
                 </p>
-                <div className="flex items-center justify-center gap-1 mt-2">
+                <div className="flex items-center justify-center gap-1 mt-1.5 sm:mt-2">
                   <div
-                    className="w-3 h-3 rounded-full ring-2 ring-white/20"
+                    className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ring-2 ring-white/20"
                     style={{ backgroundColor: template.accentColor }}
                   />
-                  <span className="text-white/60 text-xs">
+                  <span className="text-white/60 text-[10px] sm:text-xs">
                     {template.style}
                   </span>
                 </div>
               </div>
 
-              {/* Hover overlay with both buttons */}
+              {/* Hover overlay - hidden on touch devices, visible on hover for desktop */}
               <div
-                className={`absolute inset-0 bg-black/50 flex items-center justify-center gap-3 transition-opacity duration-200 ${
+                className={`absolute inset-0 bg-black/50 items-center justify-center gap-3 transition-opacity duration-200 hidden sm:flex ${
                   hoveredId === template.id ? 'opacity-100' : 'opacity-0'
                 }`}
               >
@@ -169,17 +170,20 @@ export default function TemplatesPage() {
             </div>
 
             {/* Card body */}
-            <div className="flex flex-col flex-1 p-4 gap-3">
+            <div className="flex flex-col flex-1 p-3.5 sm:p-4 gap-2.5 sm:gap-3">
               <div>
                 <div className="flex items-start justify-between gap-2 mb-1">
-                  <h3 className="font-semibold text-base text-foreground leading-tight">
+                  <h3 className="font-semibold text-sm sm:text-base text-foreground leading-tight">
                     {template.name}
                   </h3>
-                  <Badge variant="outline" className="text-xs flex-shrink-0">
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] sm:text-xs flex-shrink-0"
+                  >
                     {template.category}
                   </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                <p className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed line-clamp-2">
                   {template.description}
                 </p>
               </div>
@@ -189,27 +193,29 @@ export default function TemplatesPage() {
                 {template.tags.slice(0, 3).map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted text-muted-foreground text-xs"
+                    className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-md bg-muted text-muted-foreground text-[10px] sm:text-xs"
                   >
-                    <Tag className="h-2.5 w-2.5" />
+                    <Tag className="h-2 w-2 sm:h-2.5 sm:w-2.5" />
                     {tag}
                   </span>
                 ))}
               </div>
 
-              {/* Features */}
-              <div className="space-y-1 pt-1 border-t border-border">
-                {['Scroll animations', 'Mobile responsive', 'SEO optimized'].map(
-                  (feat) => (
-                    <div
-                      key={feat}
-                      className="flex items-center gap-1.5 text-xs text-muted-foreground"
-                    >
-                      <Check className="h-3 w-3 text-green-500 flex-shrink-0" />
-                      {feat}
-                    </div>
-                  )
-                )}
+              {/* Features - hidden on mobile for compact cards */}
+              <div className="hidden sm:block space-y-1 pt-1 border-t border-border">
+                {[
+                  'Scroll animations',
+                  'Mobile responsive',
+                  'SEO optimized',
+                ].map((feat) => (
+                  <div
+                    key={feat}
+                    className="flex items-center gap-1.5 text-xs text-muted-foreground"
+                  >
+                    <Check className="h-3 w-3 text-green-500 flex-shrink-0" />
+                    {feat}
+                  </div>
+                ))}
               </div>
 
               {/* CTA Buttons */}
@@ -217,27 +223,28 @@ export default function TemplatesPage() {
                 <Button
                   onClick={() => handlePreview(template)}
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 h-8 sm:h-9 text-xs sm:text-sm"
                   size="sm"
                 >
-                  <Eye className="mr-1.5 h-3.5 w-3.5" />
+                  <Eye className="mr-1 sm:mr-1.5 h-3 w-3 sm:h-3.5 sm:w-3.5" />
                   Preview
                 </Button>
                 <Button
                   onClick={() => handleUseTemplate(template)}
                   disabled={loadingId !== null}
-                  className="flex-1 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white border-0"
+                  className="flex-1 h-8 sm:h-9 text-xs sm:text-sm bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white border-0"
                   size="sm"
                 >
                   {loadingId === template.id ? (
                     <>
-                      <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                      Creating...
+                      <Loader2 className="mr-1 sm:mr-1.5 h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin" />
+                      <span className="hidden sm:inline">Creating...</span>
+                      <span className="sm:hidden">...</span>
                     </>
                   ) : (
                     <>
                       Use
-                      <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                      <ArrowRight className="ml-1 sm:ml-1.5 h-3 w-3 sm:h-3.5 sm:w-3.5" />
                     </>
                   )}
                 </Button>
@@ -248,9 +255,11 @@ export default function TemplatesPage() {
       </div>
 
       {filteredTemplates.length === 0 && (
-        <div className="text-center py-16 text-muted-foreground">
-          <Sparkles className="h-8 w-8 mx-auto mb-3 opacity-30" />
-          <p>No templates in this category yet. More coming soon!</p>
+        <div className="text-center py-12 sm:py-16 text-muted-foreground">
+          <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-3 opacity-30" />
+          <p className="text-sm sm:text-base">
+            No templates in this category yet. More coming soon!
+          </p>
         </div>
       )}
 
