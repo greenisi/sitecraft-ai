@@ -27,7 +27,7 @@ export function DeviceToolbar({ pages = [] }: DeviceToolbarProps) {
 
   return (
     <div className="flex flex-col border-b bg-background">
-      {/* Page tabs — only show if there are multiple pages */}
+      {/* Page tabs â only show if there are multiple pages */}
       {hasMultiplePages && (
         <div className="flex items-center gap-1 border-b px-3 py-1.5 overflow-x-auto">
           {pages.map((page) => (
@@ -59,7 +59,7 @@ export function DeviceToolbar({ pages = [] }: DeviceToolbarProps) {
                 'gap-1.5',
                 viewport === vp.id && 'bg-accent text-accent-foreground'
               )}
-              onClick={() => setViewport(vp.id)}
+              onClick={() => { setViewport(vp.id); setAutoFit(false); }}
             >
               <vp.icon className="h-4 w-4" />
               <span className="hidden sm:inline text-xs">{vp.label}</span>
