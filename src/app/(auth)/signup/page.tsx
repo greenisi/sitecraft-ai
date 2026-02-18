@@ -80,8 +80,8 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="rounded-2xl border border-border/50 bg-card p-6 sm:p-8 shadow-xl shadow-black/5 animate-fade-in-up">
-      <div className="text-center mb-6">
+    <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm p-6 sm:p-8 shadow-xl shadow-black/5 card-alive">
+      <div className="text-center mb-6 stagger-1">
         <h1 className="text-xl font-bold tracking-tight">Create your account</h1>
         <p className="text-sm text-muted-foreground mt-1">Get started with Innovated Marketing</p>
       </div>
@@ -94,10 +94,10 @@ export default function SignupPage() {
         )}
 
         <form onSubmit={handleEmailSignup} className="space-y-4">
-          <div className="space-y-2">
+          <div className="space-y-2 stagger-2">
             <Label htmlFor="display-name" className="text-xs font-medium">Name</Label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="relative input-alive">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors" />
               <Input
                 id="display-name"
                 type="text"
@@ -107,15 +107,15 @@ export default function SignupPage() {
                 disabled={isLoading}
                 autoComplete="name"
                 autoFocus
-                className="h-11 pl-10 rounded-xl border-border/50 focus:border-primary/30"
+                className="h-11 pl-10 rounded-xl border-border/50 focus:border-foreground/20 transition-all duration-300 focus:shadow-[0_0_0_3px_hsla(var(--foreground),0.05)]"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 stagger-3">
             <Label htmlFor="email" className="text-xs font-medium">Email</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="relative input-alive">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors" />
               <Input
                 id="email"
                 type="email"
@@ -124,15 +124,15 @@ export default function SignupPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
                 autoComplete="email"
-                className="h-11 pl-10 rounded-xl border-border/50 focus:border-primary/30"
+                className="h-11 pl-10 rounded-xl border-border/50 focus:border-foreground/20 transition-all duration-300 focus:shadow-[0_0_0_3px_hsla(var(--foreground),0.05)]"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 stagger-4">
             <Label htmlFor="password" className="text-xs font-medium">Password</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="relative input-alive">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors" />
               <Input
                 id="password"
                 type="password"
@@ -141,15 +141,15 @@ export default function SignupPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
                 autoComplete="new-password"
-                className="h-11 pl-10 rounded-xl border-border/50 focus:border-primary/30"
+                className="h-11 pl-10 rounded-xl border-border/50 focus:border-foreground/20 transition-all duration-300 focus:shadow-[0_0_0_3px_hsla(var(--foreground),0.05)]"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 stagger-5">
             <Label htmlFor="confirm-password" className="text-xs font-medium">Confirm Password</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="relative input-alive">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors" />
               <Input
                 id="confirm-password"
                 type="password"
@@ -158,34 +158,36 @@ export default function SignupPage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 disabled={isLoading}
                 autoComplete="new-password"
-                className="h-11 pl-10 rounded-xl border-border/50 focus:border-primary/30"
+                className="h-11 pl-10 rounded-xl border-border/50 focus:border-foreground/20 transition-all duration-300 focus:shadow-[0_0_0_3px_hsla(var(--foreground),0.05)]"
               />
             </div>
           </div>
 
-          <Button
-            type="submit"
-            className="w-full h-11 rounded-xl bg-foreground hover:bg-foreground/90 text-background border-0 shadow-lg transition-all"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Creating account...
-              </>
-            ) : (
-              'Create account'
-            )}
-          </Button>
+          <div className="stagger-6">
+            <Button
+              type="submit"
+              className="w-full h-11 rounded-xl bg-foreground hover:bg-foreground/90 text-background border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:shadow-foreground/10 hover:-translate-y-0.5 active:translate-y-0"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Creating account...
+                </>
+              ) : (
+                'Create account'
+              )}
+            </Button>
+          </div>
         </form>
       </div>
 
-      <div className="flex items-center justify-between mt-6">
+      <div className="flex items-center justify-between mt-6 stagger-7">
         <p className="text-sm text-muted-foreground">
           Already have an account?{' '}
           <Link
             href="/login"
-            className="font-medium text-foreground hover:underline underline-offset-4"
+            className="font-medium text-foreground hover:underline underline-offset-4 transition-all duration-300"
           >
             Sign in
           </Link>
