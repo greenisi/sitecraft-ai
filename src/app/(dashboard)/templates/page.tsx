@@ -2,16 +2,23 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Sparkles, ArrowRight, Tag, Check } from 'lucide-react';
-import { PREMIUM_TEMPLATES, TEMPLATE_CATEGORIES, type PremiumTemplate } from '@/lib/templates/premium-templates';
+import { Loader2, Sparkles, ArrowRight, Tag, Check, Eye } from 'lucide-react';
+import {
+  PREMIUM_TEMPLATES,
+  TEMPLATE_CATEGORIES,
+  type PremiumTemplate,
+} from '@/lib/templates/premium-templates';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { TemplatePreviewModal } from '@/components/templates/template-preview-modal';
 
 export default function TemplatesPage() {
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [previewTemplate, setPreviewTemplate] = useState<PremiumTemplate | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const filteredTemplates =
     selectedCategory === 'All'
@@ -21,19 +28,32 @@ export default function TemplatesPage() {
   const handleUseTemplate = async (template: PremiumTemplate) => {
     if (loadingId) return;
     setLoadingId(template.id);
+
     try {
       const res = await fetch('/api/templates/use', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ templateId: template.id }),
       });
+
       if (!res.ok) throw new Error('Failed to create project from template');
+
       const { projectId } = await res.json();
       router.push(`/projects/${projectId}`);
     } catch (err) {
       console.error(err);
       setLoadingId(null);
     }
+  };
+
+  const handlePreview = (template: PremiumTemplate) => {
+    setPreviewTemplate(template);
+    setIsPreviewOpen(true);
+  };
+
+  const handleClosePreview = () => {
+    setIsPreviewOpen(false);
+    setTimeout(() => setPreviewTemplate(null), 300);
   };
 
   return (
@@ -45,15 +65,18 @@ export default function TemplatesPage() {
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-3">
             <Sparkles className="h-5 w-5 text-yellow-300" />
-            <span className="text-sm font-medium text-white/80 uppercase tracking-wider">Premium Templates</span>
+            <span className="text-sm font-medium text-white/80 uppercase tracking-wider">
+              Premium Templates
+            </span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold mb-3">
             Launch with a $10,000 Design
           </h1>
           <p className="text-white/70 text-lg max-w-2xl">
-            Choose a professionally designed template, customize it with your business details,
-            and let AI generate a stunning website in seconds. Every template includes
-            animations, mobile responsiveness, and conversion-optimized layouts.
+            Choose a professionally designed template, customize it with your
+            business details, and let AI generate a stunning website in seconds.
+            Every template includes animations, mobile responsiveness, and
+            conversion-optimized layouts.
           </p>
         </div>
       </div>
@@ -85,7 +108,9 @@ export default function TemplatesPage() {
             onMouseLeave={() => setHoveredId(null)}
           >
             {/* Preview gradient */}
-            <div className={`relative h-40 bg-gradient-to-br ${template.previewGradient} flex items-center justify-center overflow-hidden`}>
+            <div
+              className={`relative h-40 bg-gradient-to-br ${template.previewGradient} flex items-center justify-center overflow-hidden`}
+            >
               {/* Decorative orbs */}
               <div
                 className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-2xl opacity-40"
@@ -95,31 +120,50 @@ export default function TemplatesPage() {
                 className="absolute -bottom-8 -left-8 w-24 h-24 rounded-full blur-2xl opacity-30"
                 style={{ backgroundColor: template.accentColor }}
               />
+
               {/* Template name watermark */}
               <div className="relative z-10 text-center px-4">
-                <p className="text-white/30 text-xs uppercase tracking-widest font-medium mb-1">Template</p>
-                <p className="text-white font-bold text-lg leading-tight">{template.name}</p>
+                <p className="text-white/30 text-xs uppercase tracking-widest font-medium mb-1">
+                  Template
+                </p>
+                <p className="text-white font-bold text-lg leading-tight">
+                  {template.name}
+                </p>
                 <div className="flex items-center justify-center gap-1 mt-2">
                   <div
                     className="w-3 h-3 rounded-full ring-2 ring-white/20"
                     style={{ backgroundColor: template.accentColor }}
                   />
-                  <span className="text-white/60 text-xs">{template.style}</span>
+                  <span className="text-white/60 text-xs">
+                    {template.style}
+                  </span>
                 </div>
               </div>
-              {/* Hover overlay */}
-              <div className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-200 ${hoveredId === template.id ? 'opacity-100' : 'opacity-0'}`}>
+
+              {/* Hover overlay with both buttons */}
+              <div
+                className={`absolute inset-0 bg-black/50 flex items-center justify-center gap-3 transition-opacity duration-200 ${
+                  hoveredId === template.id ? 'opacity-100' : 'opacity-0'
+                }`}
+              >
+                <button
+                  onClick={() => handlePreview(template)}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-white/10 backdrop-blur-sm text-white border border-white/20 rounded-full text-sm font-semibold hover:bg-white/20 transition-all duration-200 hover:scale-105"
+                >
+                  <Eye className="h-4 w-4" />
+                  Preview
+                </button>
                 <button
                   onClick={() => handleUseTemplate(template)}
                   disabled={loadingId !== null}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-white text-gray-900 rounded-full text-sm font-semibold hover:bg-white/90 transition-all duration-200 hover:scale-105 disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2.5 bg-white text-gray-900 rounded-full text-sm font-semibold hover:bg-white/90 transition-all duration-200 hover:scale-105 disabled:opacity-50"
                 >
                   {loadingId === template.id ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <Sparkles className="h-4 w-4" />
                   )}
-                  Use Template
+                  Use
                 </button>
               </div>
             </div>
@@ -128,16 +172,25 @@ export default function TemplatesPage() {
             <div className="flex flex-col flex-1 p-4 gap-3">
               <div>
                 <div className="flex items-start justify-between gap-2 mb-1">
-                  <h3 className="font-semibold text-base text-foreground leading-tight">{template.name}</h3>
-                  <Badge variant="outline" className="text-xs flex-shrink-0">{template.category}</Badge>
+                  <h3 className="font-semibold text-base text-foreground leading-tight">
+                    {template.name}
+                  </h3>
+                  <Badge variant="outline" className="text-xs flex-shrink-0">
+                    {template.category}
+                  </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{template.description}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                  {template.description}
+                </p>
               </div>
 
               {/* Tags */}
               <div className="flex flex-wrap gap-1">
                 {template.tags.slice(0, 3).map((tag) => (
-                  <span key={tag} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted text-muted-foreground text-xs">
+                  <span
+                    key={tag}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted text-muted-foreground text-xs"
+                  >
                     <Tag className="h-2.5 w-2.5" />
                     {tag}
                   </span>
@@ -146,33 +199,49 @@ export default function TemplatesPage() {
 
               {/* Features */}
               <div className="space-y-1 pt-1 border-t border-border">
-                {['Scroll animations', 'Mobile responsive', 'SEO optimized'].map((feat) => (
-                  <div key={feat} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Check className="h-3 w-3 text-green-500 flex-shrink-0" />
-                    {feat}
-                  </div>
-                ))}
+                {['Scroll animations', 'Mobile responsive', 'SEO optimized'].map(
+                  (feat) => (
+                    <div
+                      key={feat}
+                      className="flex items-center gap-1.5 text-xs text-muted-foreground"
+                    >
+                      <Check className="h-3 w-3 text-green-500 flex-shrink-0" />
+                      {feat}
+                    </div>
+                  )
+                )}
               </div>
 
-              {/* CTA */}
-              <Button
-                onClick={() => handleUseTemplate(template)}
-                disabled={loadingId !== null}
-                className="w-full mt-auto bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white border-0"
-                size="sm"
-              >
-                {loadingId === template.id ? (
-                  <>
-                    <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    Use This Template
-                    <ArrowRight className="ml-2 h-3.5 w-3.5" />
-                  </>
-                )}
-              </Button>
+              {/* CTA Buttons */}
+              <div className="flex gap-2 mt-auto">
+                <Button
+                  onClick={() => handlePreview(template)}
+                  variant="outline"
+                  className="flex-1"
+                  size="sm"
+                >
+                  <Eye className="mr-1.5 h-3.5 w-3.5" />
+                  Preview
+                </Button>
+                <Button
+                  onClick={() => handleUseTemplate(template)}
+                  disabled={loadingId !== null}
+                  className="flex-1 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white border-0"
+                  size="sm"
+                >
+                  {loadingId === template.id ? (
+                    <>
+                      <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      Use
+                      <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         ))}
@@ -184,7 +253,15 @@ export default function TemplatesPage() {
           <p>No templates in this category yet. More coming soon!</p>
         </div>
       )}
+
+      {/* Preview Modal */}
+      <TemplatePreviewModal
+        template={previewTemplate}
+        isOpen={isPreviewOpen}
+        onClose={handleClosePreview}
+        onUseTemplate={handleUseTemplate}
+        isLoading={loadingId !== null}
+      />
     </div>
   );
 }
-
