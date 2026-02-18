@@ -477,3 +477,91 @@ html, body {
 .breathe {
   animation: breathe 4s ease-in-out infinite;
 }
+
+/* ===== MOBILE BACKGROUND ENHANCEMENTS ===== */
+
+/* Mobile-optimized orb sizes - slightly smaller for performance */
+@media (max-width: 767px) {
+    .orb {
+          will-change: transform;
+          -webkit-transform: translateZ(0);
+          transform: translateZ(0);
+    }
+
+    .orb-1 {
+          animation-duration: 25s;
+    }
+
+    .orb-2 {
+          animation-duration: 30s;
+    }
+
+    .orb-3 {
+          animation-duration: 22s;
+    }
+
+    /* Slightly larger particles on mobile for visibility */
+    .particle {
+          width: 3px;
+          height: 3px;
+    }
+
+    .particle-light {
+          background: rgba(0, 0, 0, 0.12);
+    }
+
+    .dark .particle-light {
+          background: rgba(255, 255, 255, 0.15);
+    }
+}
+
+/* Mobile-specific aurora mesh for auth backgrounds */
+@media (max-width: 1023px) {
+    .auth-mesh {
+          background-image:
+                  radial-gradient(at 20% 30%, hsla(260, 60%, 85%, 0.3) 0px, transparent 50%),
+                  radial-gradient(at 80% 20%, hsla(220, 55%, 88%, 0.25) 0px, transparent 50%),
+                  radial-gradient(at 50% 90%, hsla(240, 50%, 90%, 0.25) 0px, transparent 50%),
+                  radial-gradient(at 10% 70%, hsla(280, 45%, 88%, 0.2) 0px, transparent 50%);
+    }
+
+    .dark .auth-mesh {
+          background-image:
+                  radial-gradient(at 20% 30%, hsla(260, 60%, 12%, 0.5) 0px, transparent 50%),
+                  radial-gradient(at 80% 20%, hsla(220, 55%, 10%, 0.4) 0px, transparent 50%),
+                  radial-gradient(at 50% 90%, hsla(240, 50%, 8%, 0.4) 0px, transparent 50%),
+                  radial-gradient(at 10% 70%, hsla(280, 45%, 10%, 0.3) 0px, transparent 50%);
+    }
+}
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+    .orb, .orb-1, .orb-2, .orb-3,
+    .orb-glow, .orb-glow-slow,
+    .particle, .particle-light,
+    .spin-ring, .breathe,
+    .card-alive,
+    .grid-pattern, .grid-pattern-light {
+          animation: none !important;
+    }
+}
+
+/* ===== MOBILE SHIMMER TEXT ===== */
+@media (max-width: 767px) {
+    .text-shimmer {
+          animation-duration: 4s;
+    }
+}
+
+/* ===== GPU ACCELERATION HINTS FOR MOBILE ===== */
+@media (max-width: 767px) {
+    .orb,
+    .particle,
+    .particle-light,
+    .spin-ring {
+          -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+          -webkit-perspective: 1000;
+          perspective: 1000;
+    }
+}
