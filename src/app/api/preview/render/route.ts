@@ -102,8 +102,8 @@ function deriveAvailablePages(files: FileRecord[]): Array<{ path: string; title:
 
 /**
  * Resolve the page file path from a URL path.
- * / → src/app/page.tsx
- * /about → src/app/about/page.tsx
+ * / â src/app/page.tsx
+ * /about â src/app/about/page.tsx
  */
 function resolvePageFilePath(pagePath: string): string {
   if (pagePath === '/') return 'src/app/page.tsx';
@@ -119,7 +119,7 @@ function buildPreviewHTML(
   // Extract globals.css
   const globalsCss = files.find((f) => f.file_path === 'src/app/globals.css')?.content || '';
 
-  // Clean CSS — remove @tailwind directives (CDN handles it), @import, @layer blocks
+  // Clean CSS â remove @tailwind directives (CDN handles it), @import, @layer blocks
   // The Tailwind CDN doesn't support @apply or @layer, so strip those blocks entirely
   const cleanedCss = stripLayerBlocks(
     globalsCss
@@ -186,10 +186,10 @@ const ${name} = ${name}_module;
     })
     .join('\n');
 
-  // Process page.tsx — build the Page component
+  // Process page.tsx â build the Page component
   let pageCode = processPageCode(pageContent, availableNames, truncatedNames);
 
-  // Process layout.tsx — if it exists, build a Layout wrapper
+  // Process layout.tsx â if it exists, build a Layout wrapper
   let layoutCode = '';
   if (layoutContent) {
     layoutCode = processLayoutCode(layoutContent, availableNames, truncatedNames);
@@ -208,7 +208,7 @@ function App() {
 }
 `;
   } else {
-    // No layout — just rename Page to App
+    // No layout â just rename Page to App
     appCode = pageCode.replace(/function Page\b/, 'function App');
   }
 
@@ -406,7 +406,7 @@ ${tailwindExtendScript}
       )
     )};
 
-    // Lucide icon renderer — creates actual SVG elements
+    // Lucide icon renderer â creates actual SVG elements
     const createIcon = (name: string) => {
       return ({ className, size, ...props }: any) => {
         const paths = __ICON_PATHS__[name];
@@ -623,7 +623,7 @@ function processLayoutCode(
   // Replace {children} with {props.children} since we'll pass children as props
   code = code.replace(/\{children\}/g, '{props.children}');
 
-  // Strip html/body/head tags — we just want the inner components
+  // Strip html/body/head tags â we just want the inner components
   // Replace <html ...>, </html>, <head>...</head>, <body ...>, </body>
   code = code.replace(/<html[^>]*>/g, '<>');
   code = code.replace(/<\/html>/g, '</>');
@@ -631,7 +631,7 @@ function processLayoutCode(
   code = code.replace(/<body[^>]*>/g, '<div>');
   code = code.replace(/<\/body>/g, '</div>');
 
-  // Handle the function parameter — add props if it uses destructured {children}
+  // Handle the function parameter â add props if it uses destructured {children}
   code = code.replace(
     /function Layout\s*\(\s*\{\s*children\s*\}\s*(?::\s*\{[^}]*\})?\s*\)/,
     'function Layout(props: any)'
@@ -645,7 +645,7 @@ function processLayoutCode(
   if (!/function Layout\s*\(/.test(code)) {
     code = code.replace('function Layout', 'function Layout(props: any)');
   } else if (!/function Layout\s*\(props/.test(code)) {
-    // Has params but not `props` — ensure it accepts props
+    // Has params but not `props` â ensure it accepts props
     code = code.replace(/function Layout\s*\([^)]*\)/, 'function Layout(props: any)');
   }
 
@@ -708,7 +708,7 @@ function cleanComponentCode(code: string): string {
   result = result.replace(/\bas\s+(?:const|string|number|boolean|any|\w+(?:<[^>]*>)?)/g, '');
 
   // Fix unescaped apostrophes in single-quoted strings
-  // e.g., 'we've' → 'we\'ve'
+  // e.g., 'we've' â 'we\'ve'
   result = fixUnescapedApostrophes(result);
 
   return result;
@@ -721,49 +721,51 @@ function cleanComponentCode(code: string): string {
  * which can contain unescaped single quotes.
  */
 function fixUnescapedApostrophes(code: string): string {
-  // Replace single-quoted strings that contain apostrophes with backtick strings.
-  // Match strings that start with ', contain word chars + ' + word chars (apostrophe pattern), and end with '
-  // We need to be careful not to break valid code.
+  // Robust approach: replace all single-quoted JSX text strings that contain
+  // apostrophes (e.g. "we've", "it's", "don't") with escaped versions.
+  // The AI often generates JSX like: <p>We've built...</p> which Babel
+  // parses as a string literal starting with ' and then failing.
   //
-  // Simpler approach: just replace all single-quoted string literals with backtick template literals.
-  // This is safe because template literals support everything single quotes do.
+  // Strategy: Convert ALL single-quoted string literals to double-quoted strings.
+  // This avoids the apostrophe-in-string problem entirely.
   let result = '';
   let i = 0;
+
   while (i < code.length) {
     // Skip // line comments
     if (code[i] === '/' && code[i + 1] === '/') {
       const end = code.indexOf('\n', i);
-      if (end === -1) {
-        result += code.substring(i);
-        break;
-      }
+      if (end === -1) { result += code.substring(i); break; }
       result += code.substring(i, end + 1);
       i = end + 1;
       continue;
     }
+
     // Skip /* block comments */
     if (code[i] === '/' && code[i + 1] === '*') {
       const end = code.indexOf('*/', i);
-      if (end === -1) {
-        result += code.substring(i);
-        break;
-      }
+      if (end === -1) { result += code.substring(i); break; }
       result += code.substring(i, end + 2);
       i = end + 2;
       continue;
     }
-    // Skip backtick template literals
+
+    // Skip backtick template literals (handle nested ${})
     if (code[i] === '`') {
       let j = i + 1;
+      let depth = 0;
       while (j < code.length) {
         if (code[j] === '\\') { j += 2; continue; }
-        if (code[j] === '`') { j++; break; }
+        if (code[j] === '`' && depth === 0) { j++; break; }
+        if (code[j] === '$' && code[j + 1] === '{') { depth++; j += 2; continue; }
+        if (code[j] === '}' && depth > 0) { depth--; }
         j++;
       }
       result += code.substring(i, j);
       i = j;
       continue;
     }
+
     // Skip double-quoted strings
     if (code[i] === '"') {
       let j = i + 1;
@@ -776,49 +778,57 @@ function fixUnescapedApostrophes(code: string): string {
       i = j;
       continue;
     }
-    // Process single-quoted strings — convert to backtick if they contain unescaped apostrophes
-    if (code[i] === '\'') {
+
+    // Convert single-quoted strings to double-quoted strings
+    if (code[i] === "'") {
       let j = i + 1;
-      let content = '';
-      let hasUnescapedQuote = false;
+      let strContent = '';
+      let terminated = false;
+
       while (j < code.length) {
         if (code[j] === '\\') {
-          content += code[j] + code[j + 1];
+          strContent += code[j] + code[j + 1];
           j += 2;
           continue;
         }
-        if (code[j] === '\'') {
-          // Check if this is really the end of the string or an apostrophe mid-word
-          // Heuristic: if the next char is a word char and previous char was a word char, it's an apostrophe
-          const prevChar = j > 0 ? code[j - 1] : '';
+        if (code[j] === "'") {
+          // Check if this is an apostrophe mid-word (e.g. we've, it's, don't)
+          const prevChar = j > i + 1 ? code[j - 1] : '';
           const nextChar = j + 1 < code.length ? code[j + 1] : '';
-          const isApostrophe = /\w/.test(prevChar) && /\w/.test(nextChar);
-          if (isApostrophe) {
-            hasUnescapedQuote = true;
-            content += '\'';
+          if (/[a-zA-Z]/.test(prevChar) && /[a-zA-Z]/.test(nextChar)) {
+            // This is an apostrophe — include it in the string content
+            strContent += "'";
             j++;
             continue;
           }
-          // This is the real end of the string
+          terminated = true;
           j++;
           break;
         }
-        content += code[j];
+        if (code[j] === '\n') {
+          // Unterminated string at newline — just output as-is
+          break;
+        }
+        strContent += code[j];
         j++;
       }
-      if (hasUnescapedQuote) {
-        // Escape any backticks in the content and use template literal
-        result += '`' + content.replace(/`/g, '\\`') + '`';
+
+      if (terminated) {
+        // Escape any double quotes inside the content and output as double-quoted
+        const escaped = strContent.replace(/(?<!\\)"/g, '\\"');
+        result += '"' + escaped + '"';
       } else {
-        result += '\'' + content + '\'';
+        // Unterminated — output original
+        result += "'" + strContent;
       }
       i = j;
       continue;
     }
-    // Regular character
+
     result += code[i];
     i++;
   }
+
   return result;
 }
 
