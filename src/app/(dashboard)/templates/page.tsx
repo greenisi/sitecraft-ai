@@ -2,7 +2,15 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Sparkles, ArrowRight, Tag, Check, Eye } from 'lucide-react';
+import {
+  Loader2,
+  Sparkles,
+  ArrowRight,
+  Tag,
+  Check,
+  Eye,
+  ChevronRight,
+} from 'lucide-react';
 import {
   PREMIUM_TEMPLATES,
   TEMPLATE_CATEGORIES,
@@ -29,16 +37,13 @@ export default function TemplatesPage() {
   const handleUseTemplate = async (template: PremiumTemplate) => {
     if (loadingId) return;
     setLoadingId(template.id);
-
     try {
       const res = await fetch('/api/templates/use', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ templateId: template.id }),
       });
-
       if (!res.ok) throw new Error('Failed to create project from template');
-
       const { projectId } = await res.json();
       router.push(`/projects/${projectId}`);
     } catch (err) {
@@ -58,7 +63,7 @@ export default function TemplatesPage() {
   };
 
   return (
-    <div className="space-y-6 sm:space-y-8">
+    <div className="space-y-5 sm:space-y-8">
       {/* Header */}
       <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 p-5 sm:p-8 text-white">
         <div className="absolute -top-20 -right-20 w-48 sm:w-64 h-48 sm:h-64 bg-white/10 rounded-full blur-3xl" />
@@ -80,23 +85,27 @@ export default function TemplatesPage() {
         </div>
       </div>
 
-      {/* Category filter - horizontally scrollable on mobile */}
-      <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto scrollbar-none">
-        <div className="flex gap-2 min-w-max sm:min-w-0 sm:flex-wrap pb-1">
-          {TEMPLATE_CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap ${
-                selectedCategory === cat
-                  ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/25'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+      {/* Category filter - horizontally scrollable on mobile with fade hint */}
+      <div className="relative">
+        <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto scrollbar-none">
+          <div className="flex gap-2 min-w-max sm:min-w-0 sm:flex-wrap pb-2">
+            {TEMPLATE_CATEGORIES.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-3.5 sm:px-4 py-2 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap min-h-[36px] sm:min-h-[auto] ${
+                  selectedCategory === cat
+                    ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/25'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
         </div>
+        {/* Scroll fade hint - mobile only */}
+        <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none sm:hidden" />
       </div>
 
       {/* Templates Grid */}
@@ -110,7 +119,7 @@ export default function TemplatesPage() {
           >
             {/* Preview gradient */}
             <div
-              className={`relative h-36 sm:h-40 bg-gradient-to-br ${template.previewGradient} flex items-center justify-center overflow-hidden`}
+              className={`relative h-40 sm:h-40 bg-gradient-to-br ${template.previewGradient} flex items-center justify-center overflow-hidden`}
             >
               {/* Decorative orbs */}
               <div
@@ -183,7 +192,7 @@ export default function TemplatesPage() {
                     {template.category}
                   </Badge>
                 </div>
-                <p className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                <p className="text-xs sm:text-xs text-muted-foreground leading-relaxed line-clamp-2">
                   {template.description}
                 </p>
               </div>
@@ -195,14 +204,14 @@ export default function TemplatesPage() {
                     key={tag}
                     className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-md bg-muted text-muted-foreground text-[10px] sm:text-xs"
                   >
-                    <Tag className="h-2 w-2 sm:h-2.5 sm:w-2.5" />
+                    <Tag className="h-2.5 w-2.5 sm:h-2.5 sm:w-2.5" />
                     {tag}
                   </span>
                 ))}
               </div>
 
-              {/* Features - hidden on mobile for compact cards */}
-              <div className="hidden sm:block space-y-1 pt-1 border-t border-border">
+              {/* Features - compact on mobile, full on desktop */}
+              <div className="flex flex-wrap gap-x-3 gap-y-0.5 sm:block sm:space-y-1 pt-1 border-t border-border">
                 {[
                   'Scroll animations',
                   'Mobile responsive',
@@ -210,41 +219,41 @@ export default function TemplatesPage() {
                 ].map((feat) => (
                   <div
                     key={feat}
-                    className="flex items-center gap-1.5 text-xs text-muted-foreground"
+                    className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs text-muted-foreground"
                   >
-                    <Check className="h-3 w-3 text-green-500 flex-shrink-0" />
+                    <Check className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-green-500 flex-shrink-0" />
                     {feat}
                   </div>
                 ))}
               </div>
 
-              {/* CTA Buttons */}
-              <div className="flex gap-2 mt-auto">
+              {/* CTA Buttons - taller touch targets on mobile */}
+              <div className="flex gap-2 mt-auto pt-1">
                 <Button
                   onClick={() => handlePreview(template)}
                   variant="outline"
-                  className="flex-1 h-8 sm:h-9 text-xs sm:text-sm"
+                  className="flex-1 h-10 sm:h-9 text-xs sm:text-sm"
                   size="sm"
                 >
-                  <Eye className="mr-1 sm:mr-1.5 h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  <Eye className="mr-1.5 h-3.5 w-3.5 sm:h-3.5 sm:w-3.5" />
                   Preview
                 </Button>
                 <Button
                   onClick={() => handleUseTemplate(template)}
                   disabled={loadingId !== null}
-                  className="flex-1 h-8 sm:h-9 text-xs sm:text-sm bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white border-0"
+                  className="flex-1 h-10 sm:h-9 text-xs sm:text-sm bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white border-0"
                   size="sm"
                 >
                   {loadingId === template.id ? (
                     <>
-                      <Loader2 className="mr-1 sm:mr-1.5 h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin" />
+                      <Loader2 className="mr-1.5 h-3.5 w-3.5 sm:h-3.5 sm:w-3.5 animate-spin" />
                       <span className="hidden sm:inline">Creating...</span>
                       <span className="sm:hidden">...</span>
                     </>
                   ) : (
                     <>
                       Use
-                      <ArrowRight className="ml-1 sm:ml-1.5 h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                      <ArrowRight className="ml-1.5 h-3.5 w-3.5 sm:h-3.5 sm:w-3.5" />
                     </>
                   )}
                 </Button>
