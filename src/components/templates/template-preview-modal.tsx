@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   Loader2,
@@ -31,8 +32,13 @@ export function TemplatePreviewModal({
 }: TemplatePreviewModalProps) {
   const [iframeLoading, setIframeLoading] = useState(true);
   const [deviceMode, setDeviceMode] = useState<DeviceMode>('desktop');
+  const [mounted, setMounted] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -57,7 +63,7 @@ export function TemplatePreviewModal({
     return () => window.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
 
-  if (!isOpen || !template) return null;
+  if (!isOpen || !template || !mounted) return null;
 
   const previewUrl = `/api/templates/preview/${template.id}`;
 
@@ -77,10 +83,10 @@ export function TemplatePreviewModal({
     { mode: 'mobile', icon: Smartphone, label: 'Mobile' },
   ];
 
-  return (
+  const modalContent = (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-[999] flex items-center justify-center"
       onClick={(e) => {
         if (e.target === overlayRef.current) onClose();
       }}
@@ -96,11 +102,7 @@ export function TemplatePreviewModal({
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}
       >
-        {/* ============================================================= */}
-        {/* Header with close button                                      */}
-        {/* On mobile the header is a simple bar with template name on    */}
-        {/* the left and a BIG close button on the right.                 */}
-        {/* ============================================================= */}
+        {/* Header */}
         <div className="relative z-20 flex items-center justify-between gap-2 px-3 sm:px-5 py-2 sm:py-3 border-b border-border/50 bg-background flex-shrink-0">
           {/* Left: template info */}
           <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -134,7 +136,6 @@ export function TemplatePreviewModal({
 
           {/* Right: use template + close */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            {/* Use Template button */}
             <button
               onClick={() => template && onUseTemplate(template)}
               disabled={isLoading}
@@ -156,11 +157,7 @@ export function TemplatePreviewModal({
               )}
             </button>
 
-            {/* ================================================ */}
-            {/* CLOSE BUTTON                                      */}
-            {/* Mobile: big red circle, impossible to miss        */}
-            {/* Desktop: subtle muted button                      */}
-            {/* ================================================ */}
+            {/* CLOSE BUTTON - big red on mobile, subtle on desktop */}
             <button
               onClick={onClose}
               className="flex items-center justify-center w-11 h-11 sm:w-8 sm:h-8 rounded-full sm:rounded-lg bg-red-600 sm:bg-muted border-0 sm:border sm:border-border text-white sm:text-foreground hover:bg-red-700 sm:hover:bg-destructive/10 sm:hover:text-destructive transition-colors flex-shrink-0 shadow-lg shadow-red-600/25 sm:shadow-none"
@@ -189,9 +186,7 @@ export function TemplatePreviewModal({
           ))}
         </div>
 
-        {/* ============================================================= */}
-        {/* Preview area                                                  */}
-        {/* ============================================================= */}
+        {/* Preview area */}
         <div className="relative flex-1 bg-muted/30 flex items-start justify-center overflow-hidden p-1.5 sm:p-4 min-h-0">
           <div
             className="relative h-full rounded-lg sm:rounded-xl overflow-hidden border border-border/30 bg-background shadow-xl transition-all duration-500 ease-out"
@@ -200,7 +195,6 @@ export function TemplatePreviewModal({
               maxWidth: '100%',
             }}
           >
-            {/* Loading spinner — scoped to the iframe container only */}
             {iframeLoading && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background z-10">
                 <div className="relative">
@@ -225,4 +219,7 @@ export function TemplatePreviewModal({
       </div>
     </div>
   );
+
+  // Portal to document.body to escape parent stacking contexts (z-10 on main)
+  return createPortal(modalContent, document.body);
 }
