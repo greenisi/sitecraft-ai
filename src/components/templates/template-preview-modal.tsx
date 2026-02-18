@@ -88,7 +88,7 @@ export function TemplatePreviewModal({
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in" />
 
-      {/* Modal - safe area insets for notches/home indicators */}
+      {/* Modal */}
       <div
         className="relative z-10 flex flex-col w-full h-full sm:w-[95vw] sm:h-[92vh] sm:max-w-[1600px] sm:rounded-2xl overflow-hidden bg-background border-0 sm:border sm:border-border/50 shadow-2xl shadow-black/50 animate-scale-in"
         style={{
@@ -96,8 +96,10 @@ export function TemplatePreviewModal({
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between gap-2 px-3 sm:px-5 py-2.5 sm:py-3 border-b border-border/50 bg-background/95 backdrop-blur-sm flex-shrink-0">
+        {/* ============================================================= */}
+        {/* Header — z-20 so it is ALWAYS above the preview/loading area  */}
+        {/* ============================================================= */}
+        <div className="relative z-20 flex items-center justify-between gap-2 px-3 sm:px-5 py-2.5 sm:py-3 border-b border-border/50 bg-background backdrop-blur-sm flex-shrink-0">
           {/* Left: template info */}
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
             <div
@@ -114,7 +116,7 @@ export function TemplatePreviewModal({
             </div>
           </div>
 
-          {/* Center: device switcher (hidden on very small screens) */}
+          {/* Center: device switcher (hidden on small screens) */}
           <div className="hidden sm:flex items-center gap-1 rounded-lg bg-muted p-1">
             {deviceButtons.map(({ mode, icon: Icon, label }) => (
               <button
@@ -156,10 +158,10 @@ export function TemplatePreviewModal({
               )}
             </button>
 
-            {/* Close button - ALWAYS visible, prominent styling */}
+            {/* Close button - ALWAYS visible with solid background */}
             <button
               onClick={onClose}
-              className="flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 rounded-xl sm:rounded-lg bg-muted hover:bg-destructive/10 text-foreground hover:text-destructive transition-colors flex-shrink-0"
+              className="flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 rounded-xl sm:rounded-lg border border-border bg-muted hover:bg-destructive/10 text-foreground hover:text-destructive transition-colors flex-shrink-0"
               aria-label="Close preview"
             >
               <X className="h-5 w-5 sm:h-4 sm:w-4" />
@@ -167,8 +169,8 @@ export function TemplatePreviewModal({
           </div>
         </div>
 
-        {/* Mobile device switcher bar - only visible on small screens */}
-        <div className="flex sm:hidden items-center justify-center gap-1 px-3 py-1.5 border-b border-border/30 bg-muted/30 flex-shrink-0">
+        {/* Mobile device switcher bar */}
+        <div className="relative z-20 flex sm:hidden items-center justify-center gap-1 px-3 py-1.5 border-b border-border/30 bg-muted/30 flex-shrink-0">
           {deviceButtons.map(({ mode, icon: Icon, label }) => (
             <button
               key={mode}
@@ -185,15 +187,18 @@ export function TemplatePreviewModal({
           ))}
         </div>
 
-        {/* Preview Area */}
-        <div className="flex-1 bg-muted/30 flex items-start justify-center overflow-hidden p-1.5 sm:p-4 min-h-0">
+        {/* ============================================================= */}
+        {/* Preview area — relative so the loading spinner stays inside   */}
+        {/* ============================================================= */}
+        <div className="relative flex-1 bg-muted/30 flex items-start justify-center overflow-hidden p-1.5 sm:p-4 min-h-0">
           <div
-            className="h-full rounded-lg sm:rounded-xl overflow-hidden border border-border/30 bg-background shadow-xl transition-all duration-500 ease-out"
+            className="relative h-full rounded-lg sm:rounded-xl overflow-hidden border border-border/30 bg-background shadow-xl transition-all duration-500 ease-out"
             style={{
               width: deviceWidths[deviceMode],
               maxWidth: '100%',
             }}
           >
+            {/* Loading spinner — scoped to the iframe container only */}
             {iframeLoading && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background z-10">
                 <div className="relative">
