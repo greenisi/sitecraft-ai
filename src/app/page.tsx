@@ -51,7 +51,7 @@ export default function HomePage() {
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
-              <Link href="/login">View demo</Link>
+              <Link href="/templates">View demo</Link>
             </Button>
           </div>
         </section>
