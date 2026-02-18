@@ -85,7 +85,7 @@ async function pollForCompletion(
         return data;
       }
     } catch {
-      // Network still down — keep trying
+      // Network still down â keep trying
     }
   }
 
@@ -140,7 +140,7 @@ export function useChat(projectId: string) {
     };
   }, [projectId, setMessages, reset]);
 
-  // ── Shared generation runner ─────────────────────────────────────────
+  // ââ Shared generation runner âââââââââââââââââââââââââââââââââââââââââ
   // Both the auto-trigger path and the sendMessage path need identical
   // SSE-reading + recovery logic, so we extract it here.
   const runGeneration = useCallback(
@@ -194,16 +194,16 @@ export function useChat(projectId: string) {
           }
         }
 
-        // Stream finished normally — generation complete
+        // Stream finished normally â generation complete
         await handleGenerationComplete(supabase);
       } catch (error) {
         const rawMsg =
           error instanceof Error ? error.message : 'Something went wrong';
 
-        // ── Connection-drop recovery ────────────────────────────────
+        // ââ Connection-drop recovery ââââââââââââââââââââââââââââââââ
         if (isConnectionError(rawMsg)) {
           updateLastAssistantMessage(
-            `${planDescription}\n\nConnection interrupted — checking if the generation finished on the server...`,
+            `${planDescription}\n\nConnection interrupted â checking if the generation finished on the server...`,
             { stage: 'generating' }
           );
 
@@ -220,7 +220,7 @@ export function useChat(projectId: string) {
               description:
                 'The connection was briefly lost but your site was generated successfully.',
             });
-            return; // exit — no error
+            return; // exit â no error
           }
 
           if (
@@ -244,13 +244,13 @@ export function useChat(projectId: string) {
             );
           }
 
-          // Polling timed out — the backend may still be running
+          // Polling timed out â the backend may still be running
           throw new Error(
-            'The connection was lost and we could not confirm the generation completed. Please refresh the page — your site may already be ready.'
+            'The connection was lost and we could not confirm the generation completed. Please refresh the page â your site may already be ready.'
           );
         }
 
-        // ── Non-connection errors ───────────────────────────────────
+        // ââ Non-connection errors âââââââââââââââââââââââââââââââââââ
         if (rawMsg === 'subscription_required') {
           const upgradeMessage: ChatMessageLocal = {
             id: crypto.randomUUID(),
@@ -299,7 +299,7 @@ export function useChat(projectId: string) {
         toast.error('Generation failed', { description: rawMsg });
       }
 
-      // ── Inner helpers ───────────────────────────────────────────────
+      // ââ Inner helpers âââââââââââââââââââââââââââââââââââââââââââââââ
       async function handleGenerationComplete(
         sb: ReturnType<typeof createClient>
       ) {
@@ -347,6 +347,9 @@ export function useChat(projectId: string) {
   // Auto-trigger generation for template-based projects
   useEffect(() => {
     if (templateAutoTriggered.current) return;
+    // Set immediately to prevent duplicate triggers from React strict mode
+    // or dependency changes causing the effect to re-fire
+    templateAutoTriggered.current = true;
 
     const autoGenerate = async () => {
       const supabase = createClient();
@@ -376,9 +379,6 @@ export function useChat(projectId: string) {
         .eq('project_id', projectId);
 
       if (count && count > 0) return;
-
-      // This is a template project that needs auto-generation
-      templateAutoTriggered.current = true;
 
       const config = project.generation_config;
       const planDescription = `Starting generation from template: **${project.name}**. Your website is being built with AI...`;
