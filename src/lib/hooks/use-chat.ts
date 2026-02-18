@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { useChatStore, type ChatMessageLocal } from '@/stores/chat-store';
@@ -22,6 +22,7 @@ export function useChat(projectId: string) {
   } = useChatStore();
 
   const generationStore = useGenerationStore();
+  const templateAutoTriggered = useRef(false);
 
   // Load messages from DB on mount
   useEffect(() => {
@@ -53,6 +54,211 @@ export function useChat(projectId: string) {
       reset();
     };
   }, [projectId, setMessages, reset]);
+
+  // Auto-trigger generation for template-based projects
+  useEffect(() => {
+    if (templateAutoTriggered.current) return;
+
+    const autoGenerate = async () => {
+      const supabase = createClient();
+
+      // Check if this project was created from a template (has generation_config and is draft)
+      const { data: project, error } = await supabase
+        .from('projects')
+        .select('status, generation_config, name')
+        .eq('id', projectId)
+        .single();
+
+      if (error || !project) return;
+
+      // Only auto-trigger if project is draft with a generation_config and no messages yet
+      if (
+        project.status !== 'draft' ||
+        !project.generation_config ||
+        typeof project.generation_config !== 'object'
+      ) {
+        return;
+      }
+
+      // Check if there are already chat messages for this project
+      const { count } = await supabase
+        .from('chat_messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('project_id', projectId);
+
+      if (count && count > 0) return;
+
+      // This is a template project that needs auto-generation
+      templateAutoTriggered.current = true;
+
+      const config = project.generation_config;
+
+      // Add a welcome message
+      const welcomeMessage: ChatMessageLocal = {
+        id: crypto.randomUUID(),
+        project_id: projectId,
+        role: 'assistant',
+        content: `Starting generation from template: **${project.name}**. Your website is being built with AI...`,
+        metadata: { stage: 'generating' },
+        created_at: new Date().toISOString(),
+      };
+      addMessage(welcomeMessage);
+
+      // Persist welcome message
+      supabase
+        .from('chat_messages')
+        .insert({
+          id: welcomeMessage.id,
+          project_id: projectId,
+          role: 'assistant',
+          content: welcomeMessage.content,
+          metadata: welcomeMessage.metadata,
+        })
+        .then();
+
+      // Start generation
+      setProcessing(true, 'generating');
+      generationStore.startGeneration();
+
+      try {
+        const genResponse = await fetch('/api/generate/stream', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ projectId, config }),
+        });
+
+        if (!genResponse.ok) {
+          let errMsg = `Generation failed (${genResponse.status})`;
+          try {
+            const errData = await genResponse.json();
+            errMsg = errData.error || errMsg;
+            if (errData.error === 'subscription_required') {
+              errMsg = 'subscription_required';
+            }
+          } catch {
+            // response might not be JSON
+          }
+          throw new Error(errMsg);
+        }
+
+        if (!genResponse.body) {
+          throw new Error('No response stream from generation endpoint');
+        }
+
+        // Read SSE stream
+        for await (const event of readSSEStream(genResponse.body)) {
+          generationStore.processEvent(event);
+
+          if (event.type === 'component-complete') {
+            const completed = event.completedFiles ?? 0;
+            const total = event.totalFiles ?? 0;
+            updateLastAssistantMessage(
+              `Starting generation from template: **${project.name}**\n\nGenerating components... (${completed}/${total})`,
+              { stage: 'generating' }
+            );
+          }
+        }
+
+        // Generation complete
+        setProcessing(false, 'complete');
+        const completionMessage: ChatMessageLocal = {
+          id: crypto.randomUUID(),
+          project_id: projectId,
+          role: 'assistant',
+          content:
+            'Your website is ready! You can see the live preview on the right. Send another message to make changes.',
+          metadata: { stage: 'complete' },
+          created_at: new Date().toISOString(),
+        };
+        addMessage(completionMessage);
+
+        supabase
+          .from('chat_messages')
+          .insert({
+            id: completionMessage.id,
+            project_id: projectId,
+            role: 'assistant',
+            content: completionMessage.content,
+            metadata: completionMessage.metadata,
+          })
+          .then();
+
+        queryClient.invalidateQueries({
+          queryKey: ['generated-files', projectId],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['project', projectId],
+        });
+      } catch (error) {
+        setProcessing(false, 'error');
+        generationStore.reset();
+
+        const rawMsg =
+          error instanceof Error ? error.message : 'Something went wrong';
+
+        if (rawMsg === 'subscription_required') {
+          const upgradeMessage: ChatMessageLocal = {
+            id: crypto.randomUUID(),
+            project_id: projectId,
+            role: 'assistant',
+            content:
+              'To generate websites with AI, you need to subscribe to our Beta plan.\n\n[Upgrade to Beta Plan](/settings/billing)',
+            metadata: { stage: 'error' },
+            created_at: new Date().toISOString(),
+          };
+          addMessage(upgradeMessage);
+          toast.error('Subscription required', {
+            description:
+              'Please subscribe to the Beta plan to use AI generation.',
+          });
+          return;
+        }
+
+        let errorMsg = rawMsg;
+        if (
+          rawMsg === 'Load failed' ||
+          rawMsg === 'Failed to fetch' ||
+          rawMsg ===
+            'NetworkError when attempting to fetch resource.'
+        ) {
+          errorMsg =
+            'The generation timed out or the connection was lost. Please try again.';
+        }
+
+        const errorMessage: ChatMessageLocal = {
+          id: crypto.randomUUID(),
+          project_id: projectId,
+          role: 'assistant',
+          content: `Sorry, something went wrong: ${errorMsg}. Please try again.`,
+          metadata: { stage: 'error' },
+          created_at: new Date().toISOString(),
+        };
+        addMessage(errorMessage);
+        supabase
+          .from('chat_messages')
+          .insert({
+            id: errorMessage.id,
+            project_id: projectId,
+            role: 'assistant',
+            content: errorMessage.content,
+            metadata: errorMessage.metadata,
+          })
+          .then();
+        toast.error('Generation failed', { description: errorMsg });
+      }
+    };
+
+    // Delay slightly to ensure messages have loaded first
+    const timer = setTimeout(autoGenerate, 500);
+    return () => clearTimeout(timer);
+  }, [
+    projectId,
+    addMessage,
+    setProcessing,
+    updateLastAssistantMessage,
+    generationStore,
+    queryClient,
+  ]);
 
   const sendMessage = useCallback(
     async (content: string) => {
@@ -219,9 +425,14 @@ export function useChat(projectId: string) {
 
         // Provide user-friendly error messages
         let errorMsg = rawMsg;
-        if (rawMsg === 'Load failed' || rawMsg === 'Failed to fetch' || rawMsg === 'NetworkError when attempting to fetch resource.') {
+        if (
+          rawMsg === 'Load failed' ||
+          rawMsg === 'Failed to fetch' ||
+          rawMsg ===
+            'NetworkError when attempting to fetch resource.'
+        ) {
           errorMsg =
-            'The generation timed out or the connection was lost. This can happen with complex sites. Please try again — the generation should be faster now.';
+            'The generation timed out or the connection was lost. This can happen with complex sites. Please try again \u2014 the generation should be faster now.';
         }
 
         // Handle subscription required error with upgrade prompt
@@ -236,6 +447,7 @@ export function useChat(projectId: string) {
             created_at: new Date().toISOString(),
           };
           addMessage(upgradeMessage);
+
           toast.error('Subscription required', {
             description:
               'Please subscribe to the Beta plan to use AI generation.',
