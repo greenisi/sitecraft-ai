@@ -97,41 +97,23 @@ export function TemplatePreviewModal({
         }}
       >
         {/* ============================================================= */}
-        {/* MOBILE FLOATING CLOSE BUTTON - always on top, impossible to   */}
-        {/* miss. This sits OUTSIDE the header flow so nothing can hide it */}
+        {/* Header with close button                                      */}
+        {/* On mobile the header is a simple bar with template name on    */}
+        {/* the left and a BIG close button on the right.                 */}
         {/* ============================================================= */}
-        <button
-          onClick={onClose}
-          className="sm:hidden fixed top-3 right-3 z-[60] flex items-center justify-center w-12 h-12 rounded-full bg-red-600 text-white shadow-lg shadow-red-600/30 active:scale-95 transition-transform"
-          style={{
-            marginTop: 'env(safe-area-inset-top)',
-          }}
-          aria-label="Close preview"
-        >
-          <X className="h-6 w-6" strokeWidth={3} />
-        </button>
-
-        {/* ============================================================= */}
-        {/* Header — z-20 so it is ALWAYS above the preview/loading area  */}
-        {/* ============================================================= */}
-        <div className="relative z-20 flex items-center justify-between gap-2 px-3 sm:px-5 py-2.5 sm:py-3 border-b border-border/50 bg-background flex-shrink-0">
+        <div className="relative z-20 flex items-center justify-between gap-2 px-3 sm:px-5 py-2 sm:py-3 border-b border-border/50 bg-background flex-shrink-0">
           {/* Left: template info */}
-          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             <div
               className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ring-2 ring-white/10 flex-shrink-0"
               style={{ backgroundColor: template.accentColor }}
             />
-            <div className="min-w-0">
-              <h3 className="text-xs sm:text-sm font-semibold text-foreground truncate pr-14 sm:pr-0">
-                {template.name}
-              </h3>
-              <p className="text-[10px] sm:text-xs text-muted-foreground truncate hidden sm:block">
-                {template.description}
-              </p>
-            </div>
+            <h3 className="text-xs sm:text-sm font-semibold text-foreground truncate">
+              {template.name}
+            </h3>
           </div>
 
-          {/* Center: device switcher (hidden on small screens) */}
+          {/* Center: device switcher (desktop only) */}
           <div className="hidden sm:flex items-center gap-1 rounded-lg bg-muted p-1">
             {deviceButtons.map(({ mode, icon: Icon, label }) => (
               <button
@@ -150,8 +132,9 @@ export function TemplatePreviewModal({
             ))}
           </div>
 
-          {/* Right: use template + close (desktop only close btn) */}
+          {/* Right: use template + close */}
           <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Use Template button */}
             <button
               onClick={() => template && onUseTemplate(template)}
               disabled={isLoading}
@@ -173,13 +156,17 @@ export function TemplatePreviewModal({
               )}
             </button>
 
-            {/* Close button — DESKTOP ONLY, mobile uses the floating button above */}
+            {/* ================================================ */}
+            {/* CLOSE BUTTON                                      */}
+            {/* Mobile: big red circle, impossible to miss        */}
+            {/* Desktop: subtle muted button                      */}
+            {/* ================================================ */}
             <button
               onClick={onClose}
-              className="hidden sm:flex items-center justify-center w-8 h-8 rounded-lg border border-border bg-muted hover:bg-destructive/10 text-foreground hover:text-destructive transition-colors flex-shrink-0"
+              className="flex items-center justify-center w-11 h-11 sm:w-8 sm:h-8 rounded-full sm:rounded-lg bg-red-600 sm:bg-muted border-0 sm:border sm:border-border text-white sm:text-foreground hover:bg-red-700 sm:hover:bg-destructive/10 sm:hover:text-destructive transition-colors flex-shrink-0 shadow-lg shadow-red-600/25 sm:shadow-none"
               aria-label="Close preview"
             >
-              <X className="h-4 w-4" />
+              <X className="h-5 w-5 sm:h-4 sm:w-4" strokeWidth={2.5} />
             </button>
           </div>
         </div>
@@ -203,7 +190,7 @@ export function TemplatePreviewModal({
         </div>
 
         {/* ============================================================= */}
-        {/* Preview area — relative so the loading spinner stays inside   */}
+        {/* Preview area                                                  */}
         {/* ============================================================= */}
         <div className="relative flex-1 bg-muted/30 flex items-start justify-center overflow-hidden p-1.5 sm:p-4 min-h-0">
           <div
