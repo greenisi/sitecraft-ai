@@ -97,9 +97,24 @@ export function TemplatePreviewModal({
         }}
       >
         {/* ============================================================= */}
+        {/* MOBILE FLOATING CLOSE BUTTON - always on top, impossible to   */}
+        {/* miss. This sits OUTSIDE the header flow so nothing can hide it */}
+        {/* ============================================================= */}
+        <button
+          onClick={onClose}
+          className="sm:hidden fixed top-3 right-3 z-[60] flex items-center justify-center w-12 h-12 rounded-full bg-red-600 text-white shadow-lg shadow-red-600/30 active:scale-95 transition-transform"
+          style={{
+            marginTop: 'env(safe-area-inset-top)',
+          }}
+          aria-label="Close preview"
+        >
+          <X className="h-6 w-6" strokeWidth={3} />
+        </button>
+
+        {/* ============================================================= */}
         {/* Header — z-20 so it is ALWAYS above the preview/loading area  */}
         {/* ============================================================= */}
-        <div className="relative z-20 flex items-center justify-between gap-2 px-3 sm:px-5 py-2.5 sm:py-3 border-b border-border/50 bg-background backdrop-blur-sm flex-shrink-0">
+        <div className="relative z-20 flex items-center justify-between gap-2 px-3 sm:px-5 py-2.5 sm:py-3 border-b border-border/50 bg-background flex-shrink-0">
           {/* Left: template info */}
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
             <div
@@ -107,7 +122,7 @@ export function TemplatePreviewModal({
               style={{ backgroundColor: template.accentColor }}
             />
             <div className="min-w-0">
-              <h3 className="text-xs sm:text-sm font-semibold text-foreground truncate">
+              <h3 className="text-xs sm:text-sm font-semibold text-foreground truncate pr-14 sm:pr-0">
                 {template.name}
               </h3>
               <p className="text-[10px] sm:text-xs text-muted-foreground truncate hidden sm:block">
@@ -135,7 +150,7 @@ export function TemplatePreviewModal({
             ))}
           </div>
 
-          {/* Right: use template + close */}
+          {/* Right: use template + close (desktop only close btn) */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={() => template && onUseTemplate(template)}
@@ -158,13 +173,13 @@ export function TemplatePreviewModal({
               )}
             </button>
 
-            {/* Close button - ALWAYS visible with solid background */}
+            {/* Close button — DESKTOP ONLY, mobile uses the floating button above */}
             <button
               onClick={onClose}
-              className="flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 rounded-xl sm:rounded-lg border border-border bg-muted hover:bg-destructive/10 text-foreground hover:text-destructive transition-colors flex-shrink-0"
+              className="hidden sm:flex items-center justify-center w-8 h-8 rounded-lg border border-border bg-muted hover:bg-destructive/10 text-foreground hover:text-destructive transition-colors flex-shrink-0"
               aria-label="Close preview"
             >
-              <X className="h-5 w-5 sm:h-4 sm:w-4" />
+              <X className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -209,6 +224,7 @@ export function TemplatePreviewModal({
                 </p>
               </div>
             )}
+
             <iframe
               ref={iframeRef}
               src={previewUrl}
