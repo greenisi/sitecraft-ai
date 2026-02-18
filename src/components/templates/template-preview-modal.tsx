@@ -77,71 +77,86 @@ export function TemplatePreviewModal({
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in" />
 
       {/* Modal */}
-      <div className="relative z-10 flex flex-col w-[95vw] h-[92vh] max-w-[1600px] rounded-2xl overflow-hidden bg-background border border-border/50 shadow-2xl shadow-black/50 animate-scale-in">
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-border/50 bg-background/95 backdrop-blur-sm">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-3 h-3 rounded-full ring-2 ring-white/10"
-              style={{ backgroundColor: template.accentColor }}
-            />
-            <div>
-              <h3 className="text-sm font-semibold text-foreground">{template.name}</h3>
-              <p className="text-xs text-muted-foreground">{template.description}</p>
+      <div className="relative z-10 flex flex-col w-full h-full sm:w-[95vw] sm:h-[92vh] sm:max-w-[1600px] sm:rounded-2xl overflow-hidden bg-background border-0 sm:border sm:border-border/50 shadow-2xl shadow-black/50 animate-scale-in">
+        {/* Header - stacks on mobile */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 px-3 sm:px-5 py-2.5 sm:py-3 border-b border-border/50 bg-background/95 backdrop-blur-sm">
+          {/* Top row on mobile: name + close */}
+          <div className="flex items-center justify-between sm:justify-start gap-3">
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+              <div
+                className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ring-2 ring-white/10 flex-shrink-0"
+                style={{ backgroundColor: template.accentColor }}
+              />
+              <div className="min-w-0">
+                <h3 className="text-xs sm:text-sm font-semibold text-foreground truncate">{template.name}</h3>
+                <p className="text-[10px] sm:text-xs text-muted-foreground truncate hidden sm:block">{template.description}</p>
+              </div>
             </div>
-          </div>
-
-          {/* Device Switcher */}
-          <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
-            {deviceButtons.map(({ mode, icon: Icon, label }) => (
-              <button
-                key={mode}
-                onClick={() => setDeviceMode(mode)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
-                  deviceMode === mode
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-                title={label}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">{label}</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => template && onUseTemplate(template)}
-              disabled={isLoading}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white text-sm font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-violet-500/25 disabled:opacity-50"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-3.5 w-3.5" />
-                  Use Template
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </>
-              )}
-            </button>
+            {/* Close button visible on mobile in top row */}
             <button
               onClick={onClose}
-              className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              className="flex sm:hidden items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex-shrink-0"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
+
+          {/* Bottom row on mobile: device switcher + use button */}
+          <div className="flex items-center justify-between sm:justify-end gap-2">
+            {/* Device Switcher - hidden on very small screens */}
+            <div className="hidden md:flex items-center gap-1 rounded-lg bg-muted p-1">
+              {deviceButtons.map(({ mode, icon: Icon, label }) => (
+                <button
+                  key={mode}
+                  onClick={() => setDeviceMode(mode)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
+                    deviceMode === mode
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  title={label}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  <span className="hidden lg:inline">{label}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => template && onUseTemplate(template)}
+                disabled={isLoading}
+                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white text-xs sm:text-sm font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-violet-500/25 disabled:opacity-50"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin" />
+                    <span className="hidden sm:inline">Creating...</span>
+                    <span className="sm:hidden">...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                    <span>Use Template</span>
+                    <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 hidden sm:block" />
+                  </>
+                )}
+              </button>
+              {/* Close button for desktop only (hidden on mobile since it's in top row) */}
+              <button
+                onClick={onClose}
+                className="hidden sm:flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Preview Area */}
-        <div className="flex-1 bg-muted/30 flex items-start justify-center overflow-hidden p-4">
+        <div className="flex-1 bg-muted/30 flex items-start justify-center overflow-hidden p-1.5 sm:p-4">
           <div
-            className="h-full rounded-xl overflow-hidden border border-border/30 bg-background shadow-xl transition-all duration-500 ease-out"
+            className="h-full rounded-lg sm:rounded-xl overflow-hidden border border-border/30 bg-background shadow-xl transition-all duration-500 ease-out"
             style={{
               width: deviceWidths[deviceMode],
               maxWidth: '100%',
@@ -150,9 +165,9 @@ export function TemplatePreviewModal({
             {iframeLoading && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background z-10">
                 <div className="relative">
-                  <div className="w-12 h-12 rounded-full border-2 border-violet-500/20 border-t-violet-500 animate-spin" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-violet-500/20 border-t-violet-500 animate-spin" />
                 </div>
-                <p className="text-sm text-muted-foreground animate-pulse">Loading preview...</p>
+                <p className="text-xs sm:text-sm text-muted-foreground animate-pulse">Loading preview...</p>
               </div>
             )}
             <iframe
