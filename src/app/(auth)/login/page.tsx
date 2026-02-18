@@ -1,178 +1,222 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import {
-  LayoutDashboard, Settings, LogOut, Moon, Sun, Menu, X,
-  Shield, Sparkles, ChevronRight, Zap,
-} from 'lucide-react';
-import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils/cn';
+import { Loader2, Mail, Lock } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
 
-const baseNavigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Templates', href: '/templates', icon: Sparkles, badge: 'NEW' },
-  { name: 'Settings', href: '/settings', icon: Settings },
-];
+function LoginForm() {
+    const searchParams = useSearchParams();
+    const redirectTo = searchParams.get('redirect') || '/dashboard';
+    const oauthError = searchParams.get('error');
 
-export function Sidebar() {
-  const pathname = usePathname();
-  const router = useRouter();
-  const { theme, setTheme } = useTheme();
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState<string | null>(oauthError);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  useEffect(() => {
-    const checkAdmin = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-      if (profile?.role === 'admin') setIsAdmin(true);
-    };
-    checkAdmin();
-  }, []);
+  async function handleGoogleLogin() {
+        setIsGoogleLoading(true);
+        try {
+                const supabase = createClient();
+                const { error } = await supabase.auth.signInWithOAuth({
+                          provider: 'google',
+                          options: {
+                                      redirectTo: `${window.location.origin}/callback?redirect=${encodeURIComponent(redirectTo)}`,
+                          },
+                });
+                if (error) {
+                          setError(error.message);
+                          setIsGoogleLoading(false);
+                }
+        } catch {
+                setError('An unexpected error occurred. Please try again.');
+                setIsGoogleLoading(false);
+        }
+  }
 
-  const navigation = isAdmin
-    ? [...baseNavigation, { name: 'Admin', href: '/admin', icon: Shield }]
-    : baseNavigation;
+  async function handleEmailLogin(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        setError(null);
 
-  const handleSignOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.refresh();
-    router.push('/login');
-  };
+      if (!email.trim()) {
+              setError('Please enter your email address.');
+              return;
+      }
+        if (!password) {
+                setError('Please enter your password.');
+                return;
+        }
 
-  const sidebarContent = (
-    <>
-      {/* Logo */}
-      <div className="flex h-16 items-center gap-3 px-5 border-b border-sidebar-border/50">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10">
-          <Zap className="h-4 w-4 text-white" />
-        </div>
-        <div className="flex flex-col">
-          <span className="text-sm font-semibold text-sidebar-foreground leading-none">SiteCraft</span>
-          <span className="text-[10px] text-sidebar-foreground/40 leading-none mt-0.5">AI Website Builder</span>
-        </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 ml-auto md:hidden text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent"
-          onClick={() => setMobileOpen(false)}
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
+      setIsLoading(true);
 
-      {/* Navigation */}
-      <ScrollArea className="flex-1 px-3 py-4">
-        <div className="space-y-1">
-          <p className="px-3 mb-3 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/30">
-            Menu
-          </p>
-          {navigation.map((item) => {
-            const isActive =
-              pathname === item.href || pathname.startsWith(item.href + '/');
-            const badge = 'badge' in item ? item.badge : null;
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
-                className={cn(
-                  'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200',
-                  isActive
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                    : 'text-sidebar-foreground/50 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground/80'
-                )}
-              >
-                <item.icon
-                  className={cn(
-                    'h-4 w-4 transition-colors',
-                    isActive
-                      ? 'text-white'
-                      : 'text-sidebar-foreground/40 group-hover:text-sidebar-foreground/60'
-                  )}
-                />
-                <span className="flex-1">{item.name}</span>
-                {badge && (
-                  <span className="text-[9px] font-bold bg-white/15 text-white/80 px-1.5 py-0.5 rounded-full">
-                    {badge}
-                  </span>
-                )}
-                {isActive && (
-                  <ChevronRight className="h-3 w-3 text-sidebar-foreground/30" />
-                )}
-              </Link>
-            );
-          })}
-        </div>
-      </ScrollArea>
+      try {
+              const supabase = createClient();
+              const { error: signInError } = await supabase.auth.signInWithPassword({
+                        email: email.trim(),
+                        password,
+              });
 
-      {/* Bottom actions */}
-      <div className="border-t border-sidebar-border/50 p-3 space-y-0.5">
-        <button
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium text-sidebar-foreground/40 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground/70"
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-        >
-          <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span>Toggle theme</span>
-        </button>
-        <button
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium text-sidebar-foreground/40 transition-colors hover:bg-red-500/10 hover:text-red-400"
-          onClick={handleSignOut}
-        >
-          <LogOut className="h-4 w-4" />
-          Sign out
-        </button>
-      </div>
-    </>
-  );
+          if (signInError) {
+                    setError(signInError.message);
+                    return;
+          }
+
+          window.location.href = redirectTo;
+      } catch {
+              setError('An unexpected error occurred. Please try again.');
+      } finally {
+              setIsLoading(false);
+      }
+  }
 
   return (
-    <>
-      {/* Mobile hamburger */}
-      <button
-        className="fixed top-3 left-3 z-50 flex h-10 w-10 items-center justify-center rounded-xl border bg-background shadow-lg md:hidden"
-        onClick={() => setMobileOpen(true)}
-        aria-label="Open menu"
-      >
-        <Menu className="h-5 w-5" />
-      </button>
-
-      {/* Mobile overlay */}
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
-
-      {/* Mobile sidebar */}
-      <div
-        className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col bg-sidebar transition-transform duration-300 ease-out md:hidden',
-          mobileOpen ? 'translate-x-0' : '-translate-x-full'
-        )}
-      >
-        {sidebarContent}
-      </div>
-
-      {/* Desktop sidebar */}
-      <div className="hidden md:flex h-full w-[240px] flex-col bg-sidebar flex-shrink-0">
-        {sidebarContent}
-      </div>
-    </>
-  );
+        <div className="rounded-2xl border border-border/50 bg-card p-6 sm:p-8 shadow-xl shadow-black/5 animate-fade-in-up">
+              <div className="text-center mb-6">
+                      <h1 className="text-xl font-bold tracking-tight">Welcome to Innovated Marketing</h1>h1>
+                      <p className="text-sm text-muted-foreground mt-1">Sign in to continue</p>p>
+              </div>div>
+        
+              <div className="space-y-4">
+                {error && (
+                    <div className="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive animate-scale-in">
+                      {error}
+                    </div>div>
+                      )}
+              
+                {/* Google OAuth Button */}
+                      <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="w-full h-11 rounded-xl border-border/50 hover:bg-accent/50 transition-all"
+                                  onClick={handleGoogleLogin}
+                                  disabled={isGoogleLoading || isLoading}
+                                >
+                        {isGoogleLoading ? (
+                                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                            ) : (
+                                              <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24">
+                                                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
+                                                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                                                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                                                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                                              </svg>svg>
+                                )}
+                                Continue with Google
+                      </Button>Button>
+              
+                {/* OR Divider */}
+                      <div className="relative">
+                                <div className="absolute inset-0 flex items-center">
+                                            <span className="w-full border-t border-border/50" />
+                                </div>
+                                <div className="relative flex justify-center text-xs uppercase">
+                                            <span className="bg-card px-2 text-muted-foreground">or</span>span>
+                                </div>div>
+                      </div>div>
+              
+                      <form onSubmit={handleEmailLogin} className="space-y-4">
+                                <div className="space-y-2">
+                                            <Label htmlFor="email" className="text-xs font-medium">Email</Label>Label>
+                                            <div className="relative">
+                                                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                          <Input
+                                                                            id="email"
+                                                                            type="email"
+                                                                            placeholder="you@example.com"
+                                                                            value={email}
+                                                                            onChange={(e) => setEmail(e.target.value)}
+                                                                            disabled={isLoading}
+                                                                            autoComplete="email"
+                                                                            autoFocus
+                                                                            className="h-11 pl-10 rounded-xl border-border/50 focus:border-primary/30"
+                                                                          />
+                                            </div>div>
+                                </div>div>
+                      
+                                <div className="space-y-2">
+                                            <Label htmlFor="password" className="text-xs font-medium">Password</Label>Label>
+                                            <div className="relative">
+                                                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                          <Input
+                                                                            id="password"
+                                                                            type="password"
+                                                                            placeholder="Enter your password"
+                                                                            value={password}
+                                                                            onChange={(e) => setPassword(e.target.value)}
+                                                                            disabled={isLoading}
+                                                                            autoComplete="current-password"
+                                                                            className="h-11 pl-10 rounded-xl border-border/50 focus:border-primary/30"
+                                                                          />
+                                            </div>div>
+                                </div>div>
+                      
+                                <Button
+                                              type="submit"
+                                              className="w-full h-11 rounded-xl bg-foreground hover:bg-foreground/90 text-background border-0 shadow-lg transition-all"
+                                              disabled={isLoading}
+                                            >
+                                  {isLoading ? (
+                                                            <>
+                                                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                                                            Signing in...
+                                                            </>>
+                                                          ) : (
+                                                            'Sign in'
+                                                          )}
+                                </Button>Button>
+                      </form>form>
+              </div>div>
+        
+              <div className="flex items-center justify-between mt-6">
+                      <Link
+                                  href="/forgot-password"
+                                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                                >
+                                Forgot password?
+                      </Link>Link>
+                      <p className="text-sm text-muted-foreground">
+                                Need an account?{' '}
+                                <Link
+                                              href="/signup"
+                                              className="font-medium text-foreground hover:underline underline-offset-4"
+                                            >
+                                            Sign up
+                                </Link>Link>
+                      </p>p>
+              </div>div>
+        </div>div>
+      );
 }
+
+function LoginFormFallback() {
+    return (
+          <div className="rounded-2xl border border-border/50 bg-card p-6 sm:p-8 shadow-xl shadow-black/5">
+                <div className="text-center mb-6">
+                        <Skeleton className="h-6 w-48 mx-auto" />
+                        <Skeleton className="h-4 w-32 mx-auto mt-2" />
+                </div>div>
+                <div className="space-y-4">
+                        <Skeleton className="h-11 w-full rounded-xl" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-11 w-full rounded-xl" />
+                        <Skeleton className="h-11 w-full rounded-xl" />
+                        <Skeleton className="h-11 w-full rounded-xl" />
+                </div>div>
+          </div>div>
+        );
+}
+
+export default function LoginPage() {
+    return (
+          <Suspense fallback={<LoginFormFallback />}>
+                <LoginForm />
+          </Suspense>Suspense>
+        );
+}</></div>
