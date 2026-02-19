@@ -40,6 +40,9 @@ export interface SelectedElement {
     overflow: string;
     cursor: string;
   };
+  href?: string;
+  target?: string;
+  title?: string;
 }
 
 export type PendingChangeType = 'text' | 'style';
@@ -57,7 +60,7 @@ export interface PendingChange {
   newValue?: string;
 }
 
-type PropertiesTab = 'style' | 'spacing' | 'typography' | 'effects';
+type PropertiesTab = 'style' | 'spacing' | 'typography' | 'effects' | 'link';
 
 interface VisualEditorState {
   // State
