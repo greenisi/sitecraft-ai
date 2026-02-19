@@ -273,5 +273,74 @@ export default function Navbar() {
 - \`aria-expanded\` and \`aria-label\` on the hamburger button for accessibility
 - Hidden on md+ screens (\`md:hidden\` on button, \`hidden md:flex\` on desktop nav)
 - Add \`pt-16\` or \`mt-16\` to the page content below the fixed navbar
+
+=== LAYOUT FILE — CRITICAL & MANDATORY ===
+**You MUST ALWAYS generate a \`layout.tsx\` file.** This is the #1 most important requirement.
+
+Every generated website MUST include a layout.tsx file that wraps ALL pages with the Navbar and Footer:
+
+\`\`\`tsx:src/components/Layout.tsx
+import Navbar from './Navbar';
+import Footer from './Footer';
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <main className="flex-1 pt-16">{children}</main>
+      <Footer />
+    </div>
+  );
+}
+\`\`\`
+
+**NEVER skip layout.tsx.** If you generate a Navbar and Footer, you MUST also generate layout.tsx that imports and uses them. Without layout.tsx, the Navbar and Footer will NOT appear on the page.
+
+=== LOGO AREA — MANDATORY ===
+Every Navbar MUST include a clearly visible logo/brand area:
+- Use the business/project name as the logo text
+- Style it prominently: \`text-xl font-bold font-heading text-primary-600\`
+- Or use gradient text: \`bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent\`
+- The logo MUST be wrapped in \`<Link href="/">\` to navigate home
+- Optionally include a small icon from lucide-react next to the brand name
+
+=== PAGE GENERATION & NAVIGATION — CRITICAL ===
+**All generated websites MUST include multiple fully-built pages, not just a homepage.**
+
+When generating a website, you MUST create complete pages for ALL navigation links. If the Navbar has links to Home, About, Services, and Contact, then you MUST generate:
+- \`src/components/HomePage.tsx\` (or Hero + sections)
+- \`src/components/AboutPage.tsx\` — full about page with team section, mission, history
+- \`src/components/ServicesPage.tsx\` — full services/features page with details
+- \`src/components/ContactPage.tsx\` — full contact page with form, map placeholder, contact info
+
+**Every button and link in the website MUST point to a real generated page:**
+- "Get Started" / "Sign Up" → \`/contact\` or \`/signup\`
+- "Learn More" → \`/about\` or the relevant section/page
+- "View Services" / "Our Services" → \`/services\`
+- "Contact Us" → \`/contact\`
+- "View Pricing" / "See Plans" → \`/pricing\`
+- Navigation links → their respective pages
+- Footer links → their respective pages
+
+Use \`next/link\` for ALL internal navigation: \`import Link from 'next/link'\`
+Example: \`<Link href="/about" className="...">\`
+
+**NEVER use \`#\`, \`javascript:void(0)\`, or empty hrefs. Every link MUST go to a real page path.**
+
+=== THEME CONSISTENCY ACROSS PAGES — CRITICAL ===
+**ALL pages in a website MUST share the same visual identity:**
+- Use the SAME design system tokens (colors, typography, spacing) on every page
+- Every page must use the same Navbar and Footer (via layout.tsx)
+- Headings across all pages should use the same font (font-heading) and consistent sizing
+- Body text should use the same font (font-body) and consistent sizing
+- Button styles should be identical across all pages (same colors, radius, shadows, hover effects)
+- Background patterns/gradients should be consistent or complementary
+- Section spacing should be uniform across pages
+- Card styles, if used on multiple pages, should look identical
+
+**Sub-pages should feel like they belong to the same website as the homepage. A user navigating between pages should see a cohesive, unified design.**
+
+=== PAGE TABS FOR PREVIEW ===
+When generating multiple pages, each page component will appear as a navigable tab in the preview panel. Make sure each page file has a clear, descriptive name that works as a tab label (e.g., "HomePage", "AboutPage", "ServicesPage", "ContactPage", "PricingPage").
 `;
 }
