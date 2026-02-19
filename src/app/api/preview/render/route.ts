@@ -85,7 +85,7 @@ function deriveAvailablePages(files: FileRecord[]): Array<{ path: string; title:
       const pagePath = pathSegment ? `/${pathSegment.replace(/\/$/, '')}` : '/';
       const title = pagePath === '/'
         ? 'Home'
-        : pagePath.split('/').filter(Boolean).pop()!.replace(/(^|\s)\S/g, (t) => t.toUpperCase());
+        : pagePath.split('/').filter(Boolean).pop()!.replace(/^\[|\]$/g, '').replace(/([A-Z])/g, ' $1').trim().replace(/(^|\s)\S/g, (t) => t.toUpperCase());
       pages.push({ path: pagePath, title });
     }
   }
