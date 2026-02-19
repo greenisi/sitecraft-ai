@@ -205,7 +205,7 @@ const ${name} = ${name}_module;
     const footerEl = hasFooter ? 'React.createElement(Footer, null)' : 'null';
     layoutCode = `
       function Layout(props) {
-        return React.createElement('div', { className: 'min-h-screen flex flex-col' },
+        return React.createElement('div', { className: 'fallback-layout-wrapper min-h-screen flex flex-col' },
           ${navbarEl},
           React.createElement('main', { className: 'flex-1 pt-16' }, props.children),
           ${footerEl}
@@ -340,7 +340,27 @@ tailwind.config = {
     #__loading { font-family: system-ui, sans-serif; }
     #__loading .bar { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; }
     ${cleanedCss}
-  </style>
+  
+      /* Fallback: ensure navbar is visible when layout wrapper is synthesized */
+      .fallback-layout-wrapper > nav,
+      .fallback-layout-wrapper > nav[class*="bg-transparent"],
+      .fallback-layout-wrapper > header > nav {
+        background-color: white !important;
+        border-bottom: 1px solid #e5e7eb !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+      }
+      .fallback-layout-wrapper > nav [class*="text-white"],
+      .fallback-layout-wrapper > nav a[class*="text-white"] {
+        color: #111827 !important;
+      }
+      .fallback-layout-wrapper > nav a[class*="text-white/"],
+      .fallback-layout-wrapper > nav span[class*="text-white"] {
+        color: #374151 !important;
+      }
+      .fallback-layout-wrapper > nav a[class*="text-white"]:hover {
+        color: #6d28d9 !important;
+      }
+      </style>
 </head>
 <body>
   <div id="root"></div>
