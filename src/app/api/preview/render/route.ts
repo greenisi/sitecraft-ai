@@ -14,6 +14,20 @@ export const runtime = 'nodejs';
  * page to render (default: `/`). Link clicks inside the iframe are
  * intercepted and sent to the parent frame via postMessage.
  */
+
+/**
+ * Replace smart/curly quotes with ASCII equivalents to prevent
+ * "Unterminated string constant" errors in JSX transpilation.
+ */
+function sanitizeSmartQuotes(content: string): string {
+  return content
+    .replace(/[\u2018\u2019\u2032]/g, "'")
+    .replace(/[\u201C\u201D\u2033]/g, '"')
+    .replace(/[\u2013]/g, '-')
+    .replace(/[\u2014]/g, '--')
+    .replace(/[\u2026]/g, '...');
+}
+
 export async function GET(request: NextRequest) {
   const projectId = request.nextUrl.searchParams.get('projectId');
   const page = request.nextUrl.searchParams.get('page') || '/';
@@ -114,7 +128,12 @@ function resolvePageFilePath(pagePath: string): string {
 function buildPreviewHTML(
   files: FileRecord[],
   page: string,
-  availablePages: Array<{ path: string; title: string }>
+  availablePages: Array<{
+  // Sanitize smart quotes in all file contents to prevent transpilation errors
+  for (const file of files) {
+    file.content = sanitizeSmartQuotes(file.content);
+  }
+ path: string; title: string }>
 ): string {
   // Extract globals.css
   const globalsCss = files.find((f) => f.file_path === 'src/app/globals.css')?.content || '';
