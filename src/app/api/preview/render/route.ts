@@ -48,7 +48,26 @@ export async function GET(request: NextRequest) {
     .single();
 
   if (!version) {
-    return new Response('<html><body><p>No generated version found</p></body></html>', {
+    return new Response('<html><body><p>No generated version found</p>
+    <script>
+      // Fix transparent navbars - make them visible on light backgrounds
+      (function() {
+        var nav = document.querySelector('nav');
+        if (nav && nav.classList.contains('bg-transparent')) {
+          nav.style.setProperty('background-color', 'white', 'important');
+          nav.style.setProperty('border-bottom', '1px solid #e5e7eb', 'important');
+          nav.style.setProperty('box-shadow', '0 1px 3px rgba(0,0,0,0.05)', 'important');
+          var els = nav.querySelectorAll('a, span');
+          for (var i = 0; i < els.length; i++) {
+            var cls = els[i].getAttribute('class') || '';
+            if (cls.indexOf('text-white') !== -1 && cls.indexOf('bg-') === -1) {
+              els[i].style.setProperty('color', '#111827', 'important');
+            }
+          }
+        }
+      })();
+    </script>
+    </body></html>', {
       headers: { 'Content-Type': 'text/html' },
     });
   }
