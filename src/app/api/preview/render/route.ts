@@ -624,6 +624,13 @@ function processPageCode(
   // Rename the default export function to Page
   code = code.replace(/export\s+default\s+function\s+\w+/, 'function Page');
 
+  // Strip any other export keywords that remain
+  code = code.replace(/^export\s+function\s+/gm, 'function ');
+  code = code.replace(/^export\s+const\s+/gm, 'const ');
+  code = code.replace(/^export\s+let\s+/gm, 'let ');
+  code = code.replace(/^export\s+var\s+/gm, 'var ');
+  code = code.replace(/^export\s*\{[^}]*\}\s*;?\s*$/gm, '');
+
   // Remove TypeScript type annotations
   code = code.replace(/:\s*React\.\w+(?:<[^>]*>)?/g, '');
   code = code.replace(/\bas\s+(?:const|string|number|boolean|any|\w+(?:<[^>]*>)?)/g, '');
@@ -662,7 +669,8 @@ function processLayoutCode(
   code = code.replace(/import\s+['"][^'"]+['"];?\s*\n?/g, '');
 
   // Remove metadata export
-  code = code.replace(/export\s+const\s+metadata[\s\S]*?;\s*\n?/g, '');
+  // Remove metadata export (handle both with and without trailing semicolons)
+  code = code.replace(/export\s+const\s+metadata[\s\S]*?\}\s*;?\s*\n?/g, '');
 
   // Remove JSX for missing components
   for (const name of missingComponents) {
@@ -677,6 +685,13 @@ function processLayoutCode(
 
   // Rename the default export function to Layout
   code = code.replace(/export\s+default\s+function\s+\w+/, 'function Layout');
+
+  // Strip any remaining export keywords
+  code = code.replace(/^export\s+function\s+/gm, 'function ');
+  code = code.replace(/^export\s+const\s+/gm, 'const ');
+  code = code.replace(/^export\s+let\s+/gm, 'let ');
+  code = code.replace(/^export\s+var\s+/gm, 'var ');
+  code = code.replace(/^export\s*\{[^}]*\}\s*;?\s*$/gm, '');
 
   // Replace {children} with {props.children} since we'll pass children as props
   code = code.replace(/\{children\}/g, '{props.children}');
@@ -743,6 +758,15 @@ function cleanComponentCode(code: string): string {
     /export\s+default\s+function\s+(\w+)/,
     'const $1 = function $1'
   );
+
+  // Strip named export keywords (export function X -> function X, export const X -> const X)
+  result = result.replace(/^export\s+function\s+/gm, 'function ');
+  result = result.replace(/^export\s+const\s+/gm, 'const ');
+  result = result.replace(/^export\s+let\s+/gm, 'let ');
+  result = result.replace(/^export\s+var\s+/gm, 'var ');
+  // Remove re-export and export-list statements entirely
+  result = result.replace(/^export\s*\{[^}]*\}\s*;?\s*$/gm, '');
+  result = result.replace(/^export\s+type\s+/gm, 'type ');
 
   // Add return statement for the component
   const fnMatch = result.match(/const\s+(\w+)\s*=\s*function\s+\w+/);
