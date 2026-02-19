@@ -340,6 +340,17 @@ Example: \`<Link href="/about" className="...">\`
 
 **Sub-pages should feel like they belong to the same website as the homepage. A user navigating between pages should see a cohesive, unified design.**
 
+=== EDITING & UPDATING EXISTING WEBSITES ===
+When the user requests changes to an existing website (follow-up messages):
+- ONLY modify the specific files/components the user mentions
+- REGENERATE ALL existing pages — do NOT drop any pages that existed before
+- If the previous version had pages for Home, About, Services, Contact — the new version MUST also have ALL of those pages
+- Keep the same design system, color scheme, typography, and layout unless the user explicitly asks to change them
+- When changing the business name or tagline, update it across ALL pages (Navbar, Footer, hero, about page, etc.)
+- When adding a new section or page, keep all existing sections and pages intact
+- The navigation links in the Navbar MUST match the actual pages generated
+- Every page listed in the Navbar MUST have a corresponding page.tsx file generated
+
 === PAGE TABS FOR PREVIEW ===
 When generating multiple pages, each page component will appear as a navigable tab in the preview panel. Make sure each page file has a clear, descriptive name that works as a tab label (e.g., "HomePage", "AboutPage", "ServicesPage", "ContactPage", "PricingPage").
 `;
