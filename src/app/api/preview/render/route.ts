@@ -195,6 +195,25 @@ const ${name} = ${name}_module;
     layoutCode = processLayoutCode(layoutContent, availableNames, truncatedNames);
   }
 
+  // Fallback: if no layout.tsx was generated but Navbar and/or Footer components
+  // exist, synthesize a Layout wrapper so the navbar and footer always appear.
+  const hasNavbar = availableNames.has('Navbar') && !truncatedNames.has('Navbar');
+  const hasFooter = availableNames.has('Footer') && !truncatedNames.has('Footer');
+
+  if (!layoutCode && (hasNavbar || hasFooter)) {
+    const navbarEl = hasNavbar ? 'React.createElement(Navbar, null)' : 'null';
+    const footerEl = hasFooter ? 'React.createElement(Footer, null)' : 'null';
+    layoutCode = `
+      function Layout(props) {
+        return React.createElement('div', { className: 'min-h-screen flex flex-col' },
+          ${navbarEl},
+          React.createElement('main', { className: 'flex-1 pt-16' }, props.children),
+          ${footerEl}
+        );
+      }
+    `;
+  }
+
   // Build the final App component that composes Layout + Page
   let appCode: string;
   if (layoutCode) {
