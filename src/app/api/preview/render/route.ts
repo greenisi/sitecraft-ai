@@ -128,13 +128,13 @@ function resolvePageFilePath(pagePath: string): string {
 function buildPreviewHTML(
   files: FileRecord[],
   page: string,
-  availablePages: Array<{
-  // Sanitize smart quotes in all file contents to prevent transpilation errors
-  for (const file of files) {
-    file.content = sanitizeSmartQuotes(file.content);
-  }
- path: string; title: string }>
+  availablePages: Array<{ path: string; title: string }>
 ): string {
+  // Sanitize smart quotes in all file contents to prevent transpilation errors
+  for (const f of files) {
+    f.content = sanitizeSmartQuotes(f.content);
+  }
+
   // Extract globals.css
   const globalsCss = files.find((f) => f.file_path === 'src/app/globals.css')?.content || '';
 
