@@ -48,8 +48,7 @@ export async function GET(request: NextRequest) {
     .single();
 
   if (!version) {
-    return new Response('<html><body><p>No generated version found</p>
-</body></html>', {
+    return new Response('<html><body><p>No generated version found</p></body></html>', {
       headers: { 'Content-Type': 'text/html' },
     });
   }
