@@ -96,6 +96,9 @@ async function pollForCompletion(
 // Hook
 // ---------------------------------------------------------------------------
 
+// Module-level guard: survives component remounts within the same client session
+const autoTriggeredProjectIds = new Set<string>();
+
 export function useChat(projectId: string) {
   const queryClient = useQueryClient();
   const {
@@ -347,9 +350,9 @@ export function useChat(projectId: string) {
   // Auto-trigger generation for template-based projects
   useEffect(() => {
     if (templateAutoTriggered.current) return;
-    // Set immediately to prevent duplicate triggers from React strict mode
-    // or dependency changes causing the effect to re-fire
+    if (autoTriggeredProjectIds.has(projectId)) return;
     templateAutoTriggered.current = true;
+    autoTriggeredProjectIds.add(projectId);
 
     const autoGenerate = async () => {
       const supabase = createClient();
@@ -380,6 +383,13 @@ export function useChat(projectId: string) {
 
       if (count && count > 0) return;
 
+      // Immediately mark project as generating on the server to prevent
+      // any other tab or reload from re-triggering auto-generation
+      await supabase
+        .from('projects')
+        .update({ status: 'generating' })
+        .eq('id', projectId);
+
       const config = project.generation_config;
       const planDescription = `Starting generation from template: **${project.name}**. Your website is being built with AI...`;
 
@@ -394,8 +404,8 @@ export function useChat(projectId: string) {
       };
       addMessage(welcomeMessage);
 
-      // Persist welcome message
-      supabase
+      // Persist welcome message (await to ensure it exists before generation)
+      await supabase
         .from('chat_messages')
         .insert({
           id: welcomeMessage.id,
@@ -403,8 +413,7 @@ export function useChat(projectId: string) {
           role: 'assistant',
           content: welcomeMessage.content,
           metadata: welcomeMessage.metadata,
-        })
-        .then();
+        });
 
       // Start generation with recovery
       await runGeneration(
