@@ -528,6 +528,8 @@ ${[...allIconNames].map((name) => `    const ${name} = createIcon('${name}');`).
 
     const root = ReactDOM.createRoot(document.getElementById('root')!);
     root.render(React.createElement(ErrorBoundary, null, React.createElement(App)));
+      // Fix transparent navbars after React render
+      setTimeout(function(){var n=document.querySelector('nav');if(n&&(n.className||'').indexOf('bg-transparent')>-1){n.style.setProperty('background-color','white','important');n.style.setProperty('border-bottom','1px solid #e5e7eb','important');var a=n.querySelectorAll('a,span');for(var i=0;i<a.length;i++){var c=a[i].getAttribute('class')||'';if(c.indexOf('text-white')>-1&&c.indexOf('bg-')===-1)a[i].style.setProperty('color','#111827','important');}}},100);
   <\/script>
 
   <script>
@@ -579,24 +581,7 @@ ${[...allIconNames].map((name) => `    const ${name} = createIcon('${name}');`).
       type: 'sitecraft:pages',
       pages: ${JSON.stringify(availablePages)}
     }, '*');
-  
-    // Fix transparent navbars after render
-    setTimeout(function() {
-      var nav = document.querySelector('nav');
-      if (nav && (nav.className || '').indexOf('bg-transparent') !== -1) {
-        nav.style.setProperty('background-color', 'white', 'important');
-        nav.style.setProperty('border-bottom', '1px solid #e5e7eb', 'important');
-        nav.style.setProperty('box-shadow', '0 1px 3px rgba(0,0,0,0.05)', 'important');
-        var els = nav.querySelectorAll('a, span');
-        for (var i = 0; i < els.length; i++) {
-          var cls = els[i].getAttribute('class') || '';
-          if (cls.indexOf('text-white') !== -1 && cls.indexOf('bg-') === -1) {
-            els[i].style.setProperty('color', '#111827', 'important');
-          }
-        }
-      }
-    }, 100);
-<\/script>
+  <\/script>
 </body>
 </html>`;
 }
