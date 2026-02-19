@@ -360,24 +360,22 @@ tailwind.config = {
     #__loading .bar { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; }
     ${cleanedCss}
   
-      /* Fallback: ensure navbar is visible when layout wrapper is synthesized */
-      .fallback-layout-wrapper > nav,
-      .fallback-layout-wrapper > nav[class*="bg-transparent"],
-      .fallback-layout-wrapper > header > nav {
+      /* Fix transparent navbars: ensure they are visible on light backgrounds */
+      nav.bg-transparent,
+      nav[class*="bg-transparent"] {
         background-color: white !important;
         border-bottom: 1px solid #e5e7eb !important;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
       }
-      .fallback-layout-wrapper > nav [class*="text-white"],
-      .fallback-layout-wrapper > nav a[class*="text-white"] {
+      nav.bg-transparent a[class*="text-white"],
+      nav.bg-transparent [class*="text-white"],
+      nav[class*="bg-transparent"] a[class*="text-white"],
+      nav[class*="bg-transparent"] [class*="text-white"] {
         color: #111827 !important;
       }
-      .fallback-layout-wrapper > nav a[class*="text-white/"],
-      .fallback-layout-wrapper > nav span[class*="text-white"] {
-        color: #374151 !important;
-      }
-      .fallback-layout-wrapper > nav a[class*="text-white"]:hover {
-        color: #6d28d9 !important;
+      nav.bg-transparent a[class*="text-white"]:hover,
+      nav[class*="bg-transparent"] a[class*="text-white"]:hover {
+        color: #7c3aed !important;
       }
       </style>
 </head>
