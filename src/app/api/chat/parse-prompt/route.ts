@@ -74,11 +74,15 @@ SECTION VARIETY:
 - Include 4-6 sections for variety, not always the same 4
 
 For follow-up messages (when chatHistory is provided):
-- Only modify the parts the user mentions
-- Keep everything else from the previous configuration
-- If the user says "add pricing" - add a pricing section
-- If the user says "make it more colorful" - adjust colors
-- If the user says "change the name" - update business name`;
+- CRITICAL: Only modify the parts the user mentions. Keep EVERYTHING else from the previous configuration unchanged.
+- ALWAYS preserve ALL existing sections from the previous configuration. Never remove sections unless the user explicitly asks to remove them.
+- If the user says "add pricing" - add a pricing section while keeping all existing sections
+- If the user says "make it more colorful" - adjust colors only, keep all sections and structure
+- If the user says "change the name" - update business name only, keep everything else
+- If the user mentions a specific section, only change that section. All other sections must remain identical.
+- The sections array must ALWAYS include ALL sections from the previous configuration plus any new ones requested.
+- Never reduce the number of sections unless explicitly asked. Never change section types unless explicitly asked.
+- Preserve the exact same siteType, navigation settings, and branding unless the user specifically asks to change them.`;
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -162,13 +166,34 @@ export async function POST(request: NextRequest) {
     if (chatHistory && chatHistory.length > 0) {
       const existingConfig = project.generation_config;
       if (existingConfig && (existingConfig as Record<string, unknown>).siteType) {
+        // Also fetch existing page structure to preserve sub-pages
+        const { data: existingFiles } = await supabase
+          .from('generated_files')
+          .select('file_path')
+          .eq('version_id', (
+            await supabase
+              .from('generation_versions')
+              .select('id')
+              .eq('project_id', projectId)
+              .eq('status', 'complete')
+              .order('version_number', { ascending: false })
+              .limit(1)
+              .single()
+          ).data?.id || '')
+          .like('file_path', 'src/app/%/page.tsx');
+
+        const existingPages = existingFiles?.map(f => {
+          const match = f.file_path.match(/src\/app\/(.+)\/page\.tsx/);
+          return match ? '/' + match[1] : '/';
+        }) || [];
+
         messages.push({
           role: 'user',
-          content: `Previous configuration: ${JSON.stringify(existingConfig)}`,
+          content: `Previous configuration: ${JSON.stringify(existingConfig)}\n\nIMPORTANT: The current website has these existing pages that MUST be preserved: ${JSON.stringify(existingPages)}. Your updated configuration MUST include sections and navigation that support ALL of these pages. Do NOT remove any existing pages.`,
         });
         messages.push({
           role: 'assistant',
-          content: 'I have the previous configuration. What changes would you like?',
+          content: 'I have the previous configuration and will preserve all existing pages. What changes would you like?',
         });
       }
 
