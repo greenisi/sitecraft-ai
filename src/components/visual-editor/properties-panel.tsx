@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect } from 'react';
-import { X, MousePointerClick, Save, Trash2, Undo2, Redo2 } from 'lucide-react';
+import { X, MousePointerClick, Save, Trash2, Undo2, Redo2, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -252,7 +252,7 @@ export function PropertiesPanel({ onSave }: PropertiesPanelProps) {
           <Tabs
             value={propertiesPanelTab}
             onValueChange={(v) =>
-              setPropertiesPanelTab(v as 'style' | 'spacing' | 'typography' | 'effects')
+              setPropertiesPanelTab(v as 'style' | 'spacing' | 'typography' | 'effects' | 'link')
             }
             className="flex-1 flex flex-col overflow-hidden"
           >
@@ -270,6 +270,12 @@ export function PropertiesPanel({ onSave }: PropertiesPanelProps) {
                 <TabsTrigger value="effects" className="flex-1 text-xs">
                   FX
                 </TabsTrigger>
+                {(selectedElement.tagName === 'a' || selectedElement.tagName === 'button' || selectedElement.tagName === 'A' || selectedElement.tagName === 'BUTTON') && (
+                  <TabsTrigger value="link" className="flex-1 text-xs">
+                    <Link2 className="h-3 w-3 mr-1" />
+                    Link
+                  </TabsTrigger>
+                )}
               </TabsList>
             </div>
 
@@ -393,6 +399,123 @@ export function PropertiesPanel({ onSave }: PropertiesPanelProps) {
                     </div>
                   </div>
                 </TabsContent>
+
+                  <TabsContent value="link" className="mt-0 space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">URL / Href</Label>
+                      <Input
+                        value={selectedElement.href || ''}
+                        onChange={(e) => {
+                          sendToPreviewIframe({
+                            type: 'sitecraft:apply-attribute',
+                            attribute: 'href',
+                            value: e.target.value,
+                          });
+                          addPendingChange({
+                            type: 'style',
+                            cssPath: selectedElement.cssPath,
+                            property: 'href',
+                            oldValue: selectedElement.href || '',
+                            newValue: e.target.value,
+                          });
+                        }}
+                        className="h-8 text-xs font-mono"
+                        placeholder="https://example.com or /about"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Open In</Label>
+                      <div className="flex gap-0.5 bg-muted rounded-md p-0.5">
+                        {[
+                          { value: '_self', label: 'Same Tab' },
+                          { value: '_blank', label: 'New Tab' },
+                        ].map((opt) => (
+                          <button
+                            key={opt.value}
+                            onClick={() => {
+                              sendToPreviewIframe({
+                                type: 'sitecraft:apply-attribute',
+                                attribute: 'target',
+                                value: opt.value,
+                              });
+                              addPendingChange({
+                                type: 'style',
+                                cssPath: selectedElement.cssPath,
+                                property: 'target',
+                                oldValue: selectedElement.target || '_self',
+                                newValue: opt.value,
+                              });
+                            }}
+                            className={`flex-1 px-1.5 py-1 rounded text-[10px] font-medium transition-colors ${
+                              (selectedElement.target || '_self') === opt.value
+                                ? 'bg-background shadow-sm text-foreground'
+                                : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Title (tooltip)</Label>
+                      <Input
+                        value={selectedElement.title || ''}
+                        onChange={(e) => {
+                          sendToPreviewIframe({
+                            type: 'sitecraft:apply-attribute',
+                            attribute: 'title',
+                            value: e.target.value,
+                          });
+                          addPendingChange({
+                            type: 'style',
+                            cssPath: selectedElement.cssPath,
+                            property: 'title',
+                            oldValue: selectedElement.title || '',
+                            newValue: e.target.value,
+                          });
+                        }}
+                        className="h-8 text-xs"
+                        placeholder="Hover tooltip text"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Quick Links</Label>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {[
+                          { label: 'Home', href: '/' },
+                          { label: 'About', href: '/about' },
+                          { label: 'Services', href: '/services' },
+                          { label: 'Contact', href: '/contact' },
+                          { label: 'Pricing', href: '/pricing' },
+                          { label: 'Email', href: 'mailto:' },
+                          { label: 'Phone', href: 'tel:' },
+                          { label: 'External', href: 'https://' },
+                        ].map((ql) => (
+                          <button
+                            key={ql.label}
+                            onClick={() => {
+                              sendToPreviewIframe({
+                                type: 'sitecraft:apply-attribute',
+                                attribute: 'href',
+                                value: ql.href,
+                              });
+                              addPendingChange({
+                                type: 'style',
+                                cssPath: selectedElement.cssPath,
+                                property: 'href',
+                                oldValue: selectedElement.href || '',
+                                newValue: ql.href,
+                              });
+                            }}
+                            className="text-[10px] px-2 py-1.5 rounded border border-border hover:bg-muted transition-colors text-left truncate"
+                          >
+                            {ql.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </TabsContent>
 
                 <TabsContent value="spacing" className="mt-0">
                   <SpacingEditor
