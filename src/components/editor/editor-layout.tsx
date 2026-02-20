@@ -8,6 +8,7 @@ import { PreviewPanel } from './preview-panel';
 import { PropertiesPanel } from '@/components/visual-editor/properties-panel';
 import { useVisualEditorStore } from '@/stores/visual-editor-store';
 import { useVisualEditorSave } from '@/lib/hooks/use-visual-editor-save';
+import { usePageTour } from '@/components/tour/use-page-tour';
 import { cn } from '@/lib/utils/cn';
 
 interface EditorLayoutProps {
@@ -26,15 +27,20 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
   const { isVisualEditorActive } = useVisualEditorStore();
   const { save } = useVisualEditorSave(projectId);
 
+  // Start editor tour on first visit
+  usePageTour('editor');
+
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     isDragging.current = true;
     e.preventDefault();
+
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging.current || !containerRef.current) return;
       const containerRect = containerRef.current.getBoundingClientRect();
       const newWidth = e.clientX - containerRect.left;
       setChatWidth(Math.min(MAX_CHAT_WIDTH, Math.max(MIN_CHAT_WIDTH, newWidth)));
     };
+
     const handleMouseUp = () => {
       isDragging.current = false;
       document.removeEventListener('mousemove', handleMouseMove);
@@ -42,6 +48,7 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
     };
+
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
     document.addEventListener('mousemove', handleMouseMove);
@@ -63,7 +70,10 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
 
       {/* Desktop: side-by-side */}
       <div ref={containerRef} className="hidden md:flex flex-1 overflow-hidden">
-        <div className="flex-shrink-0 border-r border-border/50" style={{ width: chatWidth }}>
+        <div
+          className="flex-shrink-0 border-r border-border/50"
+          style={{ width: chatWidth }}
+        >
           {leftPanel}
         </div>
         <div
@@ -80,10 +90,20 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
 
       {/* Mobile: single panel with toggle */}
       <div className="flex flex-1 flex-col overflow-hidden md:hidden min-h-0">
-        <div className={cn('flex-1 min-h-0 overflow-hidden', mobileView !== 'chat' && 'hidden')}>
+        <div
+          className={cn(
+            'flex-1 min-h-0 overflow-hidden',
+            mobileView !== 'chat' && 'hidden'
+          )}
+        >
           {leftPanel}
         </div>
-        <div className={cn('flex-1 min-h-0 overflow-hidden', mobileView !== 'preview' && 'hidden')}>
+        <div
+          className={cn(
+            'flex-1 min-h-0 overflow-hidden',
+            mobileView !== 'preview' && 'hidden'
+          )}
+        >
           <PreviewPanel projectId={projectId} />
         </div>
 
@@ -98,10 +118,12 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
                 : 'text-muted-foreground'
             )}
           >
-            <div className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-xl transition-all',
-              mobileView === 'chat' && 'bg-violet-500/10'
-            )}>
+            <div
+              className={cn(
+                'flex h-8 w-8 items-center justify-center rounded-xl transition-all',
+                mobileView === 'chat' && 'bg-violet-500/10'
+              )}
+            >
               <MobileLeftIcon className="h-4.5 w-4.5" />
             </div>
             {mobileLeftLabel}
@@ -115,10 +137,12 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
                 : 'text-muted-foreground'
             )}
           >
-            <div className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-xl transition-all',
-              mobileView === 'preview' && 'bg-violet-500/10'
-            )}>
+            <div
+              className={cn(
+                'flex h-8 w-8 items-center justify-center rounded-xl transition-all',
+                mobileView === 'preview' && 'bg-violet-500/10'
+              )}
+            >
               <Eye className="h-4.5 w-4.5" />
             </div>
             Preview
