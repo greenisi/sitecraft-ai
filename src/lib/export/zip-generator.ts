@@ -75,7 +75,7 @@ The easiest way to deploy is with [Vercel](https://vercel.com/):
 
 ---
 
-Generated with [SiteCraft AI](https://sitecraft.ai)
+Generated with [Innovated Marketing](https://app.innovated.marketing)
 `;
 }
 
