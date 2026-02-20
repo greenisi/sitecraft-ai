@@ -33,12 +33,10 @@ export function SpotlightTour() {
   const [isMounted, setIsMounted] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
-  // Mount portal
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Show/hide with animation
   useEffect(() => {
     if (isActive) {
       requestAnimationFrame(() => setIsVisible(true));
@@ -47,7 +45,6 @@ export function SpotlightTour() {
     }
   }, [isActive]);
 
-  // Find and highlight target element
   const updateSpotlight = useCallback(() => {
     if (!currentTour || showWelcome) {
       setSpotlightRect(null);
@@ -59,7 +56,6 @@ export function SpotlightTour() {
 
     const delay = step.delay || 0;
     const timer = setTimeout(() => {
-      // Try data-tour attribute first, then CSS selector
       let el = document.querySelector(`[data-tour="${step.target}"]`);
       if (!el) el = document.querySelector(step.target);
 
@@ -72,11 +68,8 @@ export function SpotlightTour() {
           width: rect.width + padding * 2,
           height: rect.height + padding * 2,
         });
-
-        // Scroll element into view if needed
         el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       } else {
-        // Element not found — center spotlight
         setSpotlightRect(null);
       }
 
@@ -92,7 +85,6 @@ export function SpotlightTour() {
     return () => window.removeEventListener('resize', updateSpotlight);
   }, [updateSpotlight]);
 
-  // Position tooltip
   useEffect(() => {
     if (!spotlightRect || !currentTour || showWelcome) {
       setTooltipStyle({
@@ -146,74 +138,84 @@ export function SpotlightTour() {
   const totalSteps = currentTour.steps.length;
   const isLastStep = currentStep === totalSteps - 1;
 
-  // Calculate overlay regions (4 divs around the spotlight cutout)
   const overlayColor = 'rgba(0,0,0,0.7)';
   const ww = typeof window !== 'undefined' ? window.innerWidth : 1920;
   const wh = typeof window !== 'undefined' ? window.innerHeight : 1080;
 
   const content = (
     <div
-      className={`fixed inset-0 z-[9999] transition-opacity duration-500 ${
-        isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
-      }`}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9999,
+        opacity: isVisible ? 1 : 0,
+        pointerEvents: isVisible ? 'auto' : 'none',
+        transition: 'opacity 500ms ease',
+      }}
     >
-      {/* Dark overlay using 4 regions around the spotlight cutout */}
       {spotlightRect ? (
         <>
           {/* Top region */}
           <div
-            className="absolute transition-all duration-500 ease-out"
             style={{
+              position: 'absolute',
               top: 0,
               left: 0,
               width: ww,
               height: Math.max(0, spotlightRect.top),
               backgroundColor: overlayColor,
+              transition: 'all 500ms ease',
             }}
             onClick={skipTour}
           />
           {/* Bottom region */}
           <div
-            className="absolute transition-all duration-500 ease-out"
             style={{
+              position: 'absolute',
               top: spotlightRect.top + spotlightRect.height,
               left: 0,
               width: ww,
               height: Math.max(0, wh - spotlightRect.top - spotlightRect.height),
               backgroundColor: overlayColor,
+              transition: 'all 500ms ease',
             }}
             onClick={skipTour}
           />
           {/* Left region */}
           <div
-            className="absolute transition-all duration-500 ease-out"
             style={{
+              position: 'absolute',
               top: spotlightRect.top,
               left: 0,
               width: Math.max(0, spotlightRect.left),
               height: spotlightRect.height,
               backgroundColor: overlayColor,
+              transition: 'all 500ms ease',
             }}
             onClick={skipTour}
           />
           {/* Right region */}
           <div
-            className="absolute transition-all duration-500 ease-out"
             style={{
+              position: 'absolute',
               top: spotlightRect.top,
               left: spotlightRect.left + spotlightRect.width,
               width: Math.max(0, ww - spotlightRect.left - spotlightRect.width),
               height: spotlightRect.height,
               backgroundColor: overlayColor,
+              transition: 'all 500ms ease',
             }}
             onClick={skipTour}
           />
         </>
       ) : (
-        /* Full dark overlay when no spotlight target */
         <div
-          className="absolute inset-0 transition-opacity duration-500"
-          style={{ backgroundColor: overlayColor }}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundColor: overlayColor,
+            transition: 'opacity 500ms ease',
+          }}
           onClick={skipTour}
         />
       )}
@@ -221,15 +223,17 @@ export function SpotlightTour() {
       {/* Spotlight glow ring */}
       {spotlightRect && (
         <div
-          className="absolute rounded-xl transition-all duration-500 ease-out pointer-events-none"
           style={{
+            position: 'absolute',
             top: spotlightRect.top - 2,
             left: spotlightRect.left - 2,
             width: spotlightRect.width + 4,
             height: spotlightRect.height + 4,
-            boxShadow:
-              '0 0 0 2px rgba(139,92,246,0.5), 0 0 20px rgba(139,92,246,0.2)',
+            borderRadius: 12,
+            pointerEvents: 'none',
+            boxShadow: '0 0 0 2px rgba(139,92,246,0.5), 0 0 20px rgba(139,92,246,0.2)',
             animation: 'tour-pulse 2s ease-in-out infinite',
+            transition: 'all 500ms ease',
           }}
         />
       )}
@@ -237,14 +241,22 @@ export function SpotlightTour() {
       {/* Tooltip card */}
       <div
         ref={tooltipRef}
-        className={`absolute z-10 w-80 max-w-[90vw] transition-all duration-500 ease-out ${
-          isAnimating ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
-        }`}
-        style={{ ...tooltipStyle, pointerEvents: 'auto' }}
+        style={{
+          position: 'absolute',
+          zIndex: 10,
+          width: 320,
+          maxWidth: '90vw',
+          opacity: isAnimating ? 0 : 1,
+          transform: isAnimating
+            ? `${tooltipStyle.transform || ''} scale(0.95)`
+            : `${tooltipStyle.transform || ''} scale(1)`,
+          transition: 'all 500ms ease',
+          pointerEvents: 'auto',
+          ...tooltipStyle,
+        }}
       >
         {showWelcome ? (
-          /* ── Welcome Screen ── */
-          <div className="rounded-2xl bg-card border border-border/50 shadow-2xl shadow-violet-500/10 p-6 text-center backdrop-blur-sm">
+          <div className="rounded-2xl bg-card border border-border/50 shadow-2xl p-6 text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-violet-500/30">
               <Sparkles className="h-8 w-8 text-white animate-pulse" />
             </div>
@@ -270,8 +282,7 @@ export function SpotlightTour() {
             </div>
           </div>
         ) : isLastStep ? (
-          /* ── Completion Screen ── */
-          <div className="rounded-2xl bg-card border border-border/50 shadow-2xl shadow-violet-500/10 p-6 backdrop-blur-sm">
+          <div className="rounded-2xl bg-card border border-border/50 shadow-2xl p-6">
             <div className="flex items-start gap-3 mb-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 shadow-lg shadow-emerald-500/20">
                 <PartyPopper className="h-5 w-5 text-white" />
@@ -283,7 +294,6 @@ export function SpotlightTour() {
                 </p>
               </div>
             </div>
-            {/* Progress bar */}
             <div className="mb-4">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-[10px] text-muted-foreground font-medium">
@@ -295,18 +305,13 @@ export function SpotlightTour() {
               </div>
               <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-violet-500 to-emerald-500 transition-all duration-700 ease-out"
-                  style={{ width: '100%' }}
+                  className="h-full rounded-full bg-gradient-to-r from-violet-500 to-emerald-500"
+                  style={{ width: '100%', transition: 'width 700ms ease' }}
                 />
               </div>
             </div>
             <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={prevStep}
-                className="text-xs"
-              >
+              <Button variant="ghost" size="sm" onClick={prevStep} className="text-xs">
                 <ChevronLeft className="h-3 w-3 mr-1" />
                 Back
               </Button>
@@ -321,8 +326,7 @@ export function SpotlightTour() {
             </div>
           </div>
         ) : (
-          /* ── Regular Step ── */
-          <div className="rounded-2xl bg-card border border-border/50 shadow-2xl shadow-violet-500/10 p-5 backdrop-blur-sm">
+          <div className="rounded-2xl bg-card border border-border/50 shadow-2xl p-5">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-2">
                 <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-violet-500/10 text-violet-500 text-xs font-bold">
@@ -340,13 +344,13 @@ export function SpotlightTour() {
             <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
               {step?.description}
             </p>
-            {/* Progress bar */}
             <div className="mb-4">
               <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-violet-500 to-purple-500 transition-all duration-700 ease-out"
+                  className="h-full rounded-full bg-gradient-to-r from-violet-500 to-purple-500"
                   style={{
                     width: `${((currentStep + 1) / totalSteps) * 100}%`,
+                    transition: 'width 700ms ease',
                   }}
                 />
               </div>
@@ -378,7 +382,6 @@ export function SpotlightTour() {
         )}
       </div>
 
-      {/* CSS animations */}
       <style>{`
         @keyframes tour-pulse {
           0%, 100% { box-shadow: 0 0 0 2px rgba(139,92,246,0.5), 0 0 20px rgba(139,92,246,0.15); }
