@@ -146,39 +146,77 @@ export function SpotlightTour() {
   const totalSteps = currentTour.steps.length;
   const isLastStep = currentStep === totalSteps - 1;
 
+  // Calculate overlay regions (4 divs around the spotlight cutout)
+  const overlayColor = 'rgba(0,0,0,0.7)';
+  const ww = typeof window !== 'undefined' ? window.innerWidth : 1920;
+  const wh = typeof window !== 'undefined' ? window.innerHeight : 1080;
+
   const content = (
     <div
       className={`fixed inset-0 z-[9999] transition-opacity duration-500 ${
         isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
     >
-      {/* Overlay with spotlight cutout */}
-      <svg className="absolute inset-0 w-full h-full" style={{ pointerEvents: 'none' }}>
-        <defs>
-          <mask id="spotlight-mask">
-            <rect width="100%" height="100%" fill="white" />
-            {spotlightRect && (
-              <rect
-                x={spotlightRect.left}
-                y={spotlightRect.top}
-                width={spotlightRect.width}
-                height={spotlightRect.height}
-                rx="12"
-                fill="black"
-                className="transition-all duration-500 ease-out"
-              />
-            )}
-          </mask>
-        </defs>
-        <rect
-          width="100%"
-          height="100%"
-          fill="rgba(0,0,0,0.65)"
-          mask="url(#spotlight-mask)"
-          style={{ pointerEvents: 'auto' }}
+      {/* Dark overlay using 4 regions around the spotlight cutout */}
+      {spotlightRect ? (
+        <>
+          {/* Top region */}
+          <div
+            className="absolute transition-all duration-500 ease-out"
+            style={{
+              top: 0,
+              left: 0,
+              width: ww,
+              height: Math.max(0, spotlightRect.top),
+              backgroundColor: overlayColor,
+            }}
+            onClick={skipTour}
+          />
+          {/* Bottom region */}
+          <div
+            className="absolute transition-all duration-500 ease-out"
+            style={{
+              top: spotlightRect.top + spotlightRect.height,
+              left: 0,
+              width: ww,
+              height: Math.max(0, wh - spotlightRect.top - spotlightRect.height),
+              backgroundColor: overlayColor,
+            }}
+            onClick={skipTour}
+          />
+          {/* Left region */}
+          <div
+            className="absolute transition-all duration-500 ease-out"
+            style={{
+              top: spotlightRect.top,
+              left: 0,
+              width: Math.max(0, spotlightRect.left),
+              height: spotlightRect.height,
+              backgroundColor: overlayColor,
+            }}
+            onClick={skipTour}
+          />
+          {/* Right region */}
+          <div
+            className="absolute transition-all duration-500 ease-out"
+            style={{
+              top: spotlightRect.top,
+              left: spotlightRect.left + spotlightRect.width,
+              width: Math.max(0, ww - spotlightRect.left - spotlightRect.width),
+              height: spotlightRect.height,
+              backgroundColor: overlayColor,
+            }}
+            onClick={skipTour}
+          />
+        </>
+      ) : (
+        /* Full dark overlay when no spotlight target */
+        <div
+          className="absolute inset-0 transition-opacity duration-500"
+          style={{ backgroundColor: overlayColor }}
           onClick={skipTour}
         />
-      </svg>
+      )}
 
       {/* Spotlight glow ring */}
       {spotlightRect && (
@@ -189,7 +227,8 @@ export function SpotlightTour() {
             left: spotlightRect.left - 2,
             width: spotlightRect.width + 4,
             height: spotlightRect.height + 4,
-            boxShadow: '0 0 0 2px rgba(139,92,246,0.5), 0 0 20px rgba(139,92,246,0.2)',
+            boxShadow:
+              '0 0 0 2px rgba(139,92,246,0.5), 0 0 20px rgba(139,92,246,0.2)',
             animation: 'tour-pulse 2s ease-in-out infinite',
           }}
         />
@@ -244,14 +283,15 @@ export function SpotlightTour() {
                 </p>
               </div>
             </div>
-
             {/* Progress bar */}
             <div className="mb-4">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-[10px] text-muted-foreground font-medium">
                   Step {currentStep + 1} of {totalSteps}
                 </span>
-                <span className="text-[10px] text-emerald-500 font-semibold">Complete!</span>
+                <span className="text-[10px] text-emerald-500 font-semibold">
+                  Complete!
+                </span>
               </div>
               <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                 <div
@@ -260,7 +300,6 @@ export function SpotlightTour() {
                 />
               </div>
             </div>
-
             <div className="flex gap-2">
               <Button
                 variant="ghost"
@@ -298,24 +337,23 @@ export function SpotlightTour() {
                 <X className="h-4 w-4" />
               </button>
             </div>
-
             <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
               {step?.description}
             </p>
-
             {/* Progress bar */}
             <div className="mb-4">
               <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-violet-500 to-purple-500 transition-all duration-700 ease-out"
-                  style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
+                  style={{
+                    width: `${((currentStep + 1) / totalSteps) * 100}%`,
+                  }}
                 />
               </div>
               <p className="text-[10px] text-muted-foreground mt-1.5">
                 {currentStep + 1} of {totalSteps}
               </p>
             </div>
-
             <div className="flex items-center justify-between">
               <Button
                 variant="ghost"
