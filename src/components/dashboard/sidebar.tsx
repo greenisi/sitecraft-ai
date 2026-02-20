@@ -1,4 +1,4 @@
-use client';'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -259,8 +259,8 @@ export function Sidebar() {
           <Zap className="h-4 w-4 text-white" />
         </div>
         <div className="flex flex-col">
-          <span className="text-sm font-semibold text-sidebar-foreground leading-none">SiteCraft</span>
-          <span className="text-[10px] text-sidebar-foreground/50 leading-none mt-0.5">AI Website Builder</span>
+          <span className="text-sm font-semibold text-sidebar-foreground leading-none">Innovated</span>
+          <span className="text-[10px] text-sidebar-foreground/50 leading-none mt-0.5">Marketing</span>
         </div>
         <Button
           variant="ghost"
