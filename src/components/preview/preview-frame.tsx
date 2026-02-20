@@ -241,7 +241,7 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
         {/* Preview container — auto-fit uses 100% width, otherwise fixed viewport width */}
         <div className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-900 md:p-2">
           <div
-            className="mx-auto transition-all duration-300 bg-white md:rounded-lg md:shadow-sm overflow-hidden relative"
+            className="mx-auto transition-all duration-300 bg-white md:rounded-lg md:shadow-sm overflow-hidden"
             style={{
               width: typeof window !== 'undefined' && window.innerWidth < 768
                 ? '100%'
@@ -320,18 +320,6 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
                 setPreviewIframe(iframeRef.current);
               }}
             />
-            {/* Block iframe interactions when visual editor is NOT active */}
-            {!isVisualEditorActive && !loading && (
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  zIndex: 1,
-                  cursor: 'default',
-                }}
-                title="Click Edit to enable visual editing"
-              />
-            )}
           </div>
         </div>
       </div>
