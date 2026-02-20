@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { ProjectCard } from '@/components/dashboard/project-card';
 import { useProjects, useCreateProject, useDeleteProject } from '@/lib/hooks/use-projects';
+import { usePageTour } from '@/components/tour/use-page-tour';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -15,6 +16,8 @@ export default function DashboardPage() {
   const createProject = useCreateProject();
   const deleteProject = useDeleteProject();
   const [isCreating, setIsCreating] = useState(false);
+
+  usePageTour('dashboard');
 
   const handleNewProject = async () => {
     if (isCreating) return;
@@ -49,7 +52,8 @@ export default function DashboardPage() {
         <Button
           onClick={handleNewProject}
           disabled={isCreating}
-          className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white border-0 shadow-lg shadow-violet-500/20 hover:shadow-violet-500/30 transition-all h-10 px-5"
+          data-tour="new-project-btn"
+            className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white border-0 shadow-lg shadow-violet-500/20 hover:shadow-violet-500/30 transition-all h-10 px-5"
         >
           {isCreating ? (
             <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -114,7 +118,7 @@ export default function DashboardPage() {
           ))}
         </div>
       ) : projects && projects.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div data-tour="project-grid" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {projects.map((project, i) => (
             <div
               key={project.id}
