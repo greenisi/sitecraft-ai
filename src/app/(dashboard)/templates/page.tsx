@@ -18,8 +18,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TemplatePreviewModal } from '@/components/templates/template-preview-modal';
+import { usePageTour } from '@/components/tour/use-page-tour';
 
 export default function TemplatesPage() {
+  usePageTour('templates');
+
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [loadingId, setLoadingId] = useState<string | null>(null);
