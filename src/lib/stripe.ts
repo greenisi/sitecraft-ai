@@ -16,11 +16,14 @@ export function getStripe(): Stripe {
 }
 
 // Convenience alias — lazily initializes on first property access
-export const stripe = new Proxy({} as Stripe, {
-  get(_target, prop) {
-    return (getStripe() as Record<string | symbol, unknown>)[prop];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const stripe = new Proxy({} as any, {
+  get(_target: any, prop: string | symbol) {
+    const instance = getStripe();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (instance as any)[prop];
   },
-});
+}) as Stripe;
 
 // Price IDs from your Stripe Dashboard
 export const STRIPE_PRICES = {
