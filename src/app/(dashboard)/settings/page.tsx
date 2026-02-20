@@ -1,7 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Loader2, Save, User, CreditCard, Sparkles, Crown, ExternalLink, Zap } from 'lucide-react';
+import {
+  Loader2, Save, User, CreditCard, Sparkles, Crown,
+  ExternalLink, Zap, Coins, ShoppingCart, AlertCircle,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,7 +21,6 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [credits, setCredits] = useState(0);
   const [plan, setPlan] = useState('free');
-  const [activating, setActivating] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
   const [hasStripeCustomer, setHasStripeCustomer] = useState(false);
@@ -28,7 +30,6 @@ export default function SettingsPage() {
       setDisplayName(
         user.user_metadata?.full_name || user.email?.split('@')[0] || ''
       );
-
       const supabase = createClient();
       supabase
         .from('profiles')
@@ -50,9 +51,8 @@ export default function SettingsPage() {
     const params = new URLSearchParams(window.location.search);
     if (params.get('payment') === 'success') {
       toast.success('Payment successful!', {
-        description: 'Your plan has been updated. It may take a moment to reflect.',
+        description: 'Your account has been updated. It may take a moment to reflect.',
       });
-      // Refresh profile data
       if (user) {
         const supabase = createClient();
         setTimeout(() => {
@@ -70,7 +70,6 @@ export default function SettingsPage() {
             });
         }, 2000);
       }
-      // Clean URL
       window.history.replaceState({}, '', '/settings');
     } else if (params.get('payment') === 'cancelled') {
       toast.info('Payment cancelled');
@@ -97,41 +96,10 @@ export default function SettingsPage() {
       toast.success('Settings saved');
     } catch (error) {
       toast.error('Failed to save settings', {
-        description:
-          error instanceof Error ? error.message : 'Unknown error',
+        description: error instanceof Error ? error.message : 'Unknown error',
       });
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleActivateBeta = async () => {
-    setActivating(true);
-    try {
-      const supabase = createClient();
-      const {
-        data: { user: currentUser },
-      } = await supabase.auth.getUser();
-      if (!currentUser) throw new Error('Not authenticated');
-
-      const { error } = await supabase
-        .from('profiles')
-        .update({ plan: 'beta', generation_credits: 25 })
-        .eq('id', currentUser.id);
-      if (error) throw error;
-
-      setPlan('beta');
-      setCredits(25);
-      toast.success('Beta plan activated!', {
-        description: 'You now have 25 generation credits to build websites.',
-      });
-    } catch (error) {
-      toast.error('Failed to activate', {
-        description:
-          error instanceof Error ? error.message : 'Unknown error',
-      });
-    } finally {
-      setActivating(false);
     }
   };
 
@@ -143,20 +111,16 @@ export default function SettingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ priceType }),
       });
-
       const data = await res.json();
-
       if (!res.ok) {
         throw new Error(data.error || 'Failed to create checkout session');
       }
-
       if (data.url) {
         window.location.href = data.url;
       }
     } catch (error) {
       toast.error('Checkout failed', {
-        description:
-          error instanceof Error ? error.message : 'Unknown error',
+        description: error instanceof Error ? error.message : 'Unknown error',
       });
     } finally {
       setCheckoutLoading(null);
@@ -170,25 +134,26 @@ export default function SettingsPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
-
       const data = await res.json();
-
       if (!res.ok) {
         throw new Error(data.error || 'Failed to open billing portal');
       }
-
       if (data.url) {
         window.location.href = data.url;
       }
     } catch (error) {
       toast.error('Failed to open billing portal', {
-        description:
-          error instanceof Error ? error.message : 'Unknown error',
+        description: error instanceof Error ? error.message : 'Unknown error',
       });
     } finally {
       setPortalLoading(false);
     }
   };
+
+  const isFreePlan = plan === 'free';
+  const isBetaPlan = plan === 'beta';
+  const isProPlan = plan === 'pro';
+  const hasNoCredits = credits <= 0 && !isProPlan;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 animate-fade-in">
@@ -200,6 +165,23 @@ export default function SettingsPage() {
           Manage your account and preferences
         </p>
       </div>
+
+      {/* No credits warning */}
+      {hasNoCredits && (
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-amber-600 dark:text-amber-400">
+              You have no generation credits
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {isFreePlan
+                ? 'Subscribe to the Pro plan or purchase a credit pack to start building websites.'
+                : 'Purchase a credit pack below or upgrade to Pro for unlimited generations.'}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Profile Card */}
       <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
@@ -278,18 +260,20 @@ export default function SettingsPage() {
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">
-                {plan === 'pro'
+                {isProPlan
                   ? 'Unlimited generations available'
-                  : plan === 'beta'
-                  ? 'Beta access with generation credits'
-                  : 'Activate the Beta plan to start building'}
+                  : isFreePlan
+                  ? 'Subscribe to a plan to start building'
+                  : credits > 0
+                  ? `${credits} generation credits remaining`
+                  : 'No credits — purchase below to continue'}
               </p>
             </div>
             <div className="text-right">
               <div className="flex items-center gap-1.5 text-sm font-semibold">
                 <Sparkles className="h-4 w-4 text-violet-500" />
                 <span className="tabular-nums">
-                  {plan === 'pro' ? '\u221e' : credits}
+                  {isProPlan ? '\u221e' : credits}
                 </span>
               </div>
               <p className="text-[10px] text-muted-foreground">
@@ -298,25 +282,9 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Free plan — show Beta activation */}
-          {plan === 'free' && (
-            <Button
-              onClick={handleActivateBeta}
-              disabled={activating}
-              className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white border-0"
-            >
-              {activating ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Sparkles className="mr-2 h-4 w-4" />
-              )}
-              Activate Beta Plan — 25 Free Credits
-            </Button>
-          )}
-
-          {/* Beta plan — show upgrade to Pro */}
-          {plan === 'beta' && (
-            <div className="space-y-3">
+          {/* Free or Beta plan — show Pro upgrade */}
+          {!isProPlan && (
+            <div className="space-y-4">
               <div className="rounded-xl border border-violet-500/20 bg-violet-500/5 p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Crown className="h-4 w-4 text-violet-500" />
@@ -325,8 +293,7 @@ export default function SettingsPage() {
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Unlimited generations, priority support, and all premium
-                  features.
+                  Unlimited generations, priority support, and all premium features.
                 </p>
                 <div className="flex gap-2">
                   <Button
@@ -362,16 +329,56 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              {credits <= 5 && (
-                <div className="text-center text-xs text-amber-500 font-medium">
-                  Running low on credits! Upgrade to Pro for unlimited.
+              {/* Credit Packs */}
+              <div className="rounded-xl border border-border/50 bg-muted/30 p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Coins className="h-4 w-4 text-amber-500" />
+                  <span className="text-sm font-semibold">
+                    Buy Credit Packs
+                  </span>
                 </div>
-              )}
+                <p className="text-xs text-muted-foreground mb-3">
+                  Need just a few more generations? Purchase credits individually.
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => handleCheckout('credits_10')}
+                    disabled={checkoutLoading !== null}
+                    variant="outline"
+                    className="flex-1 rounded-xl"
+                    size="sm"
+                  >
+                    {checkoutLoading === 'credits_10' ? (
+                      <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                    ) : (
+                      <ShoppingCart className="mr-2 h-3 w-3" />
+                    )}
+                    10 Credits — $9
+                  </Button>
+                  <Button
+                    onClick={() => handleCheckout('credits_50')}
+                    disabled={checkoutLoading !== null}
+                    variant="outline"
+                    className="flex-1 rounded-xl border-amber-500/30"
+                    size="sm"
+                  >
+                    {checkoutLoading === 'credits_50' ? (
+                      <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                    ) : (
+                      <ShoppingCart className="mr-2 h-3 w-3" />
+                    )}
+                    50 Credits — $39
+                    <span className="ml-1 text-[10px] text-emerald-500 font-bold">
+                      SAVE 13%
+                    </span>
+                  </Button>
+                </div>
+              </div>
             </div>
           )}
 
           {/* Pro plan — show manage subscription */}
-          {plan === 'pro' && hasStripeCustomer && (
+          {isProPlan && hasStripeCustomer && (
             <Button
               onClick={handleManageSubscription}
               disabled={portalLoading}
