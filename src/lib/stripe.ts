@@ -9,14 +9,13 @@ export function getStripe(): Stripe {
       throw new Error('STRIPE_SECRET_KEY environment variable is not set');
     }
     _stripe = new Stripe(key, {
-      apiVersion: '2024-12-18.acacia',
       typescript: true,
     });
   }
   return _stripe;
 }
 
-// Convenience alias
+// Convenience alias — lazily initializes on first property access
 export const stripe = new Proxy({} as Stripe, {
   get(_target, prop) {
     return (getStripe() as Record<string | symbol, unknown>)[prop];
