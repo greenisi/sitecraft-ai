@@ -44,9 +44,22 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-muted/50">
-            <Globe className="h-8 w-8 text-muted-foreground/30" />
-          </div>
+          (['generated', 'published', 'deployed'].includes(project.status)) ? (
+            <div className="h-full w-full overflow-hidden bg-gradient-to-br from-muted to-muted/50">
+              <iframe
+                src={`/api/preview/render?projectId=${project.id}&page=/`}
+                className="pointer-events-none origin-top-left"
+                style={{ width: '1280px', height: '800px', transform: 'scale(0.28)', transformOrigin: 'top left' }}
+                loading="lazy"
+                tabIndex={-1}
+                title={`Preview of ${project.name}`}
+              />
+            </div>
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-muted/50">
+              <Globe className="h-8 w-8 text-muted-foreground/30" />
+            </div>
+          )
         )}
 
         {/* Hover overlay */}
