@@ -15,7 +15,6 @@ import {
   Shield,
   Sparkles,
   ChevronRight,
-  Zap,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
@@ -67,13 +66,14 @@ export function Sidebar() {
     <>
       {/* Logo */}
       <div className="flex h-14 items-center gap-3 px-5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-violet-500/20">
-          <Zap className="h-4 w-4 text-white" />
-        </div>
-        <div className="flex flex-col">
-          <span className="text-sm font-semibold text-sidebar-foreground leading-none">Innovated</span>
-          <span className="text-[10px] text-sidebar-foreground/50 leading-none mt-0.5">Marketing</span>
-        </div>
+        <Image
+          src="/logo.png"
+          alt="Innovated Marketing"
+          width={140}
+          height={36}
+          className="object-contain brightness-0 invert"
+          priority
+        />
         <Button
           variant="ghost"
           size="icon"
