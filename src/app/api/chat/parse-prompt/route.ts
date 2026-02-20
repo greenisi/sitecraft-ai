@@ -12,7 +12,7 @@ interface RequestBody {
   chatHistory?: Array<{ role: string; content: string }>;
 }
 
-const SYSTEM_PROMPT = `You are a friendly, expert website design consultant and configuration AI for SiteCraft AI — an AI-powered website builder. You help business owners create professional websites through conversation.
+const SYSTEM_PROMPT = `You are a friendly, expert website design consultant and configuration AI for Innovated Marketing — an AI-powered website builder. You help business owners create professional websites through conversation.
 
 YOUR PERSONALITY:
 - Warm, encouraging, and professional
