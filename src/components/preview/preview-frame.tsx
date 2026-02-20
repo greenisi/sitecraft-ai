@@ -102,15 +102,16 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
         console.warn('Could not inject visual editor bridge into iframe');
       }
     } else if (!isVisualEditorActive && bridgeInjectedRef.current) {
-      // Destroy bridge with safety fallback
+      // Destroy bridge — always force reload for clean state
       try {
         sendToPreviewIframe({ type: 'sitecraft:destroy' });
       } catch {
-        // If destroy fails, force reload
-        setIframeKey((k) => k + 1);
-        setLoading(true);
+        // Ignore errors
       }
+      // Always force iframe reload when exiting visual editor for a clean state
       bridgeInjectedRef.current = false;
+      setIframeKey((k) => k + 1);
+      setLoading(true);
     }
   }, [isVisualEditorActive, loading]);
 
@@ -240,7 +241,7 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
         {/* Preview container — auto-fit uses 100% width, otherwise fixed viewport width */}
         <div className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-900 md:p-2">
           <div
-            className="mx-auto transition-all duration-300 bg-white md:rounded-lg md:shadow-sm overflow-hidden"
+            className="mx-auto transition-all duration-300 bg-white md:rounded-lg md:shadow-sm overflow-hidden relative"
             style={{
               width: typeof window !== 'undefined' && window.innerWidth < 768
                 ? '100%'
@@ -319,6 +320,18 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
                 setPreviewIframe(iframeRef.current);
               }}
             />
+            {/* Block iframe interactions when visual editor is NOT active */}
+            {!isVisualEditorActive && !loading && (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  zIndex: 1,
+                  cursor: 'default',
+                }}
+                title="Click Edit to enable visual editing"
+              />
+            )}
           </div>
         </div>
       </div>
