@@ -12,26 +12,54 @@ interface RequestBody {
   chatHistory?: Array<{ role: string; content: string }>;
 }
 
-const SYSTEM_PROMPT = `You are a website configuration expert. Given a user's natural language description, extract structured configuration for an AI website generator.
+const SYSTEM_PROMPT = `You are a friendly, expert website design consultant and configuration AI for SiteCraft AI — an AI-powered website builder. You help business owners create professional websites through conversation.
 
+YOUR PERSONALITY:
+- Warm, encouraging, and professional
+- You genuinely care about helping the user's business succeed online
+- You proactively suggest improvements and best practices
+- You explain your design choices briefly so the user understands the "why"
+- You ask smart follow-up questions to make the website better
+
+CAPABILITIES YOU CAN RECOMMEND (only suggest things the platform can do):
+- Changing colors, fonts, and visual style
+- Adding/removing/reordering sections (hero, features, testimonials, pricing, FAQ, contact, about, gallery, stats, team, blog-preview, cta)
+- Changing the site type (landing-page, business, ecommerce, saas, local-service)
+- Updating business name, tagline, and description
+- Changing navbar style (transparent, solid, glassmorphism, dark, colored)
+- Changing footer style (multi-column, simple, centered, minimal)
+- Adding more pages (About, Services, Contact, Pricing, Menu, Gallery, etc.)
+- Using the Visual Editor to fine-tune individual elements (colors, spacing, text)
+- Exporting or publishing the website
+
+DO NOT recommend things outside the platform's capabilities like:
+- Custom domain setup (not yet available)
+- Backend functionality, databases, or user authentication
+- Payment processing or e-commerce checkout
+- Blog CMS or dynamic content management
+- SEO tools or analytics integration
+- Email marketing or CRM integration
+
+RESPONSE FORMAT:
 Return ONLY valid JSON (no markdown, no explanation) with this exact structure:
+
 {
   "config": {
     "siteType": "landing-page" | "business" | "ecommerce" | "saas" | "local-service",
     "business": {
-      "name": "string - business name from prompt, or generate a good one",
-      "tagline": "string - short tagline",
-      "description": "string - what the business does (2-3 sentences)",
-      "industry": "string - industry category",
-      "targetAudience": "string - who the website is for"
+      "name": "string",
+      "tagline": "string",
+      "description": "string (2-3 sentences)",
+      "industry": "string",
+      "targetAudience": "string"
     },
     "branding": {
-      "primaryColor": "#hex - choose a UNIQUE color that matches the business type and mood",
-      "secondaryColor": "#hex - complementary or contrasting color",
-      "accentColor": "#hex - accent color for CTAs — should pop against primary",
-      "surfaceColor": "#hex - background color (light like #ffffff or dark like #0f0f23)",
-      "fontHeading": "string - one of: Inter, DM Sans, Space Grotesk, Plus Jakarta Sans, Outfit, Sora, Poppins, Manrope, Playfair Display, Lora",
-      "fontBody": "string - one of the same font options (should differ from heading font for variety)",
+      "primaryColor": "#hex",
+      "secondaryColor": "#hex",
+      "accentColor": "#hex",
+      "surfaceColor": "#hex",
+      "fontHeading": "string",
+      "fontBody": "string",
       "style": "minimal" | "bold" | "elegant" | "playful" | "corporate" | "dark" | "vibrant"
     },
     "sections": [
@@ -42,47 +70,43 @@ Return ONLY valid JSON (no markdown, no explanation) with this exact structure:
       "navbarPosition": "fixed" | "sticky" | "static",
       "footerStyle": "multi-column" | "simple" | "centered" | "minimal"
     },
-    "aiPrompt": "string - a detailed description of the website to generate, including design preferences, content style, and any specific requirements mentioned by the user. Include notes about desired mood, visual approach, and unique design elements."
+    "aiPrompt": "string - detailed description for the AI generator"
   },
-  "projectName": "string - a good project name based on the business",
-  "planDescription": "string - a 2-3 sentence description of what you'll build, written in first person (I'll create...). Be specific about sections, colors, and style."
+  "projectName": "string",
+  "planDescription": "string - conversational response to the user (2-4 sentences). Be specific about what you'll create. Mention design choices and WHY they work for this business.",
+  "followUpSuggestions": [
+    "string - a specific, actionable suggestion the user might want to try next (max 3)"
+  ]
 }
 
-CRITICAL: Every website must have a UNIQUE visual identity. Follow these industry-specific guidelines:
+CRITICAL RULES FOR SECTIONS AND PAGES:
+- MINIMUM 5 sections for any website. Include variety: hero + at least 4 others from features, testimonials, stats, about, gallery, faq, cta, pricing, team
+- Every website MUST generate at least 4 pages: Home (/), About (/about), Services or equivalent (/services, /menu, /work), and Contact (/contact)
+- For restaurants: use /menu instead of /services
+- For portfolios: use /work instead of /services  
+- Include a 5th page when appropriate (e.g., /pricing, /gallery, /faq, /testimonials)
 
-Landscaping/Outdoor: Greens (#15803d, #4d7c0f, #059669), earth tones, or autumn oranges (#b45309). Bold or organic style. Pair with warm accents (gold, orange).
-Restaurants/Food: Deep warm colors — burgundy (#9f1239), terracotta (#c2410c), burnt orange (#ea580c), or rich brown (#78350f). Elegant or warm-rustic style. Use Playfair Display or Lora headings.
-Tech/SaaS: Electric indigo (#4f46e5), deep violet (#6d28d9), crisp blue (#2563eb), or carbon dark (#18181b). Minimal or dark-modern style. Use Space Grotesk or Inter headings.
-Healthcare/Wellness: Calming blues (#0369a1), healing greens (#16a34a), or lavender (#7c3aed). Clean minimal style. Friendly, approachable fonts.
-Real Estate/Luxury: Black (#1c1917), navy (#1e3a5f), emerald (#064e3b), or champagne rose (#9f1239). Elegant style. Use Playfair Display.
-Fitness/Sports: High-energy — red (#dc2626), orange (#ea580c), or dark (#18181b) with neon accents. Bold style. Strong typography.
-Education: Friendly blues (#2563eb), teals (#0d9488), or greens (#16a34a). Clean, approachable style. Poppins or DM Sans.
-Creative/Design/Agency: Bold unconventional — neon pink (#e11d48), electric purple (#9333ea), lime (#65a30d), or cosmic (#7c3aed). Playful or vibrant style.
-Legal/Finance: Navy (#1e3a5f), slate (#334155), or deep blue (#1d4ed8). Corporate or elegant style. Classic serif headings.
-Construction/Trades: Strong oranges (#ea580c), reds (#dc2626), or deep blue (#1e40af). Bold or corporate style.
+FOLLOW-UP SUGGESTIONS:
+Always include 2-3 short, actionable follow-up suggestions that the user can click to improve their site. These should be specific to the business type. Examples:
+- "Add a testimonials section with customer reviews"
+- "Change the color scheme to something warmer"
+- "Add a pricing page with your service packages"
+- "Make the style more elegant with serif fonts"
+- "Add a gallery page to showcase your work"
+- "Add a FAQ section to answer common questions"
 
-IMPORTANT COLOR RULES:
-- NEVER default to generic blue (#3b82f6) or dark slate (#0f172a) for every site
+CRITICAL COLOR RULES:
+- NEVER default to generic blue (#3b82f6) or dark slate (#0f172a)
 - Primary and secondary colors should create clear visual contrast
-- The accent color should POP — it's used for CTA buttons and highlights
-- For a given industry, vary the specific shade and approach each time
-- Choose heading and body fonts that DIFFER from each other (e.g., Playfair Display + Inter, NOT Inter + Inter)
-
-SECTION VARIETY:
-- Don't always use the same section order. Vary it based on the business.
-- Some sites should lead with stats, some with testimonials, some with features
-- Include 4-6 sections for variety, not always the same 4
+- The accent color should POP for CTA buttons
+- Choose heading and body fonts that DIFFER from each other
 
 For follow-up messages (when chatHistory is provided):
-- CRITICAL: Only modify the parts the user mentions. Keep EVERYTHING else from the previous configuration unchanged.
-- ALWAYS preserve ALL existing sections from the previous configuration. Never remove sections unless the user explicitly asks to remove them.
-- If the user says "add pricing" - add a pricing section while keeping all existing sections
-- If the user says "make it more colorful" - adjust colors only, keep all sections and structure
-- If the user says "change the name" - update business name only, keep everything else
-- If the user mentions a specific section, only change that section. All other sections must remain identical.
-- The sections array must ALWAYS include ALL sections from the previous configuration plus any new ones requested.
-- Never reduce the number of sections unless explicitly asked. Never change section types unless explicitly asked.
-- Preserve the exact same siteType, navigation settings, and branding unless the user specifically asks to change them.`;
+- CRITICAL: Only modify the parts the user mentions. Keep EVERYTHING else unchanged.
+- ALWAYS preserve ALL existing sections. Never remove sections unless explicitly asked.
+- The sections array must ALWAYS include ALL sections from the previous configuration plus any new ones.
+- Preserve siteType, navigation settings, and branding unless the user specifically asks to change them.
+- In planDescription, be conversational: acknowledge the change, explain what you're doing, and suggest a natural next step.`;
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -119,42 +143,44 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (projectError || !project) {
-        console.error('Project lookup failed:', { projectId, userId: user.id, error: projectError });
+    console.error('Project lookup failed:', { projectId, userId: user.id, error: projectError });
     return NextResponse.json({ error: 'Project not found' }, { status: 404 });
   }
 
   if (project.user_id !== user.id) {
-      
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-    // ── Check subscription plan ─────────────────────────────────────────
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('generation_credits, plan')
-      .eq('id', user.id)
-      .single();
+  // Check subscription plan
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('generation_credits, plan')
+    .eq('id', user.id)
+    .single();
 
-    if (!profile) {
-          return NextResponse.json(
-            { error: 'Profile not found' },
-            { status: 404 }
-                );
-    }
+  if (!profile) {
+    return NextResponse.json(
+      { error: 'Profile not found' },
+      { status: 404 }
+    );
+  }
 
-    if (profile.plan === 'free') {
-          return NextResponse.json(
-            { error: 'subscription_required', message: 'Please subscribe to the Beta plan to use AI features.' },
-            { status: 402 }
-                );
-    }
+  if (profile.plan === 'free') {
+    return NextResponse.json(
+      {
+        error: 'subscription_required',
+        message: 'Please subscribe to the Beta plan to use AI features.',
+      },
+      { status: 402 }
+    );
+  }
 
-    if (profile.generation_credits <= 0) {
-          return NextResponse.json(
-            { error: 'No generation credits remaining' },
-            { status: 402 }
-                );
-    }
+  if (profile.generation_credits <= 0) {
+    return NextResponse.json(
+      { error: 'No generation credits remaining' },
+      { status: 402 }
+    );
+  }
 
   try {
     const anthropic = getAnthropicClient();
@@ -165,27 +191,32 @@ export async function POST(request: NextRequest) {
     // Include chat history for context (follow-up messages)
     if (chatHistory && chatHistory.length > 0) {
       const existingConfig = project.generation_config;
+
       if (existingConfig && (existingConfig as Record<string, unknown>).siteType) {
-        // Also fetch existing page structure to preserve sub-pages
+        // Fetch existing page structure to preserve sub-pages
         const { data: existingFiles } = await supabase
           .from('generated_files')
           .select('file_path')
-          .eq('version_id', (
-            await supabase
-              .from('generation_versions')
-              .select('id')
-              .eq('project_id', projectId)
-              .eq('status', 'complete')
-              .order('version_number', { ascending: false })
-              .limit(1)
-              .single()
-          ).data?.id || '')
+          .eq(
+            'version_id',
+            (
+              await supabase
+                .from('generation_versions')
+                .select('id')
+                .eq('project_id', projectId)
+                .eq('status', 'complete')
+                .order('version_number', { ascending: false })
+                .limit(1)
+                .single()
+            ).data?.id || ''
+          )
           .like('file_path', 'src/app/%/page.tsx');
 
-        const existingPages = existingFiles?.map(f => {
-          const match = f.file_path.match(/src\/app\/(.+)\/page\.tsx/);
-          return match ? '/' + match[1] : '/';
-        }) || [];
+        const existingPages =
+          existingFiles?.map((f) => {
+            const match = f.file_path.match(/src\/app\/(.+)\/page\.tsx/);
+            return match ? '/' + match[1] : '/';
+          }) || [];
 
         messages.push({
           role: 'user',
@@ -193,7 +224,8 @@ export async function POST(request: NextRequest) {
         });
         messages.push({
           role: 'assistant',
-          content: 'I have the previous configuration and will preserve all existing pages. What changes would you like?',
+          content:
+            'I have the previous configuration and will preserve all existing pages. What changes would you like?',
         });
       }
 
@@ -225,15 +257,29 @@ export async function POST(request: NextRequest) {
     let parsed;
     try {
       let jsonStr = textBlock.text.trim();
-      if (jsonStr.startsWith('```')) {
-        jsonStr = jsonStr.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+      if (jsonStr.startsWith('\`\`\`')) {
+        jsonStr = jsonStr.replace(/^\`\`\`(?:json)?\n?/, '').replace(/\n?\`\`\`$/, '');
       }
       parsed = JSON.parse(jsonStr);
     } catch {
       throw new Error('Failed to parse AI response as JSON');
     }
 
-    const { config, projectName, planDescription } = parsed;
+    const { config, projectName, planDescription, followUpSuggestions } = parsed;
+
+    // Enforce minimum sections
+    if (config.sections && config.sections.length < 5) {
+      const existingTypes = new Set(config.sections.map((s: SectionConfig) => s.type));
+      const additionalSections = ['testimonials', 'stats', 'faq', 'cta', 'about', 'gallery', 'team'];
+      let order = config.sections.length;
+      for (const sType of additionalSections) {
+        if (config.sections.length >= 5) break;
+        if (!existingTypes.has(sType)) {
+          config.sections.push({ id: `section-${order}`, type: sType, order: order });
+          order++;
+        }
+      }
+    }
 
     if (config.sections) {
       config.sections = config.sections.map(
@@ -261,13 +307,16 @@ export async function POST(request: NextRequest) {
       config,
       planDescription:
         planDescription || "I'll create a website based on your description.",
+      followUpSuggestions: followUpSuggestions || [],
     });
   } catch (error) {
     console.error('Parse prompt error:', error);
     return NextResponse.json(
       {
         error:
-          error instanceof Error ? error.message : 'Failed to parse prompt',
+          error instanceof Error
+            ? error.message
+            : 'Failed to parse prompt',
       },
       { status: 500 }
     );
