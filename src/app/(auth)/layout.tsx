@@ -50,8 +50,8 @@ export default function AuthLayout({
               <Zap className="h-5 w-5 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="text-base font-bold text-white tracking-tight">SiteCraft AI</span>
-              <span className="text-[11px] text-white/40">by Innovated Marketing</span>
+              <span className="text-base font-bold text-white tracking-tight">Innovated</span>
+              <span className="text-[11px] text-white/40">Marketing</span>
             </div>
           </div>
 
@@ -152,8 +152,8 @@ export default function AuthLayout({
               <Zap className="h-5 w-5 text-background" />
             </div>
             <div className="flex flex-col">
-              <span className="text-lg font-bold tracking-tight">SiteCraft AI</span>
-              <span className="text-[10px] text-muted-foreground -mt-0.5">by Innovated Marketing</span>
+              <span className="text-lg font-bold tracking-tight">Innovated</span>
+              <span className="text-[10px] text-muted-foreground -mt-0.5">Marketing</span>
             </div>
           </Link>
         </div>
