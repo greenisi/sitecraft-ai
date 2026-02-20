@@ -8,6 +8,7 @@ export interface ChatMessageLocal {
   metadata: {
     stage?: 'parsing' | 'generating' | 'complete' | 'error';
     generationVersionId?: string;
+    followUpSuggestions?: string[];
   };
   created_at: string;
 }
