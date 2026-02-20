@@ -2,7 +2,7 @@ import type { GenerationConfig } from '@/types/project';
 
 /**
  * Builds the user prompt for generating a multi-page business / portfolio website.
- * Pages: Home, About, Services (or Work), and Contact.
+ * Pages: Home, About, Services (or Work), Contact, and a 5th page (Testimonials, Gallery, or Pricing).
  */
 export function buildBusinessPortfolioPrompt(config: GenerationConfig): string {
   const { business, branding, sections, aiPrompt } = config;
@@ -31,7 +31,7 @@ export function buildBusinessPortfolioPrompt(config: GenerationConfig): string {
     })
     .join('\n');
 
-  return `Generate a complete, production-ready multi-page business / portfolio website.
+  return `Generate a complete, production-ready 5-page business / portfolio website. You MUST generate at least 5 separate page.tsx files.
 
 === BUSINESS CONTEXT ===
 Business name: "${business.name}"
@@ -69,7 +69,7 @@ ${sectionList}
 2. \`src/components/Footer.tsx\` -- Professional 4-column dark footer:
    - Dark themed: \`bg-gray-900 text-gray-300 pt-16 pb-8\`
    - Column 1: Brand name, short description, social media icons
-   - Column 2: Quick Links (Home, About, Services, Contact)
+   - Column 2: Quick Links (Home, About, Services, Testimonials, Contact)
    - Column 3: Contact Info (address, phone, email, hours)
    - Column 4: Newsletter signup with email input and subscribe button
    - Bottom bar: copyright with dynamic year + Privacy/Terms links
@@ -132,6 +132,23 @@ ${sectionList}
 16. \`src/app/contact/page.tsx\` -- Contact page with two-column layout: ContactForm
     and ContactInfo side by side.
 
+**Testimonials Page (/testimonials)**
+
+19. \`src/components/TestimonialsGrid.tsx\` -- Full testimonials page:
+   - 'use client' for scroll-triggered animations
+   - 6-8 detailed testimonial cards with star ratings, customer names, roles, and review text
+   - Mix of card sizes (featured large + standard grid)
+   - Each card with hover effects and staggered animations
+   - Filter or category tabs if appropriate for the industry
+
+20. \`src/components/TestimonialStats.tsx\` -- Social proof section:
+   - Overall rating display (e.g., "4.9 out of 5 stars")
+   - Total review count
+   - Platform badges (Google, Yelp, etc.)
+   - Animated counters
+
+21. \`src/app/testimonials/page.tsx\` -- Testimonials page composing TestimonialsGrid and TestimonialStats. Add \`pt-16\` for fixed navbar.
+
 **Layout & Config**
 
 17. \`src/app/layout.tsx\` -- Root layout wrapping all pages with Navbar and Footer.
@@ -157,6 +174,8 @@ ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 - Use realistic, industry-appropriate content — NEVER lorem ipsum
 - All navigation links must use \`next/link\` with correct paths (/, /about, /services, /contact)
 - Pages must feel cohesive: consistent colors, typography, spacing
+- EVERY button must link to a real page using next/link: "Learn More" → /about, "View Services" → /services, "Contact Us" → /contact, "See Reviews" → /testimonials
+- CTA buttons in hero and section cards MUST use <Link href="/path"> not <a href="#"> or <button>
 - Add \`pt-16\` to page content to account for fixed navbar
 - CRITICAL: Follow the DESIGN VARIETY instructions at the end of this prompt for hero, navbar, features layout, and testimonial style. Each website MUST look unique.
 - Generate ALL files listed above in a single response
