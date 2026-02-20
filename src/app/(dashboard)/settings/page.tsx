@@ -17,6 +17,7 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [credits, setCredits] = useState(0);
   const [plan, setPlan] = useState('free');
+  const [activating, setActivating] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -58,6 +59,34 @@ export default function SettingsPage() {
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleActivateBeta = async () => {
+    setActivating(true);
+    try {
+      const supabase = createClient();
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) throw new Error('Not authenticated');
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ plan: 'beta', generation_credits: 25 })
+        .eq('id', currentUser.id);
+
+      if (error) throw error;
+
+      setPlan('beta');
+      setCredits(25);
+      toast.success('Beta plan activated!', {
+        description: 'You now have 25 generation credits to build websites.',
+      });
+    } catch (error) {
+      toast.error('Failed to activate', {
+        description: error instanceof Error ? error.message : 'Unknown error',
+      });
+    } finally {
+      setActivating(false);
     }
   };
 
@@ -129,13 +158,13 @@ export default function SettingsPage() {
           <div className="flex items-center gap-4 mb-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-sm font-semibold capitalize">{plan}</span>
+                <span className="text-sm font-semibold capitalize">{plan === 'beta' ? 'Beta' : plan}</span>
                 <span className="text-[10px] font-bold bg-violet-500/10 text-violet-600 dark:text-violet-400 px-2 py-0.5 rounded-full uppercase">
                   {plan}
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">
-                {plan === 'pro' ? 'Unlimited generations available' : 'Upgrade to Pro for unlimited generations'}
+                {plan === 'pro' ? 'Unlimited generations available' : plan === 'beta' ? 'Beta access with generation credits' : 'Activate the Beta plan to start building'}
               </p>
             </div>
             <div className="text-right">
@@ -146,10 +175,24 @@ export default function SettingsPage() {
               <p className="text-[10px] text-muted-foreground">credits remaining</p>
             </div>
           </div>
-          {plan !== 'pro' && (
-            <Button variant="outline" className="w-full rounded-xl" disabled>
-              Upgrade to Pro (Coming Soon)
+          {plan === 'free' && (
+            <Button 
+              onClick={handleActivateBeta}
+              disabled={activating}
+              className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white border-0"
+            >
+              {activating ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="mr-2 h-4 w-4" />
+              )}
+              Activate Beta Plan — 25 Free Credits
             </Button>
+          )}
+          {plan === 'beta' && (
+            <div className="text-center text-xs text-muted-foreground pt-2">
+              Need more credits? Pro plan coming soon.
+            </div>
           )}
         </div>
       </div>
