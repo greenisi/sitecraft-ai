@@ -113,6 +113,7 @@ export function useChat(projectId: string) {
   } = useChatStore();
   const generationStore = useGenerationStore();
   const templateAutoTriggered = useRef(false);
+  const followUpSuggestionsRef = useRef<string[]>([]);
 
   // Load messages from DB on mount
   useEffect(() => {
@@ -314,7 +315,7 @@ export function useChat(projectId: string) {
           role: 'assistant',
           content:
             'Your website is ready! You can see the live preview on the right. Send another message to make changes.',
-          metadata: { stage: 'complete' },
+          metadata: { stage: 'complete', followUpSuggestions: followUpSuggestionsRef.current },
           created_at: new Date().toISOString(),
         };
         addMessage(completionMessage);
@@ -482,7 +483,7 @@ export function useChat(projectId: string) {
           throw new Error(err.error || 'Failed to parse prompt');
         }
 
-        const { config, planDescription } = await parseResponse.json();
+        const { config, planDescription, followUpSuggestions } = await parseResponse.json();
 
         // 3. Add assistant plan message
         const planMessage: ChatMessageLocal = {
@@ -506,6 +507,9 @@ export function useChat(projectId: string) {
             metadata: planMessage.metadata,
           })
           .then();
+
+        // Store follow-up suggestions for after generation completes
+        followUpSuggestionsRef.current = followUpSuggestions || [];
 
         // 4. Start generation with recovery
         await runGeneration(config, planDescription);
