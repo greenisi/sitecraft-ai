@@ -45,6 +45,14 @@ export function SpotlightTour() {
     }
   }, [isActive]);
 
+  // Always clear isAnimating after a short delay regardless of welcome state
+  useEffect(() => {
+    if (isAnimating) {
+      const timer = setTimeout(() => setAnimating(false), 400);
+      return () => clearTimeout(timer);
+    }
+  }, [isAnimating, setAnimating]);
+
   const updateSpotlight = useCallback(() => {
     if (!currentTour || showWelcome) {
       setSpotlightRect(null);
@@ -73,11 +81,10 @@ export function SpotlightTour() {
         setSpotlightRect(null);
       }
 
-      setTimeout(() => setAnimating(false), 400);
     }, delay);
 
     return () => clearTimeout(timer);
-  }, [currentTour, currentStep, showWelcome, setAnimating]);
+  }, [currentTour, currentStep, showWelcome]);
 
   useEffect(() => {
     updateSpotlight();
@@ -246,13 +253,10 @@ export function SpotlightTour() {
           zIndex: 10,
           width: 320,
           maxWidth: '90vw',
-          opacity: isAnimating ? 0 : 1,
-          transform: isAnimating
-            ? `${tooltipStyle.transform || ''} scale(0.95)`
-            : `${tooltipStyle.transform || ''} scale(1)`,
-          transition: 'all 500ms ease',
           pointerEvents: 'auto',
           ...tooltipStyle,
+          opacity: isAnimating ? 0 : 1,
+          transition: 'opacity 400ms ease',
         }}
       >
         {showWelcome ? (
