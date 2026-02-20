@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import { QueryProvider } from '@/providers/query-provider';
 import { ThemeProvider } from '@/providers/theme-provider';
 import { ToastProvider } from '@/providers/toast-provider';
+import { SpotlightTour } from '@/components/tour/spotlight-tour';
 import './globals.css';
 
 const inter = Inter({
@@ -31,6 +32,7 @@ export default function RootLayout({
           <QueryProvider>
             {children}
             <ToastProvider />
+              <SpotlightTour />
           </QueryProvider>
         </ThemeProvider>
       </body>
