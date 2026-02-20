@@ -140,7 +140,7 @@ export function PreviewPanel({ projectId }: PreviewPanelProps) {
             <div className="h-3 w-3 rounded-full bg-[#ffbd2e]" />
             <div className="h-3 w-3 rounded-full bg-[#27c93f]" />
           </div>
-          <span className="text-[#8b949e] ml-2 text-[11px]">sitecraft-ai — code generation</span>
+          <span className="text-[#8b949e] ml-2 text-[11px]">innovated-marketing — code generation</span>
           <div className="ml-auto flex items-center gap-3">
             {activeFile && (
               <span className="text-[#58a6ff] truncate max-w-[200px] text-[11px]">{activeFile}</span>
