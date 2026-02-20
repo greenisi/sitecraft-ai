@@ -8,9 +8,11 @@ import { Label } from '@/components/ui/label';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/lib/hooks/use-user';
 import { toast } from 'sonner';
+import { usePageTour } from '@/components/tour/use-page-tour';
 
 export default function SettingsPage() {
   const { user } = useUser();
+    usePageTour('settings');
   const [displayName, setDisplayName] = useState('');
   const [saving, setSaving] = useState(false);
   const [credits, setCredits] = useState(0);
