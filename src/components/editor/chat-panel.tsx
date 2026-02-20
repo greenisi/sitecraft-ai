@@ -6,6 +6,7 @@ import { useGenerationStore } from '@/stores/generation-store';
 import { ChatMessage } from './chat-message';
 import { ChatInput } from './chat-input';
 import { ChatWelcome } from './chat-welcome';
+import { Sparkles } from 'lucide-react';
 
 interface ChatPanelProps {
   projectId: string;
@@ -31,8 +32,29 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
           <ChatWelcome onSuggestionClick={sendMessage} />
         ) : (
           <div className="flex flex-col gap-1 p-4">
-            {messages.map((message) => (
-              <ChatMessage key={message.id} message={message} />
+            {messages.map((message, index) => (
+              <div key={message.id}>
+                <ChatMessage message={message} />
+                {/* Show follow-up suggestions after completion messages */}
+                {message.metadata?.stage === 'complete' &&
+                  message.metadata?.followUpSuggestions &&
+                  message.metadata.followUpSuggestions.length > 0 &&
+                  index === messages.length - 1 &&
+                  !isProcessing && (
+                    <div className="flex flex-wrap gap-2 mt-3 ml-11">
+                      {message.metadata.followUpSuggestions.map((suggestion: string, i: number) => (
+                        <button
+                          key={i}
+                          onClick={() => sendMessage(suggestion)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/40 transition-all duration-200 hover:scale-105"
+                        >
+                          <Sparkles className="h-3 w-3" />
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+              </div>
             ))}
 
             {/* Inline generation progress */}
