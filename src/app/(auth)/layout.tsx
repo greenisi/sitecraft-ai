@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { Zap, Globe, Sparkles, Layers } from 'lucide-react';
+import Image from 'next/image';
+import { Globe, Sparkles, Layers } from 'lucide-react';
 
 export default function AuthLayout({
   children,
@@ -45,14 +46,15 @@ export default function AuthLayout({
         {/* Content */}
         <div className="relative flex flex-col justify-between p-12 xl:p-16 w-full z-10">
           {/* Logo */}
-          <div className="flex items-center gap-3 stagger-1">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 breathe">
-              <Zap className="h-5 w-5 text-white" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-base font-bold text-white tracking-tight">Innovated</span>
-              <span className="text-[11px] text-white/40">Marketing</span>
-            </div>
+          <div className="stagger-1">
+            <Image
+              src="/logo.png"
+              alt="Innovated Marketing"
+              width={180}
+              height={46}
+              className="object-contain brightness-0 invert"
+              priority
+            />
           </div>
 
           {/* Hero content */}
@@ -147,14 +149,15 @@ export default function AuthLayout({
 
         {/* Mobile logo */}
         <div className="flex flex-col items-center gap-3 mb-8 lg:hidden">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-foreground shadow-lg transition-shadow group-hover:shadow-xl breathe">
-              <Zap className="h-5 w-5 text-background" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-lg font-bold tracking-tight">Innovated</span>
-              <span className="text-[10px] text-muted-foreground -mt-0.5">Marketing</span>
-            </div>
+          <Link href="/" className="group">
+            <Image
+              src="/logo.png"
+              alt="Innovated Marketing"
+              width={180}
+              height={46}
+              className="object-contain dark:brightness-0 dark:invert"
+              priority
+            />
           </Link>
         </div>
 
