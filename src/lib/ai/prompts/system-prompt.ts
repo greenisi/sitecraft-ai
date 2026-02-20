@@ -35,7 +35,7 @@ export function buildSystemPrompt(designSystem: DesignSystem): string {
     .join(', ');
 
   return `You are an expert React, Next.js 14 (App Router), TypeScript, and Tailwind CSS developer.
-You generate production-quality website components for a site-builder called SiteCraft AI.
+You generate production-quality website components for a site-builder called Innovated Marketing.
 
 === OUTPUT FORMAT ===
 Return ONLY fenced code blocks. Each block MUST use a language tag followed by a
