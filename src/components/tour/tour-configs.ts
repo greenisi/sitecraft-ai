@@ -24,7 +24,7 @@ export const dashboardTour: TourConfig = {
       spotlightPadding: 12,
     },
     {
-      target: '[data-tour="sidebar-templates"]',
+      target: 'a[href="/templates"]',
       title: 'Browse Templates',
       description:
         'Explore professionally designed templates to kickstart your project. Choose from restaurants, portfolios, SaaS, and more.',
@@ -32,7 +32,7 @@ export const dashboardTour: TourConfig = {
       spotlightPadding: 4,
     },
     {
-      target: '[data-tour="sidebar-settings"]',
+      target: 'a[href="/settings"]',
       title: 'Your Settings',
       description:
         'Manage your profile, check your credits balance, and configure your account preferences here.',
@@ -40,7 +40,7 @@ export const dashboardTour: TourConfig = {
       spotlightPadding: 4,
     },
     {
-      target: '[data-tour="credits-display"]',
+      target: '.rounded-full.bg-violet-500\/10',
       title: 'AI Credits',
       description:
         'This shows your remaining AI generation credits. Each website generation or edit uses credits. Keep an eye on your balance!',
@@ -58,7 +58,7 @@ export const editorTour: TourConfig = {
     'This is where the magic happens! Chat with AI to build and edit your website, preview changes in real-time, and publish when ready.',
   steps: [
     {
-      target: '[data-tour="chat-input"]',
+      target: 'input[placeholder*="changes"], textarea[placeholder*="changes"]',
       title: 'AI Chat',
       description:
         'Type what you want to change here. Try things like "Change the color scheme to blue" or "Add a testimonials section." The AI understands natural language!',
@@ -66,7 +66,7 @@ export const editorTour: TourConfig = {
       spotlightPadding: 8,
     },
     {
-      target: '[data-tour="preview-area"]',
+      target: 'iframe',
       title: 'Live Preview',
       description:
         'See your website come to life in real-time. Every change you make through chat or the visual editor updates here instantly.',
@@ -74,7 +74,7 @@ export const editorTour: TourConfig = {
       spotlightPadding: 4,
     },
     {
-      target: '[data-tour="page-tabs"]',
+      target: '[role="tablist"]',
       title: 'Page Navigation',
       description:
         'Switch between different pages of your website. Each page (Home, About, Services, Contact) is a separate tab you can preview and edit.',
@@ -82,7 +82,7 @@ export const editorTour: TourConfig = {
       spotlightPadding: 6,
     },
     {
-      target: '[data-tour="viewport-switcher"]',
+      target: 'button:has(.lucide-monitor), [class*="viewport"]',
       title: 'Responsive Preview',
       description:
         'Test how your website looks on Desktop, Tablet, and Mobile devices. Make sure your site looks great everywhere!',
@@ -90,7 +90,7 @@ export const editorTour: TourConfig = {
       spotlightPadding: 6,
     },
     {
-      target: '[data-tour="edit-btn"]',
+      target: 'button:has(.lucide-sparkles)',
       title: 'Visual Editor',
       description:
         'Open the powerful visual editor to click and style any element directly. Change colors, fonts, spacing, and links with precision controls.',
@@ -98,7 +98,7 @@ export const editorTour: TourConfig = {
       spotlightPadding: 6,
     },
     {
-      target: '[data-tour="export-btn"]',
+      target: 'button:has(.lucide-download)',
       title: 'Export Your Site',
       description:
         'Download your complete website as a ZIP file with all the code, ready to host anywhere.',
@@ -106,7 +106,7 @@ export const editorTour: TourConfig = {
       spotlightPadding: 6,
     },
     {
-      target: '[data-tour="publish-btn"]',
+      target: 'button:has(.lucide-globe)',
       title: 'Publish to the Web',
       description:
         'Go live with one click! Publish your website to a live URL and share it with the world.',
@@ -174,7 +174,7 @@ export const templatesTour: TourConfig = {
     'Browse our collection of professionally designed templates. Each one is fully customizable with AI to match your brand.',
   steps: [
     {
-      target: '[data-tour="template-grid"]',
+      target: '.grid',
       title: 'Choose a Template',
       description:
         'Browse through our curated template collection. Each card shows a preview, name, and category. Click on any template to start customizing it.',
@@ -182,7 +182,7 @@ export const templatesTour: TourConfig = {
       spotlightPadding: 12,
     },
     {
-      target: '[data-tour="template-categories"]',
+      target: '[role="tablist"]',
       title: 'Filter by Category',
       description:
         'Filter templates by industry — restaurants, portfolios, SaaS, e-commerce, and more. Find the perfect starting point for your project.',
@@ -200,7 +200,7 @@ export const settingsTour: TourConfig = {
     'Manage your profile and subscription details from here.',
   steps: [
     {
-      target: '[data-tour="settings-profile"]',
+      target: '.space-y-6 > div:first-child, [class*="card"]:first-of-type',
       title: 'Your Profile',
       description:
         'View and update your profile information including your name, email, and avatar.',
@@ -208,7 +208,7 @@ export const settingsTour: TourConfig = {
       spotlightPadding: 8,
     },
     {
-      target: '[data-tour="settings-plan"]',
+      target: '.space-y-6 > div:last-child, [class*="card"]:last-of-type',
       title: 'Plan & Credits',
       description:
         'Check your current plan, see how many AI credits you have remaining, and upgrade if you need more.',
