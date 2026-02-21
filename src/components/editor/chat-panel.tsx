@@ -1,12 +1,13 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useChat } from '@/lib/hooks/use-chat';
 import { useGenerationStore } from '@/stores/generation-store';
 import { ChatMessage } from './chat-message';
 import { ChatInput } from './chat-input';
 import { ChatWelcome } from './chat-welcome';
 import { Sparkles } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 
 interface ChatPanelProps {
   projectId: string;
@@ -16,6 +17,26 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
   const { messages, isProcessing, processingStage, sendMessage } = useChat(projectId);
   const { currentStage, progress, isGenerating } = useGenerationStore();
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Fetch project name and description for smart welcome
+  const [projectName, setProjectName] = useState<string>('');
+  const [projectDescription, setProjectDescription] = useState<string>('');
+
+  useEffect(() => {
+    const fetchProject = async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('projects')
+        .select('name, description')
+        .eq('id', projectId)
+        .single();
+      if (data) {
+        setProjectName(data.name || '');
+        setProjectDescription(data.description || '');
+      }
+    };
+    fetchProject();
+  }, [projectId]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -27,9 +48,16 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
   return (
     <div className="flex h-full flex-col min-h-0">
       {/* Messages Area */}
-      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
+      <div
+        ref={scrollRef}
+        className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+      >
         {messages.length === 0 && !isProcessing ? (
-          <ChatWelcome onSuggestionClick={sendMessage} />
+          <ChatWelcome
+            onSuggestionClick={sendMessage}
+            projectName={projectName}
+            projectDescription={projectDescription}
+          />
         ) : (
           <div className="flex flex-col gap-1 p-4">
             {messages.map((message, index) => (
@@ -42,16 +70,18 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
                   index === messages.length - 1 &&
                   !isProcessing && (
                     <div className="flex flex-wrap gap-2 mt-3 ml-11">
-                      {message.metadata.followUpSuggestions.map((suggestion: string, i: number) => (
-                        <button
-                          key={i}
-                          onClick={() => sendMessage(suggestion)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/40 transition-all duration-200 hover:scale-105"
-                        >
-                          <Sparkles className="h-3 w-3" />
-                          {suggestion}
-                        </button>
-                      ))}
+                      {message.metadata.followUpSuggestions.map(
+                        (suggestion: string, i: number) => (
+                          <button
+                            key={i}
+                            onClick={() => sendMessage(suggestion)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/40 transition-all duration-200 hover:scale-105"
+                          >
+                            <Sparkles className="h-3 w-3" />
+                            {suggestion}
+                          </button>
+                        )
+                      )}
                     </div>
                   )}
               </div>
@@ -91,14 +121,14 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
         )}
       </div>
 
-      {/* Input Area — ChatInput has its own border-t and padding */}
+      {/* Input Area */}
       <ChatInput
         onSend={sendMessage}
         isDisabled={isProcessing}
         placeholder={
           messages.length === 0
             ? 'Describe the website you want to build...'
-            : 'Describe changes you\'d like to make...'
+            : "Describe changes you'd like to make..."
         }
       />
     </div>
