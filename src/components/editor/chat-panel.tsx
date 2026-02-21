@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useChat } from '@/lib/hooks/use-chat';
 import { useGenerationStore } from '@/stores/generation-store';
 import { ChatMessage } from './chat-message';
@@ -16,6 +17,7 @@ interface ChatPanelProps {
 export function ChatPanel({ projectId }: ChatPanelProps) {
   const { messages, isProcessing, processingStage, sendMessage } = useChat(projectId);
   const { currentStage, progress, isGenerating } = useGenerationStore();
+  const searchParams = useSearchParams();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Fetch project name and description for smart welcome
@@ -27,12 +29,14 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
       const supabase = createClient();
       const { data } = await supabase
         .from('projects')
-        .select('name, description')
+        .select('name, site_type')
         .eq('id', projectId)
         .single();
       if (data) {
         setProjectName(data.name || '');
-        setProjectDescription(data.description || '');
+        // Use site_type from DB, or desc query param as fallback
+        const desc = data.site_type || searchParams.get('desc') || '';
+        setProjectDescription(desc);
       }
     };
     fetchProject();
