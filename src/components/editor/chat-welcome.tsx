@@ -67,7 +67,7 @@ export function ChatWelcome({ onSuggestionClick, projectName, projectDescription
       {hasProjectInfo ? (
         <>
           <h2 className="text-lg font-bold mb-1.5 animate-fade-in text-center">
-            Let\'s build {projectName}!
+            {"Let's build "}{projectName}{"!"}
           </h2>
           {projectDescription && (
             <p className="text-xs text-muted-foreground text-center mb-2 max-w-xs animate-fade-in italic">
@@ -82,7 +82,7 @@ export function ChatWelcome({ onSuggestionClick, projectName, projectDescription
         <>
           <h2 className="text-lg font-bold mb-1.5 animate-fade-in">What would you like to build?</h2>
           <p className="text-sm text-muted-foreground text-center mb-6 max-w-xs animate-fade-in">
-            Tell me about your project and I\'ll help you create the perfect website.
+            {"Tell me about your project and I'll help you create the perfect website."}
           </p>
         </>
       )}
