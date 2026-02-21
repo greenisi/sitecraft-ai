@@ -76,11 +76,13 @@ export default function DashboardPage() {
     setCreating(true);
     try {
       const supabase = createClient();
+      const slug = projectName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now().toString(36);
       const { data, error } = await supabase
         .from('projects')
         .insert({
           user_id: user!.id,
           name: projectName.trim(),
+          slug,
           site_type: projectDescription.trim() || null,
           status: 'draft',
         })
