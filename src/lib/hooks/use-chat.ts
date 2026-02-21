@@ -356,6 +356,11 @@ export function useChat(projectId: string) {
     autoTriggeredProjectIds.add(projectId);
 
     const autoGenerate = async () => {
+      // Skip auto-generation for projects created through the New Project modal
+      // These projects have a ?desc= query parameter in the URL
+      if (typeof window !== 'undefined' && window.location.search.includes('desc=')) {
+        return;
+      }
       const supabase = createClient();
 
       // Check if this project was created from a template (has generation_config and is draft)
