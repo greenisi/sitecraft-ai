@@ -76,7 +76,7 @@ export default function DashboardPage() {
         .single();
 
       if (error) throw error;
-      if (data) router.push(`/editor/${data.id}`);
+      if (data) router.push(`/projects/${data.id}`);
     } catch (err) {
       toast.error('Failed to create project');
     } finally {
@@ -178,7 +178,7 @@ export default function DashboardPage() {
               <div
                 className="aspect-[16/10] overflow-hidden cursor-pointer"
                 style={{ background: 'rgba(15,23,42,0.6)' }}
-                onClick={() => router.push(`/editor/${project.id}`)}
+                onClick={() => router.push(`/projects/${project.id}`)}
               >
                 {project.thumbnail_url ? (
                   <img
@@ -219,7 +219,7 @@ export default function DashboardPage() {
                       )}
                     </button>
                     <button
-                      onClick={() => router.push(`/editor/${project.id}`)}
+                      onClick={() => router.push(`/projects/${project.id}`)}
                       className="flex items-center gap-1 text-xs text-violet-400 hover:text-violet-300 font-medium transition-colors"
                     >
                       <Pencil className="h-3 w-3" />
