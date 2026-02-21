@@ -81,7 +81,7 @@ export default function DashboardPage() {
         .insert({
           user_id: user!.id,
           name: projectName.trim(),
-          description: projectDescription.trim() || null,
+          site_type: projectDescription.trim() || null,
           status: 'draft',
         })
         .select()
@@ -89,7 +89,12 @@ export default function DashboardPage() {
 
       if (error) throw error;
       setShowModal(false);
-      if (data) router.push(`/projects/${data.id}`);
+      if (data) {
+        const params = new URLSearchParams();
+        if (projectDescription.trim()) params.set('desc', projectDescription.trim());
+        const qs = params.toString();
+        router.push(`/projects/${data.id}${qs ? '?' + qs : ''}`);
+      }
     } catch (err) {
       toast.error('Failed to create project');
     } finally {
