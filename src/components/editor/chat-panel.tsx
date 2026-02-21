@@ -29,15 +29,15 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
       const supabase = createClient();
       const { data } = await supabase
         .from('projects')
-        .select('name, site_type')
+        .select('name')
         .eq('id', projectId)
         .single();
       if (data) {
         setProjectName(data.name || '');
-        // Use site_type from DB, or desc query param as fallback
-        const desc = data.site_type || searchParams.get('desc') || '';
-        setProjectDescription(desc);
       }
+      // Get description from URL param (passed during project creation)
+      const desc = searchParams.get('desc') || '';
+      if (desc) setProjectDescription(desc);
     };
     fetchProject();
   }, [projectId]);
