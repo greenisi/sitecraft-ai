@@ -83,7 +83,6 @@ export default function DashboardPage() {
           user_id: user!.id,
           name: projectName.trim(),
           slug,
-          site_type: projectDescription.trim() || null,
           status: 'draft',
         })
         .select()
