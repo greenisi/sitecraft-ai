@@ -22,9 +22,10 @@ export default function HomePage() {
           <Image
             src="/logo.png"
             alt="Innovated Marketing"
-            width={160}
-            height={40}
-            className="brightness-0 invert h-8 w-auto"
+            width={844}
+            height={563}
+            className="brightness-0 invert w-auto"
+            style={{ height: '48px' }}
             priority
           />
         </Link>
