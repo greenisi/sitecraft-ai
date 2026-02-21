@@ -69,10 +69,9 @@ export function SpaceNavbar() {
           <Image
             src="/logo.png"
             alt="Innovated Marketing"
-            width={200}
-            height={50}
-            className="brightness-0 invert w-auto"
-            style={{ height: 'clamp(36px, 5vw, 44px)' }}
+            width={280}
+            height={70}
+            className="brightness-0 invert h-10 md:h-9 w-auto"
             priority
           />
         </a>
