@@ -32,16 +32,11 @@ export function SpaceNavbar() {
     }
   }, [user]);
 
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
+  useEffect(() => { setMenuOpen(false); }, [pathname]);
 
   useEffect(() => {
-    if (menuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    if (menuOpen) { document.body.style.overflow = 'hidden'; }
+    else { document.body.style.overflow = ''; }
     return () => { document.body.style.overflow = ''; };
   }, [menuOpen]);
 
@@ -54,29 +49,26 @@ export function SpaceNavbar() {
   };
 
   const isActive = (path: string) => pathname === path;
-
-  const navTo = (path: string) => {
-    setMenuOpen(false);
-    router.push(path);
-  };
+  const navTo = (path: string) => { setMenuOpen(false); router.push(path); };
 
   return (
     <>
       {/* ===== TOP HEADER ===== */}
       <header className="relative z-20 flex items-center justify-between px-4 md:px-8 lg:px-12 py-4">
-        {/* Logo - bigger on mobile */}
+        {/* Logo */}
         <a href="/dashboard" className="flex items-center gap-2">
           <Image
             src="/logo.png"
             alt="Innovated Marketing"
-            width={280}
-            height={70}
-            className="brightness-0 invert h-10 md:h-9 w-auto"
+            width={844}
+            height={563}
+            className="brightness-0 invert w-auto"
+            style={{ height: '56px' }}
             priority
           />
         </a>
 
-        {/* Desktop nav - hidden on mobile */}
+        {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1 md:gap-2">
           {credits > 0 && (
             <div
@@ -87,6 +79,7 @@ export function SpaceNavbar() {
               <span className="tabular-nums">{credits >= 999999 ? '\u221e' : credits}</span>
             </div>
           )}
+
           {plan !== 'free' && (
             <div
               className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium"
@@ -96,6 +89,7 @@ export function SpaceNavbar() {
               {plan === 'pro' ? 'Pro' : 'Beta Pro'}
             </div>
           )}
+
           <a
             href="/dashboard"
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
@@ -126,10 +120,10 @@ export function SpaceNavbar() {
         </nav>
       </header>
 
-      {/* ===== FLOATING HAMBURGER BUTTON — mobile only, bottom-left ===== */}
+      {/* ===== FLOATING HAMBURGER BUTTON ===== */}
       <button
         onClick={() => setMenuOpen(true)}
-        className="md:hidden fixed bottom-6 left-5 z-40 flex items-center justify-center w-13 h-13 rounded-2xl shadow-2xl transition-all duration-200 active:scale-95"
+        className="md:hidden fixed bottom-6 left-5 z-40 flex items-center justify-center rounded-2xl shadow-2xl transition-all duration-200 active:scale-95"
         style={{
           width: '52px',
           height: '52px',
@@ -169,9 +163,10 @@ export function SpaceNavbar() {
           <Image
             src="/logo.png"
             alt="Innovated Marketing"
-            width={160}
-            height={40}
-            className="brightness-0 invert h-8 w-auto"
+            width={844}
+            height={563}
+            className="brightness-0 invert w-auto"
+            style={{ height: '44px' }}
           />
           <button
             onClick={() => setMenuOpen(false)}
@@ -195,6 +190,7 @@ export function SpaceNavbar() {
           ) : (
             <span className="text-xs text-gray-500 font-medium">Free Plan</span>
           )}
+
           <div className="flex items-center gap-1 ml-auto">
             <Sparkles className="h-3.5 w-3.5 text-amber-400" />
             <span className="text-amber-400 font-semibold text-sm tabular-nums">
@@ -212,9 +208,7 @@ export function SpaceNavbar() {
           <button
             onClick={() => navTo('/dashboard')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-              isActive('/dashboard')
-                ? 'text-white'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
+              isActive('/dashboard') ? 'text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'
             }`}
             style={isActive('/dashboard') ? { background: 'rgba(139,92,246,0.15)', color: '#e2d9f3' } : {}}
           >
@@ -224,9 +218,7 @@ export function SpaceNavbar() {
           <button
             onClick={() => navTo('/pricing')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-              isActive('/pricing')
-                ? 'text-white'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
+              isActive('/pricing') ? 'text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'
             }`}
             style={isActive('/pricing') ? { background: 'rgba(139,92,246,0.15)', color: '#e2d9f3' } : {}}
           >
@@ -236,9 +228,7 @@ export function SpaceNavbar() {
           <button
             onClick={() => navTo('/settings')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-              isActive('/settings')
-                ? 'text-white'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
+              isActive('/settings') ? 'text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'
             }`}
             style={isActive('/settings') ? { background: 'rgba(139,92,246,0.15)', color: '#e2d9f3' } : {}}
           >
