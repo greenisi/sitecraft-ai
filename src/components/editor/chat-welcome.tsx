@@ -1,50 +1,94 @@
 'use client';
 
-import { Sparkles, Building2, Globe, Utensils, Wrench } from 'lucide-react';
+import { Sparkles, MessageSquare, Palette, Layout, Globe } from 'lucide-react';
 
 interface ChatWelcomeProps {
   onSuggestionClick: (prompt: string) => void;
+  projectName?: string;
+  projectDescription?: string;
 }
 
-const SUGGESTIONS = [
-  {
-    label: 'Landscaping Company',
-    icon: Building2,
-    prompt:
-      'Create a professional website for GreenScape Elite, a landscaping company in Austin, TX. They do residential and commercial landscaping design and maintenance.',
-  },
-  {
-    label: 'SaaS Landing Page',
-    icon: Globe,
-    prompt:
-      'Build a modern SaaS landing page for an AI-powered project management tool called FlowSync. Include pricing, features, and testimonials.',
-  },
-  {
-    label: 'Restaurant Website',
-    icon: Utensils,
-    prompt:
-      'Create a warm, inviting website for Bella Italia, an Italian restaurant in downtown Chicago with a focus on homemade pasta and wood-fired pizza.',
-  },
-  {
-    label: 'Local Plumber',
-    icon: Wrench,
-    prompt:
-      'Build a website for QuickFix Plumbing, a 24/7 emergency plumbing service in Denver, CO. They handle residential and commercial plumbing repairs.',
-  },
-];
+export function ChatWelcome({ onSuggestionClick, projectName, projectDescription }: ChatWelcomeProps) {
+  const hasProjectInfo = projectName && projectName !== 'Untitled Project';
 
-export function ChatWelcome({ onSuggestionClick }: ChatWelcomeProps) {
+  // Smart starter questions based on project info
+  const smartQuestions = hasProjectInfo
+    ? [
+        {
+          label: 'Build my website',
+          icon: Globe,
+          prompt: `Build a professional website for ${projectName}.${projectDescription ? ' ' + projectDescription : ''} Make it modern, responsive, and include all essential pages.`,
+        },
+        {
+          label: 'Help me plan first',
+          icon: MessageSquare,
+          prompt: `I want to create a website for ${projectName}.${projectDescription ? ' ' + projectDescription : ''} Before you start building, can you ask me a few questions to understand exactly what I need? I want to make sure it turns out perfect.`,
+        },
+        {
+          label: 'Choose a style',
+          icon: Palette,
+          prompt: `I need a website for ${projectName}. Can you suggest 3 different design styles and color schemes that would work well for this type of business? Describe each option so I can pick my favorite before you start building.`,
+        },
+        {
+          label: 'Plan the pages',
+          icon: Layout,
+          prompt: `For ${projectName}${projectDescription ? ' (' + projectDescription + ')' : ''}, what pages would you recommend? List out the ideal site structure with a brief description of what each page should include, then ask me if I want to add or remove anything.`,
+        },
+      ]
+    : [
+        {
+          label: 'Help me get started',
+          icon: MessageSquare,
+          prompt: 'I want to create a website but I\'m not sure where to start. Can you ask me some questions to help figure out what I need?',
+        },
+        {
+          label: 'Business website',
+          icon: Globe,
+          prompt: 'I need a professional business website. Can you ask me about my business so you can create something perfect for me?',
+        },
+        {
+          label: 'Landing page',
+          icon: Layout,
+          prompt: 'I want to create a landing page. Can you help me figure out the right layout and content by asking me a few questions?',
+        },
+        {
+          label: 'Choose a style',
+          icon: Palette,
+          prompt: 'Before building anything, can you help me pick a design style? Ask me about my preferences so you can suggest the perfect look.',
+        },
+      ];
+
   return (
     <div className="flex h-full flex-col items-center justify-center px-5 py-10">
       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-violet-500/25 mb-5 animate-fade-in">
         <Sparkles className="h-6 w-6 text-white" />
       </div>
-      <h2 className="text-lg font-bold mb-1.5 animate-fade-in">What would you like to build?</h2>
-      <p className="text-sm text-muted-foreground text-center mb-6 max-w-xs animate-fade-in">
-        Describe your website and AI will generate a complete, production-ready site.
-      </p>
+
+      {hasProjectInfo ? (
+        <>
+          <h2 className="text-lg font-bold mb-1.5 animate-fade-in text-center">
+            Let\'s build {projectName}!
+          </h2>
+          {projectDescription && (
+            <p className="text-xs text-muted-foreground text-center mb-2 max-w-xs animate-fade-in italic">
+              &ldquo;{projectDescription}&rdquo;
+            </p>
+          )}
+          <p className="text-sm text-muted-foreground text-center mb-6 max-w-xs animate-fade-in">
+            How would you like to get started?
+          </p>
+        </>
+      ) : (
+        <>
+          <h2 className="text-lg font-bold mb-1.5 animate-fade-in">What would you like to build?</h2>
+          <p className="text-sm text-muted-foreground text-center mb-6 max-w-xs animate-fade-in">
+            Tell me about your project and I\'ll help you create the perfect website.
+          </p>
+        </>
+      )}
+
       <div className="grid grid-cols-1 gap-2 w-full max-w-sm">
-        {SUGGESTIONS.map((suggestion, i) => (
+        {smartQuestions.map((suggestion, i) => (
           <button
             key={suggestion.label}
             onClick={() => onSuggestionClick(suggestion.prompt)}
