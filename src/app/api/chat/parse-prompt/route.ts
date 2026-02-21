@@ -165,19 +165,13 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (profile.plan === 'free') {
+  // Allow generation if user has credits OR is on pro plan
+  if (profile.plan !== 'pro' && profile.generation_credits <= 0) {
     return NextResponse.json(
       {
-        error: 'subscription_required',
-        message: 'Please subscribe to the Beta plan to use AI features.',
+        error: 'no_credits',
+        message: 'You have no generation credits. Subscribe to Pro or purchase a credit pack in Settings.',
       },
-      { status: 402 }
-    );
-  }
-
-  if (profile.generation_credits <= 0) {
-    return NextResponse.json(
-      { error: 'No generation credits remaining' },
       { status: 402 }
     );
   }
