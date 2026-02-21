@@ -443,16 +443,19 @@ html, body {
 }
 
 @media (max-width: 767px) {
-  html, body {
-    position: fixed;
-    inset: 0;
-    overflow: hidden;
-    overscroll-behavior: none;
-    -webkit-overflow-scrolling: touch;
-  }
   input, textarea, select {
     font-size: 16px !important;
   }
+}
+
+/* Editor-only mobile scroll lock — apply .editor-mobile-lock class to html when editor is active */
+.editor-mobile-lock,
+.editor-mobile-lock body {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
