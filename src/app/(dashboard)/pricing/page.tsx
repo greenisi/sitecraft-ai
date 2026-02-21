@@ -113,7 +113,7 @@ export default function PricingPage() {
           <h3 className="text-xl font-bold text-white mb-1">Beta Pro</h3>
           <p className="text-gray-500 text-sm mb-4">Exclusive early adopter pricing &#8212; locked forever</p>
           <div className="mb-6">
-            <span className="text-4xl font-bold text-white">$79</span>
+            <span className="text-4xl font-bold text-white">$49</span>
             <span className="text-gray-400 text-sm">/month</span>
           </div>
           <ul className="space-y-3 mb-8">
