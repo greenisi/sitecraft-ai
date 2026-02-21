@@ -20,9 +20,10 @@ export default function AuthLayout({
         <Image
           src="/logo.png"
           alt="Innovated Marketing"
-          width={200}
-          height={50}
-          className="brightness-0 invert h-10 w-auto"
+          width={844}
+          height={563}
+          className="brightness-0 invert w-auto"
+          style={{ height: '56px' }}
           priority
         />
       </div>
