@@ -49,7 +49,7 @@ export default function PricingPage() {
     }
   };
 
-  const planBadgeLabel = plan === 'pro' ? 'Pro Member' : plan === 'beta' ? 'Beta Pro Member' : 'Free Plan';
+  const planBadgeLabel = (plan === 'pro' || plan === 'beta') ? 'Beta Pro Member' : 'Free Plan';
 
   return (
     <div className="max-w-5xl mx-auto py-8 md:py-16">
