@@ -153,7 +153,7 @@ export default function SettingsPage() {
   const isFreePlan = plan === 'free';
   const isBetaPlan = plan === 'beta';
   const isProPlan = plan === 'pro';
-  const hasNoCredits = credits <= 0 && !isProPlan;
+  const hasNoCredits = credits <= 0;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 animate-fade-in">
@@ -177,7 +177,7 @@ export default function SettingsPage() {
             <p className="text-xs text-muted-foreground mt-0.5">
               {isFreePlan
                 ? 'Subscribe to the Pro plan or purchase a credit pack to start building websites.'
-                : 'Purchase a credit pack below or upgrade to Pro for unlimited generations.'}
+                : 'Purchase a credit pack below or upgrade to Pro for 100 credits/month.'}
             </p>
           </div>
         </div>
@@ -261,7 +261,7 @@ export default function SettingsPage() {
               </div>
               <p className="text-xs text-muted-foreground">
                 {isProPlan
-                  ? 'Unlimited generations available'
+                  ? `${credits} generation credits remaining`
                   : isFreePlan
                   ? 'Subscribe to a plan to start building'
                   : credits > 0
@@ -273,7 +273,7 @@ export default function SettingsPage() {
               <div className="flex items-center gap-1.5 text-sm font-semibold">
                 <Sparkles className="h-4 w-4 text-violet-500" />
                 <span className="tabular-nums">
-                  {isProPlan ? '\u221e' : credits}
+                  {credits}
                 </span>
               </div>
               <p className="text-[10px] text-muted-foreground">
@@ -293,7 +293,7 @@ export default function SettingsPage() {
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Unlimited generations, priority support, and all premium features.
+                  100 credits/month, priority support, and all premium features.
                 </p>
                 <div className="flex gap-2">
                   <Button
