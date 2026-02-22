@@ -36,7 +36,7 @@ async function fulfillCheckout(session: Stripe.Checkout.Session) {
       .update({
         plan: 'pro',
         stripe_subscription_id: session.subscription as string,
-        generation_credits: 999999,
+        generation_credits: 100,
       })
       .eq('id', userId);
 
@@ -157,7 +157,7 @@ export async function POST(request: NextRequest) {
             .update({
               plan: 'pro',
               stripe_subscription_id: subscription.id,
-              generation_credits: 999999,
+              generation_credits: 100,
             })
             .eq('id', userId);
 
