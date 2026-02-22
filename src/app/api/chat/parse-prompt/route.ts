@@ -33,7 +33,7 @@ CAPABILITIES YOU CAN RECOMMEND (only suggest things the platform can do):
 - Exporting or publishing the website
 
 DO NOT recommend things outside the platform's capabilities like:
-- Custom domain setup (not yet available)
+- Custom domain setup (coming soon)
 - Backend functionality, databases, or user authentication
 - Payment processing or e-commerce checkout
 - Blog CMS or dynamic content management
@@ -166,11 +166,11 @@ export async function POST(request: NextRequest) {
   }
 
   // Allow generation if user has credits OR is on pro plan
-  if (profile.plan !== 'pro' && profile.generation_credits <= 0) {
+  if (profile.plan === 'free' || profile.generation_credits <= 0) {
     return NextResponse.json(
       {
         error: 'no_credits',
-        message: 'You have no generation credits. Subscribe to Pro or purchase a credit pack in Settings.',
+        message: 'You have no generation credits. Subscribe to Pro or purchase credits on the Pricing page.',
       },
       { status: 402 }
     );
