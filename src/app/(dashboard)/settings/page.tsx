@@ -185,7 +185,7 @@ export default function SettingsPage() {
 
       {/* Profile Card */}
       <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
-        <div className="flex items-center gap-3 border-b border-border/50 px-6 py-4">
+        <div className="flex items-center gap-3 border-b border-border/50 px-4 sm:px-6 py-4">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/10">
             <User className="h-4 w-4 text-violet-500" />
           </div>
@@ -196,7 +196,7 @@ export default function SettingsPage() {
             </p>
           </div>
         </div>
-        <div className="p-6 space-y-4">
+        <div className="p-4 sm:p-6 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email" className="text-xs font-medium">
               Email
@@ -237,7 +237,7 @@ export default function SettingsPage() {
 
       {/* Plan & Credits Card */}
       <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
-        <div className="flex items-center gap-3 border-b border-border/50 px-6 py-4">
+        <div className="flex items-center gap-3 border-b border-border/50 px-4 sm:px-6 py-4">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10">
             <CreditCard className="h-4 w-4 text-purple-500" />
           </div>
@@ -248,8 +248,8 @@ export default function SettingsPage() {
             </p>
           </div>
         </div>
-        <div className="p-6">
-          <div className="flex items-center gap-4 mb-4">
+        <div className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-sm font-semibold capitalize">
@@ -295,7 +295,7 @@ export default function SettingsPage() {
                 <p className="text-xs text-muted-foreground mb-3">
                   100 credits/month, priority support, and all premium features.
                 </p>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Button
                     onClick={() => handleCheckout('pro_monthly')}
                     disabled={checkoutLoading !== null}
@@ -340,7 +340,7 @@ export default function SettingsPage() {
                 <p className="text-xs text-muted-foreground mb-3">
                   Need just a few more generations? Purchase credits individually.
                 </p>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Button
                     onClick={() => handleCheckout('credits_10')}
                     disabled={checkoutLoading !== null}
