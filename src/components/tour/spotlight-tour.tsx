@@ -251,7 +251,7 @@ export function SpotlightTour() {
         style={{
           position: 'absolute',
           zIndex: 10,
-          width: 320,
+          width: Math.min(320, typeof window !== 'undefined' ? window.innerWidth - 32 : 320),
           maxWidth: '90vw',
           pointerEvents: 'auto',
           ...tooltipStyle,
@@ -260,7 +260,7 @@ export function SpotlightTour() {
         }}
       >
         {showWelcome ? (
-          <div className="rounded-2xl bg-card border border-border/50 shadow-2xl p-6 text-center">
+          <div className="rounded-2xl bg-card border border-border/50 shadow-2xl p-4 sm:p-6 text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-violet-500/30">
               <Sparkles className="h-8 w-8 text-white animate-pulse" />
             </div>
@@ -286,7 +286,7 @@ export function SpotlightTour() {
             </div>
           </div>
         ) : isLastStep ? (
-          <div className="rounded-2xl bg-card border border-border/50 shadow-2xl p-6">
+          <div className="rounded-2xl bg-card border border-border/50 shadow-2xl p-4 sm:p-6">
             <div className="flex items-start gap-3 mb-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 shadow-lg shadow-emerald-500/20">
                 <PartyPopper className="h-5 w-5 text-white" />
