@@ -25,7 +25,7 @@ export default function HomePage() {
             width={844}
             height={563}
             className="brightness-0 invert w-auto"
-            style={{ height: '48px' }}
+            style={{ height: '72px' }}
             priority
           />
         </Link>
