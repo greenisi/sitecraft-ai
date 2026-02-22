@@ -47,20 +47,20 @@ export default function ForgotPasswordPage() {
   return (
         <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm p-6 sm:p-8 shadow-xl shadow-black/5 card-alive">
               <div className="text-center mb-6">
-                      <h1 className="text-xl font-bold tracking-tight">Reset your password</h1>h1>
+                      <h1 className="text-xl font-bold tracking-tight">Reset your password</h1>
                       <p className="text-sm text-muted-foreground mt-1">
                         {sent
                                       ? 'Check your email for a reset link'
                                       : "Enter your email and we'll send you a reset link"}
-                      </p>p>
-              </div>div>
+                      </p>
+              </div>
         
           {sent ? (
                   <div className="space-y-4">
                             <div className="rounded-lg bg-emerald-500/10 px-4 py-3 text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
                                         <CheckCircle className="h-4 w-4 flex-shrink-0" />
                                         If an account exists for {email}, you will receive a password reset email shortly.
-                            </div>div>
+                            </div>
                             <Link href="/login">
                                         <Button
                                                         variant="outline"
@@ -68,22 +68,22 @@ export default function ForgotPasswordPage() {
                                                       >
                                                       <ArrowLeft className="mr-2 h-4 w-4" />
                                                       Back to sign in
-                                        </Button>Button>
-                            </Link>Link>
-                  </div>div>
+                                        </Button>
+                            </Link>
+                  </div>
                 ) : (
                   <div className="space-y-4">
                     {error && (
                                 <div className="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive animate-scale-in">
                                   {error}
-                                </div>div>
+                                </div>
                             )}
                   
                             <form onSubmit={handleReset} className="space-y-4">
                                         <div className="space-y-2">
                                                       <Label htmlFor="email" className="text-xs font-medium">
                                                                       Email
-                                                      </Label>Label>
+                                                      </Label>
                                                       <div className="relative input-alive">
                                                                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors" />
                                                                       <Input
@@ -97,8 +97,8 @@ export default function ForgotPasswordPage() {
                                                                                           autoFocus
                                                                                           className="h-11 pl-10 rounded-xl border-border/50 focus:border-foreground/20 transition-all duration-300 focus:shadow-[0_0_0_3px_hsla(var(--foreground),0.05)]"
                                                                                         />
-                                                      </div>div>
-                                        </div>div>
+                                                      </div>
+                                        </div>
                             
                                         <Button
                                                         type="submit"
@@ -109,12 +109,12 @@ export default function ForgotPasswordPage() {
                                                                         <>
                                                                                           <Loader2 className="h-4 w-4 animate-spin mr-2" />
                                                                                           Sending...
-                                                                        </>>
+                                                                        </>
                                                                       ) : (
                                                                         'Send reset link'
                                                                       )}
-                                        </Button>Button>
-                            </form>form>
+                                        </Button>
+                            </form>
                   
                             <div className="text-center">
                                         <Link
@@ -123,10 +123,10 @@ export default function ForgotPasswordPage() {
                                                       >
                                                       <ArrowLeft className="h-3 w-3" />
                                                       Back to sign in
-                                        </Link>Link>
-                            </div>div>
-                  </div>div>
+                                        </Link>
+                            </div>
+                  </div>
               )}
-        </div>div>
+        </div>
       );
-}</></div>
+}
