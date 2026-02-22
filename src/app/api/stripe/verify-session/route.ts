@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
         .update({
           plan: 'pro',
           stripe_subscription_id: session.subscription as string,
-          generation_credits: 999999,
+          generation_credits: 100,
         })
         .eq('id', user.id);
 
