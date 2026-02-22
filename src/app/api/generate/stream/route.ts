@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 
   if (profile.plan === 'free') {
         return NextResponse.json(
-          { error: 'subscription_required', message: 'Please subscribe to the Beta plan to generate websites.' },
+          { error: 'subscription_required', message: 'Please subscribe to the Pro plan to generate websites.' },
           { status: 402 }
               );
   }
@@ -213,7 +213,7 @@ export async function POST(request: NextRequest) {
           // Decrement generation credits
           await supabase
                   .from('profiles')
-                  .update({ generation_credits: profile.generation_credits - 1 })
+                  .update({ generation_credits: Math.max(0, ((await supabase.from('profiles').select('generation_credits').eq('id', user.id).single()).data?.generation_credits ?? 1) - 1) })
                   .eq('id', user.id);
         }
   };
