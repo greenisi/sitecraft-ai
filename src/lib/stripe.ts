@@ -47,8 +47,8 @@ export const PLANS = {
   },
   pro: {
     name: 'Pro',
-    credits: -1, // unlimited
-    features: ['Unlimited generations', 'Priority support', 'Custom domains', 'All templates'],
+        credits: 100, // 100 credits/month included
+        features: ['100 credits/month', 'Unlimited projects', 'All AI features', 'Multi-page websites', 'Priority generation', 'Visual editor'],
   },
 } as const;
 
