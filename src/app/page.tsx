@@ -71,7 +71,7 @@ export default function HomePage() {
               Start Building
               <ArrowRight className="h-4 w-4" />
             </Link>
-            <span className="text-sm text-gray-500">&#10024; Free to use &#8226; No signup required</span>
+            <span className="text-sm text-gray-500">&#10024; Free to sign up &#8226; No credit card required</span>
           </div>
         </section>
 
