@@ -69,8 +69,8 @@ export function Sidebar() {
         <Image
           src="/logo.png"
           alt="Innovated Marketing"
-          width={140}
-          height={36}
+          width={180}
+          height={46}
           className="object-contain brightness-0 invert"
           priority
         />
