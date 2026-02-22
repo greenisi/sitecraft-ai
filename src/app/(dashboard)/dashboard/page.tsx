@@ -137,13 +137,13 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-amber-400"
+          <div className="hidden sm:flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-amber-400"
             style={{ background: 'rgba(245,158,11,0.1)' }}>
             <Sparkles className="h-3 w-3" />
             <span className="tabular-nums">{credits >= 999999 ? '\u221e' : credits}</span>
           </div>
           {plan !== 'free' && (
-            <div className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium"
+            <div className="hidden sm:flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium"
               style={{ background: 'rgba(139,92,246,0.15)', color: '#a78bfa' }}>
               <Sparkles className="h-3 w-3" />
               {plan === 'pro' ? 'Pro' : 'Beta Pro'}
@@ -151,7 +151,7 @@ export default function DashboardPage() {
           )}
           <button
             onClick={openNewProjectModal}
-            className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-all"
+            className="flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-all w-full sm:w-auto"
             style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7)' }}
           >
             <Plus className="h-4 w-4" />
