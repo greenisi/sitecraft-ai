@@ -166,7 +166,7 @@ export function SpaceNavbar() {
             width={844}
             height={563}
             className="brightness-0 invert w-auto"
-            style={{ height: '80px' }}
+            style={{ height: '120px' }}
           />
           <button
             onClick={() => setMenuOpen(false)}
