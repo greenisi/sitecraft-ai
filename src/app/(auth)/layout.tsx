@@ -23,7 +23,7 @@ export default function AuthLayout({
           width={844}
           height={563}
           className="brightness-0 invert w-auto"
-          style={{ height: '56px' }}
+          style={{ height: '72px' }}
           priority
         />
       </div>
