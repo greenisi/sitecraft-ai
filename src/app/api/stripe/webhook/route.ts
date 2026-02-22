@@ -151,15 +151,24 @@ export async function POST(request: NextRequest) {
           break;
         }
 
-        if (subscription.status === 'active') {
-          const { error } = await supabaseAdmin
-            .from('profiles')
-            .update({
-              plan: 'pro',
-              stripe_subscription_id: subscription.id,
-              generation_credits: 100,
-            })
-            .eq('id', userId);
+      if (subscription.status === 'active') {
+                // Fetch current credits so renewal adds to existing balance
+                const { data: profile } = await supabaseAdmin
+                  .from('profiles')
+                  .select('generation_credits')
+                  .eq('id', userId)
+                  .single();
+
+                const currentCredits = profile?.generation_credits || 0;
+
+                const { error } = await supabaseAdmin
+                  .from('profiles')
+                  .update({
+                                plan: 'pro',
+                                stripe_subscription_id: subscription.id,
+                                generation_credits: currentCredits + 100,
+                  })
+                  .eq('id', userId);
 
           if (error) {
             console.error('[Webhook] subscription.updated failed to update profile', { userId, error });
