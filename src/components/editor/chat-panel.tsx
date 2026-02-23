@@ -8,6 +8,7 @@ import { useGenerationStore } from '@/stores/generation-store';
 import { ChatMessage } from './chat-message';
 import { ChatInput } from './chat-input';
 import { ChatWelcome } from './chat-welcome';
+import { GenerationProgress } from './generation-progress';
 import { useUpgradeGate, LockBadge } from './upgrade-gate';
 import { Sparkles, Lock } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -19,16 +20,19 @@ interface ChatPanelProps {
 export function ChatPanel({ projectId }: ChatPanelProps) {
   const { messages, isProcessing, processingStage, sendMessage } =
     useChat(projectId);
-  const { currentStage, progress, isGenerating } = useGenerationStore();
+  const { currentStage, progress, isGenerating, projectId: genProjectId } =
+    useGenerationStore();
   const { isPaid, loading: planLoading } = usePlan();
   const { modal: upgradeModal, showUpgrade } = useUpgradeGate();
   const searchParams = useSearchParams();
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Fetch project name and description for smart welcome
   const [projectName, setProjectName] = useState<string>('');
   const [projectDescription, setProjectDescription] = useState<string>('');
   const [inputPrefill, setInputPrefill] = useState<string>('');
+
+  // Only show generation UI if it belongs to THIS project
+  const isGeneratingThisProject = isGenerating && genProjectId === projectId;
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -41,21 +45,18 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
       if (data) {
         setProjectName(data.name || '');
       }
-      // Get description from URL param (passed during project creation)
       const desc = searchParams.get('desc') || '';
       if (desc) setProjectDescription(desc);
     };
     fetchProject();
   }, [projectId]);
 
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isProcessing]);
 
-  // Gate handler: if free user clicks an AI feature, show upgrade modal
   const handleGatedAction = (action: () => void) => {
     if (!isPaid && !planLoading) {
       showUpgrade();
@@ -105,7 +106,9 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
                         (suggestion: string, i: number) => (
                           <button
                             key={i}
-                            onClick={() => handleSuggestionClick(suggestion)}
+                            onClick={() =>
+                              handleSuggestionClick(suggestion)
+                            }
                             className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border transition-all duration-200 ${
                               isPaid
                                 ? 'border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/40 hover:scale-105'
@@ -126,32 +129,11 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
               </div>
             ))}
 
-            {/* Inline generation progress */}
-            {isGenerating && (
-              <div className="flex items-start gap-3 py-3">
-                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  <p className="font-medium text-foreground">
-                    {currentStage === 'design-system' &&
-                      'Designing color scheme and typography...'}
-                    {currentStage === 'blueprint' &&
-                      'Planning page structure...'}
-                    {currentStage === 'components' &&
-                      `Generating components... (${progress.completed}/${progress.total})`}
-                    {currentStage === 'assembly' &&
-                      'Assembling project files...'}
-                    {currentStage === 'config-assembly' &&
-                      'Preparing configuration...'}
-                    {!currentStage && 'Starting generation...'}
-                  </p>
-                </div>
-              </div>
-            )}
+            {/* Generation Progress with live code viewer + checklist */}
+            {isGeneratingThisProject && <GenerationProgress />}
 
             {/* Parsing indicator */}
-            {processingStage === 'parsing' && !isGenerating && (
+            {processingStage === 'parsing' && !isGeneratingThisProject && (
               <div className="flex items-start gap-3 py-3">
                 <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -177,10 +159,11 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
           !isPaid
             ? 'Upgrade to Pro to use AI generation...'
             : messages.length === 0
-              ? 'Describe the website you want to build...'
-              : "Describe changes you'd like to make..."
+            ? 'Describe the website you want to build...'
+            : "Describe changes you'd like to make..."
         }
       />
     </div>
   );
 }
+
