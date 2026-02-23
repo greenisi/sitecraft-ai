@@ -298,6 +298,18 @@ export async function POST(request: NextRequest) {
               });
       }
 
+        // Check credits only for generation mode (conversation mode is free)
+              if (profile.plan === 'free' || profile.generation_credits <= 0) {
+                              return NextResponse.json(
+                                  {
+                                                          error: 'no_credits',
+                                                          message:
+                                                                                      'You have no generation credits. Subscribe to Pro or purchase credits on the Pricing page.',
+                                  },
+                                  { status: 402 }
+                                              );
+              }
+      
       // GENERATE mode — enforce minimum sections and save config
       if (config.sections && config.sections.length < 5) {
               const existingTypes = new Set(config.sections.map((s: SectionConfig) => s.type));
