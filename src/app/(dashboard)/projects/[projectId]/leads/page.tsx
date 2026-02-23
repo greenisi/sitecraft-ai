@@ -74,101 +74,101 @@ export default async function LeadsPage({ params }: { params: Promise<{ projectI
               <div className="max-w-7xl mx-auto px-4 py-8">
                       <div className="flex items-center justify-between mb-8">
                                 <div>
-                                            <Link href={`/projects/${projectId}`} className="text-sm text-gray-400 hover:text-white mb-2 inline-block">&larr; Back to project</Link>Link>
-                                            <h1 className="text-2xl font-bold">{project.name} &mdash; Leads &amp; Orders</h1>h1>
-                                </div>div>
+                                            <Link href={`/projects/${projectId}`} className="text-sm text-gray-400 hover:text-white mb-2 inline-block">&larr; Back to project</Link>
+                                            <h1 className="text-2xl font-bold">{project.name} &mdash; Leads &amp; Orders</h1>
+                                </div>
                                 <div className="flex gap-4 text-sm">
                                             <div className="bg-gray-800 rounded-lg px-4 py-2">
-                                                          <span className="text-gray-400">Submissions:</span>span> <span className="font-semibold">{submissions?.length || 0}</span>span>
-                                            </div>div>
+                                                          <span className="text-gray-400">Submissions:</span> <span className="font-semibold">{submissions?.length || 0}</span>
+                                            </div>
                                             <div className="bg-gray-800 rounded-lg px-4 py-2">
-                                                          <span className="text-gray-400">Orders:</span>span> <span className="font-semibold">{orders?.length || 0}</span>span>
-                                            </div>div>
-                                </div>div>
-                      </div>div>
+                                                          <span className="text-gray-400">Orders:</span> <span className="font-semibold">{orders?.length || 0}</span>
+                                            </div>
+                                </div>
+                      </div>
               
                 {/* Form Submissions */}
                       <section className="mb-12">
-                                <h2 className="text-lg font-semibold mb-4">Contact Form Submissions</h2>h2>
+                                <h2 className="text-lg font-semibold mb-4">Contact Form Submissions</h2>
                         {(!submissions || submissions.length === 0) ? (
                       <div className="bg-gray-900 border border-gray-800 rounded-xl p-8 text-center text-gray-500">
                                     No form submissions yet. They will appear here once visitors submit forms on your website.
-                      </div>div>
+                      </div>
                     ) : (
                       <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
                                     <div className="overflow-x-auto">
                                                     <table className="w-full text-sm">
                                                                       <thead>
                                                                                           <tr className="border-b border-gray-800 text-left text-gray-400">
-                                                                                                                <th className="px-4 py-3">Date</th>th>
-                                                                                                                <th className="px-4 py-3">Type</th>th>
-                                                                                                                <th className="px-4 py-3">Name</th>th>
-                                                                                                                <th className="px-4 py-3">Email</th>th>
-                                                                                                                <th className="px-4 py-3">Phone</th>th>
-                                                                                                                <th className="px-4 py-3">Message</th>th>
-                                                                                                                <th className="px-4 py-3">Status</th>th>
-                                                                                            </tr>tr>
-                                                                      </thead>thead>
+                                                                                                                <th className="px-4 py-3">Date</th>
+                                                                                                                <th className="px-4 py-3">Type</th>
+                                                                                                                <th className="px-4 py-3">Name</th>
+                                                                                                                <th className="px-4 py-3">Email</th>
+                                                                                                                <th className="px-4 py-3">Phone</th>
+                                                                                                                <th className="px-4 py-3">Message</th>
+                                                                                                                <th className="px-4 py-3">Status</th>
+                                                                                            </tr>
+                                                                      </thead>
                                                                       <tbody>
                                                                         {(submissions as Submission[]).map((s) => (
                                               <tr key={s.id} className="border-b border-gray-800/50 hover:bg-gray-800/30">
-                                                                      <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{new Date(s.created_at).toLocaleDateString()}</td>td>
-                                                                      <td className="px-4 py-3 capitalize">{s.form_type}</td>td>
-                                                                      <td className="px-4 py-3">{s.name || '—'}</td>td>
-                                                                      <td className="px-4 py-3 text-blue-400">{s.email || '—'}</td>td>
-                                                                      <td className="px-4 py-3">{s.phone || '—'}</td>td>
-                                                                      <td className="px-4 py-3 max-w-xs truncate text-gray-300">{s.message || s.service_needed || '—'}</td>td>
-                                                                      <td className="px-4 py-3"><span className={`px-2 py-1 rounded-full text-xs ${statusColors[s.status] || 'bg-gray-700 text-gray-300'}`}>{s.status}</span>span></td>td>
-                                              </tr>tr>
+                                                                      <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{new Date(s.created_at).toLocaleDateString()}</td>
+                                                                      <td className="px-4 py-3 capitalize">{s.form_type}</td>
+                                                                      <td className="px-4 py-3">{s.name || '—'}</td>
+                                                                      <td className="px-4 py-3 text-blue-400">{s.email || '—'}</td>
+                                                                      <td className="px-4 py-3">{s.phone || '—'}</td>
+                                                                      <td className="px-4 py-3 max-w-xs truncate text-gray-300">{s.message || s.service_needed || '—'}</td>
+                                                                      <td className="px-4 py-3"><span className={`px-2 py-1 rounded-full text-xs ${statusColors[s.status] || 'bg-gray-700 text-gray-300'}`}>{s.status}</span></td>
+                                              </tr>
                                             ))}
-                                                                      </tbody>tbody>
-                                                    </table>table>
-                                    </div>div>
-                      </div>div>
+                                                                      </tbody>
+                                                    </table>
+                                    </div>
+                      </div>
                                 )}
-                      </section>section>
+                      </section>
               
                 {/* Orders */}
                       <section>
-                                <h2 className="text-lg font-semibold mb-4">Orders</h2>h2>
+                                <h2 className="text-lg font-semibold mb-4">Orders</h2>
                         {(!orders || orders.length === 0) ? (
                       <div className="bg-gray-900 border border-gray-800 rounded-xl p-8 text-center text-gray-500">
                                     No orders yet. They will appear here once customers place orders on your website.
-                      </div>div>
+                      </div>
                     ) : (
                       <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
                                     <div className="overflow-x-auto">
                                                     <table className="w-full text-sm">
                                                                       <thead>
                                                                                           <tr className="border-b border-gray-800 text-left text-gray-400">
-                                                                                                                <th className="px-4 py-3">Date</th>th>
-                                                                                                                <th className="px-4 py-3">Order #</th>th>
-                                                                                                                <th className="px-4 py-3">Customer</th>th>
-                                                                                                                <th className="px-4 py-3">Email</th>th>
-                                                                                                                <th className="px-4 py-3">Items</th>th>
-                                                                                                                <th className="px-4 py-3">Total</th>th>
-                                                                                                                <th className="px-4 py-3">Status</th>th>
-                                                                                            </tr>tr>
-                                                                      </thead>thead>
+                                                                                                                <th className="px-4 py-3">Date</th>
+                                                                                                                <th className="px-4 py-3">Order #</th>
+                                                                                                                <th className="px-4 py-3">Customer</th>
+                                                                                                                <th className="px-4 py-3">Email</th>
+                                                                                                                <th className="px-4 py-3">Items</th>
+                                                                                                                <th className="px-4 py-3">Total</th>
+                                                                                                                <th className="px-4 py-3">Status</th>
+                                                                                            </tr>
+                                                                      </thead>
                                                                       <tbody>
                                                                         {(orders as Order[]).map((o) => (
                                               <tr key={o.id} className="border-b border-gray-800/50 hover:bg-gray-800/30">
-                                                                      <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{new Date(o.created_at).toLocaleDateString()}</td>td>
-                                                                      <td className="px-4 py-3 font-mono text-xs">{o.order_number}</td>td>
-                                                                      <td className="px-4 py-3">{o.customer_name}</td>td>
-                                                                      <td className="px-4 py-3 text-blue-400">{o.customer_email}</td>td>
-                                                                      <td className="px-4 py-3">{o.items?.length || 0} items</td>td>
-                                                                      <td className="px-4 py-3 font-semibold">${Number(o.total).toFixed(2)} {o.currency}</td>td>
-                                                                      <td className="px-4 py-3"><span className={`px-2 py-1 rounded-full text-xs ${statusColors[o.status] || 'bg-gray-700 text-gray-300'}`}>{o.status}</span>span></td>td>
-                                              </tr>tr>
+                                                                      <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{new Date(o.created_at).toLocaleDateString()}</td>
+                                                                      <td className="px-4 py-3 font-mono text-xs">{o.order_number}</td>
+                                                                      <td className="px-4 py-3">{o.customer_name}</td>
+                                                                      <td className="px-4 py-3 text-blue-400">{o.customer_email}</td>
+                                                                      <td className="px-4 py-3">{o.items?.length || 0} items</td>
+                                                                      <td className="px-4 py-3 font-semibold">${Number(o.total).toFixed(2)} {o.currency}</td>
+                                                                      <td className="px-4 py-3"><span className={`px-2 py-1 rounded-full text-xs ${statusColors[o.status] || 'bg-gray-700 text-gray-300'}`}>{o.status}</span></td>
+                                              </tr>
                                             ))}
-                                                                      </tbody>tbody>
-                                                    </table>table>
-                                    </div>div>
-                      </div>div>
+                                                                      </tbody>
+                                                    </table>
+                                    </div>
+                      </div>
                                 )}
-                      </section>section>
-              </div>div>
-        </div>div>
+                      </section>
+              </div>
+        </div>
       );
 }</div>
