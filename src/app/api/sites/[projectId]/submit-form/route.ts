@@ -6,9 +6,9 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 export async function POST(
     request: NextRequest,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
   ) {
-    const { projectId } = params;
+    const { projectId } = await params;
 
   // CORS headers for cross-origin requests from published sites
   const headers = {
