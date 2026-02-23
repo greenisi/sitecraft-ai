@@ -9,9 +9,11 @@ interface ChatInputProps {
   isDisabled: boolean;
   placeholder?: string;
   onStop?: () => void;
+  prefillValue?: string;
+  onPrefillConsumed?: () => void;
 }
 
-export function ChatInput({ onSend, isDisabled, placeholder, onStop }: ChatInputProps) {
+export function ChatInput({ onSend, isDisabled, placeholder, onStop, prefillValue, onPrefillConsumed }: ChatInputProps) {
   const [value, setValue] = useState('');
   const [attachments, setAttachments] = useState<File[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -25,6 +27,15 @@ export function ChatInput({ onSend, isDisabled, placeholder, onStop }: ChatInput
             textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
     }
   }, [value]);
+
+  // Prefill input when a suggestion is clicked
+  useEffect(() => {
+    if (prefillValue) {
+      setValue(prefillValue);
+      onPrefillConsumed?.();
+      textareaRef.current?.focus();
+    }
+  }, [prefillValue, onPrefillConsumed]);
 
   const handleSend = useCallback(() => {
     const trimmed = value.trim();
