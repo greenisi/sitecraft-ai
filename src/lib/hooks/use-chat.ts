@@ -18,7 +18,6 @@ import { toast } from 'sonner';
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Check whether an error looks like a network / connection drop. */
 function isConnectionError(msg: string): boolean {
   return (
     msg === 'Load failed' ||
@@ -43,10 +42,6 @@ interface GenerationStatus {
   fileCount: number;
 }
 
-/**
- * Poll the lightweight /api/generate/status endpoint until the generation
- * either completes or errors out. Returns the final status response.
- */
 async function pollForCompletion(
   projectId: string,
   versionCreatedAfter: string
@@ -90,11 +85,11 @@ async function pollForCompletion(
 // Hook
 // ---------------------------------------------------------------------------
 
-// Module-level guard: survives component remounts within the same client session
 const autoTriggeredProjectIds = new Set<string>();
 
 export function useChat(projectId: string) {
   const queryClient = useQueryClient();
+
   const {
     messages,
     isProcessing,
@@ -109,6 +104,15 @@ export function useChat(projectId: string) {
   const generationStore = useGenerationStore();
   const templateAutoTriggered = useRef(false);
   const followUpSuggestionsRef = useRef<string[]>([]);
+
+  // ── Reset generation store when projectId changes ──
+  // This prevents generation state from project A leaking into project B
+  useEffect(() => {
+    const storeProjectId = useGenerationStore.getState().projectId;
+    if (storeProjectId && storeProjectId !== projectId) {
+      generationStore.reset();
+    }
+  }, [projectId, generationStore]);
 
   // Load messages from DB on mount
   useEffect(() => {
@@ -144,23 +148,24 @@ export function useChat(projectId: string) {
   useEffect(() => {
     const bgState = getGenerationState(projectId);
     if (bgState && bgState.status === 'generating') {
-      // Generation is running in background, sync UI state
       setProcessing(true, 'generating');
-      generationStore.startGeneration();
+      generationStore.startGeneration(projectId);
 
-      // Replay events to update generation store
       for (const event of bgState.events) {
         generationStore.processEvent(event);
       }
     }
 
-    // Subscribe to future events from background generation
     const unsub = bgSubscribe(projectId, (state) => {
+      // Only process events if the generation store is tracking this project
+      const currentStoreProject = useGenerationStore.getState().projectId;
+      if (currentStoreProject && currentStoreProject !== projectId) return;
+
       if (state.status === 'generating') {
-        // Process latest events
         const lastEvent = state.events[state.events.length - 1];
         if (lastEvent) {
           generationStore.processEvent(lastEvent);
+
           if (lastEvent.type === 'component-complete') {
             const completed = lastEvent.completedFiles ?? 0;
             const total = lastEvent.totalFiles ?? 0;
@@ -175,6 +180,7 @@ export function useChat(projectId: string) {
       } else if (state.status === 'error') {
         setProcessing(false, 'error');
         generationStore.reset();
+
         const errorMessage: ChatMessageLocal = {
           id: crypto.randomUUID(),
           project_id: projectId,
@@ -184,6 +190,7 @@ export function useChat(projectId: string) {
           created_at: new Date().toISOString(),
         };
         addMessage(errorMessage);
+
         const supabase = createClient();
         supabase
           .from('chat_messages')
@@ -195,7 +202,10 @@ export function useChat(projectId: string) {
             metadata: errorMessage.metadata,
           })
           .then();
-        toast.error('Generation failed', { description: state.error || 'Unknown error' });
+
+        toast.error('Generation failed', {
+          description: state.error || 'Unknown error',
+        });
         clearGeneration(projectId);
       }
     });
@@ -203,9 +213,9 @@ export function useChat(projectId: string) {
     return unsub;
   }, [projectId]);
 
-  // -- Shared completion handler --
   const handleGenerationComplete = useCallback(async () => {
     const supabase = createClient();
+
     setProcessing(false, 'complete');
 
     const completionMessage: ChatMessageLocal = {
@@ -243,7 +253,6 @@ export function useChat(projectId: string) {
     clearGeneration(projectId);
   }, [projectId, addMessage, setProcessing, queryClient]);
 
-  // -- Generation runner (delegates to background manager) --
   const runGeneration = useCallback(
     async (
       config: Record<string, unknown>,
@@ -252,15 +261,13 @@ export function useChat(projectId: string) {
     ) => {
       const generationStartedAt = new Date().toISOString();
       setProcessing(true, 'generating');
-      generationStore.startGeneration();
+      generationStore.startGeneration(projectId);
 
       try {
-        // Delegate SSE stream to background manager
         const bgState = await startBackgroundGeneration(
           projectId,
           config,
           (event) => {
-            // Live callback for events while component is mounted
             generationStore.processEvent(event);
 
             if (event.type === 'component-complete') {
@@ -283,7 +290,6 @@ export function useChat(projectId: string) {
         const rawMsg =
           error instanceof Error ? error.message : 'Something went wrong';
 
-        // -- Connection-drop recovery --
         if (isConnectionError(rawMsg)) {
           updateLastAssistantMessage(
             `${planDescription}\n\nConnection interrupted — checking if the generation finished on the server...`,
@@ -328,14 +334,13 @@ export function useChat(projectId: string) {
           );
         }
 
-        // -- Non-connection errors --
         if (rawMsg === 'subscription_required') {
           const upgradeMessage: ChatMessageLocal = {
             id: crypto.randomUUID(),
             project_id: projectId,
             role: 'assistant',
             content:
-              'To generate websites with AI, you need to subscribe to our Beta plan.\n\n[Upgrade to Beta Plan](/settings/billing)',
+              'To generate websites with AI, you need to subscribe to our Pro plan.\n\n[Upgrade to Pro Plan](/settings/billing)',
             metadata: { stage: 'error' },
             created_at: new Date().toISOString(),
           };
@@ -344,12 +349,11 @@ export function useChat(projectId: string) {
           generationStore.reset();
           toast.error('Subscription required', {
             description:
-              'Please subscribe to the Beta plan to use AI generation.',
+              'Please subscribe to the Pro plan to use AI generation.',
           });
           return;
         }
 
-        // Generic error
         setProcessing(false, 'error');
         generationStore.reset();
 
@@ -399,7 +403,6 @@ export function useChat(projectId: string) {
       // Disabled: always show welcome screen with follow-up questions
       return;
     };
-
     const timer = setTimeout(autoGenerate, 500);
     return () => clearTimeout(timer);
   }, [projectId, addMessage, runGeneration]);
@@ -414,7 +417,6 @@ export function useChat(projectId: string) {
 
       const supabase = createClient();
 
-      // Upload any image attachments first
       let uploadedImages: Array<{
         url: string;
         imageType: string;
@@ -444,7 +446,6 @@ export function useChat(projectId: string) {
         }
       }
 
-      // Build message content with image references
       let messageContent = content.trim();
       if (uploadedImages.length > 0) {
         const imageDescriptions = uploadedImages
@@ -459,7 +460,6 @@ export function useChat(projectId: string) {
           : imageDescriptions;
       }
 
-      // 1. Add user message locally + persist
       const userMessage: ChatMessageLocal = {
         id: crypto.randomUUID(),
         project_id: projectId,
@@ -484,7 +484,6 @@ export function useChat(projectId: string) {
       setProcessing(true, 'parsing');
 
       try {
-        // 2. Call parse-prompt API
         const parseResponse = await fetch('/api/chat/parse-prompt', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -509,14 +508,9 @@ export function useChat(projectId: string) {
           throw new Error(err.error || 'Failed to parse prompt');
         }
 
-        const {
-          config,
-          planDescription,
-          followUpSuggestions,
-          mode,
-        } = await parseResponse.json();
+        const { config, planDescription, followUpSuggestions, mode } =
+          await parseResponse.json();
 
-        // ---- CONVERSATION MODE: AI wants to ask follow-up questions ----
         if (mode === 'conversation') {
           const conversationMessage: ChatMessageLocal = {
             id: crypto.randomUUID(),
@@ -531,7 +525,6 @@ export function useChat(projectId: string) {
           };
           addMessage(conversationMessage);
 
-          // Persist conversation message
           supabase
             .from('chat_messages')
             .insert({
@@ -544,12 +537,9 @@ export function useChat(projectId: string) {
             .then();
 
           setProcessing(false, 'complete');
-          return; // Don't generate — just show the conversation response
+          return;
         }
 
-        // ---- GENERATE MODE: enough info, start building ----
-
-        // 3. Add assistant plan message
         const planMessage: ChatMessageLocal = {
           id: crypto.randomUUID(),
           project_id: projectId,
@@ -571,10 +561,8 @@ export function useChat(projectId: string) {
           })
           .then();
 
-        // Store follow-up suggestions for after generation completes
         followUpSuggestionsRef.current = followUpSuggestions || [];
 
-        // 4. Start generation with recovery (runs in background)
         await runGeneration(config, planDescription);
       } catch (error) {
         setProcessing(false, 'error');
@@ -589,14 +577,14 @@ export function useChat(projectId: string) {
             project_id: projectId,
             role: 'assistant',
             content:
-              'To generate websites with AI, you need to subscribe to our Beta plan. The Beta plan includes credits to build and customize your website.\n\n[Upgrade to Beta Plan](/settings/billing)',
+              'To generate websites with AI, you need to subscribe to our Pro plan. The Pro plan includes credits to build and customize your website.\n\n[Upgrade to Pro Plan](/settings/billing)',
             metadata: { stage: 'error' },
             created_at: new Date().toISOString(),
           };
           addMessage(upgradeMessage);
           toast.error('Subscription required', {
             description:
-              'Please subscribe to the Beta plan to use AI generation.',
+              'Please subscribe to the Pro plan to use AI generation.',
           });
           return;
         }
@@ -634,7 +622,8 @@ export function useChat(projectId: string) {
         };
         addMessage(errorMessage);
 
-        supabase
+        const supabase2 = createClient();
+        supabase2
           .from('chat_messages')
           .insert({
             id: errorMessage.id,
@@ -665,4 +654,5 @@ export function useChat(projectId: string) {
     processingStage,
     sendMessage,
   };
-      }
+}
+
