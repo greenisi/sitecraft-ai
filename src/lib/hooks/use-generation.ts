@@ -69,7 +69,7 @@ export function useGeneration(options: UseGenerationOptions = {}): UseGeneration
       abortControllerRef.current = abortController;
 
       // Reset and mark as generating
-      storeStart();
+      storeStart(projectId);
 
       try {
         const response = await fetch('/api/generate/stream', {
