@@ -28,6 +28,7 @@ import { useProject } from '@/lib/hooks/use-project';
 import { usePublish } from '@/lib/hooks/use-publish';
 import { useVisualEditorStore } from '@/stores/visual-editor-store';
 import { useVisualEditorSave } from '@/lib/hooks/use-visual-editor-save';
+import { isGenerating as bgIsGenerating } from '@/lib/generation/background-generation';
 import { toast } from 'sonner';
 
 interface EditorTopbarProps {
@@ -38,27 +39,42 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
   const router = useRouter();
   const { data: project } = useProject(projectId);
   const { publish, isPublishing, reset: resetPublish } = usePublish(projectId);
-
   const [downloading, setDownloading] = useState(false);
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
   const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
   const [showDomainOptions, setShowDomainOptions] = useState(false);
 
-  const { isVisualEditorActive, toggleVisualEditor, hasUnsavedChanges, pendingChanges, clearPendingChanges } =
-    useVisualEditorStore();
+  const {
+    isVisualEditorActive,
+    toggleVisualEditor,
+    hasUnsavedChanges,
+    pendingChanges,
+    clearPendingChanges,
+  } = useVisualEditorStore();
   const { save } = useVisualEditorSave(projectId);
 
   const isExportable =
-    project && ['generated', 'deployed', 'published'].includes(project.status);
-
+    project &&
+    ['generated', 'deployed', 'published'].includes(project.status);
   const isEditable =
-    project && ['generated', 'deployed', 'published'].includes(project.status);
-
+    project &&
+    ['generated', 'deployed', 'published'].includes(project.status);
   const isPublishable =
-    project && ['generated', 'deployed', 'published'].includes(project.status);
+    project &&
+    ['generated', 'deployed', 'published'].includes(project.status);
+  const isAlreadyPublished =
+    project?.status === 'published' && project?.published_url;
 
-  const isAlreadyPublished = project?.status === 'published' && project?.published_url;
+  const handleBack = useCallback(() => {
+    if (bgIsGenerating(projectId)) {
+      toast.info('Generation continues in the background', {
+        description: 'Your website is still being built. Come back anytime to check progress.',
+        duration: 4000,
+      });
+    }
+    router.push('/dashboard');
+  }, [projectId, router]);
 
   const handleToggleEditor = useCallback(() => {
     if (isVisualEditorActive && hasUnsavedChanges()) {
@@ -145,7 +161,7 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
             variant="ghost"
             size="icon"
             className="h-8 w-8 flex-shrink-0"
-            onClick={() => router.push('/dashboard')}
+            onClick={handleBack}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -170,9 +186,7 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
             variant={isVisualEditorActive ? 'default' : 'outline'}
             size="sm"
             className={`h-8 px-2 md:px-3 relative ${
-              isVisualEditorActive
-                ? 'bg-primary text-primary-foreground'
-                : ''
+              isVisualEditorActive ? 'bg-primary text-primary-foreground' : ''
             }`}
             onClick={handleToggleEditor}
             disabled={!isEditable}
@@ -272,7 +286,9 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
                 ) : (
                   <RefreshCw className="mr-2 h-4 w-4" />
                 )}
-                {isPublishing ? 'Re-publishing...' : 'Re-publish with Latest Changes'}
+                {isPublishing
+                  ? 'Re-publishing...'
+                  : 'Re-publish with Latest Changes'}
               </Button>
 
               {/* Domain options */}
@@ -290,8 +306,9 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
                     <button
                       onClick={() => {
                         setPublishDialogOpen(false);
-                        // Navigate to domain purchase - we'll build this UI
-                        router.push(`/projects/${projectId}?tab=domains&action=search`);
+                        router.push(
+                          `/projects/${projectId}?tab=domains&action=search`
+                        );
                       }}
                       className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors text-left"
                     >
@@ -306,13 +323,17 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
                     <button
                       onClick={() => {
                         setPublishDialogOpen(false);
-                        router.push(`/projects/${projectId}?tab=domains&action=connect`);
+                        router.push(
+                          `/projects/${projectId}?tab=domains&action=connect`
+                        );
                       }}
                       className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors text-left"
                     >
                       <Link2 className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-sm font-medium">Connect Your Domain</p>
+                        <p className="text-sm font-medium">
+                          Connect Your Domain
+                        </p>
                         <p className="text-xs text-muted-foreground">
                           Use a domain you already own
                         </p>
@@ -326,7 +347,9 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
             <div className="space-y-4 py-2">
               {/* Pre-publish info */}
               <div className="rounded-lg border bg-muted/50 p-4 space-y-2">
-                <p className="text-sm font-medium">Your site will be published at:</p>
+                <p className="text-sm font-medium">
+                  Your site will be published at:
+                </p>
                 <div className="flex items-center gap-2 bg-background rounded-md px-3 py-2 border">
                   <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                   <code className="text-sm text-primary truncate">
@@ -366,7 +389,8 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
             <DialogTitle>Unsaved Changes</DialogTitle>
             <DialogDescription>
               You have {pendingChanges.length} unsaved{' '}
-              {pendingChanges.length === 1 ? 'change' : 'changes'}. What would you like to do?
+              {pendingChanges.length === 1 ? 'change' : 'changes'}. What would
+              you like to do?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2 sm:gap-2">
@@ -394,4 +418,4 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
       </Dialog>
     </>
   );
-}
+                          }
