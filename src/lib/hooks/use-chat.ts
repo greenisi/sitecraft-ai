@@ -263,10 +263,18 @@ export function useChat(projectId: string) {
       setProcessing(true, 'generating');
       generationStore.startGeneration(projectId);
 
-      try {
+              // Route to edit endpoint for surgical changes
+        const isEditMode = !!(config as Record<string, unknown>)._editMode;
+        const editConfig = config as Record<string, unknown>;
+        const streamEndpoint = isEditMode ? '/api/generate/edit' : '/api/generate/stream';
+        const streamBody = isEditMode
+          ? { projectId, editInstructions: editConfig.editInstructions, targetFiles: editConfig.targetFiles }
+          : { projectId, config };
+
+try {
         const bgState = await startBackgroundGeneration(
           projectId,
-          config,
+          isEditMode ? streamBody : config,
           (event) => {
             generationStore.processEvent(event);
 
@@ -508,7 +516,7 @@ export function useChat(projectId: string) {
           throw new Error(err.error || 'Failed to parse prompt');
         }
 
-        const { config, planDescription, followUpSuggestions, mode } =
+        const { config, planDescription, followUpSuggestions, mode, editInstructions, targetFiles } =
           await parseResponse.json();
 
         if (mode === 'conversation') {
@@ -539,6 +547,39 @@ export function useChat(projectId: string) {
           setProcessing(false, 'complete');
           return;
         }
+
+        // MODE: Edit - surgical changes to existing website
+        if (mode === 'edit') {
+          const editPlanMessage: ChatMessageLocal = {
+            id: crypto.randomUUID(),
+            project_id: projectId,
+            role: 'assistant',
+            content: planDescription,
+            metadata: { stage: 'generating' },
+            created_at: new Date().toISOString(),
+          };
+          addMessage(editPlanMessage);
+          supabase
+            .from('chat_messages')
+            .insert({
+              id: editPlanMessage.id,
+              project_id: projectId,
+              role: 'assistant',
+              content: editPlanMessage.content,
+              metadata: editPlanMessage.metadata,
+            })
+            .then();
+
+          followUpSuggestionsRef.current = followUpSuggestions || [];
+
+          // Use the edit endpoint instead of full generation
+          await runGeneration(
+            { _editMode: true, editInstructions, targetFiles } as unknown as Record<string, unknown>,
+            planDescription
+          );
+          return;
+        }
+
 
         const planMessage: ChatMessageLocal = {
           id: crypto.randomUUID(),
