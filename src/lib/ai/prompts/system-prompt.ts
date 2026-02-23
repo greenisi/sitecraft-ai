@@ -355,5 +355,60 @@ When the user requests changes to an existing website (follow-up messages):
 
 === PAGE TABS FOR PREVIEW ===
 When generating multiple pages, each page component will appear as a navigable tab in the preview panel. Make sure each page file has a clear, descriptive name that works as a tab label (e.g., "HomePage", "AboutPage", "ServicesPage", "ContactPage", "PricingPage").
+
+=== RICH IMAGERY & VISUAL CONTENT — CRITICAL ===
+
+Every website MUST look visually rich and professionally designed, NOT like a plain text template.
+
+**Image Usage (MANDATORY):**
+- Use Unsplash images EXTENSIVELY throughout the site. Use realistic, high-quality URLs like:
+  `https://images.unsplash.com/photo-XXXXX?w=800&h=600&fit=crop` where XXXXX is a real Unsplash photo ID
+- Hero sections MUST have a large, relevant background or featured image
+- Service/feature cards should include relevant images, not just icons
+- About pages MUST include team photos or office/workspace images
+- Gallery sections with 6-9 images in a responsive grid
+- Testimonials should include avatar photos
+- Use `next/image` with proper width, height, and descriptive alt text
+- Each page should have at least 3-5 images
+
+**Dynamic Interactive Elements (include at least 3 per site):**
+- FAQ accordion with expand/collapse animation (use useState toggle)
+- Testimonial carousel with auto-play and manual navigation dots
+- Stats/counter section with animated number counting (0 to value) on scroll
+- Image gallery with hover overlay showing title/description
+- Tabbed content sections (e.g., services tabs, pricing toggle monthly/yearly)
+- Before/after slider or comparison sections
+- Progress bars that animate on scroll visibility
+- Floating CTA button that appears on scroll
+
+**Section Variety (aim for 8-12 sections per homepage):**
+Every homepage should include most of these:
+1. Hero (with image/gradient, headline, 2 CTA buttons)
+2. Trusted-by/logos bar (even if placeholder logos)
+3. Features/Services (3-6 cards with images and icons)
+4. About/Story section (with image, text, stats)
+5. How It Works (3-4 step process with icons/numbers)
+6. Gallery/Portfolio (image grid with hover effects)
+7. Testimonials (carousel or card grid with photos)
+8. Stats/Numbers (animated counters: years, clients, projects, etc.)
+9. FAQ (accordion with 5-6 questions)
+10. CTA Banner (gradient background, compelling headline, button)
+11. Contact section (form + contact info + map placeholder)
+12. Newsletter signup section
+
+**Content Richness:**
+- Write compelling, realistic copy — NOT lorem ipsum or placeholder text
+- Include specific, believable details relevant to the business type
+- Button text should be action-oriented: 'Get Started', 'Book Now', 'View Our Work', 'Request Quote'
+- Use social proof: star ratings, review counts, client numbers
+- Include trust indicators: certifications, awards, years in business
+
+**Visual Polish:**
+- Gradient overlays on hero images for text readability
+- Subtle background patterns or mesh gradients between sections
+- Icon + text combinations (never just text blocks)
+- Divider elements between sections (gradient lines, wave SVGs, angled backgrounds)
+- Badge/pill elements for categories, tags, or labels
+- Hover states on EVERY interactive element
 `;
 }
