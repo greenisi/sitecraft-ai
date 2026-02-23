@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
 import { MessageSquare, Eye, MousePointerClick } from 'lucide-react';
 import { EditorTopbar } from './editor-topbar';
 import { ChatPanel } from './chat-panel';
@@ -24,11 +24,39 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
   const [mobileView, setMobileView] = useState<'chat' | 'preview'>('chat');
   const isDragging = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
   const { isVisualEditorActive } = useVisualEditorStore();
   const { save } = useVisualEditorSave(projectId);
 
   // Start editor tour on first visit
   usePageTour('editor');
+
+  // Lock body scroll on mobile to prevent the entire page from scrolling
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+
+    // Prevent body/html from scrolling
+    html.style.position = 'fixed';
+    html.style.inset = '0';
+    html.style.overflow = 'hidden';
+    html.style.overscrollBehavior = 'none';
+    body.style.position = 'fixed';
+    body.style.inset = '0';
+    body.style.overflow = 'hidden';
+    body.style.overscrollBehavior = 'none';
+
+    return () => {
+      html.style.position = '';
+      html.style.inset = '';
+      html.style.overflow = '';
+      html.style.overscrollBehavior = '';
+      body.style.position = '';
+      body.style.inset = '';
+      body.style.overflow = '';
+      body.style.overscrollBehavior = '';
+    };
+  }, []);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     isDragging.current = true;
@@ -38,7 +66,9 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
       if (!isDragging.current || !containerRef.current) return;
       const containerRect = containerRef.current.getBoundingClientRect();
       const newWidth = e.clientX - containerRect.left;
-      setChatWidth(Math.min(MAX_CHAT_WIDTH, Math.max(MIN_CHAT_WIDTH, newWidth)));
+      setChatWidth(
+        Math.min(MAX_CHAT_WIDTH, Math.max(MIN_CHAT_WIDTH, newWidth))
+      );
     };
 
     const handleMouseUp = () => {
@@ -62,16 +92,22 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
   );
 
   const mobileLeftLabel = isVisualEditorActive ? 'Properties' : 'Chat';
-  const MobileLeftIcon = isVisualEditorActive ? MousePointerClick : MessageSquare;
+  const MobileLeftIcon = isVisualEditorActive
+    ? MousePointerClick
+    : MessageSquare;
 
   return (
-    <div className="flex h-[100dvh] flex-col bg-background">
+    <div className="fixed inset-0 flex flex-col bg-background overflow-hidden">
+      {/* Top bar - always pinned */}
       <EditorTopbar projectId={projectId} />
 
       {/* Desktop: side-by-side */}
-      <div ref={containerRef} className="hidden md:flex flex-1 overflow-hidden">
+      <div
+        ref={containerRef}
+        className="hidden md:flex flex-1 overflow-hidden min-h-0"
+      >
         <div
-          className="flex-shrink-0 border-r border-border/50"
+          className="flex-shrink-0 border-r border-border/50 overflow-hidden"
           style={{ width: chatWidth }}
         >
           {leftPanel}
@@ -83,7 +119,7 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
           )}
           onMouseDown={handleMouseDown}
         />
-        <div className="flex-1 min-w-0 bg-muted/30">
+        <div className="flex-1 min-w-0 bg-muted/30 overflow-hidden">
           <PreviewPanel projectId={projectId} />
         </div>
       </div>
@@ -107,7 +143,7 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
           <PreviewPanel projectId={projectId} />
         </div>
 
-        {/* Premium mobile bottom tab bar */}
+        {/* Bottom tab bar - always pinned */}
         <div className="flex border-t border-border/50 bg-background/95 backdrop-blur-sm flex-shrink-0 safe-area-bottom z-50">
           <button
             onClick={() => setMobileView('chat')}
@@ -151,4 +187,4 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
       </div>
     </div>
   );
-}
+            }
