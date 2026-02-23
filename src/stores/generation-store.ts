@@ -17,22 +17,24 @@ interface GenerationProgress {
 
 interface GenerationState {
   // State
+  projectId: string | null;
   currentStage: GenerationStage | null;
   progress: GenerationProgress;
   components: Map<string, ComponentState>;
   isGenerating: boolean;
   error: string | null;
   events: GenerationEvent[];
-  files: Record<string, string>; // Accumulated files for real-time preview
+  files: Record<string, string>;
 
   // Actions
-  startGeneration: () => void;
+  startGeneration: (projectId: string) => void;
   processEvent: (event: GenerationEvent) => void;
   setError: (error: string) => void;
   reset: () => void;
 }
 
 const INITIAL_STATE = {
+  projectId: null as string | null,
   currentStage: null as GenerationStage | null,
   progress: { total: 0, completed: 0 },
   components: new Map<string, ComponentState>(),
@@ -45,9 +47,10 @@ const INITIAL_STATE = {
 export const useGenerationStore = create<GenerationState>((set, get) => ({
   ...INITIAL_STATE,
 
-  startGeneration: () => {
+  startGeneration: (projectId: string) => {
     set({
       ...INITIAL_STATE,
+      projectId,
       isGenerating: true,
       components: new Map(),
       events: [],
@@ -57,8 +60,6 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
 
   processEvent: (event: GenerationEvent) => {
     const state = get();
-
-    // Append to event log (keep last 200 events to prevent memory issues)
     const events = [...state.events, event].slice(-2000);
 
     switch (event.type) {
@@ -66,19 +67,16 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
         set({
           currentStage: event.stage ?? null,
           events,
-          // Initialize progress for component stage
           ...(event.stage === 'components' && event.totalFiles
             ? { progress: { total: event.totalFiles, completed: 0 } }
             : {}),
         });
         break;
       }
-
       case 'stage-complete': {
         set({ events });
         break;
       }
-
       case 'component-start': {
         if (event.componentName) {
           const components = new Map(state.components);
@@ -91,7 +89,6 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
         }
         break;
       }
-
       case 'component-chunk': {
         if (event.componentName && event.chunk) {
           const components = new Map(state.components);
@@ -106,7 +103,6 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
         }
         break;
       }
-
       case 'component-complete': {
         if (event.componentName) {
           const components = new Map(state.components);
@@ -122,7 +118,6 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
             completed: event.completedFiles ?? state.progress.completed + 1,
           };
 
-          // Accumulate files for real-time preview
           const files = event.file
             ? { ...state.files, [event.file.path]: event.file.content }
             : state.files;
@@ -131,7 +126,6 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
         }
         break;
       }
-
       case 'generation-complete': {
         set({
           currentStage: 'complete',
@@ -144,7 +138,6 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
         });
         break;
       }
-
       case 'error': {
         set({
           currentStage: 'error',
