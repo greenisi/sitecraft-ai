@@ -22,7 +22,7 @@ export function ChatInput({ onSend, isDisabled, placeholder, onStop }: ChatInput
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = 'auto';
-      textarea.style.height = \`\${Math.min(textarea.scrollHeight, 200)}px\`;
+            textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
     }
   }, [value]);
 
