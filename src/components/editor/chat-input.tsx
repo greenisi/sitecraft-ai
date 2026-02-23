@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Send, Square, ImagePlus, X } from 'lucide-react';
+import { Send, Square, ImagePlus, X, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ChatInputProps {
@@ -11,9 +11,20 @@ interface ChatInputProps {
   onStop?: () => void;
   prefillValue?: string;
   onPrefillConsumed?: () => void;
+  isPaid?: boolean;
+  onUpgradeClick?: () => void;
 }
 
-export function ChatInput({ onSend, isDisabled, placeholder, onStop, prefillValue, onPrefillConsumed }: ChatInputProps) {
+export function ChatInput({
+  onSend,
+  isDisabled,
+  placeholder,
+  onStop,
+  prefillValue,
+  onPrefillConsumed,
+  isPaid = true,
+  onUpgradeClick,
+}: ChatInputProps) {
   const [value, setValue] = useState('');
   const [attachments, setAttachments] = useState<File[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -24,7 +35,7 @@ export function ChatInput({ onSend, isDisabled, placeholder, onStop, prefillValu
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = 'auto';
-            textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
     }
   }, [value]);
 
@@ -38,15 +49,20 @@ export function ChatInput({ onSend, isDisabled, placeholder, onStop, prefillValu
   }, [prefillValue, onPrefillConsumed]);
 
   const handleSend = useCallback(() => {
+    if (!isPaid) {
+      onUpgradeClick?.();
+      return;
+    }
     const trimmed = value.trim();
     if ((!trimmed && attachments.length === 0) || isDisabled) return;
+
     onSend(trimmed, attachments.length > 0 ? attachments : undefined);
     setValue('');
     setAttachments([]);
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
-  }, [value, attachments, isDisabled, onSend]);
+  }, [value, attachments, isDisabled, onSend, isPaid, onUpgradeClick]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -73,6 +89,8 @@ export function ChatInput({ onSend, isDisabled, placeholder, onStop, prefillValu
   const removeAttachment = useCallback((index: number) => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
   }, []);
+
+  const isLocked = !isPaid;
 
   return (
     <div className="flex flex-col border-t bg-background flex-shrink-0">
@@ -108,16 +126,29 @@ export function ChatInput({ onSend, isDisabled, placeholder, onStop, prefillValu
           className="hidden"
           onChange={handleFileSelect}
         />
-
         <Button
           size="icon"
           variant="ghost"
-          className="h-10 w-10 rounded-xl flex-shrink-0 text-muted-foreground hover:text-foreground"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isDisabled}
-          title="Add images or logo"
+          className={`h-10 w-10 rounded-xl flex-shrink-0 ${
+            isLocked
+              ? 'text-gray-500 opacity-50 cursor-not-allowed'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+          onClick={() => {
+            if (isLocked) {
+              onUpgradeClick?.();
+            } else {
+              fileInputRef.current?.click();
+            }
+          }}
+          disabled={isDisabled && isPaid}
+          title={isLocked ? 'Upgrade to Pro to upload images' : 'Add images or logo'}
         >
-          <ImagePlus className="h-4 w-4" />
+          {isLocked ? (
+            <Lock className="h-4 w-4" />
+          ) : (
+            <ImagePlus className="h-4 w-4" />
+          )}
         </Button>
 
         <div className="relative flex-1">
@@ -129,9 +160,14 @@ export function ChatInput({ onSend, isDisabled, placeholder, onStop, prefillValu
             placeholder={placeholder || 'Describe what you want to build...'}
             disabled={isDisabled}
             rows={1}
-            className="w-full resize-none rounded-xl border bg-background px-3 py-2.5 md:px-4 md:py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 placeholder:text-muted-foreground"
+            className={`w-full resize-none rounded-xl border bg-background px-3 py-2.5 md:px-4 md:py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 placeholder:text-muted-foreground ${
+              isLocked ? 'opacity-60' : ''
+            }`}
+            onClick={isLocked ? () => onUpgradeClick?.() : undefined}
+            readOnly={isLocked}
           />
         </div>
+
         {isDisabled && onStop ? (
           <Button
             size="icon"
@@ -144,14 +180,25 @@ export function ChatInput({ onSend, isDisabled, placeholder, onStop, prefillValu
         ) : (
           <Button
             size="icon"
-            className="h-10 w-10 rounded-xl flex-shrink-0"
+            className={`h-10 w-10 rounded-xl flex-shrink-0 ${
+              isLocked
+                ? 'bg-gray-600 hover:bg-gray-500'
+                : ''
+            }`}
             onClick={handleSend}
-            disabled={(!value.trim() && attachments.length === 0) || isDisabled}
+            disabled={
+              isPaid &&
+              ((!value.trim() && attachments.length === 0) || isDisabled)
+            }
           >
-            <Send className="h-4 w-4" />
+            {isLocked ? (
+              <Lock className="h-4 w-4" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
           </Button>
         )}
       </div>
     </div>
   );
-}
+        }
