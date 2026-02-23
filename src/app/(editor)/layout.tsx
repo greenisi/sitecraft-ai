@@ -6,7 +6,7 @@ export default function EditorLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="h-screen overflow-hidden bg-background">
+    <div className="fixed inset-0 overflow-hidden bg-background">
       {children}
     </div>
   );
