@@ -110,10 +110,10 @@ export async function startBackgroundGeneration(
     notifyListeners(projectId);
 
   try {
-        const response = await fetch('/api/generate/stream', {
+        const response = await fetch((config._editMode ? '/api/generate/edit' : '/api/generate/stream'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ projectId, config }),
+                body: JSON.stringify(config._editMode ? { projectId, editInstructions: config.editInstructions, targetFiles: config.targetFiles } : { projectId, config }),
         });
 
       if (!response.ok) {
