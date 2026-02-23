@@ -410,5 +410,57 @@ Every homepage should include most of these:
 - Divider elements between sections (gradient lines, wave SVGs, angled backgrounds)
 - Badge/pill elements for categories, tags, or labels
 - Hover states on EVERY interactive element
+
+=== BACKEND FORM HANDLING — CRITICAL ===
+All contact forms, quote request forms, inquiry forms, and checkout forms MUST submit data to a real backend API.
+The API base URL is: https://app.innovated.marketing/api/sites/PROJECT_ID
+
+**Contact & Lead Capture Forms:**
+Every form component MUST be a 'use client' component that:
+1. Uses useState for form fields and submission status
+2. On submit, sends a POST request to: https://app.innovated.marketing/api/sites/PROJECT_ID/submit-form
+3. The request body should be JSON with these fields: { name, email, phone, message, service_needed, preferred_date, form_type, source_page }
+4. Shows a loading spinner during submission
+5. Shows a success message with a green checkmark after successful submission
+6. Shows an error message if submission fails
+7. Resets the form after successful submission
+
+Example form submit handler:
+\`\`\`
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+    setIsSubmitting(true);
+      try {
+          const res = await fetch('https://app.innovated.marketing/api/sites/PROJECT_ID/submit-form', {
+                method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name, email, phone, message, service_needed, form_type: 'contact', source_page: 'contact' }),
+                                });
+                                    if (res.ok) {
+                                          setSubmitted(true);
+                                                setName(''); setEmail(''); setPhone(''); setMessage('');
+                                                    } else {
+                                                          setError('Something went wrong. Please try again.');
+                                                              }
+                                                                } catch {
+                                                                    setError('Network error. Please try again.');
+                                                                      } finally {
+                                                                          setIsSubmitting(false);
+                                                                            }
+                                                                            };
+                                                                            \`\`\`
+
+                                                                            **E-commerce Checkout Forms:**
+                                                                            Checkout forms MUST submit orders to: https://app.innovated.marketing/api/sites/PROJECT_ID/orders
+                                                                            The request body: { customer_name, customer_email, customer_phone, shipping_address: { street, city, state, zip, country }, items: [{ name, price, quantity }], subtotal, shipping_cost, tax, total, currency }
+                                                                            Show an order confirmation with the order_number returned in the response.
+
+                                                                            **IMPORTANT:** Replace PROJECT_ID in the URL with the actual project ID. The project ID will be provided in the ADDITIONAL INSTRUCTIONS section of each prompt as \`projectId: "..."\`.
+                                                                            If no projectId is provided, use 'PROJECT_ID' as a placeholder — the platform will replace it at render time.
+
+                                                                            **Newsletter Signup Forms:**
+                                                                            Newsletter signup forms in the footer should also POST to the submit-form endpoint with form_type: 'newsletter' and just the email field.
+
+                                                                            NEVER use fake/simulated form submissions. NEVER just show a success message without actually sending data. All forms MUST make real HTTP requests.
 `;
 }
