@@ -14,6 +14,7 @@ import {
   RefreshCw,
   Link2,
   ShoppingCart,
+  Lock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,6 +27,8 @@ import {
 } from '@/components/ui/dialog';
 import { useProject } from '@/lib/hooks/use-project';
 import { usePublish } from '@/lib/hooks/use-publish';
+import { usePlan } from '@/lib/hooks/use-plan';
+import { useUpgradeGate } from '@/components/editor/upgrade-gate';
 import { useVisualEditorStore } from '@/stores/visual-editor-store';
 import { useVisualEditorSave } from '@/lib/hooks/use-visual-editor-save';
 import { isGenerating as bgIsGenerating } from '@/lib/generation/background-generation';
@@ -39,6 +42,8 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
   const router = useRouter();
   const { data: project } = useProject(projectId);
   const { publish, isPublishing, reset: resetPublish } = usePublish(projectId);
+  const { isPaid, loading: planLoading } = usePlan();
+  const { modal: upgradeModal, showUpgrade } = useUpgradeGate();
   const [downloading, setDownloading] = useState(false);
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
   const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
@@ -52,24 +57,24 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
     pendingChanges,
     clearPendingChanges,
   } = useVisualEditorStore();
+
   const { save } = useVisualEditorSave(projectId);
 
   const isExportable =
-    project &&
-    ['generated', 'deployed', 'published'].includes(project.status);
+    project && ['generated', 'deployed', 'published'].includes(project.status);
   const isEditable =
-    project &&
-    ['generated', 'deployed', 'published'].includes(project.status);
+    project && ['generated', 'deployed', 'published'].includes(project.status);
   const isPublishable =
-    project &&
-    ['generated', 'deployed', 'published'].includes(project.status);
+    project && ['generated', 'deployed', 'published'].includes(project.status);
   const isAlreadyPublished =
     project?.status === 'published' && project?.published_url;
+  const isLocked = !isPaid && !planLoading;
 
   const handleBack = useCallback(() => {
     if (bgIsGenerating(projectId)) {
       toast.info('Generation continues in the background', {
-        description: 'Your website is still being built. Come back anytime to check progress.',
+        description:
+          'Your website is still being built. Come back anytime to check progress.',
         duration: 4000,
       });
     }
@@ -77,14 +82,22 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
   }, [projectId, router]);
 
   const handleToggleEditor = useCallback(() => {
+    if (isLocked) {
+      showUpgrade();
+      return;
+    }
     if (isVisualEditorActive && hasUnsavedChanges()) {
       setShowUnsavedDialog(true);
     } else {
       toggleVisualEditor();
     }
-  }, [isVisualEditorActive, hasUnsavedChanges, toggleVisualEditor]);
+  }, [isLocked, showUpgrade, isVisualEditorActive, hasUnsavedChanges, toggleVisualEditor]);
 
   const handleDownload = async () => {
+    if (isLocked) {
+      showUpgrade();
+      return;
+    }
     setDownloading(true);
     try {
       const response = await fetch('/api/export/download', {
@@ -107,7 +120,6 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-
       toast.success('Project downloaded successfully');
     } catch (error) {
       toast.error('Download failed', {
@@ -126,7 +138,6 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
         setPublishedUrl(result.url);
       }
     } catch (error) {
-      // Error toast is shown by the hook's onError handler
       console.error('Publish failed:', error);
     }
   };
@@ -137,7 +148,10 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
   };
 
   const handleOpenPublishDialog = () => {
-    // Reset state when opening
+    if (isLocked) {
+      showUpgrade();
+      return;
+    }
     if (isAlreadyPublished) {
       setPublishedUrl(project.published_url);
     } else {
@@ -155,6 +169,7 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
 
   return (
     <>
+      {upgradeModal}
       <div className="flex h-12 md:h-14 items-center justify-between border-b px-2 md:px-4 bg-background flex-shrink-0">
         <div className="flex items-center gap-2 md:gap-3 min-w-0">
           <Button
@@ -165,9 +180,11 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
+
           <h1 className="text-sm font-semibold truncate max-w-[120px] md:max-w-[200px]">
             {project?.name || 'Untitled Project'}
           </h1>
+
           {isAlreadyPublished && (
             <a
               href={project.published_url!}
@@ -182,42 +199,57 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
         </div>
 
         <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
+          {/* Edit Button */}
           <Button
             variant={isVisualEditorActive ? 'default' : 'outline'}
             size="sm"
             className={`h-8 px-2 md:px-3 relative ${
-              isVisualEditorActive ? 'bg-primary text-primary-foreground' : ''
-            }`}
+              isVisualEditorActive
+                ? 'bg-primary text-primary-foreground'
+                : ''
+            } ${isLocked ? 'opacity-60' : ''}`}
             onClick={handleToggleEditor}
-            disabled={!isEditable}
+            disabled={!isEditable && !isLocked}
           >
-            <MousePointerClick className="h-3 w-3 md:mr-2" />
+            {isLocked ? (
+              <Lock className="h-3 w-3 md:mr-2" />
+            ) : (
+              <MousePointerClick className="h-3 w-3 md:mr-2" />
+            )}
             <span className="hidden md:inline">Edit</span>
-            {hasUnsavedChanges() && (
+            {hasUnsavedChanges() && !isLocked && (
               <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-orange-500 border-2 border-background" />
             )}
           </Button>
+
+          {/* Export Button */}
           <Button
             variant="outline"
             size="sm"
-            className="h-8 px-2 md:px-3"
+            className={`h-8 px-2 md:px-3 ${isLocked ? 'opacity-60' : ''}`}
             onClick={handleDownload}
-            disabled={!isExportable || downloading}
+            disabled={(!isExportable || downloading) && !isLocked}
           >
-            {downloading ? (
+            {isLocked ? (
+              <Lock className="h-3 w-3 md:mr-2" />
+            ) : downloading ? (
               <Loader2 className="h-3 w-3 animate-spin md:mr-2" />
             ) : (
               <Download className="h-3 w-3 md:mr-2" />
             )}
             <span className="hidden md:inline">Export</span>
           </Button>
+
+          {/* Publish Button */}
           <Button
             size="sm"
-            className="h-8 px-2 md:px-3"
+            className={`h-8 px-2 md:px-3 ${isLocked ? 'opacity-60' : ''}`}
             onClick={handleOpenPublishDialog}
-            disabled={!isPublishable}
+            disabled={!isPublishable && !isLocked}
           >
-            {isPublishing ? (
+            {isLocked ? (
+              <Lock className="h-3 w-3 md:mr-2" />
+            ) : isPublishing ? (
               <Loader2 className="h-3 w-3 animate-spin md:mr-2" />
             ) : (
               <Globe className="h-3 w-3 md:mr-2" />
@@ -247,7 +279,6 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
 
           {publishedUrl || isAlreadyPublished ? (
             <div className="space-y-4">
-              {/* Success state */}
               <div className="flex items-center gap-3 rounded-lg border bg-green-50 dark:bg-green-950/30 p-4">
                 <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -267,14 +298,15 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
                   size="icon"
                   className="h-8 w-8 flex-shrink-0"
                   onClick={() =>
-                    handleCopyUrl(publishedUrl || project?.published_url || '')
+                    handleCopyUrl(
+                      publishedUrl || project?.published_url || ''
+                    )
                   }
                 >
                   <Copy className="h-3.5 w-3.5" />
                 </Button>
               </div>
 
-              {/* Re-publish button */}
               <Button
                 variant="outline"
                 className="w-full"
@@ -291,7 +323,6 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
                   : 'Re-publish with Latest Changes'}
               </Button>
 
-              {/* Domain options */}
               {!showDomainOptions ? (
                 <button
                   onClick={() => setShowDomainOptions(true)}
@@ -345,7 +376,6 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
             </div>
           ) : (
             <div className="space-y-4 py-2">
-              {/* Pre-publish info */}
               <div className="rounded-lg border bg-muted/50 p-4 space-y-2">
                 <p className="text-sm font-medium">
                   Your site will be published at:
@@ -418,4 +448,4 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
       </Dialog>
     </>
   );
-                          }
+  }
