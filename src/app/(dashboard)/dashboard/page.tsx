@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Clock, Pencil, Trash2, Sparkles, Loader2, X } from 'lucide-react';
+import { Plus, Clock, Pencil, Trash2, Sparkles, Loader2, X, Inbox } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/lib/hooks/use-user';
 import { usePageTour } from '@/components/tour/use-page-tour';
@@ -330,6 +330,16 @@ export default function DashboardPage() {
                         ) : (
                           <Trash2 className="h-3.5 w-3.5" />
                         )}
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/projects/${project.id}/leads`);
+                        }}
+                        className="text-gray-500 hover:text-emerald-400 transition-colors"
+                        title="View leads & orders"
+                      >
+                        <Inbox className="h-3.5 w-3.5" />
                       </button>
                       <button
                         onClick={() =>
