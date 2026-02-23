@@ -23,6 +23,7 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
   // Fetch project name and description for smart welcome
   const [projectName, setProjectName] = useState<string>('');
   const [projectDescription, setProjectDescription] = useState<string>('');
+  const [inputPrefill, setInputPrefill] = useState<string>('');
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -58,7 +59,7 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
       >
         {messages.length === 0 && !isProcessing ? (
           <ChatWelcome
-            onSuggestionClick={sendMessage}
+            onSuggestionClick={setInputPrefill}
             projectName={projectName}
             projectDescription={projectDescription}
           />
@@ -78,7 +79,7 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
                         (suggestion: string, i: number) => (
                           <button
                             key={i}
-                            onClick={() => sendMessage(suggestion)}
+                            onClick={() => setInputPrefill(suggestion)}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/40 transition-all duration-200 hover:scale-105"
                           >
                             <Sparkles className="h-3 w-3" />
@@ -129,6 +130,8 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
       <ChatInput
         onSend={sendMessage}
         isDisabled={isProcessing}
+        prefillValue={inputPrefill}
+        onPrefillConsumed={() => setInputPrefill('')}
         placeholder={
           messages.length === 0
             ? 'Describe the website you want to build...'
