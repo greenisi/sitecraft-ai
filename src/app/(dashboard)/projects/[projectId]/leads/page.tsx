@@ -171,4 +171,4 @@ export default async function LeadsPage({ params }: { params: Promise<{ projectI
               </div>
         </div>
       );
-}</div>
+}
