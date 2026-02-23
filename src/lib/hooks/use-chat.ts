@@ -263,18 +263,10 @@ export function useChat(projectId: string) {
       setProcessing(true, 'generating');
       generationStore.startGeneration(projectId);
 
-              // Route to edit endpoint for surgical changes
-        const isEditMode = !!(config as Record<string, unknown>)._editMode;
-        const editConfig = config as Record<string, unknown>;
-        const streamEndpoint = isEditMode ? '/api/generate/edit' : '/api/generate/stream';
-        const streamBody = isEditMode
-          ? { projectId, editInstructions: editConfig.editInstructions, targetFiles: editConfig.targetFiles }
-          : { projectId, config };
-
-try {
+      try {
         const bgState = await startBackgroundGeneration(
           projectId,
-          isEditMode ? streamBody : config,
+          config,
           (event) => {
             generationStore.processEvent(event);
 
