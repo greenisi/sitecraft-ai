@@ -131,6 +131,9 @@ export async function POST(request: NextRequest) {
   const pipelineWithPersistence = async function* (): AsyncGenerator<GenerationEvent> {
         let hasError = false;
 
+
+          // Inject projectId into aiPrompt so AI can use real form endpoints
+          config.aiPrompt = (config.aiPrompt || '') + '\n\nprojectId: "' + projectId + '"';
         try {
                 for await (const event of runGenerationPipeline(config)) {
                           // Collect files as they complete
