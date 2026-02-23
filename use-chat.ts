@@ -342,66 +342,10 @@ export function useChat(projectId: string) {
         templateAutoTriggered.current = true;
         autoTriggeredProjectIds.add(projectId);
 
-                const autoGenerate = async () => {
-            // Never auto-generate — always show welcome screen with follow-up questions
-                                return;
-                    
-                        const supabase = createClient();
-
-                        const { data: project, error } = await supabase
-                          .from('projects')
-                          .select('status, generation_config, name')
-                          .eq('id', projectId)
-                          .single();
-
-                        if (error || !project) return;
-
-                        if (
-                                  project.status !== 'draft' ||
-                                  !project.generation_config ||
-                                  typeof project.generation_config !== 'object'
-                                ) {
-                                  return;
-                        }
-
-                        const { count } = await supabase
-                          .from('chat_messages')
-                          .select('id', { count: 'exact', head: true })
-                          .eq('project_id', projectId);
-
-                        if (count && count > 0) return;
-
-                        await supabase
-                          .from('projects')
-                          .update({ status: 'generating' })
-                          .eq('id', projectId);
-
-                        const config = project.generation_config;
-                        const planDescription = `Starting generation from template: **${project.name}**. Your website is being built with AI...`;
-
-                        const welcomeMessage: ChatMessageLocal = {
-                                  id: crypto.randomUUID(),
-                                  project_id: projectId,
-                                  role: 'assistant',
-                                  content: planDescription,
-                                  metadata: { stage: 'generating' },
-                                  created_at: new Date().toISOString(),
-                        };
-                        addMessage(welcomeMessage);
-
-                        await supabase.from('chat_messages').insert({
-                                  id: welcomeMessage.id,
-                                  project_id: projectId,
-                                  role: 'assistant',
-                                  content: welcomeMessage.content,
-                                  metadata: welcomeMessage.metadata,
-                        });
-
-                        await runGeneration(config as Record<string, unknown>, planDescription, {
-                                  isTemplate: true,
-                                  projectName: project.name,
-                        });
-                };
+    const autoGenerate = async () => {
+      // Disabled: always show welcome screen with follow-up questions
+      return;
+    };
 
                 const timer = setTimeout(autoGenerate, 500);
         return () => clearTimeout(timer);
