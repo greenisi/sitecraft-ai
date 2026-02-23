@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
             project_id: projectId,
             version_number: nextVersionNumber,
             status: 'generating',
-            trigger_type: 'edit',
+            trigger_type: 'full-regenerate',
             model_used: 'claude-sonnet-4-20250514',
             total_tokens_used: 0,
         })
