@@ -362,13 +362,13 @@ Every website MUST look visually rich and professionally designed, NOT like a pl
 
 **Image Usage (MANDATORY):**
 - Use Unsplash images EXTENSIVELY throughout the site. Use realistic, high-quality URLs like:
-  `https://images.unsplash.com/photo-XXXXX?w=800&h=600&fit=crop` where XXXXX is a real Unsplash photo ID
+    'https://images.unsplash.com/photo-XXXXX?w=800&h=600&fit=crop' where XXXXX is a real Unsplash photo ID
 - Hero sections MUST have a large, relevant background or featured image
 - Service/feature cards should include relevant images, not just icons
 - About pages MUST include team photos or office/workspace images
 - Gallery sections with 6-9 images in a responsive grid
 - Testimonials should include avatar photos
-- Use `next/image` with proper width, height, and descriptive alt text
+- Use next/image with proper width, height, and descriptive alt text
 - Each page should have at least 3-5 images
 
 **Dynamic Interactive Elements (include at least 3 per site):**
