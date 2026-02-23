@@ -343,14 +343,9 @@ export function useChat(projectId: string) {
         autoTriggeredProjectIds.add(projectId);
 
                 const autoGenerate = async () => {
-                        // Skip auto-generation for projects created through the New Project modal
-                        if (
-                                  typeof window !== 'undefined' &&
-                                  window.location.search.includes('desc=')
-                                ) {
-                                  return;
-                        }
-
+            // Never auto-generate — always show welcome screen with follow-up questions
+                                return;
+                    
                         const supabase = createClient();
 
                         const { data: project, error } = await supabase
