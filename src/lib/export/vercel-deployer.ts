@@ -57,6 +57,7 @@ export async function deployToVercel(
       headers,
       body: JSON.stringify({
         name: config.projectName,
+        target: 'production',
         files: fileEntries,
         projectSettings: {
           framework: 'nextjs',
