@@ -35,7 +35,7 @@ export async function GET(request: Request) {
       .map((r) => ({
         domain: r.domainName,
         available: true,
-        price: r.purchasePrice ? '$' + (parseFloat(r.purchasePrice) / 100).toFixed(2) : 'N/A',
+        price: r.purchasePrice ? '$' + (Number(r.purchasePrice) / 100).toFixed(2) : 'N/A',
         premium: r.premium,
       }));
 
