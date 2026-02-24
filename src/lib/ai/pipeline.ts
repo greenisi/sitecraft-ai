@@ -1,7 +1,7 @@
 import type { GenerationConfig, DesignSystem, PageBlueprint } from '@/types/project';
 import type { GenerationEvent, VirtualFile } from '@/types/generation';
 import { VirtualFileTree } from '@/types/generation';
-import { getAnthropicClient, GENERATION_MODEL, TOKEN_LIMITS } from './client';
+import { getAnthropicClient, GENERATION_MODEL, TOKEN_LIMITS, withRetry } from './client';
 import { buildSystemPrompt } from './prompts/system-prompt';
 import { buildLandingPagePrompt } from './prompts/landing-page';
 import { buildBusinessPortfolioPrompt } from './prompts/business-portfolio';
@@ -99,12 +99,12 @@ Body font: ${config.branding.fontBody}
 
 Make the colors rich and distinctive for this specific business type. The palette should evoke the right mood for a ${config.business.industry} business.`;
 
-  const response = await client.messages.create({
+  const response = await withRetry(() => client.messages.create({
     model: GENERATION_MODEL,
     max_tokens: TOKEN_LIMITS.designSystem,
     system: systemPrompt,
     messages: [{ role: 'user', content: userPrompt }],
-  });
+  }));
 
   const textBlock = response.content.find((block) => block.type === 'text');
   if (!textBlock || textBlock.type !== 'text') {
@@ -167,12 +167,12 @@ Body font: ${designSystem.typography.bodyFont}
 ${config.ecommerce ? `E-commerce: ${config.ecommerce.products.length} products, cart ${config.ecommerce.cartEnabled ? 'enabled' : 'disabled'}` : ''}
 ${config.saas ? `SaaS: ${config.saas.features.length} features, ${config.saas.pricingTiers.length} pricing tiers, auth ${config.saas.hasAuth ? 'yes' : 'no'}, dashboard ${config.saas.hasDashboard ? 'yes' : 'no'}` : ''}`;
 
-  const response = await client.messages.create({
+  const response = await withRetry(() => client.messages.create({
     model: GENERATION_MODEL,
     max_tokens: TOKEN_LIMITS.blueprint,
     system: systemPrompt,
     messages: [{ role: 'user', content: userPrompt }],
-  });
+  }));
 
   const textBlock = response.content.find((block) => block.type === 'text');
   if (!textBlock || textBlock.type !== 'text') {
