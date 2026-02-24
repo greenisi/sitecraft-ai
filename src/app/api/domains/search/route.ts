@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const query = searchParams.get('query');
+    const query = searchParams.get('q') || searchParams.get('query');
 
     if (!query || query.length < 2) {
       return NextResponse.json(
@@ -34,13 +34,12 @@ export async function GET(request: Request) {
       .filter((r) => r.purchasable)
       .map((r) => ({
         domain: r.domainName,
-        tld: r.tld,
-        price: r.purchasePrice,
-        renewalPrice: r.renewalPrice,
+        available: true,
+        price: r.purchasePrice ? '$' + (parseFloat(r.purchasePrice) / 100).toFixed(2) : 'N/A',
         premium: r.premium,
       }));
 
-    return NextResponse.json({ data: { results: available } });
+    return NextResponse.json({ results: available });
   } catch (error) {
     const { error: errBody, status } = formatErrorResponse(error);
     return NextResponse.json({ error: errBody }, { status });
