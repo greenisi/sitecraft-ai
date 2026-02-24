@@ -12,16 +12,7 @@ export async function GET() {
 
     const { data: domains, error } = await supabase
       .from('domains')
-      .select(\`
-        id,
-        project_id,
-        domain,
-        domain_type,
-        status,
-        dns_configured,
-        created_at,
-        projects (name)
-      \`)
+      .select('id, project_id, domain, domain_type, status, dns_configured, created_at, projects (name)')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
