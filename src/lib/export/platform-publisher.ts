@@ -80,8 +80,14 @@ export async function publishToSubdomain(
     for (const file of files) {
       let fileContent = file.content;
       // Force all page files to be dynamic (skip SSG) to prevent runtime errors
+      // Skip 'use client' files — force-dynamic before 'use client' breaks the build
       if ((file.file_path.endsWith('page.tsx') || file.file_path.endsWith('page.ts')) && !fileContent.includes('force-dynamic')) {
-        fileContent = "export const dynamic = 'force-dynamic';\n" + fileContent;
+        if (fileContent.trimStart().startsWith("'use client'") || fileContent.trimStart().startsWith('"use client"')) {
+          // For client components, insert force-dynamic AFTER the 'use client' directive
+          fileContent = fileContent.replace(/(['"]use client['"];?\s*\n)/, "$1export const dynamic = 'force-dynamic';\n");
+        } else {
+          fileContent = "export const dynamic = 'force-dynamic';\n" + fileContent;
+        }
       }
       tree.addFile(file.file_path, fileContent, file.file_type);
     }
