@@ -81,6 +81,25 @@ export async function publishToSubdomain(
     tree.addFile(file.file_path, file.content, file.file_type);
   }
 
+  // Force-override next.config.js to skip TS/ESLint errors in AI-generated code
+  const NC_CONTENT = [
+    "/** @type {import('next').NextConfig} */",
+    "const nextConfig = {",
+    "  typescript: { ignoreBuildErrors: true },",
+    "  eslint: { ignoreDuringBuilds: true },",
+    "  images: {",
+    "    remotePatterns: [",
+    "      { protocol: 'https', hostname: 'images.unsplash.com' },",
+    "      { protocol: 'https', hostname: 'via.placeholder.com' },",
+    "    ],",
+    "  },",
+    "};",
+    "",
+    "module.exports = nextConfig;",
+    ""
+  ].join('\n');
+  tree.addFile('next.config.js', NC_CONTENT, 'config');
+
   // 5. Derive Vercel project name from slug (must be unique, lowercase, alphanumeric + hyphens)
   const vercelProjectName = project.vercel_project_name || `sc-${project.slug}`;
   const subdomain = `${project.slug}.${PLATFORM_DOMAIN}`;
@@ -237,3 +256,4 @@ export async function addCustomDomain(
 
   return { verificationNeeded: false };
 }
+
