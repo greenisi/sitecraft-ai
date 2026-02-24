@@ -93,6 +93,41 @@ Use Tailwind utility classes that reference these tokens, e.g. \`bg-primary-500\
 - Use CSS Grid and Flexbox for layout. Avoid absolute positioning unless essential.
 - Consistent spacing between sections. Use the spacing tokens above.
 
+
+
+=== MOBILE RESPONSIVENESS — CRITICAL (NO CONTENT CUTOFF) ===
+**EVERY component MUST render perfectly on a 375px-wide viewport. No horizontal overflow. No text clipping. No features cut off.**
+
+**Responsive Typography (MANDATORY):**
+- Hero headings: ALWAYS use responsive sizes: \`text-3xl sm:text-4xl md:text-5xl lg:text-6xl\` — NEVER use a single large fixed size like \`text-6xl\`
+- Section headings: \`text-2xl sm:text-3xl md:text-4xl\`
+- Sub-headings: \`text-xl sm:text-2xl\`
+- Body text: minimum \`text-base\` (16px) — NEVER smaller on mobile
+- All text must wrap naturally without horizontal overflow. Use \`break-words\` if needed.
+
+**Container & Overflow Rules:**
+- The root layout MUST use \`overflow-x-hidden\` to prevent horizontal scroll on the page
+- Every section container MUST use \`px-4 sm:px-6 lg:px-8\` for horizontal padding — NEVER zero padding on mobile
+- Decorative elements (blurred circles, gradients) with negative positioning MUST NOT cause horizontal overflow. Add \`overflow-hidden\` to their parent container.
+- Images and videos MUST use \`max-w-full\` or \`w-full\` — NEVER fixed pixel widths that exceed mobile viewport
+- Grid layouts: Use \`grid-cols-1\` on mobile, then \`md:grid-cols-2\`, \`lg:grid-cols-3\`, etc. NEVER start with multi-column on mobile.
+
+**Mobile Layout Checks (MANDATORY before outputting code):**
+1. Every heading — does it have responsive text-* classes? (text-3xl md:text-5xl, NOT just text-5xl)
+2. Every grid — does it start with grid-cols-1 on mobile?
+3. Every flex row — does it use flex-col on mobile then md:flex-row for desktop?
+4. Every image — does it use w-full or max-w-full?
+5. Every container — does it have mobile-friendly horizontal padding (px-4)?
+6. No element with a fixed width larger than 375px without a max-w class
+7. Decorative absolute-positioned elements — is the parent overflow-hidden?
+
+**Common Mobile Bugs to AVOID:**
+- NEVER: \`text-6xl\` without a smaller mobile size → causes text overflow
+- NEVER: \`grid-cols-3\` without \`grid-cols-1 md:grid-cols-3\` → cramped on mobile
+- NEVER: \`flex-row\` without \`flex-col md:flex-row\` → horizontal overflow
+- NEVER: \`w-[800px]\` or any fixed width > 100% without responsive fallback
+- NEVER: \`px-0\` on sections — always have at least px-4 for mobile padding
+- NEVER: absolute elements at \`-right-40\` or \`-left-40\` without parent \`overflow-hidden\`
 === ANIMATION & INTERACTIVITY ===
 Every website MUST feel alive and premium. Apply these techniques throughout:
 
