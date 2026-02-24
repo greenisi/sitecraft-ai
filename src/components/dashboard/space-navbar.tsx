@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { LogOut, Sparkles, Menu, X, LayoutGrid, CreditCard, Settings, User } from 'lucide-react';
+import { LogOut, Sparkles, Menu, X, LayoutGrid, CreditCard, Settings, User, Gift } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/lib/hooks/use-user';
 import Image from 'next/image';
@@ -109,6 +109,16 @@ export function SpaceNavbar() {
             }`}
           >
             Pricing
+          </a>
+          <a
+            href="/affiliates"
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              isActive('/affiliates')
+                ? 'bg-white/10 text-white'
+                : 'text-gray-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            Affiliates
           </a>
           <button
             onClick={handleSignOut}
@@ -224,6 +234,18 @@ export function SpaceNavbar() {
           >
             <CreditCard className={`h-4 w-4 ${isActive('/pricing') ? 'text-purple-400' : ''}`} />
             Pricing
+          </button>
+          <button
+            onClick={() => navTo('/affiliates')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+              isActive('/affiliates')
+                ? 'text-white'
+                : 'text-gray-400 hover:text-white hover:bg-white/5'
+            }`}
+            style={isActive('/affiliates') ? { background: 'rgba(139,92,246,0.15)', color: '#e2d9f3' } : {}}
+          >
+            <Gift className={`h-4 w-4 ${isActive('/affiliates') ? 'text-purple-400' : ''}`} />
+            Affiliates
           </button>
           <button
             onClick={() => navTo('/settings')}
