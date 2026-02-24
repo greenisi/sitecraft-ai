@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     // Find the affiliate by code
     const { data: affiliate } = await supabaseAdmin
       .from('affiliates')
-      .select('id')
+      .select('id, total_clicks')
       .eq('affiliate_code', ref_code)
       .eq('status', 'active')
       .single();
@@ -36,14 +36,15 @@ export async function POST(request: NextRequest) {
       click_source: source || 'direct',
     });
 
-    // Increment click count
-    await supabaseAdmin.rpc('increment_affiliate_clicks', { aff_id: affiliate.id }).catch(() => {
-      // Fallback if RPC doesn't exist
-      supabaseAdmin
+    // Increment click count directly
+    try {
+      await supabaseAdmin
         .from('affiliates')
-        .update({ total_clicks: (affiliate as any).total_clicks + 1 })
+        .update({ total_clicks: (affiliate.total_clicks || 0) + 1 })
         .eq('id', affiliate.id);
-    });
+    } catch {
+      // Silently fail click increment - the referral record is more important
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -63,7 +64,7 @@ export async function GET(request: NextRequest) {
   // Find the affiliate
   const { data: affiliate } = await supabaseAdmin
     .from('affiliates')
-    .select('id')
+    .select('id, total_clicks')
     .eq('affiliate_code', ref)
     .eq('status', 'active')
     .single();
@@ -81,15 +82,16 @@ export async function GET(request: NextRequest) {
     // Increment clicks
     await supabaseAdmin
       .from('affiliates')
-      .update({ total_clicks: (affiliate as any).total_clicks ? (affiliate as any).total_clicks + 1 : 1 })
+      .update({ total_clicks: (affiliate.total_clicks || 0) + 1 })
       .eq('id', affiliate.id);
   }
 
   // Redirect to signup with ref param stored
   const redirectUrl = new URL('/signup', request.url);
   redirectUrl.searchParams.set('ref', ref);
-  
+
   const response = NextResponse.redirect(redirectUrl);
+
   // Set cookie for 30 days
   response.cookies.set('ref_code', ref, {
     maxAge: 30 * 24 * 60 * 60,
