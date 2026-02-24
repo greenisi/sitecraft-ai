@@ -22,6 +22,124 @@ interface Project {
   created_at: string;
   updated_at: string;
   thumbnail_url: string | null;
+  published_url: string | null;
+  slug: string;
+}
+
+
+// Mini browser-frame preview for project cards
+function ProjectPreview({ project, isGenerating: generating }: { project: Project; isGenerating: boolean }) {
+  const previewUrl = project.published_url || (project.slug ? `/api/preview/${project.id}` : null);
+  const hasPreview = project.status === 'published' && project.published_url;
+  const isGenerated = ['generated', 'deployed', 'published'].includes(project.status);
+
+  // Generating animation
+  if (generating) {
+    return (
+      <div className="w-full h-full relative overflow-hidden" style={{ background: '#0a0f1a' }}>
+        {/* Animated code lines */}
+        <div className="absolute inset-0 flex flex-col gap-2 p-4 opacity-60">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="flex gap-2 items-center" style={{ animationDelay: `${i * 0.15}s` }}>
+              <div
+                className="h-2 rounded-full shrink-0"
+                style={{
+                  width: `${12 + Math.random() * 20}%`,
+                  background: 'rgba(139,92,246,0.3)',
+                  animation: `shimmer 2s ease-in-out ${i * 0.2}s infinite`,
+                }}
+              />
+              <div
+                className="h-2 rounded-full"
+                style={{
+                  width: `${20 + Math.random() * 40}%`,
+                  background: 'rgba(56,189,248,0.2)',
+                  animation: `shimmer 2s ease-in-out ${i * 0.2 + 0.3}s infinite`,
+                }}
+              />
+            </div>
+          ))}
+        </div>
+        {/* Center spinner */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="relative">
+              <div className="w-12 h-12 rounded-full border-2 border-violet-500/30" />
+              <div
+                className="absolute inset-0 w-12 h-12 rounded-full border-2 border-transparent border-t-violet-500"
+                style={{ animation: 'spin 1s linear infinite' }}
+              />
+              <Sparkles className="absolute inset-0 m-auto h-5 w-5 text-violet-400" />
+            </div>
+            <span className="text-[10px] font-medium text-violet-300/80">Building...</span>
+          </div>
+        </div>
+        <style dangerouslySetInnerHTML={{ __html: `
+          @keyframes shimmer { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+          @keyframes spin { to { transform: rotate(360deg); } }
+        ` }} />
+      </div>
+    );
+  }
+
+  // Published site — show live iframe preview
+  if (hasPreview && project.published_url) {
+    return (
+      <div className="w-full h-full relative overflow-hidden" style={{ background: '#0f172a' }}>
+        {/* Mini browser chrome */}
+        <div className="flex items-center gap-1.5 px-2.5 py-1.5 border-b" style={{ background: 'rgba(30,41,59,0.9)', borderColor: 'rgba(71,85,105,0.3)' }}>
+          <div className="flex gap-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-red-500/60" />
+            <div className="w-1.5 h-1.5 rounded-full bg-yellow-500/60" />
+            <div className="w-1.5 h-1.5 rounded-full bg-green-500/60" />
+          </div>
+          <div className="flex-1 mx-2 px-2 py-0.5 rounded text-[8px] text-gray-500 truncate font-mono"
+            style={{ background: 'rgba(15,23,42,0.6)' }}
+          >
+            {project.published_url.replace('https://', '')}
+          </div>
+        </div>
+        {/* Scaled iframe */}
+        <div className="relative w-[300%] h-[300%] origin-top-left" style={{ transform: 'scale(0.333)' }}>
+          <iframe
+            src={project.published_url}
+            className="w-full h-full border-0"
+            loading="lazy"
+            sandbox="allow-scripts allow-same-origin"
+            tabIndex={-1}
+            style={{ pointerEvents: 'none' }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Generated but not published — show code preview placeholder
+  if (isGenerated) {
+    return (
+      <div className="w-full h-full relative overflow-hidden flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #0f172a, #1e1b4b)' }}>
+        <div className="text-center">
+          <div className="w-16 h-10 mx-auto mb-2 rounded border border-violet-500/30 overflow-hidden" style={{ background: 'rgba(15,23,42,0.8)' }}>
+            <div className="p-1 space-y-0.5">
+              <div className="h-1 w-8 rounded-full bg-violet-500/30" />
+              <div className="h-1 w-6 rounded-full bg-blue-500/20" />
+              <div className="h-1 w-10 rounded-full bg-violet-500/20" />
+            </div>
+          </div>
+          <span className="text-[10px] text-violet-300/60">Ready to publish</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Draft — show initial
+  return (
+    <div className="w-full h-full flex items-center justify-center" style={{ background: 'rgba(15,23,42,0.6)' }}>
+      <div className="text-3xl text-gray-600">
+        {project.name?.charAt(0)?.toUpperCase() || '?'}
+      </div>
+    </div>
+  );
 }
 
 export default function DashboardPage() {
@@ -266,34 +384,9 @@ export default function DashboardPage() {
               >
                 <div
                   className="aspect-[16/10] overflow-hidden cursor-pointer relative"
-                  style={{ background: 'rgba(15,23,42,0.6)' }}
                   onClick={() => router.push(`/projects/${project.id}`)}
                 >
-                  {project.thumbnail_url ? (
-                    <img
-                      src={project.thumbnail_url}
-                      alt={project.name}
-                      className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <div className="text-3xl text-gray-600">
-                        {project.name?.charAt(0)?.toUpperCase() || '?'}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Generating overlay */}
-                  {isProjectGenerating && (
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center">
-                      <div className="flex items-center gap-2 bg-violet-600/90 rounded-full px-4 py-2">
-                        <Loader2 className="h-4 w-4 animate-spin text-white" />
-                        <span className="text-sm font-medium text-white">
-                          Generating...
-                        </span>
-                      </div>
-                    </div>
-                  )}
+                  <ProjectPreview project={project} isGenerating={isProjectGenerating} />
                 </div>
 
                 <div className="p-4">
