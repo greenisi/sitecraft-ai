@@ -241,7 +241,7 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
         {/* Preview container — auto-fit uses 100% width, otherwise fixed viewport width */}
         <div className="flex-1 overflow-hidden bg-gray-100 dark:bg-gray-900 md:p-2 flex flex-col">
           <div
-            className="mx-auto transition-all duration-300 bg-white md:rounded-lg md:shadow-sm overflow-hidden flex-1 min-h-0"
+            className="mx-auto transition-all duration-300 bg-white md:rounded-lg md:shadow-sm overflow-hidden flex-1 min-h-0 relative"
             style={{
               width: typeof window !== 'undefined' && window.innerWidth < 768
                 ? '100%'
@@ -307,7 +307,7 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
               key={iframeKey}
               ref={iframeRef}
               src={`/api/preview/render?projectId=${projectId}&page=${encodeURIComponent(activePage)}`}
-              className="w-full border-0"
+              className="w-full border-0 absolute inset-0"
               style={{
                 height: loading ? '0px' : '100%',
                 minHeight: loading ? '0px' : '100%',
