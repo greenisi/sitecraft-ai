@@ -72,7 +72,7 @@ export default function DomainsPage() {
     setSearching(true);
     setSearchResults([]);
     try {
-      const res = await fetch(\`/api/domains/search?q=\${encodeURIComponent(searchQuery)}\`);
+      const res = await fetch(`/api/domains/search?q=${encodeURIComponent(searchQuery)}`);
       if (res.ok) {
         const data = await res.json();
         setSearchResults(data.results || []);
@@ -137,11 +137,11 @@ export default function DomainsPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={\`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all \${
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
                 activeTab === tab.id
                   ? 'bg-purple-600 text-white shadow-lg'
                   : 'text-gray-400 hover:text-white hover:bg-gray-800'
-              }\`}
+              }`}
             >
               <tab.icon className="w-4 h-4" />
               {tab.label}
@@ -175,11 +175,11 @@ export default function DomainsPage() {
                 {domains.map(domain => (
                   <div key={domain.id} className="bg-gray-900 border border-gray-800 rounded-xl p-5 flex items-center justify-between hover:border-gray-700 transition-colors">
                     <div className="flex items-center gap-4">
-                      <div className={\`w-10 h-10 rounded-full flex items-center justify-center \${
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                         domain.status === 'active' ? 'bg-green-500/20 text-green-400' :
                         domain.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
                         'bg-gray-500/20 text-gray-400'
-                      }\`}>
+                      }`}>
                         <Globe className="w-5 h-5" />
                       </div>
                       <div>
@@ -196,14 +196,14 @@ export default function DomainsPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className={\`px-3 py-1 rounded-full text-xs font-medium \${
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                         domain.status === 'active' ? 'bg-green-500/20 text-green-400' :
                         domain.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
                         'bg-gray-500/20 text-gray-400'
-                      }\`}>
+                      }`}>
                         {domain.status === 'active' ? 'Active' : domain.status === 'pending' ? 'Pending DNS' : domain.status}
                       </span>
-                      <a href={\`https://\${domain.domain}\`} target="_blank" rel="noopener noreferrer" className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
+                      <a href={`https://${domain.domain}`} target="_blank" rel="noopener noreferrer" className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
                         <ExternalLink className="w-4 h-4 text-gray-400" />
                       </a>
                     </div>
@@ -247,9 +247,9 @@ export default function DomainsPage() {
                 {searchResults.map(result => (
                   <div key={result.domain} className="bg-gray-900 border border-gray-800 rounded-xl p-5 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className={\`w-10 h-10 rounded-full flex items-center justify-center \${
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                         result.available ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-                      }\`}>
+                      }`}>
                         {result.available ? <Check className="w-5 h-5" /> : <X className="w-5 h-5" />}
                       </div>
                       <div>
@@ -303,10 +303,10 @@ export default function DomainsPage() {
               </p>
 
               {message && (
-                <div className={\`mb-4 p-4 rounded-lg flex items-center gap-3 \${
+                <div className={`mb-4 p-4 rounded-lg flex items-center gap-3 ${
                   message.type === 'success' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
                   'bg-red-500/10 text-red-400 border border-red-500/20'
-                }\`}>
+                }`}>
                   {message.type === 'success' ? <Check className="w-5 h-5 shrink-0" /> : <AlertCircle className="w-5 h-5 shrink-0" />}
                   {message.text}
                 </div>
