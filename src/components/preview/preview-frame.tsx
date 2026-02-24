@@ -237,11 +237,11 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
         </div>
       )}
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden min-h-0">
         {/* Preview container — auto-fit uses 100% width, otherwise fixed viewport width */}
-        <div className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-900 md:p-2">
+        <div className="flex-1 overflow-hidden bg-gray-100 dark:bg-gray-900 md:p-2 flex flex-col">
           <div
-            className="mx-auto transition-all duration-300 bg-white md:rounded-lg md:shadow-sm overflow-hidden"
+            className="mx-auto transition-all duration-300 bg-white md:rounded-lg md:shadow-sm overflow-hidden flex-1 min-h-0"
             style={{
               width: typeof window !== 'undefined' && window.innerWidth < 768
                 ? '100%'
@@ -309,8 +309,8 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
               src={`/api/preview/render?projectId=${projectId}&page=${encodeURIComponent(activePage)}`}
               className="w-full border-0"
               style={{
-                height: loading ? '0px' : '100vh',
-                minHeight: loading ? '0px' : '600px',
+                height: loading ? '0px' : '100%',
+                minHeight: loading ? '0px' : '100%',
               }}
               title="Website Preview"
               sandbox="allow-scripts allow-same-origin"
