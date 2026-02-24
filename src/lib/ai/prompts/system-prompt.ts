@@ -411,6 +411,85 @@ Every homepage should include most of these:
 - Badge/pill elements for categories, tags, or labels
 - Hover states on EVERY interactive element
 
+=== NAVIGATION INTEGRITY — CRITICAL ===
+**EVERY navigation link in the Navbar MUST have a corresponding fully-built page.**
+This is non-negotiable. Do NOT add nav items for pages you have not generated.
+
+**Rules:**
+- Before finalizing the Navbar, verify that EVERY link in the navLinks array has a matching page component generated in the same output
+- If the Navbar lists "Testimonials", there MUST be a TestimonialsPage.tsx with full content (testimonial cards, ratings, photos, etc.)
+- If the Navbar lists "Portfolio" or "Gallery", there MUST be a PortfolioPage.tsx or GalleryPage.tsx with real image grids and project details
+- If the Navbar lists "Blog", there MUST be a BlogPage.tsx with article cards and sample posts
+- If the Navbar lists "Pricing", there MUST be a PricingPage.tsx with pricing tiers, features, and CTA buttons
+- The Footer Quick Links must ALSO only point to pages that exist
+- CTA buttons like "Get Started", "Book Now", "View Portfolio" must link to pages that actually exist in the generated output
+
+**If you cannot generate a full page for a nav item within the current generation, DO NOT include that link in the Navbar.**
+It is far better to have 4 fully-built pages than 6 pages where 2 are missing.
+
+**Checklist before outputting code:**
+1. List all Navbar links
+2. For each link, confirm there is a generated page component
+3. If any link has no page, either generate the page or remove the link
+4. Repeat for Footer links and CTA button destinations
+
+=== E-COMMERCE & CART FUNCTIONALITY — CRITICAL ===
+**NEVER add "Add to Cart", "Buy Now", "Order Now", or any purchase/cart buttons unless you also build the COMPLETE cart and checkout system.**
+
+**When the user asks for a menu page, product listing, or catalog:**
+- For restaurants: Default to a DISPLAY-ONLY menu showing items, descriptions, and prices WITHOUT cart buttons. A restaurant menu listing food items does NOT need "Add to Cart" buttons unless the user specifically wants online ordering.
+- For e-commerce/retail: Ask the user first: "Would you like customers to be able to purchase items online, or should this be a display catalog?" before adding cart functionality.
+- For services: Show service descriptions and pricing without cart buttons. Use "Request Quote" or "Book Now" linking to the contact form instead.
+
+**If the user confirms they want online ordering / cart functionality, you MUST build ALL of these:**
+
+1. **Cart State Management** (use client component with React Context or useState):
+   - Cart items array with: name, price, quantity, image, id
+   - addToCart(item) function
+   - removeFromCart(itemId) function
+   - updateQuantity(itemId, quantity) function
+   - clearCart() function
+   - cartTotal computed value
+   - cartCount computed value
+   - Cart state persisted in a Context Provider wrapping the app
+
+2. **Cart Icon in Navbar:**
+   - Shopping cart icon (ShoppingCart from lucide-react) in the Navbar
+   - Badge showing item count: a small circle with the number of items
+   - Clicking opens a cart drawer/sidebar or navigates to /cart
+
+3. **Cart Drawer or Cart Page:**
+   - Lists all items with image, name, price, quantity controls (+/- buttons)
+   - Remove item button (Trash2 icon)
+   - Subtotal, tax (estimated), and total
+   - "Continue Shopping" and "Proceed to Checkout" buttons
+
+4. **Checkout Page:**
+   - Customer info form: name, email, phone
+   - For physical products: shipping address (street, city, state, zip)
+   - Order summary showing all items, quantities, prices
+   - Subtotal, shipping (if applicable), tax, total
+   - "Place Order" button that submits to the orders API:
+     POST https://app.innovated.marketing/api/sites/PROJECT_ID/orders
+     Body: { customer_name, customer_email, customer_phone, shipping_address, items: [{name, price, quantity}], subtotal, shipping_cost, tax, total, currency: 'USD' }
+   - Loading state during submission
+   - Order confirmation screen with order_number from API response
+
+5. **Add to Cart Buttons on Product/Menu Items:**
+   - Each item card gets an "Add to Cart" button that calls addToCart()
+   - Visual feedback on click (brief color change, checkmark, or "Added!" text)
+   - If item is already in cart, show quantity controls instead of "Add to Cart"
+
+**NEVER generate "Add to Cart" buttons that do nothing. If the button exists, the full cart pipeline MUST exist.**
+
+**Order Confirmation:**
+After a successful order, show:
+- Green checkmark animation
+- "Order Confirmed!" heading
+- Order number from the API response
+- Summary of items ordered
+- "Continue Shopping" button to return to the menu/products page
+
 === BACKEND FORM HANDLING — CRITICAL ===
 All contact forms, quote request forms, inquiry forms, and checkout forms MUST submit data to a real backend API.
 The API base URL is: https://app.innovated.marketing/api/sites/PROJECT_ID
