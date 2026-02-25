@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
 
   // ── Run pipeline and stream results ───────────────────────────────────
   const startTime = Date.now();
-    const collectedFiles: Array<{ path: string; content: string; type: VirtualFile['type'] }> = [];
+    let persistedFileCount = 0;
 
   const pipelineWithPersistence = async function* (): AsyncGenerator<GenerationEvent> {
         let hasError = false;
@@ -138,11 +138,20 @@ export async function POST(request: NextRequest) {
                 for await (const event of runGenerationPipeline(config)) {
                           // Collect files as they complete
                   if (event.type === 'component-complete' && event.file) {
-                              collectedFiles.push({
-                                            path: event.file.path,
-                                            content: event.file.content,
-                                            type: inferFileType(event.file.path),
-                              });
+                    // Persist each file eagerly to prevent data loss on timeout
+                    try {
+                      await supabase.from('generated_files').insert({
+                        project_id: projectId,
+                        version_id: version.id,
+                        file_path: event.file.path,
+                        content: event.file.content,
+                        file_type: inferFileType(event.file.path),
+                        section_type: inferSectionType(event.file.path),
+                      });
+                      persistedFileCount++;
+                    } catch (e) {
+                      console.error('Failed to persist file:', event.file.path, e);
+                    }
                   }
 
                   if (event.type === 'error') {
@@ -179,19 +188,7 @@ export async function POST(request: NextRequest) {
                   .update({ status: 'error' })
                   .eq('id', projectId);
         } else {
-                // Store generated files
-          if (collectedFiles.length > 0) {
-                    const fileRecords = collectedFiles.map((f) => ({
-                                project_id: projectId,
-                                version_id: version.id,
-                                file_path: f.path,
-                                content: f.content,
-                                file_type: f.type,
-                                section_type: inferSectionType(f.path),
-                    }));
-
-                  await supabase.from('generated_files').insert(fileRecords);
-          }
+                // Files already persisted incrementally during streaming
 
           // Update generation version
           await supabase
@@ -273,3 +270,4 @@ function inferSectionType(filePath: string): string | null {
 
   return null;
 }
+
