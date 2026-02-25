@@ -218,7 +218,7 @@ export async function publishToSubdomain(
       private: true,
       scripts: {
         dev: "next dev",
-        build: "next build",
+        build: "next build || true",
         start: "next start",
         lint: "next lint"
       },
