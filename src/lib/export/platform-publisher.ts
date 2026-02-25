@@ -415,8 +415,3 @@ export async function addCustomDomain(
 
   return { verificationNeeded: false };
 }
-
-   
-Open chat
- 
-Dismiss
