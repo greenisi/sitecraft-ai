@@ -12,6 +12,70 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/**
+ * Check if a TSX/TS file appears to be truncated or incomplete.
+ */
+function isFileTruncated(content: string): boolean {
+  const trimmed = content.trimEnd();
+  if (!trimmed) return true;
+  const lastLine = trimmed.split('\n').pop()?.trim() || '';
+  const validEndings = ['}', ')', ';', '/>', 'export default'];
+  const looksComplete = validEndings.some(
+    (e) => lastLine.endsWith(e) || lastLine.startsWith(e)
+  );
+  if (!looksComplete) return true;
+  let braceCount = 0;
+  for (const ch of trimmed) {
+    if (ch === '{') braceCount++;
+    if (ch === '}') braceCount--;
+  }
+  if (braceCount > 2) return true;
+  return false;
+}
+
+/**
+ * Remove references to missing components from page files.
+ */
+function cleanPageFile(content: string, availableComponents: Set<string>): string {
+  let result = content;
+  const importRegex = /import\s+(\w+)\s+from\s+['"]@\/components\/(\w+)['"];?\s*\n?/g;
+  const missing: string[] = [];
+  let m;
+  while ((m = importRegex.exec(content)) !== null) {
+    if (!availableComponents.has(m[2])) missing.push(m[1]);
+  }
+  for (const name of missing) {
+    result = result.replace(new RegExp(`import\\s+${name}\\s+from\\s+['"][^'"]+['"];?\\s*\\n?`, 'g'), '');
+    result = result.replace(new RegExp(`\\s*<${name}\\s*/>`, 'g'), '');
+    result = result.replace(new RegExp(`\\s*<${name}[^>]*>`, 'g'), '');
+    result = result.replace(new RegExp(`\\s*</${name}>`, 'g'), '');
+  }
+  return result;
+}
+
+/**
+ * Generate a custom not-found page for graceful 404 handling.
+ */
+function generateNotFoundPage(): string {
+  return `export default function NotFound() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center px-6">
+        <h1 className="text-6xl font-bold text-gray-900 mb-4">404</h1>
+        <h2 className="text-2xl font-semibold text-gray-700 mb-2">Page Not Found</h2>
+        <p className="text-gray-500 mb-8 max-w-md mx-auto">
+          The page you are looking for does not exist or has been moved.
+        </p>
+        <a href="/" className="inline-flex items-center px-6 py-3 rounded-lg bg-gray-900 text-white font-medium hover:bg-gray-800 transition-colors">
+          Back to Home
+        </a>
+      </div>
+    </div>
+  );
+}
+`;
+}
+
 export interface PublishResult {
   url: string;
   domain: string;
@@ -77,22 +141,57 @@ export async function publishToSubdomain(
     project.design_system || defaultDesignSystem
   );
 
+    // 4a. Validate files: detect truncated components
+    const availableComponents = new Set<string>();
+    const truncatedFiles = new Set<string>();
+
     for (const file of files) {
+      if (file.file_path.startsWith('src/components/') && file.file_path.endsWith('.tsx')) {
+        const componentName = file.file_path.match(/\/([^/]+)\.tsx$/)?.[1];
+        if (componentName) {
+          if (isFileTruncated(file.content)) {
+            truncatedFiles.add(file.file_path);
+          } else {
+            availableComponents.add(componentName);
+          }
+        }
+      }
+    }
+
+    // 4b. Add files to tree, cleaning up references to missing components
+    for (const file of files) {
+      if (truncatedFiles.has(file.file_path)) continue;
+
       let fileContent = file.content;
-      // Force all page files to be dynamic (skip SSG) to prevent runtime errors
-      // Skip 'use client' files — force-dynamic before 'use client' breaks the build
-      if ((file.file_path.endsWith('page.tsx') || file.file_path.endsWith('page.ts')) && !fileContent.includes('force-dynamic')) {
-        if (fileContent.trimStart().startsWith("'use client'") || fileContent.trimStart().startsWith('"use client"')) {
-          // For client components, insert force-dynamic AFTER the 'use client' directive
-          fileContent = fileContent.replace(/(['"]use client['"];?\s*\n)/, "$1export const dynamic = 'force-dynamic';\n");
+
+      if (file.file_path.endsWith('page.tsx') || file.file_path.endsWith('layout.tsx')) {
+        fileContent = cleanPageFile(fileContent, availableComponents);
+      }
+
+      if (
+        (file.file_path.endsWith('page.tsx') || file.file_path.endsWith('page.ts')) &&
+        !fileContent.includes('force-dynamic')
+      ) {
+        if (
+          fileContent.trimStart().startsWith("'use client'") ||
+          fileContent.trimStart().startsWith('"use client"')
+        ) {
+          fileContent = fileContent.replace(
+            /(['"]use client['"];?\s*\n)/,
+            "$1export const dynamic = 'force-dynamic';\n"
+          );
         } else {
           fileContent = "export const dynamic = 'force-dynamic';\n" + fileContent;
         }
       }
+
       tree.addFile(file.file_path, fileContent, file.file_type);
     }
 
-  // Force-override next.config.js to skip TS/ESLint errors in AI-generated code
+    // 4c. Add not-found page for graceful 404 handling
+    tree.addFile('src/app/not-found.tsx', generateNotFoundPage(), 'page');
+
+    // Force-override next.config.js to skip TS/ESLint errors in AI-generated code
   const NC_CONTENT = [
     "/** @type {import('next').NextConfig} */",
     "const nextConfig = {",
@@ -119,7 +218,7 @@ export async function publishToSubdomain(
       private: true,
       scripts: {
         dev: "next dev",
-        build: "next build || true",
+        build: "next build",
         start: "next start",
         lint: "next lint"
       },
