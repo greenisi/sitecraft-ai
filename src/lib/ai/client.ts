@@ -57,7 +57,7 @@ export const GENERATION_MODEL = 'claude-sonnet-4-20250514';
 export const TOKEN_LIMITS = {
   designSystem: 4096,
   blueprint: 4096,
-  component: 32000,
+  component: 64000,
 } as const;
 
 // --------------------------------------------------------------------------
