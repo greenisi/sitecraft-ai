@@ -9,9 +9,9 @@ import { createClient } from '@/lib/supabase/server';
  * (common on mobile browsers / flaky networks).
  *
  * Returns:
- *  - project status (draft | generating | generated | error)
- *  - latest generation version status
- *  - whether files were generated
+ * - project status (draft | generating | generated | error)
+ * - latest generation version status
+ * - whether files were generated
  */
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -67,6 +67,43 @@ export async function GET(request: NextRequest) {
       .select('id', { count: 'exact', head: true })
       .eq('version_id', latestVersion.id);
     fileCount = count ?? 0;
+  }
+
+  // ── Auto-recovery for stuck generations ─────────────────────────────
+  // If a version has been "generating" for more than 6 minutes (past
+  // the 5-min Vercel timeout) and has files, auto-complete it.
+  if (latestVersion && latestVersion.status === 'generating' && fileCount > 0) {
+    const createdAt = new Date(latestVersion.created_at).getTime();
+    const now = Date.now();
+    const sixMinutes = 6 * 60 * 1000;
+
+    if (now - createdAt > sixMinutes) {
+      // Auto-recover: mark version as complete
+      await supabase
+        .from('generation_versions')
+        .update({
+          status: 'complete',
+          generation_time_ms: now - createdAt,
+          completed_at: new Date().toISOString(),
+        })
+        .eq('id', latestVersion.id);
+
+      // Update project status
+      await supabase
+        .from('projects')
+        .update({
+          status: 'generated',
+          last_generated_at: new Date().toISOString(),
+        })
+        .eq('id', projectId);
+
+      // Update local references for the response
+      latestVersion.status = 'complete';
+      latestVersion.completed_at = new Date().toISOString();
+      latestVersion.generation_time_ms = now - createdAt;
+      project.status = 'generated';
+      project.last_generated_at = new Date().toISOString();
+    }
   }
 
   return NextResponse.json({
