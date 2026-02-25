@@ -191,6 +191,21 @@ export async function publishToSubdomain(
     // 4c. Add not-found page for graceful 404 handling
     tree.addFile('src/app/not-found.tsx', generateNotFoundPage(), 'page');
 
+  // Force-inject overflow prevention CSS for mobile devices
+  const OVERFLOW_FIX_CSS = [
+    '',
+    '/* Mobile overflow prevention — injected by publisher */',
+    'html, body { overflow-x: hidden !important; max-width: 100vw !important; }',
+    'section { overflow-x: hidden; max-width: 100vw; }',
+    'img, video, iframe { max-width: 100%; height: auto; }',
+  ].join('\n');
+  const globalsFile = files.find((f: any) => f.file_path.endsWith('globals.css'));
+  if (globalsFile) {
+    if (!globalsFile.content.includes('overflow-x: hidden')) {
+      globalsFile.content += OVERFLOW_FIX_CSS;
+    }
+  }
+
     // Force-override next.config.js to skip TS/ESLint errors in AI-generated code
   const NC_CONTENT = [
     "/** @type {import('next').NextConfig} */",
@@ -400,3 +415,8 @@ export async function addCustomDomain(
 
   return { verificationNeeded: false };
 }
+
+   
+Open chat
+ 
+Dismiss
