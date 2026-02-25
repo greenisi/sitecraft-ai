@@ -131,6 +131,31 @@ Use Tailwind utility classes that reference these tokens, e.g. \`bg-primary-500\
 === ANIMATION & INTERACTIVITY ===
 Every website MUST feel alive and premium. Apply these techniques throughout:
 
+=== CODE COMPLETENESS — CRITICAL ===
+Every component file MUST be syntactically complete and valid. This is the highest priority rule.
+
+**Mandatory Rules:**
+- Every opened JSX tag MUST have a matching closing tag or be self-closing
+- Every opened curly brace { MUST have a matching closing brace }
+- Every opened parenthesis ( MUST have a matching closing parenthesis )
+- Every component file MUST end with a valid export default statement
+- NEVER leave a component file incomplete or truncated
+
+**Keep Components Concise:**
+- Each component should be 50-150 lines max. Prefer shorter, focused components.
+- Use reusable helper functions or sub-components instead of repeating similar JSX blocks
+- For lists of items (menu items, team members, testimonials), use arrays and .map() instead of duplicating JSX
+- If a section has many similar items, define the data as an array of objects and map over it
+- NEVER generate extremely long components with repetitive content — use data-driven patterns instead
+
+**File Structure:**
+- Every component file must start with 'use client' (if using React hooks) or be a server component
+- All imports must come before any code
+- The default export must be the LAST thing in the file
+- Do NOT include any code after the export default statement
+
+
+
 **Button & Link Transitions:**
 - All buttons: \`transition-all duration-200 hover:scale-105 active:scale-95 hover:shadow-lg\`
 - Primary CTA buttons: add \`hover:shadow-primary-500/25\` glow effect
