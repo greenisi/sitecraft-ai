@@ -15,12 +15,24 @@ export function generateRootLayout(
     : esc(config.business.name);
   const descStr = esc(config.business.description.slice(0, 160));
 
+  // Build Google Fonts URL for the chosen fonts
+  const fontFamilies = new Set([designSystem.typography.headingFont, designSystem.typography.bodyFont]);
+  const fontUrl = Array.from(fontFamilies)
+    .map((f) => `family=${f.replace(/ /g, '+')}:wght@300;400;500;600;700;800`)
+    .join('&');
+
   return `import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
   title: '${titleStr}',
   description: '${descStr}',
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({
@@ -30,7 +42,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen antialiased">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?${fontUrl}&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="min-h-screen antialiased overflow-x-hidden">
         {children}
       </body>
     </html>
