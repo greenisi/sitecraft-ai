@@ -286,16 +286,13 @@ export async function publishToSubdomain(
   if (navbarFile) {
     // Replace bg-transparent with a solid dark background
     navbarFile.content = navbarFile.content.replace(/bg-transparent/g, 'bg-black/70 backdrop-blur-md');
-    // Remove scroll-based background toggling - force consistent bg
-    // Pattern: ${isScrolled ? 'bg-xxx' : 'bg-xxx'} or ${scrolled ? 'bg-xxx ...' : 'bg-xxx ...'}
-    navbarFile.content = navbarFile.content.replace(/\$\{[\w]+\s*\?\s*['"]([^'"]*bg-[^'"]*)['""]\s*:\s*['"]([^'"]*bg-[^'"]*)['""]\}/g, 'bg-black/70 backdrop-blur-md');
-    // Also handle: isScrolled ? 'bg-white shadow-lg' : 'bg-transparent' (with template literal)
-    navbarFile.content = navbarFile.content.replace(/\$\{[\w]+\s*\?\s*['"]([^'"]*)['""]\s*:\s*['"]([^'"]*)['""]\}/g, (match, trueVal, falseVal) => {
-      if (trueVal.includes('bg-') || falseVal.includes('bg-')) {
-        return 'bg-black/70 backdrop-blur-md';
-      }
-      return match; // Keep non-bg ternaries
-    });
+    // Remove scroll-based background toggling - force consistent navbar bg
+    // Replace ternary bg class patterns like: ${isScrolled ? 'bg-white' : 'bg-transparent'}
+    const bgTernaryRegex = /\$\{\w+\s*\?\s*'[^']*bg-[^']*'\s*:\s*'[^']*'\}/g;
+    navbarFile.content = navbarFile.content.replace(bgTernaryRegex, 'bg-black/70 backdrop-blur-md');
+    // Also handle double-quoted version
+    const bgTernaryRegex2 = /\$\{\w+\s*\?\s*"[^"]*bg-[^"]*"\s*:\s*"[^"]*"\}/g;
+    navbarFile.content = navbarFile.content.replace(bgTernaryRegex2, 'bg-black/70 backdrop-blur-md');
     // Also ensure any conditional transparent states are replaced
     navbarFile.content = navbarFile.content.replace(/backgroundColor:\s*['"]transparent['"]/g, "backgroundColor: 'rgba(0,0,0,0.7)'");
     navbarFile.content = navbarFile.content.replace(/background:\s*['"]transparent['"]/g, "background: 'rgba(0,0,0,0.7)'");
