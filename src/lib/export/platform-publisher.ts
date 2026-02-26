@@ -307,8 +307,8 @@ export async function publishToSubdomain(
     if (navbarFile.content.includes('bg-transparent')) {
       // Try to find the most common bg color used in the Navbar
       const bgMatch = navbarFile.content.match(/bg-(primary|purple|blue|green|red|amber|orange|indigo|violet|emerald|teal|cyan|pink|rose|fuchsia|sky|lime|yellow|slate|zinc|stone|neutral)-\d+/);
-      const fallbackBg = bgMatch ? bgMatch[0] + '/95 backdrop-blur-sm' : 'primary-900/95 backdrop-blur-sm';
-      navbarFile.content = navbarFile.content.replace(/bg-transparent/g, 'bg-' + fallbackBg);
+      const fallbackBg = bgMatch ? bgMatch[0] + '/95 backdrop-blur-sm' : 'bg-primary-900/95 backdrop-blur-sm';
+      navbarFile.content = navbarFile.content.replace(/bg-transparent/g, fallbackBg);
     }
     
     // Replace inline transparent styles
