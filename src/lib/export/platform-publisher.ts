@@ -355,16 +355,16 @@ export async function publishToSubdomain(
       'export default function ClientLayout({ children }: { children: React.ReactNode }) {',
       '  return (',
       '    <>',
-      hasNavbar ? '      <div className="sc-nav-container">' : '',
+      hasNavbar ? '      <div style={{ position: "fixed", top: 0, left: 0, right: 0, width: "100%", zIndex: 9999 }}>' : '',
       navJsx,
       hasNavbar ? '      </div>' : '',
-      '      <main className="flex-1 sc-main-content">{children}</main>',
+      '      <main style={{ flex: 1, paddingTop: "' + (hasNavbar ? '64px' : '0') + '" }}>{children}</main>',
       footerJsx,
       '    </>',
       '  );',
       '}',
       '',
-    ].filter(Boolean).join('\n');
+    ]].filter(Boolean).join('\n');
     tree.addFile('src/components/ClientLayout.tsx', clientLayout, 'component');
 
     // Patch the root layout to wrap children with ClientLayout
