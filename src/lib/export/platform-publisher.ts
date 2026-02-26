@@ -29,7 +29,18 @@ function isFileTruncated(content: string): boolean {
     if (ch === '{') braceCount++;
     if (ch === '}') braceCount--;
   }
-  if (braceCount > 2) return true;
+  if (braceCount > 0) return true;
+
+  // Check paren balance
+  let parenCount = 0;
+  for (const ch of trimmed) {
+    if (ch === '(') parenCount++;
+    if (ch === ')') parenCount--;
+  }
+  if (parenCount > 0) return true;
+
+  // Must have an export (default or named)
+  if (!trimmed.includes('export ')) return true;
   return false;
 }
 
