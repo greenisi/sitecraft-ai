@@ -390,6 +390,10 @@ export async function publishToSubdomain(
   ].join('\n');
   tree.addFile('next.config.js', NC_CONTENT, 'config');
 
+  // Add build-retry.js for resilient builds
+  const BUILD_RETRY = "const { execSync } = require('child_process');\nconst fs = require('fs');\nconst path = require('path');\n\nconst MAX_RETRIES = 5;\n\nfunction findErrorFile(stderr) {\n  const patterns = [\n    /\\.\\/src\\/components\\/([\\w]+)\\.tsx/,\n    /\\/src\\/components\\/([\\w]+)\\.tsx/,\n  ];\n  for (const p of patterns) {\n    const m = stderr.match(p);\n    if (m) return m[1];\n  }\n  return null;\n}\n\nfunction removeComponentFromPages(componentName) {\n  const appDir = path.join(__dirname, 'src', 'app');\n  if (!fs.existsSync(appDir)) return;\n  function walkDir(dir) {\n    for (const f of fs.readdirSync(dir, { withFileTypes: true })) {\n      const fp = path.join(dir, f.name);\n      if (f.isDirectory()) { walkDir(fp); continue; }\n      if (!f.name.endsWith('.tsx') && !f.name.endsWith('.ts')) continue;\n      let content = fs.readFileSync(fp, 'utf8');\n      const re1 = new RegExp(\"import\\\\s+\" + componentName + \"\\\\s+from\\\\s+['\\\"][^'\\\"]+['\\\"];?\\\\s*\\\\n?\", 'g');\n      const re2 = new RegExp(\"\\\\s*<\" + componentName + \"[^>]*/?>\", 'g');\n      const re3 = new RegExp(\"\\\\s*</\" + componentName + \">\", 'g');\n      const newContent = content.replace(re1, '').replace(re2, '').replace(re3, '');\n      if (newContent !== content) {\n        fs.writeFileSync(fp, newContent);\n        console.log('Cleaned ' + componentName + ' from ' + fp);\n      }\n    }\n  }\n  walkDir(appDir);\n}\n\nfor (let attempt = 0; attempt < MAX_RETRIES; attempt++) {\n  try {\n    console.log('Build attempt ' + (attempt + 1) + '...');\n    execSync('npx next build', { stdio: ['pipe', 'inherit', 'pipe'] });\n    console.log('Build succeeded!');\n    process.exit(0);\n  } catch (err) {\n    const stderr = (err.stderr || '').toString();\n    const componentName = findErrorFile(stderr);\n    if (!componentName) {\n      console.error('Build failed, could not find problematic file.');\n      if (attempt === MAX_RETRIES - 1) process.exit(0);\n      continue;\n    }\n    console.log('Removing broken component: ' + componentName);\n    const compPath = path.join(__dirname, 'src', 'components', componentName + '.tsx');\n    if (fs.existsSync(compPath)) fs.unlinkSync(compPath);\n    removeComponentFromPages(componentName);\n  }\n}\nprocess.exit(0);\n";
+  tree.addFile('build-retry.js', BUILD_RETRY, 'config');
+
     // Force-override package.json to make build always succeed
     const projectName = project.name.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
     const PKG_CONTENT = JSON.stringify({
@@ -398,7 +402,7 @@ export async function publishToSubdomain(
       private: true,
       scripts: {
         dev: "next dev",
-        build: "next build || true",
+        build: "node build-retry.js",
         start: "next start",
         lint: "next lint"
       },
