@@ -364,7 +364,7 @@ export async function publishToSubdomain(
       '  );',
       '}',
       '',
-    ]].filter(Boolean).join('\n');
+    ].filter(Boolean).join('\n');
     tree.addFile('src/components/ClientLayout.tsx', clientLayout, 'component');
 
     // Patch the root layout to wrap children with ClientLayout
