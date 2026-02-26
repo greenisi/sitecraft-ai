@@ -281,21 +281,38 @@ export async function publishToSubdomain(
   }
 
   
-  // 4a-iii. Fix transparent navbar backgrounds — ensure navbar always has visible bg
+  // 4a-iii. Fix transparent navbar backgrounds — use the site's own scrolled-state color
   const navbarFile = files.find((f: any) => f.file_path === 'src/components/Navbar.tsx');
   if (navbarFile) {
-    // Replace bg-transparent with a solid dark background
-    navbarFile.content = navbarFile.content.replace(/bg-transparent/g, 'bg-black/70 backdrop-blur-md');
-    // Remove scroll-based background toggling - force consistent navbar bg
-    // Replace ternary bg class patterns like: ${isScrolled ? 'bg-white' : 'bg-transparent'}
-    const bgTernaryRegex = /\$\{\w+\s*\?\s*'[^']*bg-[^']*'\s*:\s*'[^']*'\}/g;
-    navbarFile.content = navbarFile.content.replace(bgTernaryRegex, 'bg-black/70 backdrop-blur-md');
-    // Also handle double-quoted version
-    const bgTernaryRegex2 = /\$\{\w+\s*\?\s*"[^"]*bg-[^"]*"\s*:\s*"[^"]*"\}/g;
-    navbarFile.content = navbarFile.content.replace(bgTernaryRegex2, 'bg-black/70 backdrop-blur-md');
-    // Also ensure any conditional transparent states are replaced
-    navbarFile.content = navbarFile.content.replace(/backgroundColor:\s*['"]transparent['"]/g, "backgroundColor: 'rgba(0,0,0,0.7)'");
-    navbarFile.content = navbarFile.content.replace(/background:\s*['"]transparent['"]/g, "background: 'rgba(0,0,0,0.7)'");
+    // Strategy: Find the ternary that toggles bg on scroll, extract the "scrolled" color
+    // Pattern: ${isScrolled ? 'bg-purple-900/95 shadow-lg' : 'bg-transparent'}
+    // We want to use the scrolled color permanently
+    const ternaryMatch = navbarFile.content.match(/\$\{\w+\s*\?\s*'([^']*bg-[^']*)'\s*:\s*'[^']*bg-transparent[^']*'/);
+    const ternaryMatch2 = navbarFile.content.match(/\$\{\w+\s*\?\s*"([^"]*bg-[^"]*)"\s*:\s*"[^"]*bg-transparent[^"]*"/);
+    // Also check reversed: transparent first, colored second
+    const ternaryMatch3 = navbarFile.content.match(/\$\{\w+\s*\?\s*'[^']*bg-transparent[^']*'\s*:\s*'([^']*bg-[^']*)'/);
+    const ternaryMatch4 = navbarFile.content.match(/\$\{\w+\s*\?\s*"[^"]*bg-transparent[^"]*"\s*:\s*"([^"]*bg-[^"]*)"/);
+    
+    const scrolledColor = (ternaryMatch && ternaryMatch[1]) || (ternaryMatch2 && ternaryMatch2[1]) || (ternaryMatch3 && ternaryMatch3[1]) || (ternaryMatch4 && ternaryMatch4[1]) || null;
+    
+    if (scrolledColor) {
+      // Use the scrolled-state bg permanently by replacing the ternary
+      const bgTernaryRegex = /\$\{\w+\s*\?\s*'[^']*bg-[^']*'\s*:\s*'[^']*'\}/g;
+      navbarFile.content = navbarFile.content.replace(bgTernaryRegex, scrolledColor);
+      const bgTernaryRegex2 = /\$\{\w+\s*\?\s*"[^"]*bg-[^"]*"\s*:\s*"[^"]*"\}/g;
+      navbarFile.content = navbarFile.content.replace(bgTernaryRegex2, scrolledColor);
+    }
+    
+    // If there are still any standalone bg-transparent references, replace with a safe default
+    if (navbarFile.content.includes('bg-transparent')) {
+      // Try to find the most common bg color used in the Navbar
+      const bgMatch = navbarFile.content.match(/bg-(primary|purple|blue|green|red|amber|orange|indigo|violet|emerald|teal|cyan|pink|rose|fuchsia|sky|lime|yellow|slate|zinc|stone|neutral)-\d+/);
+      const fallbackBg = bgMatch ? bgMatch[0] + '/95 backdrop-blur-sm' : 'primary-900/95 backdrop-blur-sm';
+      navbarFile.content = navbarFile.content.replace(/bg-transparent/g, 'bg-' + fallbackBg);
+    }
+    
+    // Replace inline transparent styles
+    navbarFile.content = navbarFile.content.replace(/backgroundColor:\s*['"]transparent['"]|background:\s*['"]transparent['"]/g, '');
   }
 
   // 4b. Add files to tree, cleaning up references to missing components
