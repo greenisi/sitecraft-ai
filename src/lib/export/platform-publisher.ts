@@ -76,6 +76,96 @@ function generateNotFoundPage(): string {
 `;
 }
 
+/**
+ * Generate a fallback Navbar component when the AI-generated one is truncated or missing.
+ */
+function generateFallbackNavbar(config: any): string {
+  const name = config?.businessName || config?.name || 'My Website';
+  const pages = config?.pages || ['Home', 'About', 'Services', 'Contact'];
+  const navLinks = pages.map((p: string) => {
+    const href = p.toLowerCase() === 'home' ? '/' : '/' + p.toLowerCase().replace(/\s+/g, '-');
+    return `          <a href="${href}" className="text-gray-300 hover:text-white transition-colors">${p}</a>`;
+  }).join('\n');
+
+  return `'use client';
+import { useState } from 'react';
+
+export default function Navbar() {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <nav className="fixed top-0 w-full z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          <a href="/" className="text-xl font-bold text-white">${name}</a>
+          <div className="hidden md:flex items-center space-x-8">
+${navLinks}
+          </div>
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="md:hidden text-gray-300 hover:text-white"
+            aria-label="Toggle menu"
+          >
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              {isOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
+        </div>
+      </div>
+      {isOpen && (
+        <div className="md:hidden bg-gray-900 border-t border-gray-800 px-4 py-4 space-y-3">
+${navLinks.replace(/hidden md:flex/g, 'flex flex-col')}
+        </div>
+      )}
+    </nav>
+  );
+}
+`;
+}
+
+/**
+ * Generate a fallback Footer component when the AI-generated one is truncated or missing.
+ */
+function generateFallbackFooter(config: any): string {
+  const name = config?.businessName || config?.name || 'My Website';
+  const year = new Date().getFullYear();
+  const pages = config?.pages || ['Home', 'About', 'Services', 'Contact'];
+  const footerLinks = pages.map((p: string) => {
+    const href = p.toLowerCase() === 'home' ? '/' : '/' + p.toLowerCase().replace(/\s+/g, '-');
+    return `            <a href="${href}" className="text-gray-400 hover:text-white transition-colors">${p}</a>`;
+  }).join('\n');
+
+  return `export default function Footer() {
+  return (
+    <footer className="bg-gray-900 text-gray-300 pt-12 pb-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 pb-8 border-b border-gray-800">
+          <div>
+            <h3 className="text-xl font-bold text-white mb-2">${name}</h3>
+          </div>
+          <div className="flex flex-wrap gap-6">
+${footerLinks}
+          </div>
+        </div>
+        <div className="mt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
+          <p>&copy; ${year} ${name}. All rights reserved.</p>
+          <div className="flex gap-6">
+            <a href="#" className="hover:text-gray-300 transition-colors">Privacy Policy</a>
+            <a href="#" className="hover:text-gray-300 transition-colors">Terms of Service</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+`;
+}
+
+
+
 export interface PublishResult {
   url: string;
   domain: string;
@@ -149,7 +239,8 @@ export async function publishToSubdomain(
       if (file.file_path.startsWith('src/components/') && file.file_path.endsWith('.tsx')) {
         const componentName = file.file_path.match(/\/([^/]+)\.tsx$/)?.[1];
         if (componentName) {
-          if (isFileTruncated(file.content)) {
+          const isCritical = componentName === 'Navbar' || componentName === 'Footer';
+          if (isFileTruncated(file.content) && !isCritical) {
             truncatedFiles.add(file.file_path);
           } else {
             availableComponents.add(componentName);
@@ -158,7 +249,27 @@ export async function publishToSubdomain(
       }
     }
 
-    // 4b. Add files to tree, cleaning up references to missing components
+    
+  // 4a-ii. Ensure critical components (Navbar & Footer) always exist
+  const criticalComponents = ['Navbar', 'Footer'];
+  for (const comp of criticalComponents) {
+    const filePath = `src/components/${comp}.tsx`;
+    const existingFile = files.find((f: any) => f.file_path === filePath);
+    if (!existingFile || isFileTruncated(existingFile.content)) {
+      // Generate fallback component
+      const fallbackContent = comp === 'Navbar'
+        ? generateFallbackNavbar(project.generation_config)
+        : generateFallbackFooter(project.generation_config);
+      if (existingFile) {
+        existingFile.content = fallbackContent; // Replace truncated content
+      } else {
+        files.push({ file_path: filePath, content: fallbackContent, file_type: 'component' });
+      }
+      availableComponents.add(comp);
+    }
+  }
+
+  // 4b. Add files to tree, cleaning up references to missing components
     for (const file of files) {
       if (truncatedFiles.has(file.file_path)) continue;
 
