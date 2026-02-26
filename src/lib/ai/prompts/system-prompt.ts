@@ -128,6 +128,16 @@ Use Tailwind utility classes that reference these tokens, e.g. \`bg-primary-500\
 - NEVER: \`w-[800px]\` or any fixed width > 100% without responsive fallback
 - NEVER: \`px-0\` on sections — always have at least px-4 for mobile padding
 - NEVER: absolute elements at \`-right-40\` or \`-left-40\` without parent \`overflow-hidden\`
+
+=== NAVBAR COMPONENT — CRITICAL ===
+The Navbar component MUST follow these rules:
+- Use a SOLID background color that matches the site theme — NEVER use bg-transparent
+- The nav MUST have: fixed top-0 w-full z-50
+- Use a single consistent bg color like bg-gray-900/95 or bg-primary-900/95 with backdrop-blur-sm
+- NEVER use scroll-based ternary toggling for background color (no isScrolled patterns for bg)
+- The navbar background MUST always be visible so users can see navigation at all times
+- Include a mobile hamburger menu with the hidden md:block responsive pattern
+- The main content already has pt-16 padding for the fixed navbar height
 === ANIMATION & INTERACTIVITY ===
 Every website MUST feel alive and premium. Apply these techniques throughout:
 
