@@ -327,9 +327,15 @@ export async function publishToSubdomain(
   ].join('\n');
   const globalsFile = files.find((f: any) => f.file_path.endsWith('globals.css'));
   if (globalsFile) {
-    if (!globalsFile.content.includes('overflow-x: hidden')) {
-      globalsFile.content += OVERFLOW_FIX_CSS;
-    }
+    {
+        // Always strip old publisher CSS and re-inject with latest rules
+        const pubMarker = '/* Mobile overflow prevention';
+        const mIdx = globalsFile.content.indexOf(pubMarker);
+        if (mIdx >= 0) {
+          globalsFile.content = globalsFile.content.substring(0, mIdx).trimEnd();
+        }
+        globalsFile.content += OVERFLOW_FIX_CSS;
+      }
   }
 
     
