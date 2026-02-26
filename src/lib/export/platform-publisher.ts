@@ -366,7 +366,7 @@ export async function publishToSubdomain(
       '  return (',
       '    <>',
       navJsx,
-      '      <main style={{ flex: 1, paddingTop: "' + (hasNavbar ? '64px' : '0') + '" }}>{children}</main>',
+      '      <main style={{ flex: 1 }}>{children}</main>',
       footerJsx,
       '    </>',
       '  );',
