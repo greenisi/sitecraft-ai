@@ -320,6 +320,10 @@ export async function publishToSubdomain(
     'html, body { overflow-x: hidden !important; max-width: 100vw !important; }',
     'section { overflow-x: hidden; max-width: 100vw; }',
     'img, video, iframe { max-width: 100%; height: auto; }',
+    '',
+    '/* Sticky navbar enforcement — injected by publisher */',
+    '.sc-nav-container { position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 9999 !important; }',
+    '.sc-main-content { padding-top: 64px !important; }',
   ].join('\n');
   const globalsFile = files.find((f: any) => f.file_path.endsWith('globals.css'));
   if (globalsFile) {
@@ -345,8 +349,10 @@ export async function publishToSubdomain(
       'export default function ClientLayout({ children }: { children: React.ReactNode }) {',
       '  return (',
       '    <>',
+      hasNavbar ? '      <div className="sc-nav-container">' : '',
       navJsx,
-      '      <main className="flex-1 ' + (hasNavbar ? 'pt-16' : '') + '">{children}</main>',
+      hasNavbar ? '      </div>' : '',
+      '      <main className="flex-1 sc-main-content">{children}</main>',
       footerJsx,
       '    </>',
       '  );',
