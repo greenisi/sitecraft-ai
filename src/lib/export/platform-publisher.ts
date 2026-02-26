@@ -281,41 +281,86 @@ export async function publishToSubdomain(
   }
 
   
-  // 4a-iii. Fix transparent navbar backgrounds — use the site's own scrolled-state color
-  const navbarFile = files.find((f: any) => f.file_path === 'src/components/Navbar.tsx');
-  if (navbarFile) {
-    // Strategy: Find the ternary that toggles bg on scroll, extract the "scrolled" color
-    // Pattern: ${isScrolled ? 'bg-purple-900/95 shadow-lg' : 'bg-transparent'}
-    // We want to use the scrolled color permanently
-    const ternaryMatch = navbarFile.content.match(/\$\{\w+\s*\?\s*'([^']*bg-[^']*)'\s*:\s*'[^']*bg-transparent[^']*'/);
-    const ternaryMatch2 = navbarFile.content.match(/\$\{\w+\s*\?\s*"([^"]*bg-[^"]*)"\s*:\s*"[^"]*bg-transparent[^"]*"/);
-    // Also check reversed: transparent first, colored second
-    const ternaryMatch3 = navbarFile.content.match(/\$\{\w+\s*\?\s*'[^']*bg-transparent[^']*'\s*:\s*'([^']*bg-[^']*)'/);
-    const ternaryMatch4 = navbarFile.content.match(/\$\{\w+\s*\?\s*"[^"]*bg-transparent[^"]*"\s*:\s*"([^"]*bg-[^"]*)"/);
-    
-    const scrolledColor = (ternaryMatch && ternaryMatch[1]) || (ternaryMatch2 && ternaryMatch2[1]) || (ternaryMatch3 && ternaryMatch3[1]) || (ternaryMatch4 && ternaryMatch4[1]) || null;
-    
-    if (scrolledColor) {
-      // Use the scrolled-state bg permanently by replacing the ternary
-      const bgTernaryRegex = /\$\{\w+\s*\?\s*'[^']*bg-[^']*'\s*:\s*'[^']*'\}/g;
-      navbarFile.content = navbarFile.content.replace(bgTernaryRegex, scrolledColor);
-      const bgTernaryRegex2 = /\$\{\w+\s*\?\s*"[^"]*bg-[^"]*"\s*:\s*"[^"]*"\}/g;
-      navbarFile.content = navbarFile.content.replace(bgTernaryRegex2, scrolledColor);
-    }
-    
-    // If there are still any standalone bg-transparent references, replace with a safe default
-    if (navbarFile.content.includes('bg-transparent')) {
-      // Try to find the most common bg color used in the Navbar
-      const bgMatch = navbarFile.content.match(/bg-(primary|purple|blue|green|red|amber|orange|indigo|violet|emerald|teal|cyan|pink|rose|fuchsia|sky|lime|yellow|slate|zinc|stone|neutral)-\d+/);
-      const fallbackBg = bgMatch ? bgMatch[0] + '/95 backdrop-blur-sm' : 'bg-primary-900/95 backdrop-blur-sm';
-      navbarFile.content = navbarFile.content.replace(/bg-transparent/g, fallbackBg);
-    }
-    
-    // Replace inline transparent styles
-    navbarFile.content = navbarFile.content.replace(/backgroundColor:\s*['"]transparent['"]|background:\s*['"]transparent['"]/g, '');
-  }
+  // 4a-iii. Fix navbar: use inline styles for reliable theme-colored sticky header
+    const navbarFile = files.find((f: any) => f.file_path === 'src/components/Navbar.tsx');
+    if (navbarFile) {
+      try {
+        // Tailwind color map for converting classes to real CSS colors
+        const twColors: Record<string, string> = {
+          'slate-900': '15,23,42', 'slate-800': '30,41,59', 'gray-900': '17,24,39', 'gray-800': '31,41,55',
+          'zinc-900': '24,24,27', 'zinc-800': '39,39,42', 'neutral-900': '23,23,23', 'neutral-800': '38,38,38',
+          'stone-900': '28,25,23', 'stone-800': '41,37,36', 'red-900': '127,29,29', 'red-800': '153,27,27',
+          'orange-900': '124,45,18', 'orange-800': '154,52,18', 'amber-900': '120,53,15', 'amber-800': '146,64,14',
+          'amber-500': '245,158,11', 'amber-600': '217,119,6', 'amber-700': '180,83,9',
+          'yellow-900': '113,63,18', 'yellow-800': '133,77,14',
+          'green-900': '20,83,45', 'green-800': '22,101,52', 'green-700': '21,128,61',
+          'emerald-900': '6,78,59', 'emerald-800': '6,95,70', 'emerald-700': '4,120,87',
+          'teal-900': '19,78,74', 'teal-800': '17,94,89',
+          'cyan-900': '22,78,99', 'cyan-800': '21,94,117',
+          'sky-900': '12,74,110', 'sky-800': '7,89,133',
+          'blue-900': '30,58,138', 'blue-800': '30,64,175',
+          'indigo-900': '49,46,129', 'indigo-800': '55,48,163',
+          'violet-900': '76,29,149', 'violet-800': '91,33,182',
+          'purple-900': '88,28,135', 'purple-800': '107,33,168', 'purple-700': '126,34,206',
+          'fuchsia-900': '112,26,117', 'fuchsia-800': '134,25,143',
+          'pink-900': '131,24,67', 'pink-800': '157,23,77',
+          'rose-900': '136,19,55', 'rose-800': '159,18,57',
+        };
 
-  // 4b. Add files to tree, cleaning up references to missing components
+        // Step 1: Find the scrolled-state color from ternary patterns
+        let themeColorClass = '';
+        const ternaryPatterns = [
+          /\$\{\w+\s*\?\s*['"]([^'"]*bg-[\w-]+[^'"]*)['"]\s*:\s*['"][^'"]*bg-transparent[^'"]*['"]/,
+          /\$\{\w+\s*\?\s*['"][^'"]*bg-transparent[^'"]*['"]\s*:\s*['"]([^'"]*bg-[\w-]+[^'"]*)['"]/,
+        ];
+        for (const pat of ternaryPatterns) {
+          const m = navbarFile.content.match(pat);
+          if (m && m[1]) {
+            const colorMatch = m[1].match(/bg-((?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d+)/);
+            if (colorMatch) { themeColorClass = colorMatch[1]; break; }
+          }
+        }
+
+        // Step 2: If no ternary found, scan for the most prominent bg color in the file
+        if (!themeColorClass) {
+          const allBgColors = navbarFile.content.match(/bg-((?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d+)/g) || [];
+          const colorCounts: Record<string, number> = {};
+          for (const c of allBgColors) {
+            const name = c.replace('bg-', '');
+            if (name !== 'transparent') { colorCounts[name] = (colorCounts[name] || 0) + 1; }
+          }
+          const sorted = Object.entries(colorCounts).sort((a, b) => b[1] - a[1]);
+          if (sorted.length > 0) themeColorClass = sorted[0][0];
+        }
+
+        // Step 3: Convert to RGB or use a dark fallback
+        const rgb = twColors[themeColorClass] || twColors['gray-900'] || '17,24,39';
+
+        // Step 4: Remove scroll-based bg ternaries (both single and double quote)
+        navbarFile.content = navbarFile.content.replace(/\$\{\w+\s*\?\s*['"][^'"]*bg-[^'"]*['"]\s*:\s*['"][^'"]*['"]\}/g, '');
+        navbarFile.content = navbarFile.content.replace(/\$\{\w+\s*\?\s*"[^"]*bg-[^"]*"\s*:\s*"[^"]*"\}/g, '');
+
+        // Step 5: Strip all bg-transparent and any bg-XYZ/opacity classes from the nav className
+        navbarFile.content = navbarFile.content.replace(/bg-transparent/g, '');
+        navbarFile.content = navbarFile.content.replace(/bg-[\w-]+\/\d+/g, '');
+        navbarFile.content = navbarFile.content.replace(/bg-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d+/g, '');
+
+        // Step 6: Inject inline style on the <nav element for guaranteed background color
+        const navStyleStr = `style={{ backgroundColor: 'rgba(${rgb}, 0.95)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}`;
+        // Add style to the <nav element (handles <nav className=... pattern)
+        if (!navbarFile.content.includes('backgroundColor')) {
+          navbarFile.content = navbarFile.content.replace(
+            /<nav\s+className=/,
+            `<nav ${navStyleStr} className=`
+          );
+        }
+      } catch (navFixError) {
+        // Silently continue — don't break publishing if navbar fix fails
+        console.error('Navbar color fix error:', navFixError);
+      }
+    }
+
+    // 4b. Add files to tree, cleaning up references to missing components
     for (const file of files) {
       if (truncatedFiles.has(file.file_path)) continue;
 
