@@ -280,6 +280,17 @@ export async function publishToSubdomain(
     }
   }
 
+  
+  // 4a-iii. Fix transparent navbar backgrounds — ensure navbar always has visible bg
+  const navbarFile = files.find((f: any) => f.file_path === 'src/components/Navbar.tsx');
+  if (navbarFile) {
+    // Replace bg-transparent with a solid dark background
+    navbarFile.content = navbarFile.content.replace(/bg-transparent/g, 'bg-gray-900/95 backdrop-blur-sm');
+    // Also ensure any conditional transparent states are replaced
+    navbarFile.content = navbarFile.content.replace(/backgroundColor:\s*['"]transparent['"]/g, "backgroundColor: 'rgba(17,24,39,0.95)'");
+    navbarFile.content = navbarFile.content.replace(/background:\s*['"]transparent['"]/g, "background: 'rgba(17,24,39,0.95)'");
+  }
+
   // 4b. Add files to tree, cleaning up references to missing components
     for (const file of files) {
       if (truncatedFiles.has(file.file_path)) continue;
@@ -322,8 +333,7 @@ export async function publishToSubdomain(
     'img, video, iframe { max-width: 100%; height: auto; }',
     '',
     '/* Sticky navbar enforcement — injected by publisher */',
-    '.sc-nav-container { position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 9999 !important; }',
-    '.sc-main-content { padding-top: 64px !important; }',
+    'nav { position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 9999 !important; background-color: rgba(17,24,39,0.95) !important; backdrop-filter: blur(12px) !important; -webkit-backdrop-filter: blur(12px) !important; }',
   ].join('\n');
   const globalsFile = files.find((f: any) => f.file_path.endsWith('globals.css'));
   if (globalsFile) {
