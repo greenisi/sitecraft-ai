@@ -206,7 +206,50 @@ export async function publishToSubdomain(
     }
   }
 
-    // Force-override next.config.js to skip TS/ESLint errors in AI-generated code
+    
+  // Force-inject Navbar & Footer into root layout if components exist
+  const hasNavbar = availableComponents.has('Navbar');
+  const hasFooter = availableComponents.has('Footer');
+  if (hasNavbar || hasFooter) {
+    const navImport = hasNavbar ? "import Navbar from '@/components/Navbar';" : '';
+    const footerImport = hasFooter ? "import Footer from '@/components/Footer';" : '';
+    const navJsx = hasNavbar ? '      <Navbar />' : '';
+    const footerJsx = hasFooter ? '      <Footer />' : '';
+    const clientLayout = [
+      "'use client';",
+      navImport,
+      footerImport,
+      '',
+      'export default function ClientLayout({ children }: { children: React.ReactNode }) {',
+      '  return (',
+      '    <>',
+      navJsx,
+      '      <main className="flex-1 ' + (hasNavbar ? 'pt-16' : '') + '">{children}</main>',
+      footerJsx,
+      '    </>',
+      '  );',
+      '}',
+      '',
+    ].filter(Boolean).join('\n');
+    tree.addFile('src/components/ClientLayout.tsx', clientLayout, 'component');
+
+    // Patch the root layout to wrap children with ClientLayout
+    const layoutVFile = tree.getFile('src/app/layout.tsx');
+    if (layoutVFile && !layoutVFile.content.includes('ClientLayout')) {
+      const patched = layoutVFile.content
+        .replace(
+          '{children}',
+          '<ClientLayout>{children}</ClientLayout>'
+        )
+        .replace(
+          "import './globals.css';",
+          "import './globals.css';\nimport ClientLayout from '@/components/ClientLayout';"
+        );
+      tree.addFile('src/app/layout.tsx', patched, 'page');
+    }
+  }
+
+// Force-override next.config.js to skip TS/ESLint errors in AI-generated code
   const NC_CONTENT = [
     "/** @type {import('next').NextConfig} */",
     "const nextConfig = {",
