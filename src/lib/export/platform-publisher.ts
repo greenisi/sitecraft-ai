@@ -285,10 +285,20 @@ export async function publishToSubdomain(
   const navbarFile = files.find((f: any) => f.file_path === 'src/components/Navbar.tsx');
   if (navbarFile) {
     // Replace bg-transparent with a solid dark background
-    navbarFile.content = navbarFile.content.replace(/bg-transparent/g, 'bg-gray-900/95 backdrop-blur-sm');
+    navbarFile.content = navbarFile.content.replace(/bg-transparent/g, 'bg-black/70 backdrop-blur-md');
+    // Remove scroll-based background toggling - force consistent bg
+    // Pattern: ${isScrolled ? 'bg-xxx' : 'bg-xxx'} or ${scrolled ? 'bg-xxx ...' : 'bg-xxx ...'}
+    navbarFile.content = navbarFile.content.replace(/\$\{[\w]+\s*\?\s*['"]([^'"]*bg-[^'"]*)['""]\s*:\s*['"]([^'"]*bg-[^'"]*)['""]\}/g, 'bg-black/70 backdrop-blur-md');
+    // Also handle: isScrolled ? 'bg-white shadow-lg' : 'bg-transparent' (with template literal)
+    navbarFile.content = navbarFile.content.replace(/\$\{[\w]+\s*\?\s*['"]([^'"]*)['""]\s*:\s*['"]([^'"]*)['""]\}/g, (match, trueVal, falseVal) => {
+      if (trueVal.includes('bg-') || falseVal.includes('bg-')) {
+        return 'bg-black/70 backdrop-blur-md';
+      }
+      return match; // Keep non-bg ternaries
+    });
     // Also ensure any conditional transparent states are replaced
-    navbarFile.content = navbarFile.content.replace(/backgroundColor:\s*['"]transparent['"]/g, "backgroundColor: 'rgba(17,24,39,0.95)'");
-    navbarFile.content = navbarFile.content.replace(/background:\s*['"]transparent['"]/g, "background: 'rgba(17,24,39,0.95)'");
+    navbarFile.content = navbarFile.content.replace(/backgroundColor:\s*['"]transparent['"]/g, "backgroundColor: 'rgba(0,0,0,0.7)'");
+    navbarFile.content = navbarFile.content.replace(/background:\s*['"]transparent['"]/g, "background: 'rgba(0,0,0,0.7)'");
   }
 
   // 4b. Add files to tree, cleaning up references to missing components
@@ -333,7 +343,7 @@ export async function publishToSubdomain(
     'img, video, iframe { max-width: 100%; height: auto; }',
     '',
     '/* Sticky navbar enforcement — injected by publisher */',
-    'nav { position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 9999 !important; background-color: rgba(17,24,39,0.95) !important; backdrop-filter: blur(12px) !important; -webkit-backdrop-filter: blur(12px) !important; }',
+    'nav { position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 9999 !important; backdrop-filter: blur(12px) !important; -webkit-backdrop-filter: blur(12px) !important; }',
   ].join('\n');
   const globalsFile = files.find((f: any) => f.file_path.endsWith('globals.css'));
   if (globalsFile) {
