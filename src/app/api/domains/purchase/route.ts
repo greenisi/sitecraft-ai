@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     // Verify project ownership and that it's published
     const { data: project } = await supabase
       .from('projects')
-      .select('id, vercel_project_name, status')
+      .select('id, vercel_project_name, status, published_url')
       .eq('id', projectId)
       .eq('user_id', user.id)
       .single();
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!project.vercel_project_name) {
+    if (!project.vercel_project_name && !project.published_url) {
       return NextResponse.json(
         { error: { message: 'Project must be published first', code: 'VALIDATION_ERROR' } },
         { status: 400 }
@@ -69,12 +69,23 @@ export async function POST(request: Request) {
 
     // 2. Point domain to Vercel (set CNAME or nameservers)
     // Using Vercel's recommended approach: add domain to project
+    // Derive vercel project name from published_url if not set directly
+    let vercelProjectName = project.vercel_project_name;
+    if (!vercelProjectName && project.published_url) {
+      // published_url format: https://SLUG.innovated.site
+      const urlMatch = project.published_url.match(/https?:\/\/([^.]+)\.innovated\.site/);
+      if (urlMatch) vercelProjectName = 'sc-' + urlMatch[1];
+    }
+    if (!vercelProjectName) {
+      return NextResponse.json({ error: { message: 'Could not determine Vercel project name', code: 'VALIDATION_ERROR' } }, { status: 400 });
+    }
+
     const vercelConfig = {
       token: process.env.VERCEL_PLATFORM_TOKEN!,
       teamId: process.env.VERCEL_TEAM_ID!,
     };
 
-    await addDomainToProject(project.vercel_project_name, domain, vercelConfig);
+    await addDomainToProject(vercelProjectName, domain, vercelConfig);
 
     // 3. Set nameservers to point to Vercel (alternative approach)
     // For purchased domains, we can directly set nameservers
