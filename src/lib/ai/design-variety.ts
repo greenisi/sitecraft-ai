@@ -102,6 +102,13 @@ const FONT_PAIRINGS: FontPairing[] = [
   { name: 'Professional', heading: 'Manrope', body: 'Inter', vibe: 'corporate' },
   { name: 'Contemporary', heading: 'Outfit', body: 'DM Sans', vibe: 'contemporary' },
   { name: 'Luxe Serif', heading: 'Playfair Display', body: 'Lora', vibe: 'luxurious' },
+  { name: 'Urban Sharp', heading: 'Archivo Black', body: 'Inter', vibe: 'bold' },
+  { name: 'Geometric Clean', heading: 'Plus Jakarta Sans', body: 'DM Sans', vibe: 'contemporary' },
+  { name: 'Warm Humanist', heading: 'Nunito', body: 'Nunito Sans', vibe: 'friendly' },
+  { name: 'Swiss Precision', heading: 'Satoshi', body: 'Inter', vibe: 'minimal' },
+  { name: 'Luxury Display', heading: 'Cormorant Garamond', body: 'Inter', vibe: 'luxurious' },
+  { name: 'Tech Mono Mix', heading: 'JetBrains Mono', body: 'Inter', vibe: 'technical' },
+
 ];
 
 // ─── Hero Variants ──────────────────────────────────────────────────────────
@@ -153,6 +160,37 @@ const HERO_VARIANTS: HeroVariant[] = [
     name: 'Asymmetric Layout',
     description: 'Off-center layout where text is positioned on the left third, with a large decorative shape (circle or blob using primary color at 10-20% opacity) on the right. Creates visual interest through asymmetry.',
   },
+  },
+  {
+    id: 'floating-cards',
+    name: 'Floating Cards Hero',
+    description: 'Dark or gradient background with the headline on the left, and 2-3 floating glassmorphism cards (tilted slightly with rotate-1, rotate-2) on the right side showing key stats, features, or testimonials. Cards use bg-white/10 backdrop-blur-xl with shadow-2xl.',
+  },
+  {
+    id: 'text-reveal',
+    name: 'Oversized Typography',
+    description: 'Minimal hero focused on massive typography. Business name in text-8xl lg:text-9xl font-black with gradient text treatment. A single compelling tagline below in normal size. One CTA button. Background is white or very light with subtle grain texture. No images.',
+  },
+  {
+    id: 'magazine-layout',
+    name: 'Magazine Editorial',
+    description: 'Editorial/magazine-style layout with a large image taking up 60% of the hero, text overlapping the image boundary on one side (negative margin). Thin accent lines and small uppercase labels. Feels like a high-end print layout translated to web.',
+  },
+  {
+    id: 'stacked-media',
+    name: 'Stacked Image Collage',
+    description: 'Three overlapping images arranged in a stacked/offset pattern on one side of the hero (like photos scattered on a desk). Text on the other side. Creates depth through z-index layering and slight rotations. Shadow on each image.',
+  },
+  {
+    id: 'wave-gradient',
+    name: 'Wave Gradient',
+    description: 'Hero with a flowing wave-shaped gradient background (using SVG wave at the bottom). Gradient goes from primary-600 at top to primary-900 at bottom. Content centered on the gradient. Wave separates hero from next section smoothly.',
+  },
+  {
+    id: 'spotlight',
+    name: 'Spotlight Focus',
+    description: 'Near-black background (bg-gray-950) with a radial gradient spotlight effect (a large circle of primary-500/20 behind the text). White headline with one word in accent color. Dramatic, cinematic feel. Small decorative dots or stars scattered.',
+  },
 ];
 
 // ─── Layout Patterns ────────────────────────────────────────────────────────
@@ -193,6 +231,17 @@ const SECTION_LAYOUT_PATTERNS: LayoutPattern[] = [
     id: 'sidebar-features',
     name: 'Sidebar + Content',
     description: 'Left sidebar with feature/service navigation tabs. Right content area shows the selected feature detail with image and description. Interactive tab-switching layout.',
+  },
+  },
+  {
+    id: 'timeline',
+    name: 'Timeline Layout',
+    description: 'Vertical timeline with alternating left-right content blocks connected by a central line and dots. Each node has an icon, title, and description. Great for process steps, history, or milestones.',
+  },
+  {
+    id: 'overlap-grid',
+    name: 'Overlapping Grid',
+    description: 'Cards that slightly overlap each other in a staggered grid. First card has a larger size spanning 2 rows. Creates depth with varying z-index and shadow levels. Premium, magazine-style layout.',
   },
 ];
 
@@ -274,7 +323,7 @@ const INDUSTRY_PROFILES: Record<string, IndustryProfile> = {
   restaurant: {
     paletteGroup: 'warm',
     fontVibes: ['elegant', 'classic', 'luxurious'],
-    heroStyles: ['video-bg-style', 'dark-hero', 'split-image'],
+    heroStyles: ['video-bg-style', 'dark-hero', 'split-image', 'spotlight', 'magazine-layout'],
     sectionLayouts: ['alternating-rows', 'bento-grid', 'centered-stack'],
     testimonialStyles: ['large-quote', 'slider'],
     navbarStyles: ['dark-nav', 'transparent-hero', 'glassmorphism'],
@@ -283,7 +332,7 @@ const INDUSTRY_PROFILES: Record<string, IndustryProfile> = {
   technology: {
     paletteGroup: 'tech',
     fontVibes: ['technical', 'minimal', 'bold'],
-    heroStyles: ['gradient-bold', 'dark-hero', 'minimal-clean', 'asymmetric'],
+    heroStyles: ['gradient-bold', 'dark-hero', 'minimal-clean', 'asymmetric', 'floating-cards', 'text-reveal', 'spotlight'],
     sectionLayouts: ['bento-grid', 'cards-grid', 'sidebar-features'],
     testimonialStyles: ['cards-row', 'slider'],
     navbarStyles: ['glassmorphism', 'dark-nav', 'transparent-hero'],
@@ -300,8 +349,7 @@ const INDUSTRY_PROFILES: Record<string, IndustryProfile> = {
   },
   realestate: {
     paletteGroup: 'luxury',
-    fontVibes: ['elegant', 'classic', 'corporate'],
-    heroStyles: ['video-bg-style', 'dark-hero', 'split-image'],
+    fontViheroStyles: ['video-bg-style', 'dark-hero', 'split-image', 'magazine-layout', 'stacked-media'],'video-bg-style', 'dark-hero', 'split-image'],
     sectionLayouts: ['bento-grid', 'alternating-rows', 'cards-grid'],
     testimonialStyles: ['large-quote', 'cards-row'],
     navbarStyles: ['dark-nav', 'transparent-hero', 'glassmorphism'],
@@ -344,8 +392,7 @@ const INDUSTRY_PROFILES: Record<string, IndustryProfile> = {
     visualNotes: 'Authoritative, trustworthy. Minimal decorations.',
   },
   creative: {
-    paletteGroup: 'creative',
-    fontVibes: ['creative', 'bold', 'contemporary'],
+    pheroStyles: ['asymmetric', 'dark-hero', 'gradient-bold', 'card-hero', 'text-reveal', 'floating-cards', 'spotlight'],rary'],
     heroStyles: ['asymmetric', 'dark-hero', 'gradient-bold', 'card-hero'],
     sectionLayouts: ['bento-grid', 'masonry', 'alternating-rows'],
     testimonialStyles: ['masonry', 'large-quote'],
@@ -372,10 +419,7 @@ const INDUSTRY_PROFILES: Record<string, IndustryProfile> = {
   },
 };
 
-// Catch-all for industries not explicitly listed
-const DEFAULT_PROFILE: IndustryProfile = {
-  paletteGroup: 'cool',
-  fontVibes: ['minimal', 'friendly', 'contemporary'],
+// Catch-all for industries not explicitly liheroStyles: ['gradient-bold', 'split-image', 'minimal-clean', 'dark-hero', 'floating-cards', 'wave-gradient', 'spotlight', 'magazine-layout'],ontVibes: ['minimal', 'friendly', 'contemporary'],
   heroStyles: ['gradient-bold', 'split-image', 'minimal-clean', 'dark-hero'],
   sectionLayouts: ['cards-grid', 'alternating-rows', 'bento-grid'],
   testimonialStyles: ['cards-row', 'large-quote', 'slider'],
@@ -546,9 +590,18 @@ IMPORTANT: Use this testimonial layout instead of the default card grid.
 
 **VISUAL NOTES**: ${variety.industryProfile.visualNotes}
 
-CRITICAL: Each website must look and feel DIFFERENT. DO NOT use the same layout patterns for every site.
-The hero, navbar, features section, and testimonials MUST follow the specific variants described above.
-This creates a unique visual identity for "${variety.palette.name}" style.
+CRITICAL — READ THIS CAREFULLY:
+This website must look COMPLETELY DIFFERENT from every other website you have ever generated.
+- The hero MUST use the "${variety.heroVariant.name}" style described above — NOT a generic gradient hero
+- The features/services section MUST use the "${variety.sectionLayout.name}" layout — NOT a basic 3-column card grid
+- The testimonials MUST use the "${variety.testimonialLayout.name}" pattern — NOT the same cards-in-a-row
+- The navbar MUST follow the "${variety.navbarVariant.id}" style — NOT default glassmorphism
+- VARY the section backgrounds: alternate between white, tinted (primary-50), dark (gray-900), and gradient backgrounds
+- Use CREATIVE section dividers: wave SVGs, angled clip-paths, or overlapping elements — NOT just flat color changes
+- This site's color mood is "${variety.palette.mood}" — let this mood INFUSE every design decision
+- Typography pairing is "${variety.fonts.name}" (${variety.fonts.vibe}) — use this to create the right emotional tone
+
+If your output looks like a generic template, you have FAILED. This must look like a custom \$10,000+ design.
 `;
 }
 
