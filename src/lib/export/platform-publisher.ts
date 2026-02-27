@@ -405,22 +405,54 @@ export async function publishToSubdomain(
         }
 
         // Convert to RGB or use a dark fallback
-        // Resolve custom theme colors (primary/secondary/accent) from the design_system
+        // Resolve the chosen color to RGB values
         let rgb = twColors[chosenColor] || '';
         if (!rgb && chosenColor) {
           const themeMatch = chosenColor.match(/^(primary|secondary|accent)-(\d+)$/);
           if (themeMatch) {
+            // First try: resolve from design_system
             const ds = project.design_system;
             const colorGroup = ds?.colors?.[themeMatch[1]] as Record<string, string> | undefined;
-            // Try the darkest shade (900) for the navbar, then fall back to matched shade
-            const hex = colorGroup?.['900'] || colorGroup?.[themeMatch[2]] || '';
-            if (hex) {
-              // Convert hex to RGB
+            const hex = colorGroup?.['900'] || colorGroup?.['800'] || colorGroup?.[themeMatch[2]] || '';
+            if (hex && hex.startsWith('#')) {
               const h = hex.replace('#', '');
               const r = parseInt(h.substring(0, 2), 16);
               const g = parseInt(h.substring(2, 4), 16);
               const b = parseInt(h.substring(4, 6), 16);
               if (!isNaN(r) && !isNaN(g) && !isNaN(b)) rgb = r + ',' + g + ',' + b;
+            }
+            // Second try: parse the tailwind.config.js from the scaffolding tree
+            if (!rgb) {
+              const twConfigFile = tree.getFile('tailwind.config.js');
+              if (twConfigFile) {
+                const configContent = twConfigFile.content;
+                // Look for the color group and extract hex values
+                // Pattern: "900": "#hexval" or '900': '#hexval'
+                const groupName = themeMatch[1]; // primary, secondary, accent
+                const groupIdx = configContent.indexOf(groupName);
+                if (groupIdx > -1) {
+                  const groupBlock = configContent.substring(groupIdx, groupIdx + 2000);
+                  // Try to find shade 900, then 800, then the matched shade
+                  for (const shade of ['900', '800', themeMatch[2]]) {
+                    const shadePattern = new RegExp('["\'"]' + shade + '["\'"\s]*:\s*["\'"]#([0-9a-fA-F]{6})["\'"]');
+                    const sm = groupBlock.match(shadePattern);
+                    if (sm) {
+                      const r = parseInt(sm[1].substring(0, 2), 16);
+                      const g = parseInt(sm[1].substring(2, 4), 16);
+                      const b = parseInt(sm[1].substring(4, 6), 16);
+                      if (!isNaN(r)) { rgb = r + ',' + g + ',' + b; break; }
+                    }
+                  }
+                }
+              }
+            }
+            // Third try: darken the from-primary-600 color mathematically
+            if (!rgb && hex && hex.startsWith('#')) {
+              const h = hex.replace('#', '');
+              const r = Math.max(0, Math.floor(parseInt(h.substring(0, 2), 16) * 0.45));
+              const g = Math.max(0, Math.floor(parseInt(h.substring(2, 4), 16) * 0.45));
+              const b = Math.max(0, Math.floor(parseInt(h.substring(4, 6), 16) * 0.45));
+              rgb = r + ',' + g + ',' + b;
             }
           }
         }
