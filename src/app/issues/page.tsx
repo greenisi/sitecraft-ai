@@ -24,7 +24,7 @@ const STATUS_COLORS: Record<string, { bg: string; text: string; label: string }>
 };
 
 export default function IssuesPage() {
-  const user = useUser();
+  const { user } = useUser();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'report' | 'history'>('report');
   const [category, setCategory] = useState('bug');
