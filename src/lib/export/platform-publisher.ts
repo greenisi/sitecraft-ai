@@ -428,6 +428,9 @@ export async function publishToSubdomain(
       if (truncatedFiles.has(file.file_path)) continue;
 
       let fileContent = file.content;
+      // Replace PROJECT_ID placeholder with actual project ID
+      fileContent = fileContent.replace(/PROJECT_ID/g, projectId);
+
 
       if (file.file_path.endsWith('page.tsx') || file.file_path.endsWith('layout.tsx')) {
         fileContent = cleanPageFile(fileContent, availableComponents);
@@ -495,12 +498,14 @@ export async function publishToSubdomain(
     const clientLayout = [
       "'use client';",
       navImport,
+      "import FormAutoWire from '@/components/FormAutoWire';",
       footerImport,
       '',
       'export default function ClientLayout({ children }: { children: React.ReactNode }) {',
       '  return (',
       '    <>',
       navJsx,
+      `      <FormAutoWire projectId="${projectId}" />`,
       '      <main style={{ flex: 1 }}>{children}</main>',
       footerJsx,
       '    </>',
@@ -508,6 +513,73 @@ export async function publishToSubdomain(
       '}',
       '',
     ].filter(Boolean).join('\n');
+    // Generate form auto-wire component that submits forms to the backend API
+    const formAutoWire = [
+      "'use client';",
+      "import { useEffect } from 'react';",
+      "",
+      "export default function FormAutoWire({ projectId }: { projectId: string }) {",
+      "  useEffect(() => {",
+      "    const API_BASE = 'https://app.innovated.marketing/api/sites/' + projectId;",
+      "    const wired = new WeakSet<HTMLFormElement>();",
+      "",
+      "    function wireForm(form: HTMLFormElement) {",
+      "      if (wired.has(form)) return;",
+      "      wired.add(form);",
+      "      form.addEventListener('submit', async (e) => {",
+      "        e.preventDefault();",
+      "        const formData = new FormData(form);",
+      "        const data: Record<string, string> = {};",
+      "        formData.forEach((v, k) => { data[k] = String(v); });",
+      "        // Detect form type from fields",
+      "        const hasItems = !!data.items;",
+      "        const endpoint = hasItems ? API_BASE + '/orders' : API_BASE + '/submit-form';",
+      "        // Add form_type if not present",
+      "        if (!hasItems && !data.form_type) {",
+      "          data.form_type = 'contact';",
+      "          data.source_page = window.location.pathname;",
+      "        }",
+      "        const submitBtn = form.querySelector('button[type=submit], button:not([type])') as HTMLButtonElement | null;",
+      "        const originalText = submitBtn?.textContent || '';",
+      "        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Sending...'; }",
+      "        try {",
+      "          const res = await fetch(endpoint, {",
+      "            method: 'POST',",
+      "            headers: { 'Content-Type': 'application/json' },",
+      "            body: JSON.stringify(data),",
+      "          });",
+      "          if (res.ok) {",
+      "            form.reset();",
+      "            if (submitBtn) { submitBtn.textContent = 'Sent!'; submitBtn.classList.add('bg-green-600'); }",
+      "            setTimeout(() => { if (submitBtn) { submitBtn.textContent = originalText; submitBtn.disabled = false; submitBtn.classList.remove('bg-green-600'); } }, 3000);",
+      "          } else {",
+      "            if (submitBtn) { submitBtn.textContent = 'Error - Try Again'; submitBtn.disabled = false; }",
+      "            setTimeout(() => { if (submitBtn) submitBtn.textContent = originalText; }, 3000);",
+      "          }",
+      "        } catch {",
+      "          if (submitBtn) { submitBtn.textContent = 'Error - Try Again'; submitBtn.disabled = false; }",
+      "          setTimeout(() => { if (submitBtn) submitBtn.textContent = originalText; }, 3000);",
+      "        }",
+      "      });",
+      "    }",
+      "",
+      "    // Wire existing forms",
+      "    document.querySelectorAll('form').forEach((f) => wireForm(f as HTMLFormElement));",
+      "",
+      "    // Watch for dynamically added forms",
+      "    const observer = new MutationObserver(() => {",
+      "      document.querySelectorAll('form').forEach((f) => wireForm(f as HTMLFormElement));",
+      "    });",
+      "    observer.observe(document.body, { childList: true, subtree: true });",
+      "",
+      "    return () => observer.disconnect();",
+      "  }, [projectId]);",
+      "",
+      "  return null;",
+      "}",
+    ].join('\n');
+    tree.addFile('src/components/FormAutoWire.tsx', formAutoWire, 'component');
+
     tree.addFile('src/components/ClientLayout.tsx', clientLayout, 'component');
 
     // Patch the root layout to wrap children with ClientLayout
