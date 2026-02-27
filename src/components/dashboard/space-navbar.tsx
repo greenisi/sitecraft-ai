@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { LogOut, Sparkles, Menu, X, LayoutGrid, CreditCard, Settings, User, Gift, Globe } from 'lucide-react';
+import { LogOut, Sparkles, Menu, X, LayoutGrid, CreditCard, Settings, User, Gift, Globe, AlertCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/lib/hooks/use-user';
 import Image from 'next/image';
@@ -131,6 +131,17 @@ export function SpaceNavbar() {
             >
               <Globe className="h-3.5 w-3.5" />
               Domains
+            </a>
+          <a
+              href="/issues"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                isActive('/issues')
+                  ? 'bg-purple-500/20 text-purple-300'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <AlertCircle className="h-3.5 w-3.5" />
+              Report Issue
             </a>          <button
             onClick={handleSignOut}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
@@ -266,7 +277,17 @@ export function SpaceNavbar() {
               >
                 <Globe className={`h-4 w-4 ${isActive('/domains') ? 'text-purple-400' : ''}`} />
                 Domains
-              </button>          <button
+              </button>
+          <button
+            onClick={() => navTo('/issues')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+              isActive('/issues') ? 'text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'
+            }`}
+            style={isActive('/issues') ? { background: 'rgba(139,92,246,0.15)', color: '#e2d9f3' } : {}}
+          >
+            <AlertCircle className={`h-4 w-4 ${isActive('/issues') ? 'text-purple-400' : ''}`} />
+            Report Issue
+          </button>          <button
             onClick={() => navTo('/settings')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
               isActive('/settings') ? 'text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'
