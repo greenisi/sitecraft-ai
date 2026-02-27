@@ -442,7 +442,20 @@ export async function publishToSubdomain(
             }
           }
         }
-        // Try 3: Use branding colors from generation_config (most reliable source)
+        // Try 2b: If custom theme color couldn't be resolved, fall back to navbar's own standard color
+            if (!rgb && navbarOwnColor && twColors[navbarOwnColor]) {
+              // Prefer darkest variant of the navbar's own color
+              const navHue = navbarOwnColor.match(/^(\w+)-\d+$/)?.[1];
+              if (navHue) {
+                const nDark = navHue + '-900';
+                if (twColors[nDark]) { rgb = twColors[nDark]; chosenColor = nDark; }
+                else if (twColors[navbarOwnColor]) { rgb = twColors[navbarOwnColor]; }
+              } else {
+                rgb = twColors[navbarOwnColor];
+              }
+            }
+
+            // Try 3: Use branding colors from generation_config (most reliable source)
             if (!rgb && project.generation_config?.branding) {
               const branding = project.generation_config.branding as any;
               // chosenColor tells us which theme key we want (primary/secondary/accent)
