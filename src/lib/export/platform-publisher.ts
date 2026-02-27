@@ -427,7 +427,8 @@ export async function publishToSubdomain(
             
             // Try 2: Parse the tailwind config from the file tree
             if (!rgb) {
-              const twFile = tree.getFile('tailwind.config.js');
+              const twGenFile = files.find((f: any) => f.file_path === 'tailwind.config.js' || f.file_path.endsWith('tailwind.config.js'));
+              const twFile = twGenFile ? { content: twGenFile.content } : tree.getFile('tailwind.config.js');
               if (twFile?.content) {
                 // Find the block for this theme name and extract the darkest hex
                 const themeBlock = twFile.content.split(themeName).slice(1).join('');
@@ -441,7 +442,29 @@ export async function publishToSubdomain(
             }
           }
         }
-        if (!rgb) rgb = '17,24,39';
+        // Try 3: Use branding colors from generation_config (most reliable source)
+            if (!rgb && project.generation_config?.branding) {
+              const branding = project.generation_config.branding as any;
+              // chosenColor tells us which theme key we want (primary/secondary/accent)
+              const themeKey = chosenColor?.match(/^(primary|secondary|accent)/)?.[1] || 'primary';
+              const colorMap: Record<string, string> = {
+                primary: branding.primaryColor,
+                secondary: branding.secondaryColor,
+                accent: branding.accentColor,
+              };
+              let hexColor = colorMap[themeKey] || branding.primaryColor || '';
+              if (hexColor && hexColor.startsWith('#') && hexColor.length >= 7) {
+                const h = hexColor.slice(1);
+                // Darken the color by 40% for navbar (professional look)
+                const r = Math.round(parseInt(h.slice(0,2), 16) * 0.6);
+                const g = Math.round(parseInt(h.slice(2,4), 16) * 0.6);
+                const b = Math.round(parseInt(h.slice(4,6), 16) * 0.6);
+                rgb = r + ',' + g + ',' + b;
+              }
+            }
+            if (!rgb) rgb = '17,24,39';
+
+        console.error('[NavbarFix] chosenColor=' + chosenColor + ' rgb=' + rgb + ' hasBranding=' + !!project.generation_config?.branding);
 
         // STEP 5: Remove scroll-based bg ternaries
         navbarFile.content = navbarFile.content.replace(/\$\{\w+\s*\?\s*['"][^'"]*bg-[^'"]*['"]\s*:\s*['"][^'"]*['"]}\}/g, '');
