@@ -160,7 +160,6 @@ const HERO_VARIANTS: HeroVariant[] = [
     name: 'Asymmetric Layout',
     description: 'Off-center layout where text is positioned on the left third, with a large decorative shape (circle or blob using primary color at 10-20% opacity) on the right. Creates visual interest through asymmetry.',
   },
-  },
   {
     id: 'floating-cards',
     name: 'Floating Cards Hero',
@@ -231,7 +230,6 @@ const SECTION_LAYOUT_PATTERNS: LayoutPattern[] = [
     id: 'sidebar-features',
     name: 'Sidebar + Content',
     description: 'Left sidebar with feature/service navigation tabs. Right content area shows the selected feature detail with image and description. Interactive tab-switching layout.',
-  },
   },
   {
     id: 'timeline',
@@ -349,7 +347,8 @@ const INDUSTRY_PROFILES: Record<string, IndustryProfile> = {
   },
   realestate: {
     paletteGroup: 'luxury',
-    fontViheroStyles: ['video-bg-style', 'dark-hero', 'split-image', 'magazine-layout', 'stacked-media'],'video-bg-style', 'dark-hero', 'split-image'],
+    fontVibes: ['luxury', 'serif-heavy', 'elegant'],
+    heroStyles: ['video-bg-style', 'dark-hero', 'split-image', 'magazine-layout', 'stacked-media'],
     sectionLayouts: ['bento-grid', 'alternating-rows', 'cards-grid'],
     testimonialStyles: ['large-quote', 'cards-row'],
     navbarStyles: ['dark-nav', 'transparent-hero', 'glassmorphism'],
@@ -392,8 +391,9 @@ const INDUSTRY_PROFILES: Record<string, IndustryProfile> = {
     visualNotes: 'Authoritative, trustworthy. Minimal decorations.',
   },
   creative: {
-    pheroStyles: ['asymmetric', 'dark-hero', 'gradient-bold', 'card-hero', 'text-reveal', 'floating-cards', 'spotlight'],rary'],
-    heroStyles: ['asymmetric', 'dark-hero', 'gradient-bold', 'card-hero'],
+    paletteGroup: 'creative',
+    fontVibes: ['bold', 'contemporary', 'artistic'],
+    heroStyles: ['asymmetric', 'dark-hero', 'gradient-bold', 'card-hero', 'text-reveal', 'floating-cards', 'spotlight'],
     sectionLayouts: ['bento-grid', 'masonry', 'alternating-rows'],
     testimonialStyles: ['masonry', 'large-quote'],
     navbarStyles: ['transparent-hero', 'dark-nav', 'glassmorphism'],
@@ -419,7 +419,10 @@ const INDUSTRY_PROFILES: Record<string, IndustryProfile> = {
   },
 };
 
-// Catch-all for industries not explicitly liheroStyles: ['gradient-bold', 'split-image', 'minimal-clean', 'dark-hero', 'floating-cards', 'wave-gradient', 'spotlight', 'magazine-layout'],ontVibes: ['minimal', 'friendly', 'contemporary'],
+// Catch-all for industries not explicitly listed
+const DEFAULT_PROFILE: IndustryProfile = {
+  paletteGroup: 'cool',
+  fontVibes: ['minimal', 'contemporary', 'clean'],
   heroStyles: ['gradient-bold', 'split-image', 'minimal-clean', 'dark-hero'],
   sectionLayouts: ['cards-grid', 'alternating-rows', 'bento-grid'],
   testimonialStyles: ['cards-row', 'large-quote', 'slider'],
