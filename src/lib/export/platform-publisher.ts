@@ -318,21 +318,28 @@ export async function publishToSubdomain(
         // the navbar often uses an accent color for its scrolled state while the
         // hero/page uses the actual theme color.
         let heroThemeColor = '';
+        // Scan Hero component and page files for the dominant theme gradient color
+        const heroFile = files.find((f: any) => f.file_path === 'src/components/Hero.tsx');
         const homepageFile = files.find((f: any) =>
           f.file_path === 'src/app/page.tsx' || f.file_path === 'src/app/(main)/page.tsx'
         );
-        if (homepageFile) {
-          // Look for gradient 'from-' colors in the hero section (first <section>)
-          const heroSectionMatch = homepageFile.content.match(/from-((?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d+)/);
-          if (heroSectionMatch && twColors[heroSectionMatch[1]]) {
-            heroThemeColor = heroSectionMatch[1];
-          }
-          // Also check bg-COLOR patterns on early sections
-          if (!heroThemeColor) {
-            const bgMatch = homepageFile.content.match(/bg-((?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d+)/);
-            if (bgMatch && twColors[bgMatch[1]]) {
-              heroThemeColor = bgMatch[1];
-            }
+        // Build a combined text from Hero + homepage + all component files to find theme colors
+        const colorScanText = [
+          heroFile?.content || '',
+          homepageFile?.content || '',
+          ...files.filter((f: any) => f.file_path.startsWith('src/components/') && f.file_path.endsWith('.tsx')).map((f: any) => f.content)
+        ].join('\n');
+
+        // Look for gradient 'from-' colors (strongest indicator of theme)
+        const heroSectionMatch = colorScanText.match(/from-((?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d+)/);
+        if (heroSectionMatch && twColors[heroSectionMatch[1]]) {
+          heroThemeColor = heroSectionMatch[1];
+        }
+        // Also check bg-COLOR patterns if no gradient found
+        if (!heroThemeColor) {
+          const bgMatch = colorScanText.match(/bg-((?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d+)/);
+          if (bgMatch && twColors[bgMatch[1]]) {
+            heroThemeColor = bgMatch[1];
           }
         }
 
