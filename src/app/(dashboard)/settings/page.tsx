@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import {
   Loader2, Save, User, CreditCard, Sparkles, Crown,
   ExternalLink, Zap, Coins, ShoppingCart, AlertCircle,
+  Link,
+  Wallet,
+  CheckCircle2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +26,13 @@ export default function SettingsPage() {
   const [plan, setPlan] = useState('free');
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [stripeConnectLoading, setStripeConnectLoading] = useState(false);
+  const [stripeConnect, setStripeConnect] = useState<{
+    connected: boolean;
+    chargesEnabled: boolean;
+    onboardingComplete: boolean;
+    dashboardUrl?: string | null;
+  } | null>(null);
   const [hasStripeCustomer, setHasStripeCustomer] = useState(false);
 
   useEffect(() => {
@@ -43,6 +53,16 @@ export default function SettingsPage() {
             setHasStripeCustomer(!!data.stripe_customer_id);
           }
         });
+    }
+  }, [user]);
+
+  // Fetch Stripe Connect status
+  useEffect(() => {
+    if (user) {
+      fetch('/api/stripe/connect/status')
+        .then(res => res.json())
+        .then(data => setStripeConnect(data))
+        .catch(() => setStripeConnect({ connected: false, chargesEnabled: false, onboardingComplete: false }));
     }
   }, [user]);
 
@@ -147,6 +167,25 @@ export default function SettingsPage() {
       });
     } finally {
       setPortalLoading(false);
+    }
+  };
+
+  const handleConnectStripe = async () => {
+    setStripeConnectLoading(true);
+    try {
+      const res = await fetch('/api/stripe/connect/onboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to start Stripe Connect');
+      if (data.url) window.location.href = data.url;
+    } catch (error) {
+      toast.error('Stripe Connect failed', {
+        description: error instanceof Error ? error.message : 'Unknown error',
+      });
+    } finally {
+      setStripeConnectLoading(false);
     }
   };
 
@@ -395,6 +434,99 @@ export default function SettingsPage() {
           )}
         </div>
       </div>
-    </div>
+    
+      {/* Stripe Connect - Accept Payments */}
+      <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
+        <div className="flex items-center gap-3 border-b border-border/50 px-4 sm:px-6 py-4">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10">
+            <Wallet className="h-4 w-4 text-emerald-500" />
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold">Accept Payments</h2>
+            <p className="text-xs text-muted-foreground">
+              Connect your Stripe account to receive payments from your websites
+            </p>
+          </div>
+        </div>
+        <div className="p-4 sm:p-6">
+          {stripeConnect?.connected && stripeConnect?.chargesEnabled ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                <CheckCircle2 className="h-5 w-5" />
+                <span className="text-sm font-semibold">Stripe Connected</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Your Stripe account is connected and ready to accept payments from your e-commerce websites.
+              </p>
+              {stripeConnect.dashboardUrl && (
+                <Button
+                  variant="outline"
+                  className="rounded-xl border-border/50"
+                  size="sm"
+                  onClick={() => window.open(stripeConnect.dashboardUrl!, '_blank')}
+                >
+                  <ExternalLink className="mr-2 h-3 w-3" />
+                  Open Stripe Dashboard
+                </Button>
+              )}
+            </div>
+          ) : stripeConnect?.connected && !stripeConnect?.chargesEnabled ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                <AlertCircle className="h-5 w-5" />
+                <span className="text-sm font-semibold">Onboarding Incomplete</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Your Stripe account is connected but onboarding is not complete. Finish setup to start accepting payments.
+              </p>
+              <Button
+                onClick={handleConnectStripe}
+                disabled={stripeConnectLoading}
+                className="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0"
+                size="sm"
+              >
+                {stripeConnectLoading ? (
+                  <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                ) : (
+                  <Link className="mr-2 h-3 w-3" />
+                )}
+                Complete Stripe Setup
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-xs text-muted-foreground">
+                Connect your Stripe account to accept credit card payments on your generated websites.
+                Payments go directly to your Stripe account.
+              </p>
+              <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Wallet className="h-3.5 w-3.5 text-emerald-500" />
+                  <span className="text-xs font-semibold">How it works</span>
+                </div>
+                <ul className="text-[11px] text-muted-foreground space-y-1 ml-5 list-disc">
+                  <li>Connect or create a Stripe account</li>
+                  <li>Your e-commerce sites automatically accept payments</li>
+                  <li>Payments go directly to your bank account</li>
+                </ul>
+              </div>
+              <Button
+                onClick={handleConnectStripe}
+                disabled={stripeConnectLoading}
+                className="w-full rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0"
+              >
+                {stripeConnectLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Link className="mr-2 h-4 w-4" />
+                )}
+                Connect Stripe Account
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+
+</div>
   );
 }
