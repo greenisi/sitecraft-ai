@@ -343,6 +343,21 @@ export async function publishToSubdomain(
           }
         }
 
+        // STEP 1b: If still no color, check for custom theme colors (primary/secondary/accent)
+        // These are defined in the project's design_system and won't be in twColors
+        if (!heroThemeColor) {
+          const customColorMatch = colorScanText.match(/from-((?:primary|secondary|accent)-\d+)/);
+          if (customColorMatch) {
+            heroThemeColor = customColorMatch[1]; // e.g. "primary-600"
+          }
+        }
+        if (!heroThemeColor) {
+          const customBgMatch = colorScanText.match(/bg-((?:primary|secondary|accent)-\d+)/);
+          if (customBgMatch) {
+            heroThemeColor = customBgMatch[1];
+          }
+        }
+
         // STEP 2: If no hero color found, check the navbar's scrolled-state ternary
         let navbarOwnColor = '';
         const ternaryPatterns = [
@@ -390,7 +405,26 @@ export async function publishToSubdomain(
         }
 
         // Convert to RGB or use a dark fallback
-        const rgb = twColors[chosenColor] || twColors['gray-900'] || '17,24,39';
+        // Resolve custom theme colors (primary/secondary/accent) from the design_system
+        let rgb = twColors[chosenColor] || '';
+        if (!rgb && chosenColor) {
+          const themeMatch = chosenColor.match(/^(primary|secondary|accent)-(\d+)$/);
+          if (themeMatch) {
+            const ds = project.design_system;
+            const colorGroup = ds?.colors?.[themeMatch[1]] as Record<string, string> | undefined;
+            // Try the darkest shade (900) for the navbar, then fall back to matched shade
+            const hex = colorGroup?.['900'] || colorGroup?.[themeMatch[2]] || '';
+            if (hex) {
+              // Convert hex to RGB
+              const h = hex.replace('#', '');
+              const r = parseInt(h.substring(0, 2), 16);
+              const g = parseInt(h.substring(2, 4), 16);
+              const b = parseInt(h.substring(4, 6), 16);
+              if (!isNaN(r) && !isNaN(g) && !isNaN(b)) rgb = r + ',' + g + ',' + b;
+            }
+          }
+        }
+        if (!rgb) rgb = '17,24,39';
 
         // STEP 5: Remove scroll-based bg ternaries
         navbarFile.content = navbarFile.content.replace(/\$\{\w+\s*\?\s*['"][^'"]*bg-[^'"]*['"]\s*:\s*['"][^'"]*['"]}\}/g, '');
