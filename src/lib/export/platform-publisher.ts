@@ -312,6 +312,52 @@ export async function publishToSubdomain(
           'rose-900': '136,19,55', 'rose-800': '159,18,57',
           'black': '0,0,0', 'white': '255,255,255',
         };
+        // --- Parse custom theme colors from generated tailwind.config.js ---
+        // The AI generates a tailwind.config.js with custom colors (primary, secondary, accent).
+        // We need to add these to twColors so the standard scanning in STEPs 1-3 can resolve them.
+        const twGenFile = files.find((f: any) => f.file_path === 'tailwind.config.js' || f.file_path.endsWith('/tailwind.config.js'));
+        const twConfigContent = twGenFile?.content || tree.getFile('tailwind.config.js')?.content || '';
+        if (twConfigContent) {
+          const themeGroups = ['primary', 'secondary', 'accent'];
+          for (const tg of themeGroups) {
+            // Find the block: primary: { "50": "#hex", ... }
+            // Use a regex that matches the theme name followed by a colon and opening brace
+            const blockStartIdx = twConfigContent.indexOf(tg + ':');
+            if (blockStartIdx === -1) continue;
+            const braceStart = twConfigContent.indexOf('{', blockStartIdx);
+            if (braceStart === -1 || braceStart > blockStartIdx + 50) continue;
+            // Find matching closing brace
+            let depth = 0;
+            let braceEnd = braceStart;
+            for (let ci = braceStart; ci < twConfigContent.length; ci++) {
+              if (twConfigContent[ci] === '{') depth++;
+              if (twConfigContent[ci] === '}') depth--;
+              if (depth === 0) { braceEnd = ci; break; }
+            }
+            const block = twConfigContent.substring(braceStart, braceEnd + 1);
+            // Extract "shade": "#hex" pairs
+            const shadeRe = /["']?(\d+)["']?\s*:\s*["']#([0-9a-fA-F]{6})["']/g;
+            let sm;
+            while ((sm = shadeRe.exec(block)) !== null) {
+              const shade = sm[1];
+              const hex = sm[2];
+              const r = parseInt(hex.slice(0,2), 16);
+              const g = parseInt(hex.slice(2,4), 16);
+              const b = parseInt(hex.slice(4,6), 16);
+              twColors[tg + '-' + shade] = r + ',' + g + ',' + b;
+            }
+          }
+        }
+
+
+        // DEBUG: Log custom color resolution
+        const customColorCount = Object.keys(twColors).filter(k => k.startsWith('primary-') || k.startsWith('secondary-') || k.startsWith('accent-')).length;
+        const twConfigLen = twConfigContent?.length || 0;
+        const hasTwGenFile = !!twGenFile;
+        const treeConfigLen = tree.getFile('tailwind.config.js')?.content?.length || 0;
+        const dsIsNull = project.design_system === null;
+        const dsColorKeys = project.design_system ? Object.keys(project.design_system.colors?.primary || {}) : [];
+        console.error('[NavbarFix-Debug] customColors=' + customColorCount + ' twConfigLen=' + twConfigLen + ' hasTwGenFile=' + hasTwGenFile + ' treeConfigLen=' + treeConfigLen + ' dsIsNull=' + dsIsNull + ' dsColorKeys=' + dsColorKeys.join(','));
 
         // STEP 1: Look at the homepage hero section for the dominant theme color.
         // This is more reliable than the navbar's own scrolled-state color, because
@@ -408,41 +454,10 @@ export async function publishToSubdomain(
         // Resolve the chosen color to RGB values
         let rgb = twColors[chosenColor] || '';
         
-        // If color is a custom theme color (primary/secondary/accent), resolve from design system or tailwind config
-        if (!rgb && chosenColor) {
-          const themeMatch = chosenColor.match(/^(primary|secondary|accent)-(\d+)$/);
-          if (themeMatch) {
-            const themeName = themeMatch[1];
-            const shade = themeMatch[2];
-            
-            // Try 1: Get from project.design_system
-            const dsColors = (project.design_system || defaultDesignSystem).colors;
-            const colorObj = dsColors[themeName as keyof typeof dsColors] as Record<string, string> | undefined;
-            const hexVal = colorObj?.['900'] || colorObj?.['800'] || colorObj?.[shade] || '';
-            
-            if (hexVal && typeof hexVal === 'string' && hexVal.startsWith('#') && hexVal.length >= 7) {
-              const h = hexVal.slice(1);
-              rgb = parseInt(h.slice(0,2),16) + ',' + parseInt(h.slice(2,4),16) + ',' + parseInt(h.slice(4,6),16);
-            }
-            
-            // Try 2: Parse the tailwind config from the file tree
-            if (!rgb) {
-              const twGenFile = files.find((f: any) => f.file_path === 'tailwind.config.js' || f.file_path.endsWith('tailwind.config.js'));
-              const twFile = twGenFile ? { content: twGenFile.content } : tree.getFile('tailwind.config.js');
-              if (twFile?.content) {
-                // Find the block for this theme name and extract the darkest hex
-                const themeBlock = twFile.content.split(themeName).slice(1).join('');
-                const hexMatches = themeBlock.match(/#[0-9a-fA-F]{6}/g) || [];
-                if (hexMatches.length > 0) {
-                  // Pick the last hex (usually the darkest shade in the object)
-                  const darkHex = hexMatches[hexMatches.length - 1].slice(1);
-                  rgb = parseInt(darkHex.slice(0,2),16) + ',' + parseInt(darkHex.slice(2,4),16) + ',' + parseInt(darkHex.slice(4,6),16);
-                }
-              }
-            }
-          }
-        }
-        // Try 2b: If custom theme color couldn't be resolved, fall back to navbar's own standard color
+        // Custom theme colors are pre-populated in twColors above.
+            // If still not resolved, fall through to navbarOwnColor and branding fallbacks.
+
+            // Try 2b: If custom theme color couldn't be resolved, fall back to navbar's own standard color
             if (!rgb && navbarOwnColor && twColors[navbarOwnColor]) {
               // Prefer darkest variant of the navbar's own color
               const navHue = navbarOwnColor.match(/^(\w+)-\d+$/)?.[1];
