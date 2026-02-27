@@ -407,52 +407,37 @@ export async function publishToSubdomain(
         // Convert to RGB or use a dark fallback
         // Resolve the chosen color to RGB values
         let rgb = twColors[chosenColor] || '';
+        
+        // If color is a custom theme color (primary/secondary/accent), resolve from design system or tailwind config
         if (!rgb && chosenColor) {
           const themeMatch = chosenColor.match(/^(primary|secondary|accent)-(\d+)$/);
           if (themeMatch) {
-            // First try: resolve from design_system
-            const ds = project.design_system;
-            const colorGroup = ds?.colors?.[themeMatch[1]] as Record<string, string> | undefined;
-            const hex = colorGroup?.['900'] || colorGroup?.['800'] || colorGroup?.[themeMatch[2]] || '';
-            if (hex && hex.startsWith('#')) {
-              const h = hex.replace('#', '');
-              const r = parseInt(h.substring(0, 2), 16);
-              const g = parseInt(h.substring(2, 4), 16);
-              const b = parseInt(h.substring(4, 6), 16);
-              if (!isNaN(r) && !isNaN(g) && !isNaN(b)) rgb = r + ',' + g + ',' + b;
+            const themeName = themeMatch[1];
+            const shade = themeMatch[2];
+            
+            // Try 1: Get from project.design_system
+            const dsColors = (project.design_system || defaultDesignSystem).colors;
+            const colorObj = dsColors[themeName as keyof typeof dsColors] as Record<string, string> | undefined;
+            const hexVal = colorObj?.['900'] || colorObj?.['800'] || colorObj?.[shade] || '';
+            
+            if (hexVal && typeof hexVal === 'string' && hexVal.startsWith('#') && hexVal.length >= 7) {
+              const h = hexVal.slice(1);
+              rgb = parseInt(h.slice(0,2),16) + ',' + parseInt(h.slice(2,4),16) + ',' + parseInt(h.slice(4,6),16);
             }
-            // Second try: parse the tailwind.config.js from the scaffolding tree
+            
+            // Try 2: Parse the tailwind config from the file tree
             if (!rgb) {
-              const twConfigFile = tree.getFile('tailwind.config.js');
-              if (twConfigFile) {
-                const configContent = twConfigFile.content;
-                // Look for the color group and extract hex values
-                // Pattern: "900": "#hexval" or '900': '#hexval'
-                const groupName = themeMatch[1]; // primary, secondary, accent
-                const groupIdx = configContent.indexOf(groupName);
-                if (groupIdx > -1) {
-                  const groupBlock = configContent.substring(groupIdx, groupIdx + 2000);
-                  // Try to find shade 900, then 800, then the matched shade
-                  for (const shade of ['900', '800', themeMatch[2]]) {
-                    const shadePattern = new RegExp('["\'"]' + shade + '["\'"\s]*:\s*["\'"]#([0-9a-fA-F]{6})["\'"]');
-                    const sm = groupBlock.match(shadePattern);
-                    if (sm) {
-                      const r = parseInt(sm[1].substring(0, 2), 16);
-                      const g = parseInt(sm[1].substring(2, 4), 16);
-                      const b = parseInt(sm[1].substring(4, 6), 16);
-                      if (!isNaN(r)) { rgb = r + ',' + g + ',' + b; break; }
-                    }
-                  }
+              const twFile = tree.getFile('tailwind.config.js');
+              if (twFile?.content) {
+                // Find the block for this theme name and extract the darkest hex
+                const themeBlock = twFile.content.split(themeName).slice(1).join('');
+                const hexMatches = themeBlock.match(/#[0-9a-fA-F]{6}/g) || [];
+                if (hexMatches.length > 0) {
+                  // Pick the last hex (usually the darkest shade in the object)
+                  const darkHex = hexMatches[hexMatches.length - 1].slice(1);
+                  rgb = parseInt(darkHex.slice(0,2),16) + ',' + parseInt(darkHex.slice(2,4),16) + ',' + parseInt(darkHex.slice(4,6),16);
                 }
               }
-            }
-            // Third try: darken the from-primary-600 color mathematically
-            if (!rgb && hex && hex.startsWith('#')) {
-              const h = hex.replace('#', '');
-              const r = Math.max(0, Math.floor(parseInt(h.substring(0, 2), 16) * 0.45));
-              const g = Math.max(0, Math.floor(parseInt(h.substring(2, 4), 16) * 0.45));
-              const b = Math.max(0, Math.floor(parseInt(h.substring(4, 6), 16) * 0.45));
-              rgb = r + ',' + g + ',' + b;
             }
           }
         }
