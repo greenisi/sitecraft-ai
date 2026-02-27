@@ -350,15 +350,6 @@ export async function publishToSubdomain(
         }
 
 
-        // DEBUG: Log custom color resolution
-        const customColorCount = Object.keys(twColors).filter(k => k.startsWith('primary-') || k.startsWith('secondary-') || k.startsWith('accent-')).length;
-        const twConfigLen = twConfigContent?.length || 0;
-        const hasTwGenFile = !!twGenFile;
-        const treeConfigLen = tree.getFile('tailwind.config.js')?.content?.length || 0;
-        const dsIsNull = project.design_system === null;
-        const dsColorKeys = project.design_system ? Object.keys(project.design_system.colors?.primary || {}) : [];
-        console.error('[NavbarFix-Debug] customColors=' + customColorCount + ' twConfigLen=' + twConfigLen + ' hasTwGenFile=' + hasTwGenFile + ' treeConfigLen=' + treeConfigLen + ' dsIsNull=' + dsIsNull + ' dsColorKeys=' + dsColorKeys.join(','));
-
         // STEP 1: Look at the homepage hero section for the dominant theme color.
         // This is more reliable than the navbar's own scrolled-state color, because
         // the navbar often uses an accent color for its scrolled state while the
@@ -492,9 +483,7 @@ export async function publishToSubdomain(
             }
             if (!rgb) rgb = '17,24,39';
 
-        console.error('[NavbarFix] chosenColor=' + chosenColor + ' rgb=' + rgb + ' hasBranding=' + !!project.generation_config?.branding);
-
-        // STEP 5: Remove scroll-based bg ternaries
+                // STEP 5: Remove scroll-based bg ternaries
         navbarFile.content = navbarFile.content.replace(/\$\{\w+\s*\?\s*['"][^'"]*bg-[^'"]*['"]\s*:\s*['"][^'"]*['"]}\}/g, '');
         navbarFile.content = navbarFile.content.replace(/\$\{\w+\s*\?\s*"[^"]*bg-[^"]*"\s*:\s*"[^"]*"\}/g, '');
 
