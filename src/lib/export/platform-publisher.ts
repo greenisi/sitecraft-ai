@@ -459,7 +459,10 @@ export async function publishToSubdomain(
     '',
     '/* Sticky navbar enforcement — injected by publisher */',
     'nav { position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 9999 !important; backdrop-filter: blur(12px) !important; -webkit-backdrop-filter: blur(12px) !important; }',
-  ].join('\n');
+
+    '',
+    '/* Fix mobile menu dropdown inside backdrop-filter nav */',
+    'nav > div[class*="fixed"], nav > div[class*="absolute"] { bottom: auto !important; height: calc(100vh - 4rem) !important; min-height: calc(100vh - 4rem) !important; }',  ].join('\n');
   const globalsFile = files.find((f: any) => f.file_path.endsWith('globals.css'));
   if (globalsFile) {
     {
