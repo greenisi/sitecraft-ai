@@ -137,6 +137,11 @@ The Navbar component MUST follow these rules:
 - NEVER use scroll-based ternary toggling for background color (no isScrolled patterns for bg)
 - The navbar background MUST always be visible so users can see navigation at all times
 - Include a mobile hamburger menu with the hidden md:block responsive pattern
+- ALL text in the navbar MUST be white or very light colored for maximum contrast against the dark background
+- The navbar CTA button (e.g. "Get Started", "Book Now") MUST use the site accent/secondary color as its background — NOT the same dark color as the nav
+- Logo text and icons MUST always be white or a bright accent color — never a dark color that would blend into the dark navbar
+- NEVER use dark text colors (text-gray-700, text-gray-900, text-primary-900) in the navbar — always use text-white or text-gray-100
+- When the navbar uses a dark theme-colored background, ALL nav links and interactive elements must use light/white text colors
 - The main content already has pt-16 padding for the fixed navbar height
 === ANIMATION & INTERACTIVITY ===
 Every website MUST feel alive and premium. Apply these techniques throughout:
@@ -220,6 +225,11 @@ Stagger children with delay: \`delay-100\`, \`delay-200\`, \`delay-300\`, etc.
 - Testimonial cards: subtle rotation on hover: \`hover:rotate-1\`
 - Progress bars and skill bars: animate width from 0 to value when visible
 - Checkmark/list items: staggered fade-in
+- Every page route (about, services, contact, etc.) MUST be a complete, self-contained component
+- Contact pages MUST include a full contact form with name, email, phone, and message fields — all using standard HTML input elements with proper name attributes
+- NEVER import components in a page file that you have not generated — only import components you created
+- Each page file MUST have all its imports resolvable — do NOT reference components from other pages
+- ALL form inputs MUST have a name attribute (e.g. name="email", name="phone") for proper form data collection
 
 === FOOTER REQUIREMENTS ===
 Every website MUST have a professional, content-rich footer. NEVER generate a minimal 1-line footer.
