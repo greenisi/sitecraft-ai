@@ -63,7 +63,7 @@ export default function DomainsPage() {
       const res = await fetch('/api/projects');
       if (res.ok) {
         const data = await res.json();
-        setProjects(data.projects || []);
+        setProjects((data.projects || []).filter((p: any) => p.status === 'published'));
       }
     } catch (e) {
       console.error('Failed to fetch projects:', e);
@@ -197,10 +197,10 @@ export default function DomainsPage() {
                 <h3 className="text-xl font-semibold mb-2">No domains yet</h3>
                 <p className="text-gray-400 mb-6">Search for a domain to buy or connect your existing domain</p>
                 <div className="flex gap-3 justify-center">
-                  <button onClick={() => setActiveTab('search')} className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition-colors">
+                  <button onClick={() => { setActiveTab('search'); setMessage(null); }} className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition-colors">
                     Search Domains
                   </button>
-                  <button onClick={() => setActiveTab('connect')} className="px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium transition-colors">
+                  <button onClick={() => { setActiveTab('connect'); setMessage(null); }} className="px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium transition-colors">
                     Connect Existing
                   </button>
                 </div>
@@ -252,6 +252,14 @@ export default function DomainsPage() {
         {/* Search & Buy Tab */}
         {activeTab === 'search' && (
           <div>
+
+            {message && (
+              <div className={`p-4 rounded-lg mb-4 ${message.type === 'error' ? 'bg-red-500/20 border border-red-500/40 text-red-400' : 'bg-green-500/20 border border-green-500/40 text-green-400'}`}>
+                <p className="flex items-center gap-2">
+                  {message.type === 'error' ? '⚠️' : '✅'} {message.text}
+                </p>
+              </div>
+            )}
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-8">
               <h3 className="text-lg font-semibold mb-4">Search for a domain</h3>
               <div className="flex gap-3">
