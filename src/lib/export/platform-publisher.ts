@@ -323,13 +323,13 @@ export async function publishToSubdomain(
         );
         if (homepageFile) {
           // Look for gradient 'from-' colors in the hero section (first <section>)
-          const heroSectionMatch = homepageFile.content.substring(0, 3000).match(/from-((?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d+)/);
+          const heroSectionMatch = homepageFile.content.match(/from-((?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d+)/);
           if (heroSectionMatch && twColors[heroSectionMatch[1]]) {
             heroThemeColor = heroSectionMatch[1];
           }
           // Also check bg-COLOR patterns on early sections
           if (!heroThemeColor) {
-            const bgMatch = homepageFile.content.substring(0, 3000).match(/bg-((?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d+)/);
+            const bgMatch = homepageFile.content.match(/bg-((?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d+)/);
             if (bgMatch && twColors[bgMatch[1]]) {
               heroThemeColor = bgMatch[1];
             }
