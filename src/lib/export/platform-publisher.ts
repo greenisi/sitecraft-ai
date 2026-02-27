@@ -410,6 +410,27 @@ export async function publishToSubdomain(
             `<nav ${navStyleStr} className=`
           );
         }
+      // STEP 8: Fix mobile menu dropdown - backdrop-filter creates a containing block
+      // which breaks position:fixed children using bottom:0. Replace with explicit height.
+      navbarFile.content = navbarFile.content.replace(
+        /bottom-0/g,
+        ''
+      );
+      // Add inline style to any fixed/absolute div inside nav for the mobile menu panel
+      navbarFile.content = navbarFile.content.replace(
+        /(<div\s+className="[^"]*(?:fixed|absolute)[^"]*inset-x-0[^"]*top-(?:16|\[4rem\]|\[64px\])[^"]*)">/g,
+        '$1" style={{ height: "calc(100vh - 4rem)", bottom: "auto" }}>'
+      );
+      // Also handle the case where className uses template literals
+      navbarFile.content = navbarFile.content.replace(
+        /(<div\s+className=\{[^}]*(?:fixed|absolute)[^}]*\})(\s*>)/g,
+        (match, before, after) => {
+          if (match.includes('bottom-0') || match.includes('inset-x-0')) {
+            return before + ' style={{ height: "calc(100vh - 4rem)", bottom: "auto" }}' + after;
+          }
+          return match;
+        }
+      );
       } catch (navFixError) {
         // Silently continue — don't break publishing if navbar fix fails
         console.error('Navbar color fix error:', navFixError);
