@@ -48,18 +48,30 @@ npx ts-node scripts/configure-stripe-webhook.ts
 
 **Problem:** The `ref` parameter wasn't being captured during signup, so referrals weren't tracked.
 
+**Initial Issues (now fixed):**
+1. Click tracking used async `fetch()` in middleware that silently failed - the request completed before the fetch could finish
+2. Email/password signup (`/api/auth/signup`) never processed referrals - only OAuth callback did
+3. Since `referred_by` was never set, conversion tracking in webhook couldn't work
+
 **Solution:**
 - Added referral tracking columns to the `profiles` table (`referral_code`, `referred_by`)
 - Created `referral_stats` and `referral_events` tables for statistics tracking
-- Updated middleware to capture the `ref` parameter and store it in a cookie
-- Created auth callback handler to process referrals on signup
-- Created API endpoints for tracking clicks and fetching referral stats
-- Webhook now tracks conversions when referred users make purchases
+- Updated middleware to:
+  - Capture the `ref` parameter and store it in a cookie
+  - Track clicks **directly via database** (not internal fetch) for reliability
+- Updated email/password signup API to process referrals:
+  - Reads the `referral_code` cookie
+  - Links new user to referrer (`referred_by`)
+  - Records signup event
+  - Updates referral stats
+- OAuth callback also handles referrals (for social login)
+- Webhook tracks conversions when referred users make purchases
 
 **Files Modified/Created:**
-- `middleware.ts` - Captures `ref` param and tracks clicks
-- `src/app/api/auth/callback/route.ts` - Processes referrals on signup
-- `src/app/api/referral/track-click/route.ts` - Tracks referral link clicks
+- `middleware.ts` - Captures `ref` param and tracks clicks directly via DB
+- `src/app/api/auth/signup/route.ts` - **NEW**: Processes referrals for email/password signups
+- `src/app/api/auth/callback/route.ts` - Processes referrals for OAuth signups
+- `src/app/api/referral/track-click/route.ts` - Tracks referral link clicks (fallback)
 - `src/app/api/referral/stats/route.ts` - Returns referral statistics
 - `supabase/migrations/20260228_payment_and_referral_fixes.sql`
 
