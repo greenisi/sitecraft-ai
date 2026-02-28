@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Globe, Search, ShoppingCart, ExternalLink, Plus, Check, X, ArrowLeft, Loader2, AlertCircle, Link2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -22,7 +22,7 @@ interface DomainSearchResult {
   premium?: boolean;
 }
 
-export default function DomainsPage() {
+function DomainsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -433,5 +433,14 @@ export default function DomainsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+
+export default function DomainsPage() {
+  return (
+    <Suspense>
+      <DomainsPageContent />
+    </Suspense>
   );
 }
