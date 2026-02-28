@@ -79,23 +79,29 @@ export async function POST(req: Request) {
         }
 
         case 'account.application.deauthorized': {
-          const account = event.data.object as Stripe.Account;
-          console.log(`Stripe Connect account deauthorized: ${account.id}`);
+          const application = event.data.object as Stripe.Application;
+          // The connected account ID comes from the event's account field
+          const connectedAccountId = event.account;
+          console.log(`Stripe Connect account deauthorized: ${connectedAccountId}, application: ${application.id}`);
 
-          // Clear the Connect account from the user's profile
-          const { error } = await supabaseAdmin
-            .from('profiles')
-            .update({
-              stripe_connect_account_id: null,
-              stripe_connect_charges_enabled: false,
-              stripe_connect_onboarding_complete: false,
-            })
-            .eq('stripe_connect_account_id', account.id);
+          if (connectedAccountId) {
+            // Clear the Connect account from the user's profile
+            const { error } = await supabaseAdmin
+              .from('profiles')
+              .update({
+                stripe_connect_account_id: null,
+                stripe_connect_charges_enabled: false,
+                stripe_connect_onboarding_complete: false,
+              })
+              .eq('stripe_connect_account_id', connectedAccountId);
 
-          if (error) {
-            console.error('Error clearing Connect account:', error);
+            if (error) {
+              console.error('Error clearing Connect account:', error);
+            } else {
+              console.log(`Cleared Connect account ${connectedAccountId} from profile`);
+            }
           } else {
-            console.log(`Cleared Connect account ${account.id} from profile`);
+            console.warn('No connected account ID found in deauthorization event');
           }
           break;
         }
