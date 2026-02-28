@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createRouteHandlerClient as createClient } from '@/lib/supabase/server';
 import { publishToSubdomain } from '@/lib/export/platform-publisher';
 import { formatErrorResponse } from '@/lib/utils/errors';
 

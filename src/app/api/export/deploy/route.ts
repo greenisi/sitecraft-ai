@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createRouteHandlerClient as createClient } from '@/lib/supabase/server';
 import { VirtualFileTree } from '@/types/generation';
 import { deployToVercel } from '@/lib/export/vercel-deployer';
 import { buildScaffoldingTree } from '@/lib/export/file-tree';
