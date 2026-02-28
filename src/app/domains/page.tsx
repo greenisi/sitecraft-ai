@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Globe, Search, ShoppingCart, ExternalLink, Plus, Check, X, ArrowLeft, Loader2, AlertCircle, Link2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 interface Domain {
   id: string;
@@ -24,6 +24,17 @@ interface DomainSearchResult {
 
 export default function DomainsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get('cancelled') === 'true') {
+      setActiveTab('search');
+      setMessage({ type: 'error', text: 'Checkout was cancelled. You can try again when ready.' });
+    }
+    if (searchParams.get('tab') === 'search') {
+      setActiveTab('search');
+    }
+  }, [searchParams]);
   const [domains, setDomains] = useState<Domain[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'my-domains' | 'search' | 'connect'>('my-domains');
@@ -87,34 +98,38 @@ export default function DomainsPage() {
     }
   }
 
-  async function handlePurchase(domain: string) {
+  async function handlePurchase(domain: string, price: string) {
     if (!purchaseProject) {
       setMessage({ type: 'error', text: 'Please select a project to assign this domain to.' });
       return;
     }
+
     setPurchasing(true);
     setMessage(null);
+
     try {
-      const res = await fetch('/api/domains/purchase', {
+      // Create Stripe checkout session
+      const res = await fetch('/api/domains/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ domain, projectId: purchaseProject })
+        body: JSON.stringify({
+          domain,
+          projectId: purchaseProject,
+          price,
+        }),
       });
+
       const data = await res.json();
-      if (res.ok) {
-        setMessage({ type: 'success', text: 'Domain purchased successfully!' });
-        setPurchaseDomain(null);
-        setPurchaseProject('');
-        setSearchResults([]);
-        setSearchQuery('');
-        fetchDomains();
-        setActiveTab('my-domains');
+
+      if (res.ok && data.data?.checkoutUrl) {
+        // Redirect to Stripe Checkout
+        window.location.href = data.data.checkoutUrl;
       } else {
-        setMessage({ type: 'error', text: data.error?.message || 'Failed to purchase domain' });
+        setMessage({ type: 'error', text: data.error?.message || 'Failed to start checkout' });
+        setPurchasing(false);
       }
     } catch (e) {
       setMessage({ type: 'error', text: 'Network error. Please try again.' });
-    } finally {
       setPurchasing(false);
     }
   }
@@ -313,8 +328,8 @@ export default function DomainsPage() {
                               <option value="">Assign to project...</option>
                               {projects.map(p => (<option key={p.id} value={p.id}>{p.name}</option>))}
                             </select>
-                            <button onClick={() => handlePurchase(result.domain)} disabled={purchasing || !purchaseProject} className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 rounded-lg text-sm font-medium flex items-center gap-1">
-                              {purchasing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} Confirm
+                            <button onClick={() => handlePurchase(result.domain, result.price || '')} disabled={purchasing || !purchaseProject} className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 rounded-lg text-sm font-medium flex items-center gap-1">
+                              {purchasing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} Checkout
                             </button>
                             <button onClick={() => { setPurchaseDomain(null); setPurchaseProject(''); }} className="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm">
                               <X className="w-3 h-3" />
