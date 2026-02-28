@@ -34,49 +34,38 @@ export async function middleware(request: NextRequest) {
       sameSite: 'lax',
     });
     
-    // FIX: Track click directly in database (more reliable than internal fetch)
+    // FIX: Track click directly in database using affiliates table
     const supabase = getSupabaseAdmin();
     if (supabase) {
       try {
-        // Find the referrer by their referral code
-        const { data: referrer, error: referrerError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('referral_code', refCode.toUpperCase())
+        // Find the affiliate by their affiliate_code in the affiliates table
+        const { data: affiliate, error: affiliateError } = await supabase
+          .from('affiliates')
+          .select('id, user_id, total_clicks')
+          .eq('affiliate_code', refCode.toUpperCase())
           .single();
 
-        if (referrer && !referrerError) {
-          // Record the click event
-          await supabase.from('referral_events').insert({
-            referrer_id: referrer.id,
-            event_type: 'click',
+        if (affiliate && !affiliateError) {
+          // Update click count in affiliates table
+          await supabase
+            .from('affiliates')
+            .update({
+              total_clicks: (affiliate.total_clicks || 0) + 1,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', affiliate.id);
+
+          // Create a referral entry for tracking
+          await supabase.from('referrals').insert({
+            affiliate_id: affiliate.id,
+            status: 'clicked',
+            reward_type: 'free_month',
+            reward_value: 1,
           });
 
-          // Update or create referral stats
-          const { data: stats } = await supabase
-            .from('referral_stats')
-            .select('clicks')
-            .eq('referrer_id', referrer.id)
-            .single();
-
-          if (stats) {
-            await supabase
-              .from('referral_stats')
-              .update({
-                clicks: (stats.clicks || 0) + 1,
-                updated_at: new Date().toISOString(),
-              })
-              .eq('referrer_id', referrer.id);
-          } else {
-            await supabase.from('referral_stats').insert({
-              referrer_id: referrer.id,
-              clicks: 1,
-            });
-          }
-
-          console.log('[Middleware] Tracked referral click for:', referrer.id);
+          console.log('[Middleware] Tracked referral click for affiliate:', affiliate.id);
         } else {
-          console.log('[Middleware] Invalid referral code:', refCode, referrerError?.message);
+          console.log('[Middleware] Invalid affiliate code:', refCode, affiliateError?.message);
         }
       } catch (err) {
         console.error('[Middleware] Error tracking click:', err);

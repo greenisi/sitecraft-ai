@@ -183,7 +183,7 @@ async function fulfillCheckout(session: Stripe.Checkout.Session) {
 }
 
 /**
- * FIX 3: Track referral conversion when a referred user makes a purchase
+ * FIX: Track referral conversion using affiliates table
  */
 async function trackReferralConversion(userId: string, amountInCents: number) {
   try {
@@ -201,44 +201,52 @@ async function trackReferralConversion(userId: string, amountInCents: number) {
     const referrerId = profile.referred_by;
     const amountInDollars = amountInCents / 100;
 
-    // Record the conversion event
-    await supabaseAdmin.from('referral_events').insert({
-      referrer_id: referrerId,
-      referred_user_id: userId,
-      event_type: 'conversion',
-      conversion_amount: amountInDollars,
-    });
-
-    // Update referral stats
-    const { data: stats, error: statsError } = await supabaseAdmin
-      .from('referral_stats')
-      .select('conversions, total_earnings')
-      .eq('referrer_id', referrerId)
+    // Find the affiliate record for the referrer
+    const { data: affiliate } = await supabaseAdmin
+      .from('affiliates')
+      .select('id, total_conversions, total_earnings, free_months_earned')
+      .eq('user_id', referrerId)
       .single();
 
-    if (statsError && statsError.code !== 'PGRST116') {
-      console.error('[Webhook] Error fetching referral stats:', statsError);
+    if (!affiliate) {
+      console.log('[Webhook] No affiliate record found for referrer:', referrerId);
       return;
     }
 
-    if (stats) {
+    // Update the referral entry to 'converted'
+    const { data: referral } = await supabaseAdmin
+      .from('referrals')
+      .select('id')
+      .eq('affiliate_id', affiliate.id)
+      .eq('referred_user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (referral) {
       await supabaseAdmin
-        .from('referral_stats')
+        .from('referrals')
         .update({
-          conversions: (stats.conversions || 0) + 1,
-          total_earnings: (parseFloat(stats.total_earnings) || 0) + amountInDollars,
-          updated_at: new Date().toISOString(),
+          status: 'converted',
+          converted_at: new Date().toISOString(),
+          plan_purchased: 'credits',
         })
-        .eq('referrer_id', referrerId);
-    } else {
-      await supabaseAdmin.from('referral_stats').insert({
-        referrer_id: referrerId,
-        conversions: 1,
-        total_earnings: amountInDollars,
-      });
+        .eq('id', referral.id);
     }
 
+    // Update affiliate conversion count and earnings
+    await supabaseAdmin
+      .from('affiliates')
+      .update({
+        total_conversions: (affiliate.total_conversions || 0) + 1,
+        total_earnings: (parseFloat(String(affiliate.total_earnings)) || 0) + amountInDollars,
+        free_months_earned: (affiliate.free_months_earned || 0) + 1,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', affiliate.id);
+
     console.log('[Webhook] Tracked referral conversion', {
+      affiliateId: affiliate.id,
       referrerId,
       referredUserId: userId,
       amount: amountInDollars,

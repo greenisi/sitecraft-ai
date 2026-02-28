@@ -87,70 +87,83 @@ async function processReferral(supabase: ReturnType<typeof createAdminClient>, n
   try {
     console.log('[Signup] Processing referral:', { newUserId, referralCode });
 
-    // Find the referrer by their referral code
-    const { data: referrer, error: referrerError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('referral_code', referralCode.toUpperCase())
+    // Find the affiliate by their affiliate_code in the affiliates table
+    const { data: affiliate, error: affiliateError } = await supabase
+      .from('affiliates')
+      .select('id, user_id, total_signups')
+      .eq('affiliate_code', referralCode.toUpperCase())
       .single();
 
-    if (referrerError || !referrer) {
-      console.log('[Signup] Referral code not found:', referralCode);
+    if (affiliateError || !affiliate) {
+      console.log('[Signup] Affiliate code not found:', referralCode);
       return;
     }
 
     // Don't allow self-referral
-    if (referrer.id === newUserId) {
+    if (affiliate.user_id === newUserId) {
       console.log('[Signup] Self-referral attempted, ignoring');
       return;
     }
 
-    // Update the new user's profile with the referrer
+    // Update the new user's profile with the referrer's user_id
     const { error: updateError } = await supabase
       .from('profiles')
-      .update({ referred_by: referrer.id })
+      .update({ referred_by: affiliate.user_id })
       .eq('id', newUserId);
 
     if (updateError) {
       console.error('[Signup] Failed to update referred_by:', updateError);
-      return;
+      // Don't return - still try to update affiliate stats
     }
 
-    // Record the signup event
-    const { error: eventError } = await supabase.from('referral_events').insert({
-      referrer_id: referrer.id,
-      referred_user_id: newUserId,
-      event_type: 'signup',
-    });
+    // Get the new user's email for the referral record
+    const { data: newUser } = await supabase.auth.admin.getUserById(newUserId);
+    const referredEmail = newUser?.user?.email || null;
 
-    if (eventError) {
-      console.error('[Signup] Failed to record signup event:', eventError);
-    }
-
-    // Update referral stats
-    const { data: stats } = await supabase
-      .from('referral_stats')
-      .select('signups')
-      .eq('referrer_id', referrer.id)
+    // Update the most recent 'clicked' referral entry to 'signed_up', or create new one
+    const { data: existingReferral } = await supabase
+      .from('referrals')
+      .select('id')
+      .eq('affiliate_id', affiliate.id)
+      .eq('status', 'clicked')
+      .order('created_at', { ascending: false })
+      .limit(1)
       .single();
 
-    if (stats) {
+    if (existingReferral) {
       await supabase
-        .from('referral_stats')
+        .from('referrals')
         .update({
-          signups: (stats.signups || 0) + 1,
-          updated_at: new Date().toISOString(),
+          referred_email: referredEmail,
+          referred_user_id: newUserId,
+          status: 'signed_up',
+          signed_up_at: new Date().toISOString(),
         })
-        .eq('referrer_id', referrer.id);
+        .eq('id', existingReferral.id);
     } else {
-      await supabase.from('referral_stats').insert({
-        referrer_id: referrer.id,
-        signups: 1,
+      await supabase.from('referrals').insert({
+        affiliate_id: affiliate.id,
+        referred_email: referredEmail,
+        referred_user_id: newUserId,
+        status: 'signed_up',
+        signed_up_at: new Date().toISOString(),
+        reward_type: 'free_month',
+        reward_value: 1,
       });
     }
 
+    // Update affiliate signup count
+    await supabase
+      .from('affiliates')
+      .update({
+        total_signups: (affiliate.total_signups || 0) + 1,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', affiliate.id);
+
     console.log('[Signup] Successfully processed referral:', {
-      referrerId: referrer.id,
+      affiliateId: affiliate.id,
+      referrerUserId: affiliate.user_id,
       newUserId,
       referralCode,
     });
