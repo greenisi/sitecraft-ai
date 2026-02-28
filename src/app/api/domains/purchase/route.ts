@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createRouteHandlerClient as createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { purchaseDomain, setNameservers } from '@/lib/domains/namecom';
 import { addDomainToProject } from '@/lib/export/vercel-domains';

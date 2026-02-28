@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createRouteHandlerClient as createClient } from '@/lib/supabase/server';
 import { getTemplateById } from '@/lib/templates/premium-templates';
 
 export async function POST(request: NextRequest) {

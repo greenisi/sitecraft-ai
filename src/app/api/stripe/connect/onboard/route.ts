@@ -1,22 +1,28 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createRouteHandlerClient } from '@/lib/supabase/server';
 import { getStripe } from '@/lib/stripe';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST() {
   try {
-    const supabase = await createClient();
+    const supabase = await createRouteHandlerClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError) {
-      console.error('Supabase auth error:', authError);
-      return NextResponse.json({ error: 'Authentication error' }, { status: 401 });
+      console.error('Supabase auth error:', authError.message);
+      return NextResponse.json(
+        { error: 'Authentication error', details: authError.message }, 
+        { status: 401 }
+      );
     }
     
     if (!user) {
-      console.error('No user found in session');
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      console.error('No user found in session - cookies may not be properly set');
+      return NextResponse.json(
+        { error: 'Unauthorized - Please log in again' }, 
+        { status: 401 }
+      );
     }
 
     const stripe = getStripe();

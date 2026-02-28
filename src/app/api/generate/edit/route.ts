@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createRouteHandlerClient as createClient } from '@/lib/supabase/server';
 import { getAnthropicClient, GENERATION_MODEL } from '@/lib/ai/client';
 import { buildSystemPrompt } from '@/lib/ai/prompts/system-prompt';
 import { parseDesignSystem } from '@/lib/ai/parsers';

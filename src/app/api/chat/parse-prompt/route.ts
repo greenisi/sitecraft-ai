@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createRouteHandlerClient as createClient } from '@/lib/supabase/server';
 import { getAnthropicClient, GENERATION_MODEL } from '@/lib/ai/client';
 import type { SectionConfig } from '@/types/project';
 
