@@ -11,9 +11,64 @@ const supabaseAdmin = createAdminClient(
 );
 
 /**
+ * Check if a Stripe session has already been processed
+ * Returns true if already processed, false otherwise
+ */
+async function isSessionProcessed(sessionId: string): Promise<boolean> {
+  const { data, error } = await supabaseAdmin
+    .from('processed_stripe_sessions')
+    .select('id')
+    .eq('session_id', sessionId)
+    .single();
+
+  if (error && error.code !== 'PGRST116') {
+    console.error('[VerifySession] Error checking processed session:', error);
+  }
+
+  return !!data;
+}
+
+/**
+ * Mark a Stripe session as processed to prevent double fulfillment
+ */
+async function markSessionProcessed(
+  sessionId: string,
+  userId: string,
+  priceType: string | null,
+  mode: string,
+  creditsAdded: number
+): Promise<boolean> {
+  const { error } = await supabaseAdmin
+    .from('processed_stripe_sessions')
+    .insert({
+      session_id: sessionId,
+      user_id: userId,
+      price_type: priceType,
+      mode: mode,
+      credits_added: creditsAdded,
+      processed_by: 'verify-session',
+    });
+
+  if (error) {
+    // If unique constraint violation, session was already processed
+    if (error.code === '23505') {
+      console.log('[VerifySession] Session already processed (concurrent request):', sessionId);
+      return false;
+    }
+    console.error('[VerifySession] Error marking session as processed:', error);
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * POST /api/stripe/verify-session
  * Called by the pricing page when a user returns from Stripe checkout.
  * Verifies the session is paid and fulfills the order if the webhook hasn't already.
+ * 
+ * FIX 1: Now checks processed_stripe_sessions table to prevent double fulfillment
+ * FIX 4: Now adds credits instead of overwriting for Pro subscriptions
  */
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -39,6 +94,25 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    // FIX 1: Check if this session has already been processed
+    const alreadyProcessed = await isSessionProcessed(sessionId);
+    if (alreadyProcessed) {
+      console.log('[VerifySession] Session already processed, returning success:', sessionId);
+      
+      // Fetch current profile state to return
+      const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('plan')
+        .eq('id', user.id)
+        .single();
+      
+      return NextResponse.json({ 
+        status: 'already_fulfilled', 
+        plan: profile?.plan || 'free',
+        message: 'This payment was already processed'
+      });
+    }
+
     // Retrieve the checkout session from Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
@@ -68,9 +142,24 @@ export async function POST(request: NextRequest) {
     let fulfilled = false;
 
     if (session.mode === 'subscription') {
-      // Check if already fulfilled (plan is pro and subscription ID matches)
+      // Check if already fulfilled by checking subscription ID
       if (profile.plan === 'pro' && profile.stripe_subscription_id === session.subscription) {
         return NextResponse.json({ status: 'already_fulfilled', plan: 'pro' });
+      }
+
+      // FIX 4: Calculate new credits (add 100 instead of setting to 100)
+      const currentCredits = profile.generation_credits || 0;
+      const newCredits = currentCredits + 100;
+
+      // FIX 1: Mark session as processed BEFORE updating
+      const marked = await markSessionProcessed(sessionId, user.id, priceType || null, 'subscription', 100);
+      if (!marked) {
+        // Session was processed by another request (webhook), return success
+        return NextResponse.json({ 
+          status: 'already_fulfilled', 
+          plan: 'pro',
+          message: 'Payment processed by webhook'
+        });
       }
 
       // Fulfill the subscription
@@ -79,7 +168,7 @@ export async function POST(request: NextRequest) {
         .update({
           plan: 'pro',
           stripe_subscription_id: session.subscription as string,
-          generation_credits: 100,
+          generation_credits: newCredits,
         })
         .eq('id', user.id);
 
@@ -89,7 +178,11 @@ export async function POST(request: NextRequest) {
       }
 
       fulfilled = true;
-      console.log('[VerifySession] Fulfilled subscription for user', user.id);
+      console.log('[VerifySession] Fulfilled subscription for user', {
+        userId: user.id,
+        previousCredits: currentCredits,
+        newCredits,
+      });
     } else if (session.mode === 'payment') {
       const creditAmounts: Record<string, number> = {
         credits_10: 10,
@@ -98,14 +191,19 @@ export async function POST(request: NextRequest) {
       const creditsToAdd = creditAmounts[priceType || ''] || 0;
 
       if (creditsToAdd > 0) {
-        // We add credits regardless — if webhook already added them, user gets double.
-        // To prevent this, we could track fulfilled session IDs, but for now this is a 
-        // safety net for when webhooks fail. The risk of double-fulfillment is low since
-        // this only runs once on page return and we can track session IDs later.
         const currentCredits = profile.generation_credits || 0;
-        
-        // Simple duplicate check: if profile was just updated by webhook
-        // and credits match what webhook would have set, skip
+
+        // FIX 1: Mark session as processed BEFORE updating
+        const marked = await markSessionProcessed(sessionId, user.id, priceType || null, 'payment', creditsToAdd);
+        if (!marked) {
+          // Session was processed by another request (webhook), return success
+          return NextResponse.json({ 
+            status: 'already_fulfilled', 
+            plan: profile.plan,
+            message: 'Payment processed by webhook'
+          });
+        }
+
         const { error } = await supabaseAdmin
           .from('profiles')
           .update({ generation_credits: currentCredits + creditsToAdd })
