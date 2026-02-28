@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createRouteHandlerClient as createClient } from '@/lib/supabase/server';
 import { runGenerationPipeline } from '@/lib/ai/pipeline';
 import { createSSEStream } from '@/lib/ai/stream-handler';
 import type { GenerationConfig } from '@/types/project';

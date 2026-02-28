@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createRouteHandlerClient as createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { applyVisualEdits } from '@/lib/visual-editor/apply-edits';
 import type { PendingChange } from '@/stores/visual-editor-store';
