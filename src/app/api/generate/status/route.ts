@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createRouteHandlerClient as createClient } from '@/lib/supabase/server';
 
 /**
  * GET /api/generate/status?projectId=xxx

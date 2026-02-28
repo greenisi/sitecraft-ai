@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createRouteHandlerClient as createClient } from '@/lib/supabase/server';
 import { stripe } from '@/lib/stripe';
 import { createClient as createAdminClient } from '@supabase/supabase-js';
 
