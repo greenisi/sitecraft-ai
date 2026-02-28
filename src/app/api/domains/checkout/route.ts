@@ -77,7 +77,24 @@ export async function POST(request: Request) {
 
     // Create Stripe Checkout Session
     const stripe = getStripe();
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.innovated.marketing';
+    // Trim and remove trailing slash to ensure clean URL construction
+    const rawAppUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://app.innovated.marketing').trim();
+    const appUrl = rawAppUrl.replace(/\/+$/, '');
+
+    const successUrl = `${appUrl}/domains/success?session_id={CHECKOUT_SESSION_ID}&domain=${encodeURIComponent(domain)}`;
+    const cancelUrl = `${appUrl}/domains?tab=search&cancelled=true`;
+
+    // Validate URLs before sending to Stripe
+    try {
+      new URL(successUrl.replace('{CHECKOUT_SESSION_ID}', 'test'));
+      new URL(cancelUrl);
+    } catch (urlError) {
+      console.error('Invalid checkout URLs:', { appUrl, rawAppUrl, successUrl, cancelUrl, envVar: process.env.NEXT_PUBLIC_APP_URL });
+      return NextResponse.json(
+        { error: { message: 'Invalid application URL configuration. Please contact support.', code: 'CONFIG_ERROR' } },
+        { status: 500 }
+      );
+    }
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
@@ -103,8 +120,8 @@ export async function POST(request: Request) {
         userId: user.id,
         namecomPrice: String(domainResult.purchasePrice),
       },
-      success_url: `${appUrl}/domains/success?session_id={CHECKOUT_SESSION_ID}&domain=${encodeURIComponent(domain)}`,
-      cancel_url: `${appUrl}/domains?tab=search&cancelled=true`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
     });
 
     return NextResponse.json({
