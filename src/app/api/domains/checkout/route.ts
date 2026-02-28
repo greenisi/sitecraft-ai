@@ -66,6 +66,15 @@ export async function POST(request: Request) {
     }
     const priceInCents = Math.round(priceNum * 100);
 
+    // Validate Stripe configuration
+    if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_SECRET_KEY.startsWith('sk_')) {
+      console.error('STRIPE_SECRET_KEY is not properly configured');
+      return NextResponse.json(
+        { error: { message: 'Payment system is not configured. Please contact support.', code: 'CONFIG_ERROR' } },
+        { status: 503 }
+      );
+    }
+
     // Create Stripe Checkout Session
     const stripe = getStripe();
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.innovated.marketing';
