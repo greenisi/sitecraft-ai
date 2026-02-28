@@ -2,11 +2,20 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getStripe } from '@/lib/stripe';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError) {
+      console.error('Supabase auth error:', authError);
+      return NextResponse.json({ error: 'Authentication error' }, { status: 401 });
+    }
+    
     if (!user) {
+      console.error('No user found in session');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
