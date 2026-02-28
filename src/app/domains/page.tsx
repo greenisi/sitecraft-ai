@@ -74,7 +74,8 @@ function DomainsPageContent() {
       const res = await fetch('/api/projects');
       if (res.ok) {
         const data = await res.json();
-        setProjects((data.projects || []).filter((p: any) => p.status === 'published'));
+        // Filter for projects that have been published (have a published_url or status is 'published')
+        setProjects((data.projects || []).filter((p: any) => p.published_url || p.status === 'published'));
       }
     } catch (e) {
       console.error('Failed to fetch projects:', e);
@@ -104,6 +105,11 @@ function DomainsPageContent() {
       return;
     }
 
+    if (!domain || !price) {
+      setMessage({ type: 'error', text: 'Invalid domain or price. Please try searching again.' });
+      return;
+    }
+
     setPurchasing(true);
     setMessage(null);
 
@@ -125,11 +131,15 @@ function DomainsPageContent() {
         // Redirect to Stripe Checkout
         window.location.href = data.data.checkoutUrl;
       } else {
-        setMessage({ type: 'error', text: data.error?.message || 'Failed to start checkout' });
+        // Handle various error cases with specific messages
+        const errorMsg = data.error?.message || data.error || 'Failed to start checkout';
+        console.error('Domain checkout error:', { status: res.status, error: errorMsg });
+        setMessage({ type: 'error', text: errorMsg });
         setPurchasing(false);
       }
     } catch (e) {
-      setMessage({ type: 'error', text: 'Network error. Please try again.' });
+      console.error('Domain checkout network error:', e);
+      setMessage({ type: 'error', text: 'Network error. Please check your connection and try again.' });
       setPurchasing(false);
     }
   }
@@ -324,11 +334,15 @@ function DomainsPageContent() {
                         )}
                         {purchaseDomain === result.domain ? (
                           <div className="flex items-center gap-2">
-                            <select value={purchaseProject} onChange={e => setPurchaseProject(e.target.value)} className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white">
-                              <option value="">Assign to project...</option>
-                              {projects.map(p => (<option key={p.id} value={p.id}>{p.name}</option>))}
-                            </select>
-                            <button onClick={() => handlePurchase(result.domain, result.price || '')} disabled={purchasing || !purchaseProject} className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 rounded-lg text-sm font-medium flex items-center gap-1">
+                            {projects.length === 0 ? (
+                              <span className="text-sm text-amber-400 mr-2">No published projects. Create and publish a project first.</span>
+                            ) : (
+                              <select value={purchaseProject} onChange={e => setPurchaseProject(e.target.value)} className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white">
+                                <option value="">Assign to project...</option>
+                                {projects.map(p => (<option key={p.id} value={p.id}>{p.name}</option>))}
+                              </select>
+                            )}
+                            <button onClick={() => handlePurchase(result.domain, result.price || '')} disabled={purchasing || !purchaseProject || projects.length === 0} className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium flex items-center gap-1">
                               {purchasing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} Checkout
                             </button>
                             <button onClick={() => { setPurchaseDomain(null); setPurchaseProject(''); }} className="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm">

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient as createClient } from '@/lib/supabase/server';
-import { stripe, STRIPE_PRICES } from '@/lib/stripe';
+import { getStripe, STRIPE_PRICES } from '@/lib/stripe';
 
 export const runtime = 'nodejs';
 
@@ -9,90 +9,113 @@ interface RequestBody {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  let body: RequestBody;
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
-  }
+    // Validate Stripe configuration first
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey || !stripeKey.startsWith('sk_')) {
+      console.error('STRIPE_SECRET_KEY is not properly configured');
+      return NextResponse.json(
+        { error: 'Payment system is not configured. Please contact support.' },
+        { status: 503 }
+      );
+    }
 
-  const { priceType } = body;
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
-  // Map price types to Stripe price IDs
-  const priceMap: Record<string, string> = {
-    pro_monthly: STRIPE_PRICES.PRO_MONTHLY,
-    pro_yearly: STRIPE_PRICES.PRO_YEARLY,
-    credits_10: STRIPE_PRICES.CREDITS_10,
-    credits_50: STRIPE_PRICES.CREDITS_50,
-  };
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-  const priceId = priceMap[priceType];
-  if (!priceId) {
-    return NextResponse.json(
-      { error: 'Invalid price type or price not configured' },
-      { status: 400 }
-    );
-  }
+    let body: RequestBody;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
 
-  // Check if user already has a Stripe customer ID
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('stripe_customer_id, plan')
-    .eq('id', user.id)
-    .single();
+    const { priceType } = body;
 
-  let customerId = profile?.stripe_customer_id;
+    // Map price types to Stripe price IDs
+    const priceMap: Record<string, string> = {
+      pro_monthly: STRIPE_PRICES.PRO_MONTHLY,
+      pro_yearly: STRIPE_PRICES.PRO_YEARLY,
+      credits_10: STRIPE_PRICES.CREDITS_10,
+      credits_50: STRIPE_PRICES.CREDITS_50,
+    };
 
-  // Create Stripe customer if not exists
-  if (!customerId) {
-    const customer = await stripe.customers.create({
-      email: user.email,
-      metadata: {
-        supabase_user_id: user.id,
-      },
-    });
-    customerId = customer.id;
+    const priceId = priceMap[priceType];
+    if (!priceId || priceId.trim() === '') {
+      console.error(`Price ID not configured for price type: ${priceType}`);
+      return NextResponse.json(
+        { error: `Price not configured for ${priceType}. Please contact support.` },
+        { status: 503 }
+      );
+    }
 
-    // Save the customer ID to the profile
-    await supabase
+    // Get Stripe instance (will throw if not configured)
+    const stripe = getStripe();
+
+    // Check if user already has a Stripe customer ID
+    const { data: profile } = await supabase
       .from('profiles')
-      .update({ stripe_customer_id: customerId })
-      .eq('id', user.id);
-  }
+      .select('stripe_customer_id, plan')
+      .eq('id', user.id)
+      .single();
 
-  // Determine if this is a subscription or one-time payment
-  const isSubscription = priceType === 'pro_monthly' || priceType === 'pro_yearly';
+    let customerId = profile?.stripe_customer_id;
 
-  const origin = request.headers.get('origin') || 'https://app.innovated.marketing';
-
-  const session = await stripe.checkout.sessions.create({
-    customer: customerId,
-    mode: isSubscription ? 'subscription' : 'payment',
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${origin}/pricing?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/pricing?payment=cancelled`,
-    metadata: {
-      supabase_user_id: user.id,
-      price_type: priceType,
-    },
-    ...(isSubscription && {
-      subscription_data: {
+    // Create Stripe customer if not exists
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: user.email,
         metadata: {
           supabase_user_id: user.id,
         },
-      },
-    }),
-  });
+      });
+      customerId = customer.id;
 
-  return NextResponse.json({ url: session.url });
+      // Save the customer ID to the profile
+      await supabase
+        .from('profiles')
+        .update({ stripe_customer_id: customerId })
+        .eq('id', user.id);
+    }
+
+    // Determine if this is a subscription or one-time payment
+    const isSubscription = priceType === 'pro_monthly' || priceType === 'pro_yearly';
+
+    const origin = request.headers.get('origin') || 'https://app.innovated.marketing';
+
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      mode: isSubscription ? 'subscription' : 'payment',
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${origin}/pricing?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/pricing?payment=cancelled`,
+      metadata: {
+        supabase_user_id: user.id,
+        price_type: priceType,
+      },
+      ...(isSubscription && {
+        subscription_data: {
+          metadata: {
+            supabase_user_id: user.id,
+          },
+        },
+      }),
+    });
+
+    return NextResponse.json({ url: session.url });
+  } catch (error: unknown) {
+    console.error('Stripe checkout error:', error);
+    const message = error instanceof Error ? error.message : 'Failed to create checkout session';
+    return NextResponse.json(
+      { error: message },
+      { status: 500 }
+    );
+  }
 }
