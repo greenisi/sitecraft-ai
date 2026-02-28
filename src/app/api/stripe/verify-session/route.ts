@@ -63,6 +63,81 @@ async function markSessionProcessed(
 }
 
 /**
+ * Track referral conversion using affiliates table
+ * referred_by stores the affiliate table ID (not user_id)
+ */
+async function trackReferralConversion(userId: string, amountInCents: number) {
+  try {
+    // Check if this user was referred
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('referred_by')
+      .eq('id', userId)
+      .single();
+
+    if (!profile?.referred_by) {
+      return; // User was not referred
+    }
+
+    const affiliateId = profile.referred_by; // This is the affiliate table ID
+    const amountInDollars = amountInCents / 100;
+
+    // Find the affiliate record by ID
+    const { data: affiliate } = await supabaseAdmin
+      .from('affiliates')
+      .select('id, user_id, total_conversions, total_earnings, free_months_earned')
+      .eq('id', affiliateId)
+      .single();
+
+    if (!affiliate) {
+      console.log('[VerifySession] No affiliate record found for ID:', affiliateId);
+      return;
+    }
+
+    // Update the referral entry to 'converted'
+    const { data: referral } = await supabaseAdmin
+      .from('referrals')
+      .select('id')
+      .eq('affiliate_id', affiliate.id)
+      .eq('referred_user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (referral) {
+      await supabaseAdmin
+        .from('referrals')
+        .update({
+          status: 'converted',
+          converted_at: new Date().toISOString(),
+          plan_purchased: 'credits',
+        })
+        .eq('id', referral.id);
+    }
+
+    // Update affiliate conversion count and earnings
+    await supabaseAdmin
+      .from('affiliates')
+      .update({
+        total_conversions: (affiliate.total_conversions || 0) + 1,
+        total_earnings: (parseFloat(String(affiliate.total_earnings)) || 0) + amountInDollars,
+        free_months_earned: (affiliate.free_months_earned || 0) + 1,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', affiliate.id);
+
+    console.log('[VerifySession] Tracked referral conversion', {
+      affiliateId: affiliate.id,
+      referrerId: affiliate.user_id,
+      referredUserId: userId,
+      amount: amountInDollars,
+    });
+  } catch (err) {
+    console.error('[VerifySession] Error tracking referral conversion:', err);
+  }
+}
+
+/**
  * POST /api/stripe/verify-session
  * Called by the pricing page when a user returns from Stripe checkout.
  * Verifies the session is paid and fulfills the order if the webhook hasn't already.
@@ -183,6 +258,9 @@ export async function POST(request: NextRequest) {
         previousCredits: currentCredits,
         newCredits,
       });
+
+      // Track referral conversion
+      await trackReferralConversion(user.id, session.amount_total || 0);
     } else if (session.mode === 'payment') {
       const creditAmounts: Record<string, number> = {
         credits_10: 10,
@@ -220,6 +298,9 @@ export async function POST(request: NextRequest) {
           added: creditsToAdd,
           newTotal: currentCredits + creditsToAdd,
         });
+
+        // Track referral conversion
+        await trackReferralConversion(user.id, session.amount_total || 0);
       }
     }
 

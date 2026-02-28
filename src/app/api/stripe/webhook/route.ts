@@ -198,20 +198,22 @@ async function trackReferralConversion(userId: string, amountInCents: number) {
       return; // User was not referred
     }
 
-    const referrerId = profile.referred_by;
+    const affiliateId = profile.referred_by; // This is the affiliate table ID
     const amountInDollars = amountInCents / 100;
 
-    // Find the affiliate record for the referrer
+    // Find the affiliate record by ID (referred_by stores affiliate.id)
     const { data: affiliate } = await supabaseAdmin
       .from('affiliates')
-      .select('id, total_conversions, total_earnings, free_months_earned')
-      .eq('user_id', referrerId)
+      .select('id, user_id, total_conversions, total_earnings, free_months_earned')
+      .eq('id', affiliateId)
       .single();
 
     if (!affiliate) {
-      console.log('[Webhook] No affiliate record found for referrer:', referrerId);
+      console.log('[Webhook] No affiliate record found for ID:', affiliateId);
       return;
     }
+
+    const referrerId = affiliate.user_id;
 
     // Update the referral entry to 'converted'
     const { data: referral } = await supabaseAdmin

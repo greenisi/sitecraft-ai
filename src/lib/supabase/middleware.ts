@@ -62,6 +62,7 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/api/') &&
     !request.nextUrl.pathname.startsWith('/api/auth/') &&
     !request.nextUrl.pathname.startsWith('/api/webhooks/') &&
+    !request.nextUrl.pathname.startsWith('/api/stripe/webhook') &&
     !request.nextUrl.pathname.startsWith('/api/sites/') &&
     !request.nextUrl.pathname.startsWith('/api/affiliates/track');
 

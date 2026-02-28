@@ -105,10 +105,11 @@ async function processReferral(supabase: ReturnType<typeof createAdminClient>, n
       return;
     }
 
-    // Update the new user's profile with the referrer's user_id
+    // Update the new user's profile with the affiliate's ID
+    // NOTE: referred_by FK references affiliates(id), not profiles(id)
     const { error: updateError } = await supabase
       .from('profiles')
-      .update({ referred_by: affiliate.user_id })
+      .update({ referred_by: affiliate.id })
       .eq('id', newUserId);
 
     if (updateError) {

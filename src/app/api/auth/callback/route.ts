@@ -70,10 +70,11 @@ async function processReferral(newUserId: string, referralCode: string) {
       return;
     }
 
-    // Update the new user's profile with the referrer's user_id
+    // Update the new user's profile with the affiliate's ID
+    // NOTE: referred_by FK references affiliates(id), not profiles(id)
     await supabaseAdmin
       .from('profiles')
-      .update({ referred_by: affiliate.user_id })
+      .update({ referred_by: affiliate.id })
       .eq('id', newUserId);
 
     // Get the new user's email for the referral record
