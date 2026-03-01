@@ -19,6 +19,7 @@ ALTER TABLE products ADD COLUMN IF NOT EXISTS variants JSONB DEFAULT '[]'::jsonb
 ALTER TABLE properties ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 0;
 ALTER TABLE properties ADD COLUMN IF NOT EXISTS lot_size TEXT;
 ALTER TABLE properties ADD COLUMN IF NOT EXISTS mls_number TEXT;
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS title TEXT;
 
 -- Ensure business_type exists on projects (already applied, included for completeness)
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS business_type TEXT;
