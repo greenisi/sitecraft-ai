@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { requireProjectOwner } from '@/lib/project-auth';
 import { createRouteHandlerClient as createClient } from '@/lib/supabase/server';
 
+export const dynamic = 'force-dynamic';
+
 function normalizeType(raw: string | null | undefined): string {
   if (!raw) return '';
   const l = raw.toLowerCase().trim();
