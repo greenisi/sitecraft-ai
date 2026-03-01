@@ -1,82 +1,164 @@
 'use client';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
-interface Service { id: string; name: string; description: string; price: number; duration: string; is_active: boolean; }
+interface Service {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  duration: string;
+  image_url: string | null;
+  is_active: boolean;
+}
 
 export default function ServicesPage() {
-    const params = useParams();
-    const projectId = params.projectId as string;
-    const [services, setServices] = useState<Service[]>([]);
-    const [showForm, setShowForm] = useState(false);
-    const [editing, setEditing] = useState<Service | null>(null);
-    const [form, setForm] = useState({ name: '', description: '', price: 0, duration: '', is_active: true });
+  const params = useParams();
+  const projectId = params.projectId as string;
+  const [services, setServices] = useState<Service[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState<Service | null>(null);
+  const [form, setForm] = useState({ name: '', description: '', price: 0, duration: '', image_url: '', is_active: true });
+  const [uploading, setUploading] = useState(false);
 
-  useEffect(() => { loadServices(); }, [projectId]);
+  const loadServices = useCallback(async () => {
+    const res = await fetch('/api/projects/' + projectId + '/services');
+    if (res.ok) {
+      const data = await res.json();
+      setServices(data.services || []);
+    }
+  }, [projectId]);
 
-  async function loadServices() {
-        const res = await fetch('/api/projects/' + projectId + '/services');
-        if (res.ok) {
-          const data = await res.json();
-          setServices(data.services || []);
-        }
+  useEffect(() => { loadServices(); }, [loadServices]);
+
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('projectId', projectId);
+    formData.append('imageType', 'service');
+    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+    if (res.ok) {
+      const data = await res.json();
+      setForm({ ...form, image_url: data.url });
+    }
+    setUploading(false);
   }
 
   async function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
-        const url = editing
-          ? '/api/projects/' + projectId + '/services/' + editing.id
-                : '/api/projects/' + projectId + '/services';
-        const res = await fetch(url, {
-                method: editing ? 'PUT' : 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(form),
-        });
-        if (res.ok) { loadServices(); setShowForm(false); setEditing(null); setForm({ name: '', description: '', price: 0, duration: '', is_active: true }); }
+    e.preventDefault();
+    const url = editing
+      ? '/api/projects/' + projectId + '/services/' + editing.id
+      : '/api/projects/' + projectId + '/services';
+    const res = await fetch(url, {
+      method: editing ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    });
+    if (res.ok) {
+      loadServices();
+      setShowForm(false);
+      setEditing(null);
+      setForm({ name: '', description: '', price: 0, duration: '', image_url: '', is_active: true });
+    }
   }
 
   async function handleDelete(id: string) {
-        if (!confirm('Delete this service?')) return;
-        await fetch('/api/projects/' + projectId + '/services/' + id, { method: 'DELETE' });
-        loadServices();
+    if (!confirm('Delete this service?')) return;
+    await fetch('/api/projects/' + projectId + '/services/' + id, { method: 'DELETE' });
+    loadServices();
   }
 
   return (
-        <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                      <h1 className="text-2xl font-bold text-white">Services</h1>
-                      <button onClick={() => { setShowForm(true); setEditing(null); setForm({ name: '', description: '', price: 0, duration: '', is_active: true }); }}
-                                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Add Service</button>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-white">Services</h1>
+        <button
+          onClick={() => { setShowForm(true); setEditing(null); setForm({ name: '', description: '', price: 0, duration: '', image_url: '', is_active: true }); }}
+          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+        >
+          Add Service
+        </button>
+      </div>
+
+      {showForm && (
+        <form onSubmit={handleSubmit} className="bg-gray-900 border border-gray-800 rounded-lg p-6 space-y-4">
+          <input
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            placeholder="Service name"
+            required
+            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white"
+          />
+          <textarea
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            placeholder="Description"
+            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white"
+            rows={3}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <input
+              type="number"
+              value={form.price}
+              onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
+              placeholder="Price"
+              className="px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white"
+            />
+            <input
+              value={form.duration}
+              onChange={(e) => setForm({ ...form, duration: e.target.value })}
+              placeholder="Duration (e.g. 1 hour)"
+              className="px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white"
+            />
+          </div>
+          <div>
+            <label className="text-gray-400 text-sm block mb-2">Service Image</label>
+            <input type="file" accept="image/*" onChange={handleImageUpload} className="text-gray-400 text-sm" />
+            {uploading && <span className="text-gray-500 text-sm ml-2">Uploading...</span>}
+            {form.image_url && <img src={form.image_url} alt="Preview" className="mt-2 h-24 object-cover rounded" />}
+          </div>
+          <div className="flex gap-2">
+            <button type="submit" className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+              {editing ? 'Update' : 'Create'}
+            </button>
+            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600">
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+
+      <div className="space-y-3">
+        {services.map((s) => (
+          <div key={s.id} className="bg-gray-900 border border-gray-800 rounded-lg p-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              {s.image_url && <img src={s.image_url} alt="" className="w-16 h-16 object-cover rounded" />}
+              <div>
+                <div className="font-medium text-white">{s.name}</div>
+                <div className="text-sm text-gray-400">${s.price} - {s.duration || 'N/A'}</div>
               </div>
-          {showForm && (
-                  <form onSubmit={handleSubmit} className="bg-gray-900 border border-gray-800 rounded-lg p-6 space-y-4">
-                            <input value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="Service name" required className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white" />
-                            <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="Description" className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white" rows={3} />
-                            <div className="grid grid-cols-2 gap-4">
-                                        <input type="number" value={form.price} onChange={e => setForm({...form, price: Number(e.target.value)})} placeholder="Price" className="px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white" />
-                                        <input value={form.duration} onChange={e => setForm({...form, duration: e.target.value})} placeholder="Duration (e.g. 1 hour)" className="px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white" />
-                            </div>
-                            <div className="flex gap-2">
-                                        <button type="submit" className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">{editing ? 'Update' : 'Create'}</button>
-                                        <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600">Cancel</button>
-                            </div>
-                  </form>
-              )}
-              <div className="space-y-3">
-                {services.map((s) => (
-                    <div key={s.id} className="bg-gray-900 border border-gray-800 rounded-lg p-4 flex items-center justify-between">
-                                <div>
-                                              <div className="font-medium text-white">{s.name}</div>
-                                              <div className="text-sm text-gray-400">${s.price} - {s.duration || 'N/A'}</div>
-                                </div>
-                                <div className="flex gap-2">
-                                              <button onClick={() => { setEditing(s); setForm(s as any); setShowForm(true); }} className="px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-600">Edit</button>
-                                              <button onClick={() => handleDelete(s.id)} className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
-                                </div>
-                    </div>
-                  ))}
-                {services.length === 0 && <p className="text-gray-500 text-center py-8">No services yet. Add your first service above.</p>}
-              </div>
-        </div>
-      );
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setEditing(s); setForm({ ...s, image_url: s.image_url || '' }); setShowForm(true); }}
+                className="px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-600"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => handleDelete(s.id)}
+                className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
+        {services.length === 0 && <p className="text-gray-500 text-center py-8">No services yet. Add your first service above.</p>}
+      </div>
+    </div>
+  );
 }
