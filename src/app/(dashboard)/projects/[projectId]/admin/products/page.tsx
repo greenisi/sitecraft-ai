@@ -39,10 +39,10 @@ export default function ProductsPage() {
   return (
         <div className="space-y-6">
               <div className="flex items-center justify-between">
-                      <h1 className="text-2xl font-bold text-white">Products</h1>h1>
+                      <h1 className="text-2xl font-bold text-white">Products</h1>
                       <button onClick={() => { setShowForm(true); setEditing(null); setForm({ name: '', description: '', price: 0, compare_at_price: '', category: '', sku: '', inventory_count: 0, is_active: true }); }}
-                                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Add Product</button>button>
-              </div>div>
+                                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Add Product</button>
+              </div>
           {showForm && (
                   <form onSubmit={handleSubmit} className="bg-gray-900 border border-gray-800 rounded-lg p-6 space-y-4">
                             <input value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="Product name" required className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white" />
@@ -53,28 +53,28 @@ export default function ProductsPage() {
                                         <input value={form.category} onChange={e => setForm({...form, category: e.target.value})} placeholder="Category" className="px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white" />
                                         <input value={form.sku} onChange={e => setForm({...form, sku: e.target.value})} placeholder="SKU" className="px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white" />
                                         <input type="number" value={form.inventory_count} onChange={e => setForm({...form, inventory_count: Number(e.target.value)})} placeholder="Inventory" className="px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white" />
-                            </div>div>
+                            </div>
                             <div className="flex gap-2">
-                                        <button type="submit" className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">{editing ? 'Update' : 'Create'}</button>button>
-                                        <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600">Cancel</button>button>
-                            </div>div>
-                  </form>form>
+                                        <button type="submit" className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">{editing ? 'Update' : 'Create'}</button>
+                                        <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600">Cancel</button>
+                            </div>
+                  </form>
               )}
               <div className="space-y-3">
                 {products.map((p) => (
                     <div key={p.id} className="bg-gray-900 border border-gray-800 rounded-lg p-4 flex items-center justify-between">
                                 <div>
-                                              <div className="font-medium text-white">{p.name}</div>div>
-                                              <div className="text-sm text-gray-400">${p.price}{p.compare_at_price ? ' (was $' + p.compare_at_price + ')' : ''} - Stock: {p.inventory_count}</div>div>
-                                </div>div>
+                                              <div className="font-medium text-white">{p.name}</div>
+                                              <div className="text-sm text-gray-400">${p.price}{p.compare_at_price ? ' (was $' + p.compare_at_price + ')' : ''} - Stock: {p.inventory_count}</div>
+                                </div>
                                 <div className="flex gap-2">
-                                              <button onClick={() => { setEditing(p); setForm({...p, compare_at_price: p.compare_at_price?.toString() || ''} as any); setShowForm(true); }} className="px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-600">Edit</button>button>
-                                              <button onClick={() => handleDelete(p.id)} className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700">Delete</button>button>
-                                </div>div>
-                    </div>div>
+                                              <button onClick={() => { setEditing(p); setForm({...p, compare_at_price: p.compare_at_price?.toString() || ''} as any); setShowForm(true); }} className="px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-600">Edit</button>
+                                              <button onClick={() => handleDelete(p.id)} className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
+                                </div>
+                    </div>
                   ))}
-                {products.length === 0 && <p className="text-gray-500 text-center py-8">No products yet. Add your first product above.</p>p>}
-              </div>div>
-        </div>div>
+                {products.length === 0 && <p className="text-gray-500 text-center py-8">No products yet. Add your first product above.</p>}
+              </div>
+        </div>
       );
-}</div>
+}

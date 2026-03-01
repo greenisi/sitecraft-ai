@@ -30,40 +30,40 @@ export default function OrdersPage() {
   return (
         <div className="space-y-6">
               <div className="flex items-center justify-between">
-                      <h1 className="text-2xl font-bold text-white">Orders</h1>h1>
+                      <h1 className="text-2xl font-bold text-white">Orders</h1>
                       <select value={filter} onChange={e => setFilter(e.target.value)} className="px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white">
-                                <option value="">All Orders</option>option>
-                                <option value="pending">Pending</option>option>
-                                <option value="processing">Processing</option>option>
-                                <option value="shipped">Shipped</option>option>
-                                <option value="delivered">Delivered</option>option>
-                                <option value="cancelled">Cancelled</option>option>
-                      </select>select>
-              </div>div>
+                                <option value="">All Orders</option>
+                                <option value="pending">Pending</option>
+                                <option value="processing">Processing</option>
+                                <option value="shipped">Shipped</option>
+                                <option value="delivered">Delivered</option>
+                                <option value="cancelled">Cancelled</option>
+                      </select>
+              </div>
               <div className="space-y-3">
                 {orders.map((order) => (
                     <div key={order.id} className="bg-gray-900 border border-gray-800 rounded-lg p-4">
                                 <div className="flex items-center justify-between mb-2">
                                               <div>
-                                                              <span className="font-medium text-white">Order #{order.id.slice(0, 8)}</span>span>
-                                                              <span className="ml-2 text-sm text-gray-400">{new Date(order.created_at).toLocaleDateString()}</span>span>
-                                              </div>div>
-                                              <span className={'text-xs px-2 py-1 rounded text-white ' + (statusColors[order.status] || 'bg-gray-600')}>{order.status}</span>span>
-                                </div>div>
-                                <div className="text-sm text-gray-400">{order.customer_email || 'No email'}</div>div>
-                                <div className="text-lg font-bold text-white mt-1">${(order.total_amount / 100).toFixed(2)}</div>div>
+                                                              <span className="font-medium text-white">Order #{order.id.slice(0, 8)}</span>
+                                                              <span className="ml-2 text-sm text-gray-400">{new Date(order.created_at).toLocaleDateString()}</span>
+                                              </div>
+                                              <span className={'text-xs px-2 py-1 rounded text-white ' + (statusColors[order.status] || 'bg-gray-600')}>{order.status}</span>
+                                </div>
+                                <div className="text-sm text-gray-400">{order.customer_email || 'No email'}</div>
+                                <div className="text-lg font-bold text-white mt-1">${(order.total_amount / 100).toFixed(2)}</div>
                                 <div className="flex gap-2 mt-3">
                                   {['pending', 'processing', 'shipped', 'delivered'].map(s => (
                                       <button key={s} onClick={() => updateStatus(order.id, s)} disabled={order.status === s}
                                                           className={'px-2 py-1 text-xs rounded ' + (order.status === s ? 'bg-gray-600 text-gray-400' : 'bg-gray-700 text-white hover:bg-gray-600')}>
                                         {s}
-                                      </button>button>
+                                      </button>
                                     ))}
-                                </div>div>
+                                </div>
                                     </div>
                   ))}
-                {orders.length === 0 && <p className="text-gray-500 text-center py-8">No orders yet.</p>p>}
-              </div>div>
-        </div>div>
+                {orders.length === 0 && <p className="text-gray-500 text-center py-8">No orders yet.</p>}
+              </div>
+        </div>
       );
-}</div>
+}

@@ -45,23 +45,23 @@ export default function AdminDashboard() {
   return (
         <div className="space-y-6">
               <div className="flex items-center justify-between">
-                      <h1 className="text-2xl font-bold text-white">Content Dashboard</h1>h1>
+                      <h1 className="text-2xl font-bold text-white">Content Dashboard</h1>
                       <span className="text-sm text-gray-400">
                                 Business Type: {project?.business_type || project?.site_type || 'Not set'}
-                      </span>span>
-              </div>div>
+                      </span>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {cards.map((card) => (
                     <Link key={card.label} href={card.href}
                                   className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-purple-500 transition-colors">
                                 <div className={'inline-block px-2 py-1 rounded text-xs font-medium text-white ' + card.color + ' mb-3'}>
                                   {card.label}
-                                </div>div>
-                                <div className="text-3xl font-bold text-white">{card.count}</div>div>
-                                <div className="text-sm text-gray-400 mt-1">Total {card.label.toLowerCase()}</div>div>
+                                </div>
+                                <div className="text-3xl font-bold text-white">{card.count}</div>
+                                <div className="text-sm text-gray-400 mt-1">Total {card.label.toLowerCase()}</div>
                     </Link>
                   ))}
-              </div>div>
-        </div>div>
+              </div>
+        </div>
       );
-}</div>
+}

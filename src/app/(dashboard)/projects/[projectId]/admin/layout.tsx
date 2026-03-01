@@ -35,12 +35,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                                         }`}
                                                       >
                                         {item.label}
-                                      </Link>Link>
+                                      </Link>
                                     );
         })}
-                      </nav>nav>
-              </div>div>
+                      </nav>
+              </div>
           {children}
-        </div>div>
+        </div>
       );
-}</div>
+}
