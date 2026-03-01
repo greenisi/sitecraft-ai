@@ -53,7 +53,7 @@ export default function AdminDashboard() {
                 <OnboardingChecklist projectId={projectId} />
           
                 <div className="flex items-center justify-between">
-                        <h1 className="text-2xl font-bold text-white">Content Dashboard</h1>h1>
+                        <h1 className="text-2xl font-bold text-white">Content Dashboard</h1>
                         <span className="text-sm text-gray-400">
                                   Business Type: {project?.business_type || project?.site_type || 'Not set'}
                         </span>
@@ -76,4 +76,4 @@ export default function AdminDashboard() {
                 </div>
           </div>
         );
-}</div>
+}
