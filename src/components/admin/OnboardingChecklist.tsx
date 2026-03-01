@@ -117,12 +117,12 @@ export default function OnboardingChecklist({ projectId }: { projectId: string }
           </div>
           <div>
             <h2 className="text-xl font-bold text-white">
-              {allDone ? '\u{1F389} You are all set!' : 'Getting Started'}
+              {allDone ? '🎉 You are all set!' : 'Getting Started'}
             </h2>
             <p className="text-sm text-gray-400 mt-1">
               {allDone
                 ? 'Your business is fully configured and ready to go!'
-                : `Complete these steps \u2022 ${data.completedCount} of ${data.totalCount} done`}
+                : `Complete these steps • ${data.completedCount} of ${data.totalCount} done`}
             </p>
           </div>
         </div>
@@ -159,7 +159,7 @@ export default function OnboardingChecklist({ projectId }: { projectId: string }
                   href={step.href}
                   className="flex-shrink-0 text-xs px-3 py-1 rounded-full bg-purple-600 hover:bg-purple-500 text-white font-medium transition-colors"
                 >
-                  Go \u2192
+                  Go →
                 </Link>
               )}
             </div>
