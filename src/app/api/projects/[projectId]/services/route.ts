@@ -14,7 +14,7 @@ export async function GET(
             .from('services')
             .select('*')
             .eq('project_id', projectId)
-            .order('display_order', { ascending: true });
+            .order('sort_order', { ascending: true });
 
       if (fetchError) {
               return NextResponse.json({ error: fetchError.message }, { status: 500 });
@@ -36,7 +36,7 @@ export async function POST(
           if (error) return error;
 
       const body = await request.json();
-          const { name, description, price, duration_minutes, image_url, is_active, display_order } = body;
+          const { name, description, price, duration, image_url, features, is_active, sort_order } = body;
 
       if (!name) {
               return NextResponse.json({ error: 'Name is required' }, { status: 400 });
@@ -49,10 +49,11 @@ export async function POST(
                       name,
                       description: description || null,
                       price: price || null,
-                      duration_minutes: duration_minutes || null,
+                      duration: duration || null,
                       image_url: image_url || null,
+                      features: features || [],
                       is_active: is_active !== undefined ? is_active : true,
-                      display_order: display_order || 0,
+                      sort_order: sort_order || 0,
             })
             .select()
             .single();

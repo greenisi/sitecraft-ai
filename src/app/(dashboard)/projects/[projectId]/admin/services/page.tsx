@@ -16,7 +16,10 @@ export default function ServicesPage() {
 
   async function loadServices() {
         const res = await fetch('/api/projects/' + projectId + '/services');
-        if (res.ok) setServices(await res.json());
+        if (res.ok) {
+          const data = await res.json();
+          setServices(data.services || []);
+        }
   }
 
   async function handleSubmit(e: React.FormEvent) {

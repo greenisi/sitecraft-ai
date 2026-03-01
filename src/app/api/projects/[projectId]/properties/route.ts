@@ -79,7 +79,7 @@ export async function POST(
               title,
               description: description || null,
               property_type: property_type || 'house',
-              status: status || 'active',
+              status: status || 'for_sale',
               price,
               address: address || null,
               city: city || null,

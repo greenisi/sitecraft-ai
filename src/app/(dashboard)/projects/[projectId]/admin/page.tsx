@@ -18,11 +18,12 @@ export default function AdminDashboard() {
                           fetch('/api/projects/' + projectId + '/orders'),
                           fetch('/api/projects/' + projectId),
                         ]);
-                const [services, products, properties, orders, proj] = await Promise.all([
-                          servRes.ok ? servRes.json() : [], prodRes.ok ? prodRes.json() : [],
+                const [servData, products, properties, orders, proj] = await Promise.all([
+                          servRes.ok ? servRes.json() : { services: [] }, prodRes.ok ? prodRes.json() : [],
                           propRes.ok ? propRes.json() : [], ordRes.ok ? ordRes.json() : [],
                           projRes.ok ? projRes.json() : null,
                         ]);
+                const services = servData.services || [];
                 setStats({
                           services: Array.isArray(services) ? services.length : 0,
                           products: Array.isArray(products) ? products.length : 0,

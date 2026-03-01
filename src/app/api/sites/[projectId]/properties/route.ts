@@ -16,6 +16,7 @@ export async function GET(
       .from('properties')
       .select('*')
       .eq('project_id', projectId)
+      .eq('is_active', true)
       .order('sort_order', { ascending: true });
 
   if (propertyType) {

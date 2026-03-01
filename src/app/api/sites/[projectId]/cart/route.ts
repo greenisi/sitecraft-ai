@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
+// TODO: The cart_items table needs to be created via migration
+// For now, this API will return errors until the table exists
+// Migration needed: CREATE TABLE cart_items (id, project_id, session_id, product_id, quantity, variant, created_at)
+
 export async function GET(
     request: NextRequest,
   { params }: { params: Promise<{ projectId: string }> }

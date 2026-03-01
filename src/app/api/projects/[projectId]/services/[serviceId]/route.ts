@@ -37,7 +37,7 @@ export async function PUT(
           if (error) return error;
 
       const body = await request.json();
-          const { name, description, price, duration_minutes, image_url, is_active, display_order } = body;
+          const { name, description, price, duration, image_url, features, is_active, sort_order } = body;
 
       const { data: service, error: updateError } = await supabase!
             .from('services')
@@ -45,10 +45,11 @@ export async function PUT(
                       ...(name !== undefined && { name }),
                       ...(description !== undefined && { description }),
                       ...(price !== undefined && { price }),
-                      ...(duration_minutes !== undefined && { duration_minutes }),
+                      ...(duration !== undefined && { duration }),
                       ...(image_url !== undefined && { image_url }),
+                      ...(features !== undefined && { features }),
                       ...(is_active !== undefined && { is_active }),
-                      ...(display_order !== undefined && { display_order }),
+                      ...(sort_order !== undefined && { sort_order }),
             })
             .eq('id', serviceId)
             .eq('project_id', projectId)

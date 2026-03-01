@@ -40,12 +40,11 @@ export async function PUT(
     }
 
   const body = await request.json();
-    const { status, shipping_address, tracking_number, notes } = body;
+    const { status, shipping_address, notes } = body;
 
   const updates: Record<string, unknown> = {};
     if (status !== undefined) updates.status = status;
     if (shipping_address !== undefined) updates.shipping_address = shipping_address;
-    if (tracking_number !== undefined) updates.tracking_number = tracking_number;
     if (notes !== undefined) updates.notes = notes;
 
   const { data: order, error } = await supabase

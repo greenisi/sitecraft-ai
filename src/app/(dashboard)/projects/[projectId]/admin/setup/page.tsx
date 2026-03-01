@@ -26,7 +26,7 @@ export default function SetupPage() {
   async function handleSave() {
         setSaving(true);
         const res = await fetch('/api/projects/' + projectId + '/business-type', {
-                method: 'PUT',
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ business_type: businessType }),
         });

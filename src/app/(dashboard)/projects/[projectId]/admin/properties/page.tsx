@@ -10,7 +10,7 @@ export default function PropertiesPage() {
     const [properties, setProperties] = useState<Property[]>([]);
     const [showForm, setShowForm] = useState(false);
     const [editing, setEditing] = useState<Property | null>(null);
-    const [form, setForm] = useState({ title: '', description: '', property_type: 'house', status: 'active', price: 0, address: '', city: '', state: '', zip_code: '', bedrooms: 0, bathrooms: 0, square_feet: 0 });
+    const [form, setForm] = useState({ title: '', description: '', property_type: 'house', status: 'for_sale', price: 0, address: '', city: '', state: '', zip_code: '', bedrooms: 0, bathrooms: 0, square_feet: 0 });
 
   useEffect(() => { loadProperties(); }, [projectId]);
 
@@ -36,7 +36,7 @@ export default function PropertiesPage() {
         <div className="space-y-6">
               <div className="flex items-center justify-between">
                       <h1 className="text-2xl font-bold text-white">Properties</h1>
-                      <button onClick={() => { setShowForm(true); setEditing(null); setForm({ title: '', description: '', property_type: 'house', status: 'active', price: 0, address: '', city: '', state: '', zip_code: '', bedrooms: 0, bathrooms: 0, square_feet: 0 }); }}
+                      <button onClick={() => { setShowForm(true); setEditing(null); setForm({ title: '', description: '', property_type: 'house', status: 'for_sale', price: 0, address: '', city: '', state: '', zip_code: '', bedrooms: 0, bathrooms: 0, square_feet: 0 }); }}
                                   className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Add Property</button>
               </div>
           {showForm && (
@@ -47,7 +47,7 @@ export default function PropertiesPage() {
                                                       <option value="house">House</option><option value="condo">Condo</option><option value="apartment">Apartment</option><option value="land">Land</option><option value="commercial">Commercial</option>
                                         </select>
                                         <select value={form.status} onChange={e => setForm({...form, status: e.target.value})} className="px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white">
-                                                      <option value="active">Active</option><option value="pending">Pending</option><option value="sold">Sold</option>
+                                                      <option value="for_sale">For Sale</option><option value="for_rent">For Rent</option><option value="pending">Pending</option><option value="sold">Sold</option>
                                         </select>
                                         <input type="number" value={form.price} onChange={e => setForm({...form, price: Number(e.target.value)})} placeholder="Price" className="px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white" />
                                         <input value={form.address} onChange={e => setForm({...form, address: e.target.value})} placeholder="Address" className="px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white" />
@@ -69,7 +69,7 @@ export default function PropertiesPage() {
                                 <div>
                                               <div className="font-medium text-white">{p.title}</div>
                                               <div className="text-sm text-gray-400">${p.price.toLocaleString()} - {p.bedrooms}bd/{p.bathrooms}ba - {p.city}, {p.state}</div>
-                                              <span className={'text-xs px-2 py-0.5 rounded ' + (p.status === 'active' ? 'bg-green-600' : p.status === 'pending' ? 'bg-yellow-600' : 'bg-red-600') + ' text-white'}>{p.status}</span>
+                                              <span className={'text-xs px-2 py-0.5 rounded ' + (p.status === 'for_sale' ? 'bg-green-600' : p.status === 'for_rent' ? 'bg-blue-600' : p.status === 'pending' ? 'bg-yellow-600' : 'bg-red-600') + ' text-white'}>{p.status}</span>
                                 </div>
                                 <div className="flex gap-2">
                                               <button onClick={() => { setEditing(p); setForm(p as any); setShowForm(true); }} className="px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-600">Edit</button>

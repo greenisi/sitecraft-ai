@@ -2,7 +2,7 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-interface Order { id: string; status: string; total_amount: number; customer_email: string; items: any[]; created_at: string; }
+interface Order { id: string; status: string; total: number; customer_email: string; items: any[]; created_at: string; }
 
 export default function OrdersPage() {
     const params = useParams();
@@ -51,7 +51,7 @@ export default function OrdersPage() {
                                               <span className={'text-xs px-2 py-1 rounded text-white ' + (statusColors[order.status] || 'bg-gray-600')}>{order.status}</span>
                                 </div>
                                 <div className="text-sm text-gray-400">{order.customer_email || 'No email'}</div>
-                                <div className="text-lg font-bold text-white mt-1">${(order.total_amount / 100).toFixed(2)}</div>
+                                <div className="text-lg font-bold text-white mt-1">${Number(order.total).toFixed(2)}</div>
                                 <div className="flex gap-2 mt-3">
                                   {['pending', 'processing', 'shipped', 'delivered'].map(s => (
                                       <button key={s} onClick={() => updateStatus(order.id, s)} disabled={order.status === s}
