@@ -206,6 +206,7 @@ export async function POST(request: NextRequest) {
                   .update({
                               status: 'generated',
                               generation_config: config,
+                    business_type: config.siteType || null,
                               last_generated_at: new Date().toISOString(),
                   })
                   .eq('id', projectId);
