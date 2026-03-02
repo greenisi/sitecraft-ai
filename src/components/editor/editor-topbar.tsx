@@ -14,7 +14,7 @@ import {
   RefreshCw,
   Link2,
   ShoppingCart,
-  Lock,
+  Lock,  Settings as SettingsIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -222,7 +222,18 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
             )}
           </Button>
 
-          {/* Export Button */}
+          {/* Settings Button */}
+                    <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 px-2 md:px-3"
+                                  onClick={() => router.push(`/projects/${projectId}/admin`)}
+                                >
+                                <SettingsIcon className="h-3 w-3 md:mr-2" />
+                                <span className="hidden md:inline">Settings</span>
+                    </Button>
+          
+  {/* Export Button */}
           <Button
             variant="outline"
             size="sm"
