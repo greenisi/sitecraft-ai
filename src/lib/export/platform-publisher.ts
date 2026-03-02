@@ -1,7 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin';
 import { deployToVercel } from '@/lib/export/vercel-deployer';
 import { buildScaffoldingTree } from '@/lib/export/file-tree';
-import { addDomainToProject, getVercelProject } from '@/lib/export/vercel-domains';
+import { addDomainToProject, getVercelProject, waitForDeploymentReady } from '@/lib/export/vercel-domains';
 import type { DesignSystem } from '@/types/project';
 
 const PLATFORM_TOKEN = process.env.VERCEL_PLATFORM_TOKEN!;
@@ -898,6 +898,22 @@ export async function publishToSubdomain(
     console.error(`Failed to add domain alias ${subdomain} to project ${vercelProjectName}`);
   }
 
+    // 9b. Wait for Vercel build to complete (up to 60s)
+    // This prevents DEPLOYMENT_NOT_FOUND when user visits the URL immediately
+    try {
+          const { ready, state } = await waitForDeploymentReady(
+                  deployment.deploymentId,
+            { token: PLATFORM_TOKEN, teamId: TEAM_ID },
+                  60000,
+                  4000
+                );
+          if (!ready) {
+                  console.warn(`Deployment ${deployment.deploymentId} not ready after 60s (state: ${state})`);
+          }
+    } catch (waitError) {
+          console.warn('Error waiting for deployment ready:', waitError);
+    }
+  
   // 10. Update project in DB
   await admin
     .from('projects')
