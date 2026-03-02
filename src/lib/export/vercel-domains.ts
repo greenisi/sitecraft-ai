@@ -26,6 +26,7 @@ function teamQuery(teamId?: string) {
 /**
  * Add a domain alias to a Vercel project.
  * Uses the project name (not deployment ID) as the project identifier.
+ * Handles 409 conflicts gracefully (domain already assigned).
  */
 export async function addDomainToProject(
   projectName: string,
@@ -45,14 +46,26 @@ export async function addDomainToProject(
 
   if (!response.ok) {
     const code = data.error?.code || '';
-    // If domain is already added to this project, treat as success
-    if (code === 'domain_already_in_use' || code === 'DOMAIN_ALREADY_EXISTS') {
+    const message = data.error?.message || '';
+
+    // Handle all variants of 'domain already exists' responses:
+    // - 409 status code (conflict — domain already on this or another project)
+    // - domain_already_in_use error code
+    // - DOMAIN_ALREADY_EXISTS error code
+    // - Any error message containing 'already'
+    if (
+      response.status === 409 ||
+      code === 'domain_already_in_use' ||
+      code === 'DOMAIN_ALREADY_EXISTS' ||
+      message.toLowerCase().includes('already')
+    ) {
       return {
         name: domain,
         configured: true,
         verified: true,
       };
     }
+
     throw new Error(
       `Failed to add domain ${domain}: ${data.error?.message || response.statusText}`
     );
@@ -115,6 +128,7 @@ export async function getDomainConfig(
   }
 
   const data = await response.json();
+
   return {
     configured: data.configured ?? false,
     verified: data.verified ?? false,
@@ -143,4 +157,54 @@ export async function getVercelProject(
 
   const data = await response.json();
   return { id: data.id, name: data.name };
+}
+
+/**
+ * Wait for a Vercel deployment to reach READY state.
+ * Polls the deployment status every few seconds.
+ * Returns true if READY, false if timed out or errored.
+ */
+export async function waitForDeploymentReady(
+  deploymentId: string,
+  config: VercelDomainConfig,
+  maxWaitMs: number = 120000,
+  pollIntervalMs: number = 4000
+): Promise<{ ready: boolean; state: string }> {
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < maxWaitMs) {
+    try {
+      const response = await fetch(
+        `${VERCEL_API}/v13/deployments/${deploymentId}${teamQuery(config.teamId)}`,
+        {
+          headers: buildHeaders(config.token),
+        }
+      );
+
+      if (!response.ok) {
+        // API error — wait and retry
+        await new Promise((r) => setTimeout(r, pollIntervalMs));
+        continue;
+      }
+
+      const data = await response.json();
+      const state = data.readyState || data.state || '';
+
+      if (state === 'READY') {
+        return { ready: true, state };
+      }
+
+      if (state === 'ERROR' || state === 'CANCELED') {
+        return { ready: false, state };
+      }
+
+      // Still building (QUEUED, BUILDING, INITIALIZING) — keep waiting
+      await new Promise((r) => setTimeout(r, pollIntervalMs));
+    } catch {
+      // Network error — wait and retry
+      await new Promise((r) => setTimeout(r, pollIntervalMs));
+    }
+  }
+
+  return { ready: false, state: 'TIMEOUT' };
 }
