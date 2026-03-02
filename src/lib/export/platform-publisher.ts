@@ -514,7 +514,36 @@ export async function publishToSubdomain(
       }
     }
 
-    // 4b. Add files to tree, cleaning up references to missing components
+      // 4b-pre. Auto-fix missing clsx/cn imports in AI-generated files
+      // AI often generates code using clsx() or cn() without proper imports
+      const cnUtility = "import { clsx, type ClassValue } from 'clsx';\nimport { twMerge } from 'tailwind-merge';\n\nexport function cn(...inputs: ClassValue[]) {\n  return twMerge(clsx(inputs));\n}\n";
+      tree.addFile('src/lib/utils.ts', cnUtility, 'config');
+      for (const file of files) {
+              if (!file.file_path.endsWith('.tsx') && !file.file_path.endsWith('.ts')) continue;
+              const usesClsx = /\bclsx\s*\(/.test(file.content);
+              const usesCn = /\bcn\s*\(/.test(file.content);
+              const hasClsxImport = /import\s.*clsx/.test(file.content);
+              const hasCnImport = /import\s.*\bcn\b.*from/.test(file.content);
+              if (usesClsx && !hasClsxImport) {
+                        const clsxImport = "import clsx from 'clsx';\n";
+                        if (file.content.startsWith("'use client'") || file.content.startsWith('"use client"')) {
+                                    file.content = file.content.replace(/(['"]use client['"];?\s*\n)/, '$1' + clsxImport);
+                        } else {
+                                    file.content = clsxImport + file.content;
+                        }
+              }
+              if (usesCn && !hasCnImport) {
+                        const cnImport = "import { cn } from '@/lib/utils';\n";
+                        if (file.content.startsWith("'use client'") || file.content.startsWith('"use client"')) {
+                                    file.content = file.content.replace(/(['"]use client['"];?\s*\n)/, '$1' + cnImport);
+                        } else {
+                                    file.content = cnImport + file.content;
+                        }
+              }
+      }
+  
+                      
+  // 4b. Add files to tree, cleaning up references to missing components
     for (const file of files) {
       if (truncatedFiles.has(file.file_path)) continue;
 
