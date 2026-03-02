@@ -49,10 +49,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const normalizeType = (t: string): string => {
     const lower = t.toLowerCase().replace(/[^a-z]/g, '');
-    if (lower.includes('service')) return 'service';
+        if (lower.includes('service') || lower === 'business' || lower === 'localservice') return 'service';
     if (lower.includes('ecom') || lower.includes('commerce') || lower.includes('shop') || lower.includes('store')) return 'ecommerce';
     if (lower.includes('real') || lower.includes('estate') || lower.includes('property')) return 'realestate';
-    if (lower.includes('general') || lower.includes('other')) return 'general';
+        if (lower.includes('general') || lower.includes('other') || lower === 'saas' || lower === 'landingpage') return 'general';
     return '';
   };
 
