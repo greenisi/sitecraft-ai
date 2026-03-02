@@ -25,6 +25,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       .then(p => {
         if (p?.business_type) setBusinessType(p.business_type);
         else if (p?.site_type) setBusinessType(p.site_type);
+                          else if (p?.generation_config?.siteType) setBusinessType(p.generation_config.siteType);
         else setBusinessType('');
       })
       .catch(() => setBusinessType(''));
