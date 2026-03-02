@@ -13,7 +13,7 @@ export async function GET(
     // Get full project details
     const { data: fullProject, error: fetchError } = await supabase!
       .from('projects')
-      .select('id, name, slug, status, published_url, business_type, created_at, updated_at')
+            .select('id, name, slug, status, published_url, business_type, generation_config, created_at, updated_at')
       .eq('id', projectId)
       .single();
 
