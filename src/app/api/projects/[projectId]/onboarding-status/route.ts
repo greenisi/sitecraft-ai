@@ -6,10 +6,10 @@ export const dynamic = 'force-dynamic';
 function normalizeType(raw: string | null | undefined): string {
   if (!raw) return '';
   const l = raw.toLowerCase().trim();
-  if (l.includes('service')) return 'service';
+    if (l.includes('service') || l === 'business' || l === 'local-service') return 'service';
   if (l.includes('e-com') || l.includes('ecom') || l.includes('shop') || l.includes('store') || l.includes('retail')) return 'ecommerce';
   if (l.includes('real') || l.includes('estate') || l.includes('property') || l.includes('realt')) return 'realestate';
-  if (l.includes('general') || l.includes('other')) return 'general';
+    if (l.includes('general') || l.includes('other') || l === 'saas' || l === 'landing-page') return 'general';
   return '';
 }
 
@@ -33,6 +33,29 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
     supabase.from('blog_posts').select('id').eq('project_id', projectId).limit(1),
   ]);
 
+
+    // Auto-seed business_info for existing projects if missing
+    if (!bizInfoRes.data && project.status === 'generated') {
+          const defaultHours: Record<string, { open: string; close: string; closed: boolean }> = {};
+          ['Monday','Tuesday','Wednesday','Thursday','Friday'].forEach(d => {
+                  defaultHours[d] = { open: '09:00', close: '17:00', closed: false };
+          });
+          ['Saturday','Sunday'].forEach(d => {
+                  defaultHours[d] = { open: '09:00', close: '17:00', closed: true };
+          });
+          try {
+                  const { data: seeded } = await supabase
+                    .from('business_info')
+                    .upsert({ project_id: projectId, hours: defaultHours, country: 'USA' }, { onConflict: 'project_id' })
+                    .select('hours')
+                    .single();
+                  if (seeded) {
+                            bizInfoRes.data = seeded;
+                  }
+          } catch (e) {
+                  console.error('Auto-seed business_info failed:', e);
+          }
+    }
   const businessType = normalizeType(project.business_type);
 
   const steps: Record<string, boolean> = {
