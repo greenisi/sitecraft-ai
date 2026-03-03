@@ -216,6 +216,37 @@ export async function POST(request: NextRequest) {
                   .from('profiles')
                   .update({ generation_credits: Math.max(0, ((await supabase.from('profiles').select('generation_credits').eq('id', user.id).single()).data?.generation_credits ?? 1) - 1) })
                   .eq('id', user.id);
+
+                    // Seed CMS data from generation config as AI training data
+                    try {
+                                  const biz = config.business || {};
+                                  const defaultHours: Record<string, { open: string; close: string; closed: boolean }> = {};
+                                  ['Monday','Tuesday','Wednesday','Thursday','Friday'].forEach(d => {
+                                                  defaultHours[d] = { open: '09:00', close: '17:00', closed: false };
+                                  });
+                                  ['Saturday','Sunday'].forEach(d => {
+                                                  defaultHours[d] = { open: '09:00', close: '17:00', closed: true };
+                                  });
+
+                                  // Seed business_info
+                                  await supabase
+                                    .from('business_info')
+                                    .upsert({
+                                                      project_id: projectId,
+                                                      hours: defaultHours,
+                                                      country: 'USA',
+                                    }, { onConflict: 'project_id' });
+
+                                  // Update project name from config if available
+                                  if (biz.name) {
+                                                  await supabase
+                                                    .from('projects')
+                                                    .update({ name: biz.name + (biz.tagline ? ' - ' + biz.tagline.substring(0, 60) : '') })
+                                                    .eq('id', projectId);
+                                  }
+                    } catch (seedErr) {
+                                  console.error('CMS seed error (non-fatal):', seedErr);
+                    }
         }
   };
 
