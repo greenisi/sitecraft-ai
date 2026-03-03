@@ -35,7 +35,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
 
 
     // Auto-seed business_info for existing projects if missing
-    if (!bizInfoRes.data && project.status === 'generated') {
+    if (!bizInfoRes.data) {
           const defaultHours: Record<string, { open: string; close: string; closed: boolean }> = {};
           ['Monday','Tuesday','Wednesday','Thursday','Friday'].forEach(d => {
                   defaultHours[d] = { open: '09:00', close: '17:00', closed: false };
@@ -56,10 +56,15 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
                   console.error('Auto-seed business_info failed:', e);
           }
     }
-  const businessType = normalizeType(project.business_type);
+    let rawType = project.business_type;
+    if (!rawType) {
+          const { data: projConfig } = await supabase.from('projects').select('generation_config').eq('id', projectId).single();
+          rawType = (projConfig?.generation_config as any)?.siteType || null;
+    }
+    const businessType = normalizeType(rawType);
 
   const steps: Record<string, boolean> = {
-    'business-type': !!project.business_type,
+    'business-type': !!rawType,
     'business-info': !!bizInfoRes.data,
     'business-hours': !!(bizInfoRes.data?.hours && Object.keys(bizInfoRes.data.hours).length > 0),
     'first-service': !!(servicesRes.data && servicesRes.data.length > 0),
