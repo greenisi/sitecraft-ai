@@ -64,40 +64,40 @@ export default function AdminDashboard() {
                                     <div className="flex-1 min-w-0">
                                                 <h1 className="text-2xl font-bold text-white truncate">
                                                       {project?.name || biz.name || 'Content Dashboard'}
-                                                </h1>h1>
+                                                </h1>
                                           {biz.industry && (
                                 <span className="inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium bg-gray-800 text-gray-300 border border-gray-700">
                                       {biz.industry}
-                                </span>span>
+                                </span>
                                                 )}
                                           {biz.description && (
                                 <p className="mt-3 text-sm text-gray-400 line-clamp-2 max-w-2xl">
                                       {biz.description}
-                                </p>p>
+                                </p>
                                                 )}
                                           {biz.targetAudience && (
                                 <p className="mt-1 text-xs text-gray-500">
-                                                <span className="text-gray-600">Target:</span>span> {biz.targetAudience}
-                                </p>p>
+                                                <span className="text-gray-600">Target:</span> {biz.targetAudience}
+                                </p>
                                                 )}
-                                    </div>div>
+                                    </div>
                                     <div className="flex-shrink-0 ml-4 text-right">
-                                                <span className="text-xs text-gray-500 block">Type</span>span>
+                                                <span className="text-xs text-gray-500 block">Type</span>
                                                 <span className="text-sm font-medium text-white">
                                                       {project?.business_type || config?.siteType || 'N/A'}
-                                                </span>span>
+                                                </span>
                                           {branding.style && (
                                 <>
-                                                <span className="text-xs text-gray-500 block mt-2">Style</span>span>
-                                                <span className="text-sm text-gray-300">{branding.style}</span>span>
-                                </>>
+                                                <span className="text-xs text-gray-500 block mt-2">Style</span>
+                                                <span className="text-sm text-gray-300">{branding.style}</span>
+                                </>
                               )}
-                                    </div>div>
-                          </div>div>
+                                    </div>
+                          </div>
                         {/* Color palette preview */}
                         {(branding.primaryColor || branding.colors) && (
                             <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-800">
-                                        <span className="text-xs text-gray-500 mr-1">Brand Colors:</span>span>
+                                        <span className="text-xs text-gray-500 mr-1">Brand Colors:</span>
                                   {[
                                                 branding.primaryColor || branding.colors?.primary,
                                                 branding.secondaryColor || branding.colors?.secondary,
@@ -105,12 +105,12 @@ export default function AdminDashboard() {
                                               ].filter(Boolean).map((c: string, i: number) => (
                                                                   <div key={i} className="flex items-center gap-1">
                                                                                   <div className="w-4 h-4 rounded-full border border-gray-700" style={{ backgroundColor: c }} />
-                                                                                  <span className="text-xs text-gray-500">{c}</span>span>
-                                                                  </div>div>
+                                                                                  <span className="text-xs text-gray-500">{c}</span>
+                                                                  </div>
                                                                 ))}
-                            </div>div>
+                            </div>
                           )}
-                  </div>div>
+                  </div>
             
                   <OnboardingChecklist projectId={projectId} />
             
@@ -123,12 +123,12 @@ export default function AdminDashboard() {
                                             >
                                         <div className={'inline-block px-2 py-1 rounded text-xs font-medium text-white ' + card.color + ' mb-3'}>
                                               {card.label}
-                                        </div>div>
-                                        <div className="text-3xl font-bold text-white">{card.count}</div>div>
-                                        <div className="text-sm text-gray-400 mt-1">Total {card.label.toLowerCase()}</div>div>
-                            </Link>Link>
+                                        </div>
+                                        <div className="text-3xl font-bold text-white">{card.count}</div>
+                                        <div className="text-sm text-gray-400 mt-1">Total {card.label.toLowerCase()}</div>
+                            </Link>
                           ))}
-                  </div>div>
-            </div>div>
+                  </div>
+            </div>
           );
 }</></div>
