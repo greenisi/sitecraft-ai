@@ -14,7 +14,7 @@ import {
   RefreshCw,
   Link2,
   ShoppingCart,
-  Lock,  Settings as SettingsIcon,
+  Lock,  Settings as SettingsIcon, Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -48,6 +48,7 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
   const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+  const [autofilling, setAutofilling] = useState(false);
   const [showDomainOptions, setShowDomainOptions] = useState(false);
 
   const {
@@ -162,6 +163,25 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
     setPublishDialogOpen(true);
   };
 
+  const handleAutofill = async () => {
+    setAutofilling(true);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/autofill`, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success('CMS autofilled with business data!', {
+          description: data.message || 'Business info, services, and products have been populated.',
+        });
+      } else {
+        toast.error('Autofill failed', { description: data.error || 'Unknown error' });
+      }
+    } catch (err) {
+      toast.error('Autofill failed', { description: 'Network error' });
+    } finally {
+      setAutofilling(false);
+    }
+  };
+
   const platformDomain = 'innovated.site';
   const previewSubdomain = project?.slug
     ? `${project.slug}.${platformDomain}`
@@ -222,7 +242,23 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
             )}
           </Button>
 
-          {/* Settings Button */}
+          {/* Autofill Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 px-2 md:px-3 bg-gradient-to-r from-violet-500/10 to-blue-500/10 border-violet-500/30 hover:from-violet-500/20 hover:to-blue-500/20"
+              onClick={handleAutofill}
+              disabled={autofilling || !isEditable}
+            >
+              {autofilling ? (
+                <Loader2 className="h-3 w-3 animate-spin md:mr-2" />
+              ) : (
+                <Sparkles className="h-3 w-3 md:mr-2" />
+              )}
+              <span className="hidden md:inline">{autofilling ? 'Filling...' : 'Autofill'}</span>
+            </Button>
+
+            {/* Settings Button */}
                     <Button
                                   variant="outline"
                                   size="sm"
