@@ -6,10 +6,10 @@ export const dynamic = 'force-dynamic';
 function normalizeType(raw: string | null | undefined): string {
   if (!raw) return '';
   const l = raw.toLowerCase().trim();
-    if (l.includes('service') || l === 'business' || l === 'local-service') return 'service';
+  if (l.includes('service') || l === 'business' || l === 'local-service') return 'service';
   if (l.includes('e-com') || l.includes('ecom') || l.includes('shop') || l.includes('store') || l.includes('retail')) return 'ecommerce';
   if (l.includes('real') || l.includes('estate') || l.includes('property') || l.includes('realt')) return 'realestate';
-    if (l.includes('general') || l.includes('other') || l === 'saas' || l === 'landing-page') return 'general';
+  if (l.includes('general') || l.includes('other') || l === 'saas' || l === 'landing-page') return 'general';
   return '';
 }
 
@@ -26,52 +26,48 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
   if (authError || !supabase || !project) return authError || NextResponse.json({ error: 'Not found' }, { status: 404 });
 
   const [bizInfoRes, servicesRes, productsRes, galleryRes, blogRes] = await Promise.all([
-    supabase.from('business_info').select('hours').eq('project_id', projectId).maybeSingle(),
+    supabase.from('business_info').select('hours,name,phone,email,address').eq('project_id', projectId).maybeSingle(),
     supabase.from('services').select('id').eq('project_id', projectId).limit(1),
     supabase.from('products').select('id').eq('project_id', projectId).limit(1),
     supabase.from('gallery_images').select('id').eq('project_id', projectId).limit(1),
     supabase.from('blog_posts').select('id').eq('project_id', projectId).limit(1),
   ]);
 
+  // Check for Stripe connected account (actual payment setup, not just project status)
+  const { data: stripeData } = await supabase
+    .from('profiles')
+    .select('stripe_account_id')
+    .eq('id', project.user_id)
+    .maybeSingle();
 
-    // Auto-seed business_info for existing projects if missing
-    if (!bizInfoRes.data) {
-          const defaultHours: Record<string, { open: string; close: string; closed: boolean }> = {};
-          ['Monday','Tuesday','Wednesday','Thursday','Friday'].forEach(d => {
-                  defaultHours[d] = { open: '09:00', close: '17:00', closed: false };
-          });
-          ['Saturday','Sunday'].forEach(d => {
-                  defaultHours[d] = { open: '09:00', close: '17:00', closed: true };
-          });
-          try {
-                  const { data: seeded } = await supabase
-                    .from('business_info')
-                    .upsert({ project_id: projectId, hours: defaultHours, country: 'USA' }, { onConflict: 'project_id' })
-                    .select('hours')
-                    .single();
-                  if (seeded) {
-                            bizInfoRes.data = seeded;
-                  }
-          } catch (e) {
-                  console.error('Auto-seed business_info failed:', e);
-          }
-    }
-    let rawType = project.business_type;
-    if (!rawType) {
-          const { data: projConfig } = await supabase.from('projects').select('generation_config').eq('id', projectId).single();
-          rawType = (projConfig?.generation_config as any)?.siteType || null;
-    }
-    const businessType = normalizeType(rawType);
+  let rawType = project.business_type;
+  if (!rawType) {
+    const { data: projConfig } = await supabase.from('projects').select('generation_config').eq('id', projectId).single();
+    rawType = (projConfig?.generation_config as any)?.siteType || null;
+  }
+  const businessType = normalizeType(rawType);
+
+  // Determine if business_info has REAL user-entered data (not just auto-seeded defaults)
+  const bizData = bizInfoRes.data;
+  const hasRealBusinessInfo = !!(bizData && (
+    (bizData.name && bizData.name.trim() !== '') ||
+    (bizData.phone && bizData.phone.trim() !== '') ||
+    (bizData.email && bizData.email.trim() !== '') ||
+    (bizData.address && bizData.address.trim() !== '')
+  ));
+
+  // Check if hours have been customized beyond defaults
+  const hasCustomHours = !!(bizData?.hours && Object.keys(bizData.hours).length > 0);
 
   const steps: Record<string, boolean> = {
     'business-type': !!rawType,
-    'business-info': !!bizInfoRes.data,
-    'business-hours': !!(bizInfoRes.data?.hours && Object.keys(bizInfoRes.data.hours).length > 0),
+    'business-info': hasRealBusinessInfo,
+    'business-hours': hasCustomHours,
     'first-service': !!(servicesRes.data && servicesRes.data.length > 0),
     'first-product': !!(productsRes.data && productsRes.data.length > 0),
-    'gallery': !!(galleryRes.data && galleryRes.data.length > 0),
-    'blog': !!(blogRes.data && blogRes.data.length > 0),
-    'stripe': !!project.status,
+    'gallery':       !!(galleryRes.data && galleryRes.data.length > 0),
+    'blog':          !!(blogRes.data && blogRes.data.length > 0),
+    'stripe':        !!(stripeData?.stripe_account_id),
   };
 
   const visibleKeys = businessType && STEP_VISIBILITY[businessType]
@@ -79,17 +75,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
     : Object.keys(steps);
 
   const visibleSteps: Record<string, boolean> = {};
-  for (const k of visibleKeys) {
-    visibleSteps[k] = steps[k] ?? false;
-  }
+  for (const k of visibleKeys) { visibleSteps[k] = steps[k] ?? false; }
 
   const total = visibleKeys.length;
   const completed = visibleKeys.filter(k => steps[k]).length;
 
-  return NextResponse.json({
-    steps: visibleSteps,
-    completed,
-    total,
-    businessType: businessType || null,
-  });
+  return NextResponse.json({ steps: visibleSteps, completed, total, businessType: businessType || null });
 }
