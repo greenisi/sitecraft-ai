@@ -502,7 +502,72 @@ ${[...allIconNames].map((name) => `    const ${name} = createIcon('${name}');`).
     const twMerge = (...args: any[]) => args.flat().filter(Boolean).join(' ');
     const twJoin = (...args: any[]) => args.flat().filter(Boolean).join(' ');
 
-    ${componentScripts}
+    
+        // === Preview Safety Shims ===
+        // Provide fallback empty values for commonly referenced variables
+        // that exist in the full Next.js app but not in this preview sandbox
+        
+        // Data array fallbacks
+        var __safeArray = [];
+        var __safeObj = {};
+        var __noopFn = function() { return null; };
+        
+        if (typeof products === 'undefined') var products = [];
+        if (typeof services === 'undefined') var services = [];
+        if (typeof properties === 'undefined') var properties = [];
+        if (typeof testimonials === 'undefined') var testimonials = [];
+        if (typeof reviews === 'undefined') var reviews = [];
+        if (typeof categories === 'undefined') var categories = [];
+        if (typeof posts === 'undefined') var posts = [];
+        if (typeof items === 'undefined') var items = [];
+        if (typeof data === 'undefined') var data = {};
+        if (typeof featuredProducts === 'undefined') var featuredProducts = [];
+        if (typeof featuredServices === 'undefined') var featuredServices = [];
+        if (typeof menuItems === 'undefined') var menuItems = [];
+        if (typeof galleryImages === 'undefined') var galleryImages = [];
+        if (typeof teamMembers === 'undefined') var teamMembers = [];
+        if (typeof pricingPlans === 'undefined') var pricingPlans = [];
+        if (typeof faqs === 'undefined') var faqs = [];
+        if (typeof features === 'undefined') var features = [];
+        if (typeof blogPosts === 'undefined') var blogPosts = [];
+        
+        // Safe Zustand/store hook shims
+        var __safeStore = function(selector) {
+          if (typeof selector === 'function') {
+            try { return selector({}); } catch(e) { return undefined; }
+          }
+          return {};
+        };
+        __safeStore.getState = function() { return {}; };
+        __safeStore.setState = function() {};
+        __safeStore.subscribe = function() { return function() {}; };
+        
+        if (typeof useCartStore === 'undefined') var useCartStore = __safeStore;
+        if (typeof useStore === 'undefined') var useStore = __safeStore;
+        if (typeof useCart === 'undefined') var useCart = function() { return { items: [], addItem: __noopFn, removeItem: __noopFn, cartCount: 0, total: 0 }; };
+        if (typeof useProductStore === 'undefined') var useProductStore = __safeStore;
+        if (typeof useAuthStore === 'undefined') var useAuthStore = __safeStore;
+        if (typeof useUIStore === 'undefined') var useUIStore = __safeStore;
+        
+        // Next.js navigation shims
+        if (typeof useRouter === 'undefined') var useRouter = function() { return { push: __noopFn, replace: __noopFn, back: __noopFn, forward: __noopFn, refresh: __noopFn, prefetch: __noopFn, pathname: '/' }; };
+        if (typeof usePathname === 'undefined') var usePathname = function() { return '/'; };
+        if (typeof useSearchParams === 'undefined') var useSearchParams = function() { return new URLSearchParams(); };
+        if (typeof useParams === 'undefined') var useParams = function() { return {}; };
+        if (typeof notFound === 'undefined') var notFound = __noopFn;
+        if (typeof redirect === 'undefined') var redirect = __noopFn;
+        
+        // Next.js headers shims
+        if (typeof cookies === 'undefined') var cookies = function() { return { get: __noopFn, set: __noopFn }; };
+        if (typeof headers === 'undefined') var headers = function() { return new Headers(); };
+        
+        // Form/action shims
+        if (typeof useFormState === 'undefined') var useFormState = function(fn, init) { return [init, __noopFn]; };
+        if (typeof useFormStatus === 'undefined') var useFormStatus = function() { return { pending: false }; };
+        
+        // === End Preview Safety Shims ===
+
+        ${componentScripts}
 
     ${appCode}
 
