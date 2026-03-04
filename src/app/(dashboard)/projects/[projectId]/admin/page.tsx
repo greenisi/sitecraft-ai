@@ -11,6 +11,8 @@ export default function AdminDashboard() {
         const [stats, setStats] = useState({ services: 0, products: 0, properties: 0, orders: 0 });
         const [project, setProject] = useState<any>(null);
         const [config, setConfig] = useState<any>(null);
+  const [filling, setFilling] = useState(false);
+  const [fillMsg, setFillMsg] = useState('');
 
   useEffect(() => {
             async function loadData() {
@@ -42,6 +44,24 @@ export default function AdminDashboard() {
             }
             loadData();
   }, [projectId]);
+
+  async function handleAutofill() {
+    setFilling(true);
+    setFillMsg('');
+    try {
+      const res = await fetch('/api/projects/' + projectId + '/autofill', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        setFillMsg('Autofilled! Reloading...');
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        setFillMsg('Error: ' + (data.error || 'Unknown'));
+      }
+    } catch {
+      setFillMsg('Failed to autofill');
+    }
+    setFilling(false);
+  }
 
   const basePath = '/projects/' + projectId + '/admin';
         const cards = [
@@ -112,7 +132,16 @@ export default function AdminDashboard() {
                           )}
                   </div>
             
-                  <OnboardingChecklist projectId={projectId} />
+                        <button
+        onClick={handleAutofill}
+        disabled={filling}
+        className="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+      >
+        {filling ? 'Autofilling...' : '\u2728 Autofill from AI Data'}
+      </button>
+      {fillMsg && <p className={'text-sm text-center ' + (fillMsg.includes('Error') || fillMsg.includes('Failed') ? 'text-red-400' : 'text-green-400')}>{fillMsg}</p>}
+
+      <OnboardingChecklist projectId={projectId} />
             
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         {cards.map((card) => (
