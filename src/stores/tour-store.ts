@@ -27,13 +27,37 @@ export interface TourConfig {
   welcomeDescription?: string;
 }
 
-// ── localStorage key ──────────────────────────────────────────────────
-const STORAGE_KEY = 'sitecraft-completed-tours';
+// ── localStorage key (scoped per user) ──────────────────────────────
+const BASE_KEY = 'sitecraft-completed-tours';
+
+/**
+ * Get a user-scoped storage key. Reads the current Supabase user ID
+ * from the auth session in localStorage so each account gets its own
+ * set of completed tours.
+ */
+function getStorageKey(): string {
+  if (typeof window === 'undefined') return BASE_KEY;
+  try {
+    // Supabase stores auth in localStorage; find the session key
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('sb-') && k.endsWith('-auth-token')) {
+        const raw = localStorage.getItem(k);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          const uid = parsed?.user?.id;
+          if (uid) return BASE_KEY + '-' + uid;
+        }
+      }
+    }
+  } catch { /* ignore parse errors */ }
+  return BASE_KEY;
+}
 
 function getCompletedTours(): string[] {
   if (typeof window === 'undefined') return [];
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    return JSON.parse(localStorage.getItem(getStorageKey()) || '[]');
   } catch {
     return [];
   }
@@ -41,10 +65,11 @@ function getCompletedTours(): string[] {
 
 function markTourCompleted(tourId: string) {
   if (typeof window === 'undefined') return;
+  const key = getStorageKey();
   const completed = getCompletedTours();
   if (!completed.includes(tourId)) {
     completed.push(tourId);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(completed));
+    localStorage.setItem(key, JSON.stringify(completed));
   }
 }
 
@@ -54,11 +79,12 @@ export function isTourCompleted(tourId: string): boolean {
 
 export function resetAllTours() {
   if (typeof window !== 'undefined') {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(getStorageKey());
   }
 }
 
-// ── Zustand Store ─────────────────────────────────────────────────────
+// ── Zustand Store ───────────────────────────────────────────────────────
+
 interface TourState {
   isActive: boolean;
   currentTour: TourConfig | null;
