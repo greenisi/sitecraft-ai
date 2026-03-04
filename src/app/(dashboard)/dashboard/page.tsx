@@ -151,6 +151,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [credits, setCredits] = useState(0);
   const [plan, setPlan] = useState('free');
   const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set());
@@ -414,7 +415,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => handleDelete(project.id)}
+                        onClick={() => setConfirmDeleteId(project.id)}
                         disabled={deletingId === project.id || isProjectGenerating}
                         className="text-gray-500 hover:text-red-400 transition-colors disabled:opacity-50"
                       >
@@ -459,6 +460,76 @@ export default function DashboardPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+            {/* Delete Confirmation Modal */}
+      {confirmDeleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setConfirmDeleteId(null)}
+          />
+          <div
+            className="relative w-full max-w-sm rounded-2xl p-6"
+            style={{
+              background: 'linear-gradient(135deg, #1e293b, #0f172a)',
+              border: '1px solid rgba(239,68,68,0.3)',
+            }}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div
+                className="flex h-10 w-10 items-center justify-center rounded-xl"
+                style={{ background: 'rgba(239,68,68,0.15)' }}
+              >
+                <Trash2 className="h-5 w-5 text-red-400" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-white">Delete Project</h2>
+                <p className="text-xs text-gray-400">This action cannot be undone</p>
+              </div>
+            </div>
+            <p className="text-sm text-gray-300 mb-6">
+              Are you sure you want to delete{' '}
+              <span className="font-semibold text-white">
+                {projects.find((p) => p.id === confirmDeleteId)?.name || 'this project'}
+              </span>
+              ? All data including generated files, chat history, and settings will be permanently removed.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDeleteId(null)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium text-gray-400 transition-colors hover:text-white"
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  handleDelete(confirmDeleteId);
+                  setConfirmDeleteId(null);
+                }}
+                disabled={deletingId === confirmDeleteId}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+                style={{ background: 'linear-gradient(135deg, #dc2626, #ef4444)' }}
+              >
+                {deletingId === confirmDeleteId ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4" />
+                    Delete Project
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
