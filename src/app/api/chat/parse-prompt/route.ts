@@ -315,11 +315,26 @@ export async function POST(request: NextRequest) {
         let parsed;
         try {
             let jsonStr = textBlock.text.trim();
-            if (jsonStr.startsWith('```')) {
+
+            // Try to extract from a fenced json block first
+            const jsonBlockMatch = jsonStr.match(/```(?:json)?\s*\n([\s\S]*?)```/);
+            if (jsonBlockMatch) {
+                jsonStr = jsonBlockMatch[1].trim();
+            } else if (jsonStr.startsWith('```')) {
+                // Fallback: strip wrapping code fences
                 jsonStr = jsonStr.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+            } else {
+                // Try to find raw JSON object (handles text before/after JSON)
+                const firstBrace = jsonStr.indexOf('{');
+                const lastBrace = jsonStr.lastIndexOf('}');
+                if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+                    jsonStr = jsonStr.slice(firstBrace, lastBrace + 1);
+                }
             }
+
             parsed = JSON.parse(jsonStr);
-        } catch {
+        } catch (parseError) {
+            console.error('JSON parse failed. Raw response:', textBlock.text.substring(0, 500));
             throw new Error('Failed to parse AI response as JSON');
         }
 
