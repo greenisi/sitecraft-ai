@@ -601,246 +601,300 @@ export default function HomePage() {
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 anim-up-1">
 
-              {/* Card 1 — Greenscape Pros (Landscaping) */}
-              <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-emerald-500/10 cursor-pointer">
+              {/* Card 1 — Bloom Wellness (Spa) — Platform Demo */}
+              <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-violet-500/10 cursor-pointer">
                 <div className="relative aspect-video overflow-hidden">
                   <div className="w-[300%] h-[300%] origin-top-left pointer-events-none" style={{ transform: 'scale(0.333)' }}>
-                    <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif', background: '#0c1a0e', overflow: 'hidden' }}>
-                      {/* Full-bleed hero photo */}
-                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '72%' }}>
-                        <img src="https://images.unsplash.com/photo-1558904541-efa843a96f01?w=1200&q=80" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 40%, transparent 70%)' }} />
-                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(to top, #0c1a0e, transparent)' }} />
-                      </div>
-                      {/* Nav */}
-                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', background: 'rgba(12,26,14,0.7)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(34,197,94,0.15)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '26px', height: '26px', borderRadius: '6px', background: 'linear-gradient(135deg, #22c55e, #15803d)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }}>🌱</div>
-                          <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>Greenscape Pros</span>
+                    <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif', background: '#1a1a2e', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                      {/* Browser chrome */}
+                      <div style={{ display: 'flex', alignItems: 'center', padding: '8px 14px', background: '#2a2a3e', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div style={{ display: 'flex', gap: '5px', marginRight: '14px' }}>
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ff5f57' }} />
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#febc2e' }} />
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#28c840' }} />
                         </div>
-                        <div style={{ display: 'flex', gap: '18px', fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}>
-                          <span style={{ color: '#4ade80' }}>Home</span><span>Services</span><span>Portfolio</span><span>About</span><span>Contact</span>
-                        </div>
-                        <div style={{ padding: '5px 14px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, color: '#fff', background: 'linear-gradient(135deg, #22c55e, #15803d)', boxShadow: '0 2px 10px rgba(34,197,94,0.3)' }}>Free Estimate</div>
-                      </div>
-                      {/* Hero content over photo */}
-                      <div style={{ position: 'relative', padding: '18px 32px 0' }}>
-                        <div style={{ display: 'inline-block', padding: '3px 10px', borderRadius: '20px', fontSize: '8px', color: '#4ade80', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '8px', background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.25)', backdropFilter: 'blur(4px)' }}>⭐ Rated #1 in Charlotte, NC</div>
-                        <div style={{ fontSize: '34px', fontWeight: 800, color: '#fff', lineHeight: 1.1, marginBottom: '6px', textShadow: '0 2px 20px rgba(0,0,0,0.5)' }}>Beautiful Lawns,<br/><span style={{ color: '#4ade80' }}>Happy Homes</span></div>
-                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, marginBottom: '12px', maxWidth: '320px', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>Professional lawn care, landscape design, and outdoor living spaces. Trusted by 2,000+ homeowners.</div>
-                        <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
-                          <div style={{ padding: '7px 16px', borderRadius: '6px', fontSize: '10px', fontWeight: 700, color: '#fff', background: 'linear-gradient(135deg, #22c55e, #15803d)', boxShadow: '0 3px 12px rgba(34,197,94,0.35)', position: 'relative', overflow: 'hidden' }}>
-                            Get Free Quote →
-                            <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}><div style={{ position: 'absolute', top: 0, left: '-100%', width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)', animation: 'mini-shimmer 3s ease-in-out infinite' }} /></div>
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <div style={{ padding: '4px 30px', borderRadius: '6px', background: 'rgba(255,255,255,0.06)', fontSize: '10px', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <span style={{ color: '#28c840', fontSize: '8px' }}>🔒</span> bloom-wellness-spa.innovated.site
                           </div>
-                          <div style={{ padding: '7px 14px', borderRadius: '6px', fontSize: '10px', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(4px)' }}>Our Work</div>
-                        </div>
-                        <div style={{ display: 'flex', gap: '10px', fontSize: '9px', color: 'rgba(255,255,255,0.4)' }}>
-                          <span>★★★★★ <span style={{ color: '#4ade80' }}>4.9</span> (520+)</span><span>·</span><span>Licensed & Insured</span><span>·</span><span style={{ animation: 'mini-pulse 2s ease-in-out infinite', color: '#4ade80' }}>● Booking Now</span>
                         </div>
                       </div>
-                      {/* Portfolio gallery row with real photos */}
-                      <div style={{ position: 'relative', display: 'flex', gap: '5px', padding: '12px 32px 0' }}>
-                        {[
-                          { src: 'https://images.unsplash.com/photo-1592417817098-8fd3d9eb14a5?w=400&q=80', label: 'Lawn Care', price: 'From $49' },
-                          { src: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=400&q=80', label: 'Landscaping', price: 'From $299' },
-                          { src: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400&q=80', label: 'Garden Design', price: 'From $199' },
-                          { src: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&q=80', label: 'Outdoor Living', price: 'From $499' },
-                        ].map((s, i) => (
-                          <div key={s.label} style={{ flex: 1, borderRadius: '6px', overflow: 'hidden', border: '1px solid rgba(34,197,94,0.1)', animation: `mini-float 3s ease-in-out infinite ${i * 0.3}s` }}>
-                            <div style={{ height: '48px', position: 'relative', overflow: 'hidden' }}>
-                              <img src={s.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.6), transparent)' }} />
+                      {/* Main split: chat + preview */}
+                      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+                        {/* Left — AI Chat Panel */}
+                        <div style={{ width: '35%', display: 'flex', flexDirection: 'column', background: '#1e1e32', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+                          {/* Chat header */}
+                          <div style={{ padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ width: '22px', height: '22px', borderRadius: '6px', background: 'linear-gradient(135deg, #7c3aed, #a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>✦</div>
+                            <span style={{ fontSize: '12px', fontWeight: 600, color: '#fff' }}>AI Builder</span>
+                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', animation: 'mini-pulse 2s ease-in-out infinite' }} />
+                          </div>
+                          {/* Chat messages */}
+                          <div style={{ flex: 1, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden' }}>
+                            {/* User message */}
+                            <div style={{ alignSelf: 'flex-end', maxWidth: '85%', padding: '7px 10px', borderRadius: '10px 10px 2px 10px', background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.2)', fontSize: '10px', color: 'rgba(255,255,255,0.8)', lineHeight: 1.4 }}>Create a luxury wellness spa website with booking, serene visuals, and a calming color palette ✨</div>
+                            {/* AI response */}
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'flex-start' }}>
+                              <div style={{ width: '16px', height: '16px', borderRadius: '4px', background: 'linear-gradient(135deg, #7c3aed, #a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '7px', flexShrink: 0, marginTop: '2px' }}>✦</div>
+                              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.5 }}><span style={{ color: '#a78bfa', fontWeight: 600 }}>AI:</span> Building your spa website with a sage & cream palette, smooth animations, and integrated booking...</div>
                             </div>
-                            <div style={{ padding: '4px 6px', background: 'rgba(12,26,14,0.9)' }}>
-                              <div style={{ fontSize: '9px', color: '#fff', fontWeight: 600 }}>{s.label}</div>
-                              <div style={{ fontSize: '9px', fontWeight: 700, color: '#4ade80' }}>{s.price}</div>
+                            {/* Suggestion pills */}
+                            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '2px' }}>
+                              <div style={{ padding: '3px 8px', borderRadius: '10px', fontSize: '8px', color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>Add testimonials</div>
+                              <div style={{ padding: '3px 8px', borderRadius: '10px', fontSize: '8px', color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>Change colors</div>
+                            </div>
+                            {/* User message 2 */}
+                            <div style={{ alignSelf: 'flex-end', maxWidth: '85%', padding: '7px 10px', borderRadius: '10px 10px 2px 10px', background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.2)', fontSize: '10px', color: 'rgba(255,255,255,0.8)', lineHeight: 1.4 }}>Add a hero section with a &quot;Book Now&quot; button and show pricing plans</div>
+                            {/* AI response 2 */}
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'flex-start' }}>
+                              <div style={{ width: '16px', height: '16px', borderRadius: '4px', background: 'linear-gradient(135deg, #7c3aed, #a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '7px', flexShrink: 0, marginTop: '2px' }}>✦</div>
+                              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.5 }}><span style={{ color: '#a78bfa', fontWeight: 600 }}>AI:</span> Done! Added a stunning hero with parallax, pricing cards with hover effects, and a smooth booking CTA ✓</div>
                             </div>
                           </div>
-                        ))}
-                      </div>
-                      {/* Bottom trust bar */}
-                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '7px 0', fontSize: '8px', color: 'rgba(255,255,255,0.3)', background: 'linear-gradient(to top, rgba(12,26,14,0.95), rgba(12,26,14,0.6))' }}>
-                        <span>📍 Charlotte, NC</span><span>·</span><span>2,000+ Happy Clients</span><span>·</span><span>Same Week Service</span><span>·</span><span>Free Estimates</span>
+                          {/* Chat input */}
+                          <div style={{ padding: '8px 12px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                            <div style={{ padding: '7px 10px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', fontSize: '10px', color: 'rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ fontSize: '10px' }}>💬</span> Describe changes...
+                            </div>
+                          </div>
+                        </div>
+                        {/* Right — Website Preview */}
+                        <div style={{ flex: 1, background: '#f0f7f4', overflow: 'hidden', position: 'relative' }}>
+                          {/* Site nav */}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 24px', background: '#fff', borderBottom: '1px solid #e8efe8' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#6b9e7a' }} />
+                              <span style={{ fontSize: '13px', fontWeight: 600, color: '#2d3c2f' }}>Bloom Wellness</span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '16px', fontSize: '10px', color: '#8a9e8f', fontWeight: 500 }}>
+                              <span style={{ color: '#2d3c2f', fontWeight: 600 }}>HOME</span><span>SERVICES</span><span>PRICING</span><span>BOOK</span><span>CONTACT</span>
+                            </div>
+                            <div style={{ padding: '4px 12px', borderRadius: '4px', fontSize: '10px', fontWeight: 600, color: '#fff', background: '#6b9e7a' }}>Book Now</div>
+                          </div>
+                          {/* Hero */}
+                          <div style={{ textAlign: 'center', padding: '28px 24px 16px' }}>
+                            <div style={{ display: 'inline-block', padding: '3px 10px', borderRadius: '20px', fontSize: '8px', color: '#6b9e7a', fontWeight: 600, background: 'rgba(107,158,122,0.1)', border: '1px solid rgba(107,158,122,0.2)', marginBottom: '10px' }}>● Now Accepting New Clients</div>
+                            <div style={{ fontSize: '30px', fontWeight: 700, color: '#2d3c2f', lineHeight: 1.15, marginBottom: '6px' }}>Find Your Inner<br/><span style={{ color: '#6b9e7a' }}>Balance</span></div>
+                            <div style={{ fontSize: '10px', color: '#8a9e8f', maxWidth: '300px', margin: '0 auto 12px', lineHeight: 1.5 }}>Premium wellness treatments designed to restore, rejuvenate, and transform your mind and body</div>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginBottom: '16px' }}>
+                              <div style={{ padding: '6px 16px', borderRadius: '4px', fontSize: '10px', fontWeight: 600, color: '#fff', background: '#6b9e7a' }}>Book a Session</div>
+                              <div style={{ padding: '6px 14px', borderRadius: '4px', fontSize: '10px', color: '#6b9e7a', border: '1px solid #c4d8ca' }}>View Pricing</div>
+                            </div>
+                            {/* Pricing cards */}
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                              {[{ name: 'Relaxation', price: '$89' }, { name: 'Deep Tissue', price: '$129', pop: true }, { name: 'Hot Stone', price: '$149' }].map((p) => (
+                                <div key={p.name} style={{ width: '100px', padding: '10px', borderRadius: '8px', background: '#fff', border: p.pop ? '2px solid #6b9e7a' : '1px solid #e0ece4', textAlign: 'center', position: 'relative' }}>
+                                  {p.pop && <div style={{ position: 'absolute', top: '-6px', left: '50%', transform: 'translateX(-50%)', padding: '1px 6px', borderRadius: '3px', fontSize: '7px', fontWeight: 700, color: '#fff', background: '#6b9e7a' }}>POPULAR</div>}
+                                  <div style={{ fontSize: '9px', color: '#8a9e8f', marginBottom: '3px' }}>{p.name}</div>
+                                  <div style={{ fontSize: '18px', fontWeight: 700, color: '#2d3c2f' }}>{p.price}</div>
+                                  <div style={{ fontSize: '8px', color: '#aab' }}>per session</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="p-4" style={{ background: 'rgba(15,23,42,0.8)' }}>
                   <div className="flex items-center justify-between">
-                    <div><h3 className="text-sm font-semibold text-white">Greenscape Pros</h3><p className="text-xs text-gray-500">Landscaping · Charlotte, NC</p></div>
-                    <ArrowRight className="h-4 w-4 text-gray-600 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                    <div><h3 className="text-sm font-semibold text-white">Bloom Wellness</h3><p className="text-xs text-gray-500">Spa & Wellness · AI Generated</p></div>
+                    <ArrowRight className="h-4 w-4 text-gray-600 group-hover:text-violet-400 group-hover:translate-x-1 transition-all" />
                   </div>
                 </div>
               </div>
 
-              {/* Card 2 — LUXE Collective (E-commerce Lifestyle) */}
+              {/* Card 2 — Oakwood Realty (Real Estate) — Platform Demo */}
+              <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-blue-500/10 cursor-pointer">
+                <div className="relative aspect-video overflow-hidden">
+                  <div className="w-[300%] h-[300%] origin-top-left pointer-events-none" style={{ transform: 'scale(0.333)' }}>
+                    <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif', background: '#1a1a2e', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                      {/* Browser chrome */}
+                      <div style={{ display: 'flex', alignItems: 'center', padding: '8px 14px', background: '#2a2a3e', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div style={{ display: 'flex', gap: '5px', marginRight: '14px' }}>
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ff5f57' }} />
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#febc2e' }} />
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#28c840' }} />
+                        </div>
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <div style={{ padding: '4px 30px', borderRadius: '6px', background: 'rgba(255,255,255,0.06)', fontSize: '10px', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <span style={{ color: '#28c840', fontSize: '8px' }}>🔒</span> oakwood-realty.innovated.site
+                          </div>
+                        </div>
+                      </div>
+                      {/* Main split */}
+                      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+                        {/* Left — AI Chat */}
+                        <div style={{ width: '35%', display: 'flex', flexDirection: 'column', background: '#1e1e32', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+                          <div style={{ padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ width: '22px', height: '22px', borderRadius: '6px', background: 'linear-gradient(135deg, #7c3aed, #a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>✦</div>
+                            <span style={{ fontSize: '12px', fontWeight: 600, color: '#fff' }}>AI Builder</span>
+                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', animation: 'mini-pulse 2s ease-in-out infinite' }} />
+                          </div>
+                          <div style={{ flex: 1, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden' }}>
+                            <div style={{ alignSelf: 'flex-end', maxWidth: '85%', padding: '7px 10px', borderRadius: '10px 10px 2px 10px', background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.2)', fontSize: '10px', color: 'rgba(255,255,255,0.8)', lineHeight: 1.4 }}>Build a modern real estate website with property listings and a dark, professional design 🏠</div>
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'flex-start' }}>
+                              <div style={{ width: '16px', height: '16px', borderRadius: '4px', background: 'linear-gradient(135deg, #7c3aed, #a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '7px', flexShrink: 0, marginTop: '2px' }}>✦</div>
+                              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.5 }}><span style={{ color: '#a78bfa', fontWeight: 600 }}>AI:</span> Creating your real estate site with a dark navy theme, property search, and listing cards with pricing...</div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '2px' }}>
+                              <div style={{ padding: '3px 8px', borderRadius: '10px', fontSize: '8px', color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>Add map view</div>
+                              <div style={{ padding: '3px 8px', borderRadius: '10px', fontSize: '8px', color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>Show more listings</div>
+                            </div>
+                            <div style={{ alignSelf: 'flex-end', maxWidth: '85%', padding: '7px 10px', borderRadius: '10px 10px 2px 10px', background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.2)', fontSize: '10px', color: 'rgba(255,255,255,0.8)', lineHeight: 1.4 }}>Add featured property listings with photos and prices</div>
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'flex-start' }}>
+                              <div style={{ width: '16px', height: '16px', borderRadius: '4px', background: 'linear-gradient(135deg, #7c3aed, #a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '7px', flexShrink: 0, marginTop: '2px' }}>✦</div>
+                              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.5 }}><span style={{ color: '#a78bfa', fontWeight: 600 }}>AI:</span> Added 3 featured listings with images, pricing, and a property search bar ✓</div>
+                            </div>
+                          </div>
+                          <div style={{ padding: '8px 12px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                            <div style={{ padding: '7px 10px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', fontSize: '10px', color: 'rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ fontSize: '10px' }}>💬</span> Describe changes...
+                            </div>
+                          </div>
+                        </div>
+                        {/* Right — Website Preview (Dark navy real estate) */}
+                        <div style={{ flex: 1, background: '#0c1829', overflow: 'hidden', position: 'relative' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 24px', background: 'rgba(12,24,41,0.9)', borderBottom: '1px solid rgba(59,130,246,0.1)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <div style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 900, color: '#fff' }}>O</div>
+                              <span style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>Oakwood Realty</span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '16px', fontSize: '10px', color: 'rgba(255,255,255,0.35)', fontWeight: 500 }}>
+                              <span style={{ color: '#60a5fa' }}>HOME</span><span>LISTINGS</span><span>AGENTS</span><span>CONTACT</span>
+                            </div>
+                            <div style={{ padding: '4px 12px', borderRadius: '4px', fontSize: '10px', fontWeight: 600, color: '#fff', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' }}>List Property</div>
+                          </div>
+                          <div style={{ textAlign: 'center', padding: '22px 24px 12px' }}>
+                            <div style={{ fontSize: '8px', color: '#60a5fa', fontWeight: 600, letterSpacing: '0.15em', marginBottom: '8px' }}>✦ LUXURY REAL ESTATE</div>
+                            <div style={{ fontSize: '28px', fontWeight: 700, color: '#fff', lineHeight: 1.15, marginBottom: '6px' }}>Find Your<br/><span style={{ color: '#60a5fa' }}>Dream Home</span></div>
+                            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', maxWidth: '280px', margin: '0 auto 10px', lineHeight: 1.5 }}>Browse luxury properties across top neighborhoods</div>
+                            {/* Search bar */}
+                            <div style={{ display: 'flex', alignItems: 'center', maxWidth: '320px', margin: '0 auto 14px', borderRadius: '6px', padding: '3px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(59,130,246,0.15)' }}>
+                              <div style={{ flex: 1, padding: '0 8px', fontSize: '9px', color: 'rgba(255,255,255,0.25)' }}>Search by city or ZIP...</div>
+                              <div style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '8px', fontWeight: 700, color: '#fff', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' }}>Search</div>
+                            </div>
+                            {/* Property cards */}
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '6px' }}>
+                              {[{ price: '$1.2M', area: 'Beverly Hills', beds: '4 bd · 3 ba', bg: '#162544' }, { price: '$890K', area: 'Santa Monica', beds: '3 bd · 2 ba', bg: '#1a3052' }, { price: '$2.1M', area: 'Malibu', beds: '5 bd · 4 ba', bg: '#1a3340' }].map((p) => (
+                                <div key={p.area} style={{ width: '100px', borderRadius: '6px', overflow: 'hidden', border: '1px solid rgba(59,130,246,0.1)' }}>
+                                  <div style={{ height: '42px', background: p.bg }} />
+                                  <div style={{ padding: '5px 6px', background: 'rgba(255,255,255,0.02)' }}>
+                                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#fff' }}>{p.price}</div>
+                                    <div style={{ fontSize: '7px', color: 'rgba(255,255,255,0.35)' }}>{p.beds}</div>
+                                    <div style={{ fontSize: '7px', color: '#60a5fa' }}>{p.area}</div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4" style={{ background: 'rgba(15,23,42,0.8)' }}>
+                  <div className="flex items-center justify-between">
+                    <div><h3 className="text-sm font-semibold text-white">Oakwood Realty</h3><p className="text-xs text-gray-500">Real Estate · AI Generated</p></div>
+                    <ArrowRight className="h-4 w-4 text-gray-600 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 3 — FreshBite Kitchen (Restaurant) — Platform Demo */}
               <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-orange-500/10 cursor-pointer">
                 <div className="relative aspect-video overflow-hidden">
                   <div className="w-[300%] h-[300%] origin-top-left pointer-events-none" style={{ transform: 'scale(0.333)' }}>
-                    <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif', background: '#faf8f5', overflow: 'hidden' }}>
-                      {/* Nav */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', background: '#fff', borderBottom: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontSize: '15px', fontWeight: 800, letterSpacing: '-0.02em', color: '#111' }}>LUXE</span>
-                          <span style={{ fontSize: '10px', fontWeight: 400, color: '#999', letterSpacing: '0.1em' }}>COLLECTIVE</span>
+                    <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif', background: '#1a1a2e', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                      {/* Browser chrome */}
+                      <div style={{ display: 'flex', alignItems: 'center', padding: '8px 14px', background: '#2a2a3e', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div style={{ display: 'flex', gap: '5px', marginRight: '14px' }}>
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ff5f57' }} />
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#febc2e' }} />
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#28c840' }} />
                         </div>
-                        <div style={{ display: 'flex', gap: '18px', fontSize: '11px', color: '#888', fontWeight: 500 }}>
-                          <span style={{ color: '#111', fontWeight: 600 }}>Shop</span><span>New Arrivals</span><span>Bestsellers</span><span>Gifts</span><span style={{ color: '#dc2626' }}>Sale</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '11px', color: '#666' }}>
-                          <span>🔍</span>
-                          <span>👤</span>
-                          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                            <span>🛒</span>
-                            <div style={{ position: 'absolute', top: '-4px', right: '-6px', width: '12px', height: '12px', borderRadius: '50%', background: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '7px', fontWeight: 700, color: '#fff', animation: 'mini-cart-bounce 2s ease-in-out infinite' }}>3</div>
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <div style={{ padding: '4px 30px', borderRadius: '6px', background: 'rgba(255,255,255,0.06)', fontSize: '10px', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <span style={{ color: '#28c840', fontSize: '8px' }}>🔒</span> freshbite-kitchen.innovated.site
                           </div>
                         </div>
                       </div>
-                      {/* Promo banner */}
-                      <div style={{ textAlign: 'center', padding: '5px 0', fontSize: '9px', fontWeight: 600, letterSpacing: '0.08em', color: '#fff', background: 'linear-gradient(90deg, #111 0%, #2a2a2a 50%, #111 100%)', position: 'relative', overflow: 'hidden' }}>
-                        <span style={{ position: 'relative', zIndex: 1 }}>🔥 SUMMER SALE — UP TO 40% OFF — FREE SHIPPING OVER $75</span>
-                        <div style={{ position: 'absolute', top: 0, left: '-100%', width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)', animation: 'mini-shimmer 5s ease-in-out infinite' }} />
-                      </div>
-                      {/* Hero split with real photos */}
-                      <div style={{ display: 'flex', height: 'calc(100% - 78px)' }}>
-                        {/* Left — featured product with real photo */}
-                        <div style={{ width: '45%', position: 'relative', overflow: 'hidden' }}>
-                          <img src="https://images.unsplash.com/photo-1616627547584-bf28cee262db?w=600&q=80" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          {/* Tag */}
-                          <div style={{ position: 'absolute', top: '8px', left: '8px', padding: '3px 8px', borderRadius: '4px', fontSize: '7px', fontWeight: 700, color: '#fff', background: '#111', letterSpacing: '0.05em' }}>FEATURED</div>
-                          {/* Bottom info overlay */}
-                          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '10px 10px', background: 'linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.3), transparent)' }}>
-                            <div style={{ fontSize: '10px', fontWeight: 600, color: '#fff' }}>Artisan Candle Set</div>
-                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                              <span style={{ fontSize: '10px', fontWeight: 700, color: '#fff' }}>$68</span>
-                              <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.5)', textDecoration: 'line-through' }}>$95</span>
-                              <span style={{ fontSize: '7px', fontWeight: 600, color: '#fbbf24', padding: '1px 4px', borderRadius: '2px', background: 'rgba(251,191,36,0.2)' }}>-28%</span>
+                      {/* Main split */}
+                      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+                        {/* Left — AI Chat */}
+                        <div style={{ width: '35%', display: 'flex', flexDirection: 'column', background: '#1e1e32', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+                          <div style={{ padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ width: '22px', height: '22px', borderRadius: '6px', background: 'linear-gradient(135deg, #7c3aed, #a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>✦</div>
+                            <span style={{ fontSize: '12px', fontWeight: 600, color: '#fff' }}>AI Builder</span>
+                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', animation: 'mini-pulse 2s ease-in-out infinite' }} />
+                          </div>
+                          <div style={{ flex: 1, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden' }}>
+                            <div style={{ alignSelf: 'flex-end', maxWidth: '85%', padding: '7px 10px', borderRadius: '10px 10px 2px 10px', background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.2)', fontSize: '10px', color: 'rgba(255,255,255,0.8)', lineHeight: 1.4 }}>Create a restaurant website with online ordering, warm colors, and a menu section 🍔</div>
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'flex-start' }}>
+                              <div style={{ width: '16px', height: '16px', borderRadius: '4px', background: 'linear-gradient(135deg, #7c3aed, #a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '7px', flexShrink: 0, marginTop: '2px' }}>✦</div>
+                              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.5 }}><span style={{ color: '#a78bfa', fontWeight: 600 }}>AI:</span> Building your restaurant site with warm orange tones, a beautiful menu layout, and online ordering system...</div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '2px' }}>
+                              <div style={{ padding: '3px 8px', borderRadius: '10px', fontSize: '8px', color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>Add reservations</div>
+                              <div style={{ padding: '3px 8px', borderRadius: '10px', fontSize: '8px', color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>Update menu</div>
+                            </div>
+                            <div style={{ alignSelf: 'flex-end', maxWidth: '85%', padding: '7px 10px', borderRadius: '10px 10px 2px 10px', background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.2)', fontSize: '10px', color: 'rgba(255,255,255,0.8)', lineHeight: 1.4 }}>Show popular dishes with prices and add a reservation form</div>
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'flex-start' }}>
+                              <div style={{ width: '16px', height: '16px', borderRadius: '4px', background: 'linear-gradient(135deg, #7c3aed, #a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '7px', flexShrink: 0, marginTop: '2px' }}>✦</div>
+                              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.5 }}><span style={{ color: '#a78bfa', fontWeight: 600 }}>AI:</span> Menu section added with popular dishes, prices, and a reservation widget ✓</div>
+                            </div>
+                          </div>
+                          <div style={{ padding: '8px 12px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                            <div style={{ padding: '7px 10px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', fontSize: '10px', color: 'rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ fontSize: '10px' }}>💬</span> Describe changes...
                             </div>
                           </div>
                         </div>
-                        {/* Right — product grid with real photos */}
-                        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px', padding: '4px' }}>
-                          {[
-                            { src: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=400&q=80', label: 'Leather Tote', price: '$128', oldPrice: '$175', tag: 'Bestseller', rating: '4.8' },
-                            { src: 'https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?w=400&q=80', label: 'Ceramic Vase', price: '$42', oldPrice: '', tag: 'New', rating: '4.9' },
-                            { src: 'https://images.unsplash.com/photo-1629949009765-40fc74c9ec21?w=400&q=80', label: 'Linen Throw', price: '$86', oldPrice: '$120', tag: '-28%', rating: '4.7' },
-                            { src: 'https://images.unsplash.com/photo-1631125915902-d8abe9225ff2?w=400&q=80', label: 'Woven Basket', price: '$54', oldPrice: '', tag: '', rating: '4.6' },
-                          ].map((item, idx) => (
-                            <div key={item.label} style={{ borderRadius: '5px', overflow: 'hidden', position: 'relative', background: '#fff', border: '1px solid rgba(0,0,0,0.05)' }}>
-                              <div style={{ aspectRatio: '1/1', position: 'relative', overflow: 'hidden' }}>
-                                <img src={item.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                {item.tag && <div style={{ position: 'absolute', top: '4px', left: '4px', padding: '1px 5px', borderRadius: '2px', fontSize: '7px', fontWeight: 700, color: item.tag.startsWith('-') ? '#fff' : '#fff', background: item.tag.startsWith('-') ? '#ef4444' : '#111' }}>{item.tag}</div>}
-                                <div style={{ position: 'absolute', top: '4px', right: '4px', width: '16px', height: '16px', borderRadius: '50%', background: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '7px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>♡</div>
-                              </div>
-                              <div style={{ padding: '4px 5px' }}>
-                                <div style={{ fontSize: '8px', fontWeight: 600, color: '#333' }}>{item.label}</div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                  <span style={{ fontSize: '9px', fontWeight: 700, color: '#111' }}>{item.price}</span>
-                                  {item.oldPrice && <span style={{ fontSize: '7px', color: '#bbb', textDecoration: 'line-through' }}>{item.oldPrice}</span>}
+                        {/* Right — Website Preview (Warm restaurant) */}
+                        <div style={{ flex: 1, background: '#faf5ef', overflow: 'hidden', position: 'relative' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 24px', background: '#fff', borderBottom: '1px solid #f0e8dd' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ fontSize: '13px' }}>🍔</span>
+                              <span style={{ fontSize: '13px', fontWeight: 700, color: '#c2410c' }}>FreshBite</span>
+                              <span style={{ fontSize: '10px', color: '#999' }}>Kitchen</span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '16px', fontSize: '10px', color: '#999', fontWeight: 500 }}>
+                              <span style={{ color: '#c2410c', fontWeight: 600 }}>HOME</span><span>MENU</span><span>ORDER</span><span>ABOUT</span>
+                            </div>
+                            <div style={{ padding: '4px 12px', borderRadius: '4px', fontSize: '10px', fontWeight: 600, color: '#fff', background: '#c2410c' }}>Order Now</div>
+                          </div>
+                          <div style={{ textAlign: 'center', padding: '22px 24px 12px' }}>
+                            <div style={{ fontSize: '8px', color: '#c2410c', fontWeight: 600, letterSpacing: '0.15em', marginBottom: '8px' }}>✦ FARM TO TABLE</div>
+                            <div style={{ fontSize: '28px', fontWeight: 700, color: '#451a03', lineHeight: 1.15, marginBottom: '6px' }}>Fresh Food,<br/><span style={{ color: '#c2410c' }}>Real Flavor</span></div>
+                            <div style={{ fontSize: '10px', color: '#a08060', maxWidth: '280px', margin: '0 auto 10px', lineHeight: 1.5 }}>Locally sourced ingredients, bold flavors, made with love every day</div>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginBottom: '14px' }}>
+                              <div style={{ padding: '6px 16px', borderRadius: '20px', fontSize: '10px', fontWeight: 600, color: '#fff', background: '#c2410c' }}>Order Online →</div>
+                              <div style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '10px', color: '#c2410c', border: '1px solid #e8d5c0' }}>View Menu</div>
+                            </div>
+                            {/* Menu items */}
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '6px' }}>
+                              {[{ name: 'Smash Burger', price: '$14', tag: 'Popular' }, { name: 'Truffle Fries', price: '$9', tag: '' }, { name: 'Acai Bowl', price: '$12', tag: 'New' }].map((m) => (
+                                <div key={m.name} style={{ width: '100px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #f0e0d0' }}>
+                                  <div style={{ height: '42px', background: 'linear-gradient(135deg, #f4d7a7, #e8c890)' }} />
+                                  <div style={{ padding: '5px 6px', background: '#fff', position: 'relative' }}>
+                                    {m.tag && <div style={{ position: 'absolute', top: '-8px', right: '4px', padding: '1px 5px', borderRadius: '3px', fontSize: '6px', fontWeight: 700, color: '#fff', background: m.tag === 'Popular' ? '#c2410c' : '#22c55e' }}>{m.tag}</div>}
+                                    <div style={{ fontSize: '9px', fontWeight: 600, color: '#451a03' }}>{m.name}</div>
+                                    <div style={{ fontSize: '10px', fontWeight: 700, color: '#c2410c' }}>{m.price}</div>
+                                  </div>
                                 </div>
-                                <div style={{ fontSize: '7px', color: '#f59e0b' }}>{'★'.repeat(5)} <span style={{ color: '#bbb' }}>{item.rating}</span></div>
-                              </div>
+                              ))}
                             </div>
-                          ))}
+                          </div>
                         </div>
-                      </div>
-                      {/* Trust bar */}
-                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '18px', padding: '5px 0', fontSize: '8px', color: '#999', background: '#fff', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
-                        <span>🚚 Free Shipping</span><span>↩️ 30-Day Returns</span><span>🔒 Secure Checkout</span><span>⭐ 12K+ Reviews</span>
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="p-4" style={{ background: 'rgba(15,23,42,0.8)' }}>
                   <div className="flex items-center justify-between">
-                    <div><h3 className="text-sm font-semibold text-white">LUXE Collective</h3><p className="text-xs text-gray-500">E-commerce · Lifestyle</p></div>
+                    <div><h3 className="text-sm font-semibold text-white">FreshBite Kitchen</h3><p className="text-xs text-gray-500">Restaurant · AI Generated</p></div>
                     <ArrowRight className="h-4 w-4 text-gray-600 group-hover:text-orange-400 group-hover:translate-x-1 transition-all" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 3 — Bella Cucina (Italian Restaurant) — SPLIT LAYOUT: text left, photo mosaic right */}
-              <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-amber-500/10 cursor-pointer">
-                <div className="relative aspect-video overflow-hidden">
-                  <div className="w-[300%] h-[300%] origin-top-left pointer-events-none" style={{ transform: 'scale(0.333)' }}>
-                    <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'Georgia, serif', background: '#faf6f0', overflow: 'hidden' }}>
-                      {/* Nav — warm cream/elegant */}
-                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', background: '#fff', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontSize: '16px' }}>🍷</span>
-                          <div>
-                            <div style={{ fontSize: '14px', fontWeight: 700, color: '#2c1810', fontStyle: 'italic', letterSpacing: '0.02em' }}>Bella Cucina</div>
-                            <div style={{ fontSize: '6px', color: '#a08060', textTransform: 'uppercase', letterSpacing: '0.25em', fontFamily: 'system-ui, sans-serif' }}>Ristorante Italiano · Est. 2018</div>
-                          </div>
-                        </div>
-                        <div style={{ display: 'flex', gap: '18px', fontSize: '11px', color: '#999', fontWeight: 500, fontFamily: 'system-ui, sans-serif' }}>
-                          <span style={{ color: '#2c1810', fontWeight: 600 }}>Home</span><span>Menu</span><span>Reservations</span><span>Events</span><span>Gallery</span>
-                        </div>
-                        <div style={{ padding: '5px 14px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, color: '#fff', background: '#2c1810', boxShadow: '0 2px 8px rgba(44,24,16,0.2)', fontFamily: 'system-ui, sans-serif' }}>Reserve Table</div>
-                      </div>
-                      {/* Split hero: text left, photo mosaic right */}
-                      <div style={{ display: 'flex', height: 'calc(100% - 42px)' }}>
-                        {/* Left — elegant text content */}
-                        <div style={{ width: '42%', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 28px 0 32px' }}>
-                          <div style={{ fontSize: '8px', color: '#b45309', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '8px', fontFamily: 'system-ui, sans-serif' }}>✦ Nashville, TN</div>
-                          <div style={{ fontSize: '34px', fontWeight: 700, color: '#2c1810', lineHeight: 1.1, marginBottom: '8px', fontStyle: 'italic' }}>A Taste of<br/><span style={{ color: '#b45309' }}>Italy</span></div>
-                          <div style={{ fontSize: '11px', color: '#8a7a6a', lineHeight: 1.6, marginBottom: '14px', fontFamily: 'system-ui, sans-serif' }}>Hand-made pasta, wood-fired pizza, and fine wines in an intimate downtown setting.</div>
-                          <div style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
-                            <div style={{ padding: '7px 16px', borderRadius: '20px', fontSize: '10px', fontWeight: 700, color: '#fff', background: '#2c1810', fontFamily: 'system-ui, sans-serif', position: 'relative', overflow: 'hidden' }}>
-                              Reserve a Table →
-                              <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}><div style={{ position: 'absolute', top: 0, left: '-100%', width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)', animation: 'mini-shimmer 3s ease-in-out infinite' }} /></div>
-                            </div>
-                            <div style={{ padding: '7px 14px', borderRadius: '20px', fontSize: '10px', color: '#8a7a6a', border: '1px solid #ddd', fontFamily: 'system-ui, sans-serif' }}>Our Menu</div>
-                          </div>
-                          <div style={{ display: 'flex', gap: '8px', fontSize: '9px', color: '#aaa', fontFamily: 'system-ui, sans-serif' }}>
-                            <span style={{ color: '#f59e0b' }}>★★★★★</span> <span>4.8 (1,200+)</span>
-                          </div>
-                          {/* Hours card */}
-                          <div style={{ marginTop: '12px', padding: '8px 10px', borderRadius: '6px', background: 'rgba(44,24,16,0.04)', border: '1px solid rgba(44,24,16,0.08)', fontFamily: 'system-ui, sans-serif' }}>
-                            <div style={{ fontSize: '8px', fontWeight: 600, color: '#2c1810', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '3px' }}>Hours</div>
-                            <div style={{ fontSize: '8px', color: '#8a7a6a', lineHeight: 1.5 }}>Tue–Thu 5–10pm · Fri–Sat 5–11pm · Sun 4–9pm</div>
-                            <div style={{ fontSize: '8px', color: '#22c55e', fontWeight: 600, marginTop: '2px', animation: 'mini-pulse 2s ease-in-out infinite' }}>● Open Tonight</div>
-                          </div>
-                        </div>
-                        {/* Right — photo mosaic grid */}
-                        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1.2fr 0.8fr 0.8fr', gap: '3px', padding: '6px 6px 6px 0' }}>
-                          {/* Large hero food photo spanning 2 cols */}
-                          <div style={{ gridColumn: '1 / -1', borderRadius: '6px', overflow: 'hidden', position: 'relative' }}>
-                            <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '8px 10px', background: 'linear-gradient(to top, rgba(0,0,0,0.6), transparent)' }}>
-                              <div style={{ fontSize: '10px', fontWeight: 600, color: '#fff', fontFamily: 'system-ui' }}>Chef&apos;s Tasting Menu</div>
-                              <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.6)', fontFamily: 'system-ui' }}>5-course seasonal experience · $85/person</div>
-                            </div>
-                          </div>
-                          {/* 4 smaller food photos */}
-                          {[
-                            { src: 'https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=400&q=80', name: 'Truffle Risotto', price: '$28' },
-                            { src: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400&q=80', name: 'Margherita DOP', price: '$22' },
-                            { src: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&q=80', name: 'Osso Buco', price: '$38' },
-                            { src: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400&q=80', name: 'Tiramisu', price: '$14' },
-                          ].map((item) => (
-                            <div key={item.name} style={{ borderRadius: '5px', overflow: 'hidden', position: 'relative' }}>
-                              <img src={item.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '4px 6px', background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)' }}>
-                                <div style={{ fontSize: '8px', fontWeight: 600, color: '#fff', fontFamily: 'system-ui' }}>{item.name}</div>
-                                <div style={{ fontSize: '8px', fontWeight: 700, color: '#fbbf24', fontFamily: 'system-ui' }}>{item.price}</div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      {/* Bottom bar */}
-                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '6px 0', fontSize: '8px', color: '#bbb', background: '#fff', borderTop: '1px solid rgba(0,0,0,0.05)', fontFamily: 'system-ui, sans-serif' }}>
-                        <span>📍 Downtown Nashville</span><span>·</span><span>📞 (615) 555-0142</span><span>·</span><span>Private Dining Available</span><span>·</span><span>🍷 Full Bar</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="p-4" style={{ background: 'rgba(15,23,42,0.8)' }}>
-                  <div className="flex items-center justify-between">
-                    <div><h3 className="text-sm font-semibold text-white">Bella Cucina</h3><p className="text-xs text-gray-500">Restaurant · Nashville, TN</p></div>
-                    <ArrowRight className="h-4 w-4 text-gray-600 group-hover:text-amber-400 group-hover:translate-x-1 transition-all" />
                   </div>
                 </div>
               </div>
