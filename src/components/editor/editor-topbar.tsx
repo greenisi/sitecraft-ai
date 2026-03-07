@@ -223,7 +223,7 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
+        <div className="flex items-center gap-1 md:gap-1.5 overflow-x-auto scrollbar-hide">
           {/* Edit Button */}
           <Button
             variant={isVisualEditorActive ? 'default' : 'outline'}
@@ -248,26 +248,28 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
           </Button>
 
           {/* Undo/Redo Buttons */}
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            onClick={undo}
-            disabled={!isVisualEditorActive || undoStack.length === 0}
-            title="Undo (Ctrl+Z)"
-          >
-            <Undo2 className="h-3.5 w-3.5" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            onClick={redo}
-            disabled={!isVisualEditorActive || redoStack.length === 0}
-            title="Redo (Ctrl+Shift+Z)"
-          >
-            <Redo2 className="h-3.5 w-3.5" />
-          </Button>
+          <div className="flex items-center gap-0.5 border rounded-md px-0.5">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={undo}
+              disabled={!isVisualEditorActive || undoStack.length === 0}
+              title="Undo (Ctrl+Z)"
+            >
+              <Undo2 className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={redo}
+              disabled={!isVisualEditorActive || redoStack.length === 0}
+              title="Redo (Ctrl+Shift+Z)"
+            >
+              <Redo2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
 
           {/* Autofill Button */}
             <Button
