@@ -15,6 +15,7 @@ import {
   Link2,
   ShoppingCart,
   Lock,  Settings as SettingsIcon, Sparkles,
+  Undo2, Redo2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -57,6 +58,10 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
     hasUnsavedChanges,
     pendingChanges,
     clearPendingChanges,
+    undo,
+    redo,
+    undoStack,
+    redoStack,
   } = useVisualEditorStore();
 
   const { save } = useVisualEditorSave(projectId);
@@ -241,6 +246,32 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
               <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-orange-500 border-2 border-background" />
             )}
           </Button>
+
+          {/* Undo/Redo Buttons - only visible when visual editor is active */}
+          {isVisualEditorActive && (
+            <>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={undo}
+                disabled={undoStack.length === 0}
+                title="Undo (Ctrl+Z)"
+              >
+                <Undo2 className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={redo}
+                disabled={redoStack.length === 0}
+                title="Redo (Ctrl+Shift+Z)"
+              >
+                <Redo2 className="h-3.5 w-3.5" />
+              </Button>
+            </>
+          )}
 
           {/* Autofill Button */}
             <Button
