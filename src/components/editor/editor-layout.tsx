@@ -95,7 +95,7 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
   );
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-background overflow-hidden">
+    <div className="fixed top-0 left-0 right-0 h-dvh flex flex-col bg-background overflow-hidden">
       {/* Top bar - always pinned */}
       <EditorTopbar projectId={projectId} />
 
