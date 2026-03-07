@@ -596,57 +596,55 @@ export default function HomePage() {
               {/* Card 1 — The Copper Cut (Barbershop / Local Service) */}
               <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-amber-500/10 cursor-pointer">
                 <div className="relative aspect-video overflow-hidden" style={{ background: '#0f0e0c' }}>
-                  <div className="pointer-events-none" style={{ width: '1280px', height: '800px', transform: 'scale(0.28)', transformOrigin: 'top left' }}>
-                    <div className="absolute w-[500px] h-[400px] rounded-full opacity-[0.08]" style={{ top: '-80px', right: '40px', background: 'radial-gradient(circle, #d97706, transparent 70%)' }} />
-                    {/* Nav */}
-                    <div className="flex items-center justify-between" style={{ padding: '12px 48px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                      <div className="flex items-center" style={{ gap: '10px' }}>
-                        <div className="rounded-full flex items-center justify-center font-bold text-amber-500" style={{ width: '32px', height: '32px', fontSize: '11px', border: '1.5px solid rgba(217,119,6,0.4)' }}>TC</div>
-                        <div className="font-semibold text-white/90" style={{ fontSize: '15px', letterSpacing: '0.02em' }}>The Copper Cut</div>
+                  <div className="w-[300%] h-[300%] origin-top-left pointer-events-none" style={{ transform: 'scale(0.333)' }}>
+                    <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif' }}>
+                      <div style={{ position: 'absolute', width: '500px', height: '400px', borderRadius: '50%', opacity: 0.08, top: '-80px', right: '40px', background: 'radial-gradient(circle, #d97706, transparent 70%)' }} />
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ width: '26px', height: '26px', borderRadius: '50%', border: '1.5px solid rgba(217,119,6,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 700, color: '#d97706' }}>TC</div>
+                          <span style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.02em' }}>The Copper Cut</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '20px', fontSize: '11px', color: 'rgba(255,255,255,0.35)', fontWeight: 500 }}>
+                          <span style={{ color: 'rgba(255,255,255,0.6)' }}>Home</span><span>Services</span><span>Gallery</span><span>Reviews</span><span>Contact</span>
+                        </div>
+                        <div style={{ padding: '5px 14px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, color: '#451a03', background: '#d97706' }}>Book Now</div>
                       </div>
-                      <div className="flex text-white/35 font-medium" style={{ gap: '28px', fontSize: '13px' }}>
-                        <span className="text-white/60">Home</span><span>Services</span><span>Gallery</span><span>Reviews</span><span>Contact</span>
-                      </div>
-                      <div className="rounded font-semibold text-amber-950" style={{ padding: '7px 18px', fontSize: '13px', background: '#d97706' }}>Book Now</div>
-                    </div>
-                    {/* Hero */}
-                    <div style={{ padding: '40px 48px 0' }}>
-                      <div className="flex" style={{ gap: '40px' }}>
-                        <div className="flex-1">
-                          <div className="text-amber-500/60 font-semibold uppercase" style={{ fontSize: '11px', letterSpacing: '0.15em', marginBottom: '12px' }}>Est. 2019 · Austin, TX</div>
-                          <div className="font-bold text-white/95" style={{ fontSize: '48px', lineHeight: 1.1, letterSpacing: '-0.02em', marginBottom: '16px' }}>Where Style<br/>Meets <span className="text-amber-500">Craft</span></div>
-                          <div className="text-white/30" style={{ fontSize: '15px', lineHeight: 1.6, marginBottom: '28px', maxWidth: '420px' }}>Classic cuts, hot towel shaves, and grooming done right. Walk-ins welcome, appointments preferred.</div>
-                          <div className="flex" style={{ gap: '10px' }}>
-                            <div className="rounded font-semibold text-amber-950" style={{ padding: '9px 22px', fontSize: '13px', background: '#d97706' }}>Book Appointment</div>
-                            <div className="rounded text-white/40" style={{ padding: '9px 22px', fontSize: '13px', border: '1px solid rgba(255,255,255,0.1)' }}>View Pricing</div>
+                      <div style={{ padding: '28px 32px 0' }}>
+                        <div style={{ display: 'flex', gap: '28px' }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: '9px', color: 'rgba(217,119,6,0.6)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '8px' }}>Est. 2019 · Austin, TX</div>
+                            <div style={{ fontSize: '36px', fontWeight: 700, color: 'rgba(255,255,255,0.95)', lineHeight: 1.1, letterSpacing: '-0.02em', marginBottom: '10px' }}>Where Style<br/>Meets <span style={{ color: '#d97706' }}>Craft</span></div>
+                            <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.3)', lineHeight: 1.6, marginBottom: '20px', maxWidth: '360px' }}>Classic cuts, hot towel shaves, and grooming done right. Walk-ins welcome, appointments preferred.</div>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <div style={{ padding: '7px 16px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, color: '#451a03', background: '#d97706' }}>Book Appointment</div>
+                              <div style={{ padding: '7px 16px', borderRadius: '4px', fontSize: '11px', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)' }}>View Pricing</div>
+                            </div>
+                          </div>
+                          <div style={{ width: '160px', flexShrink: 0, display: 'flex', flexDirection: 'column', borderRadius: '8px', padding: '14px', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
+                            <div style={{ fontSize: '8px', fontWeight: 600, color: 'rgba(217,119,6,0.7)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '10px' }}>Hours</div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '10px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: 'rgba(255,255,255,0.3)' }}>Mon-Fri</span><span style={{ color: 'rgba(255,255,255,0.5)' }}>9-7</span></div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: 'rgba(255,255,255,0.3)' }}>Saturday</span><span style={{ color: 'rgba(255,255,255,0.5)' }}>8-5</span></div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: 'rgba(255,255,255,0.3)' }}>Sunday</span><span style={{ color: 'rgba(255,255,255,0.4)' }}>Closed</span></div>
+                            </div>
+                            <div style={{ marginTop: 'auto', paddingTop: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} />
+                              <span style={{ fontSize: '9px', color: 'rgba(74,222,128,0.7)', fontWeight: 500 }}>Open Now</span>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex-shrink-0 flex flex-col rounded-lg" style={{ width: '200px', padding: '20px', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
-                          <div className="font-semibold text-amber-500/70 uppercase" style={{ fontSize: '10px', letterSpacing: '0.12em', marginBottom: '14px' }}>Hours</div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
-                            <div className="flex justify-between"><span className="text-white/30">Mon-Fri</span><span className="text-white/50">9-7</span></div>
-                            <div className="flex justify-between"><span className="text-white/30">Saturday</span><span className="text-white/50">8-5</span></div>
-                            <div className="flex justify-between"><span className="text-white/30">Sunday</span><span className="text-white/40">Closed</span></div>
-                          </div>
-                          <div className="mt-auto flex items-center" style={{ paddingTop: '16px', gap: '6px' }}>
-                            <div className="rounded-full bg-green-500" style={{ width: '7px', height: '7px' }} />
-                            <span className="text-green-400/70 font-medium" style={{ fontSize: '11px' }}>Open Now</span>
-                          </div>
-                        </div>
                       </div>
-                    </div>
-                    {/* Services strip */}
-                    <div className="flex" style={{ gap: '12px', padding: '28px 48px 0' }}>
-                      {[{ name: 'Classic Cut', price: '$35' }, { name: 'Beard Trim', price: '$20' }, { name: 'Hot Shave', price: '$45' }, { name: 'The Works', price: '$65' }].map((s) => (
-                        <div key={s.name} className="flex-1 rounded" style={{ padding: '12px 14px', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
-                          <div className="text-white/40" style={{ fontSize: '11px' }}>{s.name}</div>
-                          <div className="font-bold text-amber-500" style={{ fontSize: '15px', marginTop: '2px' }}>{s.price}</div>
-                        </div>
-                      ))}
-                    </div>
-                    {/* Trust bar */}
-                    <div className="absolute flex items-center justify-center text-white/20 font-medium" style={{ bottom: 0, left: 0, width: '1280px', gap: '32px', padding: '10px 0', fontSize: '12px', background: 'rgba(0,0,0,0.4)' }}>
-                      <span>★★★★★ 4.9 on Google</span><span>·</span><span>1,200+ Happy Clients</span><span>·</span><span>Walk-ins Welcome</span>
+                      <div style={{ display: 'flex', gap: '8px', padding: '20px 32px 0' }}>
+                        {[{ name: 'Classic Cut', price: '$35' }, { name: 'Beard Trim', price: '$20' }, { name: 'Hot Shave', price: '$45' }, { name: 'The Works', price: '$65' }].map((s) => (
+                          <div key={s.name} style={{ flex: 1, padding: '8px 10px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
+                            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)' }}>{s.name}</div>
+                            <div style={{ fontSize: '13px', fontWeight: 700, color: '#d97706', marginTop: '2px' }}>{s.price}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '24px', padding: '8px 0', fontSize: '10px', color: 'rgba(255,255,255,0.2)', fontWeight: 500, background: 'rgba(0,0,0,0.4)' }}>
+                        <span>★★★★★ 4.9 on Google</span><span>·</span><span>1,200+ Happy Clients</span><span>·</span><span>Walk-ins Welcome</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -661,47 +659,44 @@ export default function HomePage() {
               {/* Card 2 — Maison Moda (E-commerce Fashion) */}
               <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-rose-500/10 cursor-pointer">
                 <div className="relative aspect-video overflow-hidden" style={{ background: '#faf7f5' }}>
-                  <div className="pointer-events-none" style={{ width: '1280px', height: '800px', transform: 'scale(0.28)', transformOrigin: 'top left' }}>
-                    {/* Nav */}
-                    <div className="flex items-center justify-between" style={{ padding: '12px 48px', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-                      <div className="font-bold uppercase text-neutral-900" style={{ fontSize: '15px', letterSpacing: '0.12em' }}>Maison Moda</div>
-                      <div className="flex text-neutral-400 font-medium" style={{ gap: '28px', fontSize: '13px' }}>
-                        <span className="text-neutral-700">New In</span><span>Women</span><span>Men</span><span>Accessories</span><span>Sale</span>
+                  <div className="w-[300%] h-[300%] origin-top-left pointer-events-none" style={{ transform: 'scale(0.333)' }}>
+                    <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#171717' }}>Maison Moda</span>
+                        <div style={{ display: 'flex', gap: '20px', fontSize: '11px', color: '#a3a3a3', fontWeight: 500 }}>
+                          <span style={{ color: '#404040' }}>New In</span><span>Women</span><span>Men</span><span>Accessories</span><span>Sale</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '11px', color: '#737373' }}>
+                          <span>Search</span><span>Account</span><span style={{ fontWeight: 600, color: '#262626' }}>Bag (2)</span>
+                        </div>
                       </div>
-                      <div className="flex items-center text-neutral-500" style={{ gap: '20px', fontSize: '13px' }}>
-                        <span>Search</span><span>Account</span><span className="font-semibold text-neutral-800">Bag (2)</span>
-                      </div>
-                    </div>
-                    {/* Promo banner */}
-                    <div className="text-center font-medium text-white" style={{ padding: '6px 0', fontSize: '11px', letterSpacing: '0.12em', background: '#1a1a1a' }}>FREE SHIPPING ON ORDERS OVER $150 — USE CODE: STYLE150</div>
-                    {/* Hero */}
-                    <div className="flex" style={{ minHeight: '500px' }}>
-                      <div className="flex-1 flex flex-col items-center justify-center text-center" style={{ padding: '40px' }}>
-                        <div className="text-neutral-400 uppercase" style={{ fontSize: '11px', letterSpacing: '0.18em', marginBottom: '14px' }}>Summer &apos;26 Collection</div>
-                        <div className="font-light text-neutral-900" style={{ fontSize: '48px', lineHeight: 1.15, marginBottom: '12px' }}>Effortless<br/><span className="font-semibold">Elegance</span></div>
-                        <div className="text-neutral-400" style={{ fontSize: '14px', marginBottom: '24px', maxWidth: '300px' }}>Timeless pieces for the modern wardrobe. Sustainable fabrics, impeccable fit.</div>
-                        <div className="rounded-full font-semibold text-white" style={{ padding: '10px 28px', fontSize: '13px', background: '#1a1a1a' }}>Shop Collection</div>
-                      </div>
-                      {/* Product grid */}
-                      <div className="flex-shrink-0 grid grid-cols-2" style={{ width: '520px', gap: '8px', padding: '16px' }}>
-                        {[
-                          { color: '#e8ddd4', label: 'Linen Blazer', price: '$285' },
-                          { color: '#d4c4b0', label: 'Silk Top', price: '$145' },
-                          { color: '#c9b99a', label: 'Wide Trousers', price: '$195' },
-                          { color: '#ddd5c8', label: 'Wrap Dress', price: '$320' },
-                        ].map((item) => (
-                          <div key={item.label} className="rounded overflow-hidden" style={{ background: item.color }}>
-                            <div className="flex flex-col items-center justify-end text-center" style={{ aspectRatio: '3/4', padding: '12px' }}>
-                              <div className="font-medium text-neutral-700" style={{ fontSize: '12px' }}>{item.label}</div>
-                              <div className="text-neutral-500" style={{ fontSize: '12px' }}>{item.price}</div>
+                      <div style={{ textAlign: 'center', padding: '5px 0', fontSize: '9px', fontWeight: 500, letterSpacing: '0.12em', color: '#fff', background: '#1a1a1a' }}>FREE SHIPPING ON ORDERS OVER $150 — USE CODE: STYLE150</div>
+                      <div style={{ display: 'flex' }}>
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '28px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '9px', color: '#a3a3a3', textTransform: 'uppercase', letterSpacing: '0.18em', marginBottom: '10px' }}>Summer &apos;26 Collection</div>
+                          <div style={{ fontSize: '36px', fontWeight: 300, color: '#171717', lineHeight: 1.15, marginBottom: '8px' }}>Effortless<br/><span style={{ fontWeight: 600 }}>Elegance</span></div>
+                          <div style={{ fontSize: '12px', color: '#a3a3a3', marginBottom: '18px', maxWidth: '260px' }}>Timeless pieces for the modern wardrobe. Sustainable fabrics, impeccable fit.</div>
+                          <div style={{ padding: '8px 22px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, color: '#fff', background: '#1a1a1a' }}>Shop Collection</div>
+                        </div>
+                        <div style={{ width: '400px', flexShrink: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', padding: '12px' }}>
+                          {[
+                            { color: '#e8ddd4', label: 'Linen Blazer', price: '$285' },
+                            { color: '#d4c4b0', label: 'Silk Top', price: '$145' },
+                            { color: '#c9b99a', label: 'Wide Trousers', price: '$195' },
+                            { color: '#ddd5c8', label: 'Wrap Dress', price: '$320' },
+                          ].map((item) => (
+                            <div key={item.label} style={{ borderRadius: '4px', overflow: 'hidden', background: item.color }}>
+                              <div style={{ aspectRatio: '3/4', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', padding: '8px', textAlign: 'center' }}>
+                                <div style={{ fontSize: '10px', fontWeight: 500, color: '#404040' }}>{item.label}</div>
+                                <div style={{ fontSize: '10px', color: '#737373' }}>{item.price}</div>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                    {/* Trust strip */}
-                    <div className="flex items-center justify-center text-neutral-400 font-medium" style={{ gap: '32px', padding: '10px 48px', fontSize: '11px', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
-                      <span>✦ Free Returns</span><span>✦ Sustainable Materials</span><span>✦ 50K+ Happy Customers</span><span>✦ As Seen in Vogue</span>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '24px', padding: '8px 32px', fontSize: '9px', color: '#a3a3a3', fontWeight: 500, borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                        <span>✦ Free Returns</span><span>✦ Sustainable Materials</span><span>✦ 50K+ Happy Customers</span><span>✦ As Seen in Vogue</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -716,55 +711,52 @@ export default function HomePage() {
               {/* Card 3 — Crestline Realty (Real Estate) */}
               <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-sky-500/10 cursor-pointer">
                 <div className="relative aspect-video overflow-hidden" style={{ background: 'linear-gradient(160deg, #0c1829 0%, #081220 50%, #0a1525 100%)' }}>
-                  <div className="pointer-events-none" style={{ width: '1280px', height: '800px', transform: 'scale(0.28)', transformOrigin: 'top left' }}>
-                    <div className="absolute w-[500px] h-[400px] rounded-full opacity-10" style={{ top: '-80px', right: '40px', background: 'radial-gradient(circle, #3b82f6, transparent 70%)' }} />
-                    {/* Nav */}
-                    <div className="flex items-center justify-between" style={{ padding: '12px 48px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                      <div className="flex items-center" style={{ gap: '10px' }}>
-                        <div className="rounded flex items-center justify-center font-black text-white" style={{ width: '30px', height: '30px', fontSize: '13px', background: 'linear-gradient(135deg, #2563eb, #1d4ed8)' }}>C</div>
-                        <div className="font-semibold text-white/90" style={{ fontSize: '15px' }}>Crestline Realty</div>
+                  <div className="w-[300%] h-[300%] origin-top-left pointer-events-none" style={{ transform: 'scale(0.333)' }}>
+                    <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif' }}>
+                      <div style={{ position: 'absolute', width: '500px', height: '400px', borderRadius: '50%', opacity: 0.1, top: '-80px', right: '40px', background: 'radial-gradient(circle, #3b82f6, transparent 70%)' }} />
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ width: '24px', height: '24px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 900, color: '#fff', background: 'linear-gradient(135deg, #2563eb, #1d4ed8)' }}>C</div>
+                          <span style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>Crestline Realty</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '20px', fontSize: '11px', color: 'rgba(255,255,255,0.35)', fontWeight: 500 }}>
+                          <span style={{ color: 'rgba(255,255,255,0.6)' }}>Listings</span><span>Buy</span><span>Sell</span><span>Agents</span><span>About</span><span>Contact</span>
+                        </div>
+                        <div style={{ padding: '5px 14px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, color: '#fff', background: '#2563eb' }}>List My Home</div>
                       </div>
-                      <div className="flex text-white/35 font-medium" style={{ gap: '28px', fontSize: '13px' }}>
-                        <span className="text-white/60">Listings</span><span>Buy</span><span>Sell</span><span>Agents</span><span>About</span><span>Contact</span>
-                      </div>
-                      <div className="rounded font-semibold text-white" style={{ padding: '7px 18px', fontSize: '13px', background: '#2563eb' }}>List My Home</div>
-                    </div>
-                    {/* Hero */}
-                    <div style={{ padding: '36px 48px 0' }}>
-                      <div className="text-blue-400/50 font-semibold uppercase" style={{ fontSize: '11px', letterSpacing: '0.15em', marginBottom: '12px' }}>Find Your Dream Home</div>
-                      <div className="font-bold text-white/95" style={{ fontSize: '48px', lineHeight: 1.1, letterSpacing: '-0.02em', marginBottom: '14px' }}>Premium Real Estate<br/>in <span className="text-blue-400">Los Angeles</span></div>
-                      <div className="text-white/30" style={{ fontSize: '15px', marginBottom: '24px', maxWidth: '500px' }}>Discover luxury properties across Beverly Hills, Santa Monica, Malibu, and more.</div>
-                      {/* Search bar */}
-                      <div className="flex items-center rounded-lg" style={{ padding: '6px', marginBottom: '28px', maxWidth: '640px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                        <div className="flex-1 text-white/40" style={{ padding: '0 12px', fontSize: '13px' }}>Location, address, or ZIP</div>
-                        <div className="flex items-center" style={{ gap: '6px' }}>
-                          <div className="rounded font-medium text-white/50" style={{ padding: '6px 14px', fontSize: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>Buy</div>
-                          <div className="rounded font-medium text-white/30" style={{ padding: '6px 14px', fontSize: '12px' }}>Rent</div>
-                          <div className="rounded font-bold text-white" style={{ padding: '6px 20px', fontSize: '12px', background: '#2563eb' }}>Search</div>
+                      <div style={{ padding: '24px 32px 0' }}>
+                        <div style={{ fontSize: '9px', color: 'rgba(96,165,250,0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '8px' }}>Find Your Dream Home</div>
+                        <div style={{ fontSize: '36px', fontWeight: 700, color: 'rgba(255,255,255,0.95)', lineHeight: 1.1, letterSpacing: '-0.02em', marginBottom: '10px' }}>Premium Real Estate<br/>in <span style={{ color: '#60a5fa' }}>Los Angeles</span></div>
+                        <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.3)', marginBottom: '18px', maxWidth: '420px' }}>Discover luxury properties across Beverly Hills, Santa Monica, Malibu, and more.</div>
+                        <div style={{ display: 'flex', alignItems: 'center', borderRadius: '6px', padding: '5px', marginBottom: '20px', maxWidth: '520px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                          <div style={{ flex: 1, padding: '0 10px', fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Location, address, or ZIP</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <div style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '10px', fontWeight: 500, color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}>Buy</div>
+                            <div style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '10px', fontWeight: 500, color: 'rgba(255,255,255,0.3)' }}>Rent</div>
+                            <div style={{ padding: '4px 14px', borderRadius: '4px', fontSize: '10px', fontWeight: 700, color: '#fff', background: '#2563eb' }}>Search</div>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          {[
+                            { beds: '4 bd · 3 ba', price: '$2.45M', area: 'Beverly Hills', sqft: '3,200 sqft' },
+                            { beds: '3 bd · 2 ba', price: '$1.87M', area: 'Santa Monica', sqft: '2,100 sqft' },
+                            { beds: '5 bd · 4 ba', price: '$3.10M', area: 'Malibu', sqft: '4,500 sqft' },
+                            { beds: '2 bd · 2 ba', price: '$1.25M', area: 'Venice Beach', sqft: '1,600 sqft' },
+                          ].map((p) => (
+                            <div key={p.area} style={{ flex: 1, borderRadius: '6px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.03)' }}>
+                              <div style={{ aspectRatio: '4/3', borderRadius: '6px 6px 0 0', background: `linear-gradient(135deg, ${p.area === 'Beverly Hills' ? '#1e3a5f' : p.area === 'Santa Monica' ? '#1c2d4a' : p.area === 'Malibu' ? '#1a3340' : '#1a2844'}, ${p.area === 'Beverly Hills' ? '#172554' : '#131c36'})` }} />
+                              <div style={{ padding: '7px 8px' }}>
+                                <div style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.85)' }}>{p.price}</div>
+                                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', marginTop: '1px' }}>{p.beds} · {p.sqft}</div>
+                                <div style={{ fontSize: '9px', color: 'rgba(96,165,250,0.6)', marginTop: '1px' }}>{p.area}</div>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                      {/* Property cards */}
-                      <div className="flex" style={{ gap: '12px' }}>
-                        {[
-                          { beds: '4 bd · 3 ba', price: '$2.45M', area: 'Beverly Hills', sqft: '3,200 sqft' },
-                          { beds: '3 bd · 2 ba', price: '$1.87M', area: 'Santa Monica', sqft: '2,100 sqft' },
-                          { beds: '5 bd · 4 ba', price: '$3.10M', area: 'Malibu', sqft: '4,500 sqft' },
-                          { beds: '2 bd · 2 ba', price: '$1.25M', area: 'Venice Beach', sqft: '1,600 sqft' },
-                        ].map((p) => (
-                          <div key={p.area} className="flex-1 rounded-lg overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.03)' }}>
-                            <div style={{ aspectRatio: '4/3', borderRadius: '8px 8px 0 0', background: `linear-gradient(135deg, ${p.area === 'Beverly Hills' ? '#1e3a5f' : p.area === 'Santa Monica' ? '#1c2d4a' : p.area === 'Malibu' ? '#1a3340' : '#1a2844'}, ${p.area === 'Beverly Hills' ? '#172554' : '#131c36'})` }} />
-                            <div style={{ padding: '10px 12px' }}>
-                              <div className="font-bold text-white/85" style={{ fontSize: '14px' }}>{p.price}</div>
-                              <div className="text-white/40" style={{ fontSize: '11px', marginTop: '2px' }}>{p.beds} · {p.sqft}</div>
-                              <div className="text-blue-400/60" style={{ fontSize: '11px', marginTop: '2px' }}>{p.area}</div>
-                            </div>
-                          </div>
-                        ))}
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '24px', padding: '8px 0', fontSize: '10px', color: 'rgba(255,255,255,0.2)', fontWeight: 500, background: 'rgba(0,0,0,0.35)' }}>
+                        <span>$2.8B+ in Sales</span><span>·</span><span>500+ Homes Sold</span><span>·</span><span>Top 1% LA Agents</span>
                       </div>
-                    </div>
-                    {/* Trust bar */}
-                    <div className="absolute flex items-center justify-center text-white/20 font-medium" style={{ bottom: 0, left: 0, width: '1280px', gap: '32px', padding: '10px 0', fontSize: '12px', background: 'rgba(0,0,0,0.35)' }}>
-                      <span>$2.8B+ in Sales</span><span>·</span><span>500+ Homes Sold</span><span>·</span><span>Top 1% LA Agents</span>
                     </div>
                   </div>
                 </div>
