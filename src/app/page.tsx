@@ -415,22 +415,22 @@ export default function HomePage() {
           </div>
 
           {/* Mock browser — premium animated preview */}
-          <div className="anim-up-4 mt-16 w-full max-w-5xl mx-auto relative">
-            <div className="absolute -inset-6 rounded-3xl opacity-50 blur-3xl" style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.35), rgba(59,130,246,0.25), rgba(236,72,153,0.2), rgba(139,92,246,0.3))' }} />
+          <div className="anim-up-4 mt-10 sm:mt-16 w-full max-w-5xl mx-auto relative">
+            <div className="absolute -inset-4 sm:-inset-6 rounded-3xl opacity-50 blur-2xl sm:blur-3xl" style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.35), rgba(59,130,246,0.25), rgba(236,72,153,0.2), rgba(139,92,246,0.3))' }} />
             <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-violet-500/10" style={{ background: 'rgba(15,23,42,0.95)' }}>
               {/* Browser chrome */}
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5" style={{ background: 'rgba(15,23,42,0.98)' }}>
-                <div className="flex gap-1.5"><div className="w-3 h-3 rounded-full bg-red-500/80" /><div className="w-3 h-3 rounded-full bg-yellow-500/80" /><div className="w-3 h-3 rounded-full bg-green-500/80" /></div>
-                <div className="flex-1 mx-4 px-4 py-1.5 rounded-lg text-xs text-gray-500 font-mono flex items-center gap-2" style={{ background: 'rgba(0,0,0,0.3)' }}>
-                  <Lock className="h-3 w-3 text-green-500/70" />
-                  bloom-wellness-spa.innovated.site
+              <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 border-b border-white/5" style={{ background: 'rgba(15,23,42,0.98)' }}>
+                <div className="flex gap-1 sm:gap-1.5"><div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-500/80" /><div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-yellow-500/80" /><div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-500/80" /></div>
+                <div className="flex-1 mx-2 sm:mx-4 px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs text-gray-500 font-mono flex items-center gap-1.5 sm:gap-2 truncate" style={{ background: 'rgba(0,0,0,0.3)' }}>
+                  <Lock className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-green-500/70 flex-shrink-0" />
+                  <span className="truncate">bloom-wellness-spa.innovated.site</span>
                 </div>
               </div>
 
               {/* Split view: Chat + Website Preview */}
-              <div className="flex h-[400px] sm:h-[480px]">
-                {/* Chat panel */}
-                <div className="w-[260px] sm:w-[300px] border-r border-white/5 flex flex-col" style={{ background: 'rgba(8,12,24,0.9)' }}>
+              <div className="flex h-[350px] sm:h-[480px]">
+                {/* Chat panel — hidden on mobile for better layout */}
+                <div className="hidden sm:flex w-[300px] border-r border-white/5 flex-col" style={{ background: 'rgba(8,12,24,0.9)' }}>
                   <div className="px-3 py-2.5 border-b border-white/5">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7)' }}>
@@ -506,44 +506,47 @@ export default function HomePage() {
                 {/* Website preview — rich spa with real photos */}
                 <div className="flex-1 relative overflow-hidden" style={{ background: '#f0f7f4' }}>
                   {/* Nav */}
-                  <div className="flex items-center justify-between px-5 sm:px-8 py-2.5" style={{ background: '#fff', borderBottom: '1px solid #e8efe8' }}>
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-full" style={{ background: 'linear-gradient(135deg, #86efac, #34d399)' }} />
-                      <span className="text-[#2d3c2f] text-xs sm:text-sm font-semibold tracking-wide">Bloom Wellness</span>
+                  <div className="flex items-center justify-between px-4 sm:px-8 py-2 sm:py-2.5" style={{ background: '#fff', borderBottom: '1px solid #e8efe8' }}>
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full" style={{ background: 'linear-gradient(135deg, #86efac, #34d399)' }} />
+                      <span className="text-[#2d3c2f] text-[11px] sm:text-sm font-semibold tracking-wide">Bloom Wellness</span>
                     </div>
                     <div className="hidden sm:flex gap-5 text-[10px] text-[#8a9e8f] font-medium tracking-wider uppercase">
                       <span className="text-[#2d3c2f] font-semibold">Home</span><span>Services</span><span>Pricing</span><span>Book</span><span>Contact</span>
                     </div>
-                    <div className="px-3 py-1 rounded-md text-[10px] font-semibold text-white" style={{ background: '#6b9e7a' }}>Book Now</div>
+                    <div className="flex gap-3 sm:gap-4 text-[8px] sm:hidden text-[#8a9e8f] font-medium tracking-wider uppercase">
+                      <span className="text-[#2d3c2f] font-semibold">Home</span><span>Services</span><span>Pricing</span><span>Book</span>
+                    </div>
+                    <div className="px-2 sm:px-3 py-1 rounded-md text-[9px] sm:text-[10px] font-semibold text-white" style={{ background: '#6b9e7a' }}>Book Now</div>
                   </div>
 
                   {/* Hero with real photo background */}
                   <div className="relative" style={{ height: '55%' }}>
                     <img src="https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=1200&q=80" alt="" className="w-full h-full object-cover" />
                     <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(45,60,47,0.85) 0%, rgba(45,60,47,0.6) 40%, rgba(45,60,47,0.2) 70%, transparent)' }} />
-                    <div className="absolute inset-0 flex flex-col justify-center px-6 sm:px-10" style={{ animation: 'slide-up 0.8s ease-out forwards' }}>
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[8px] font-medium text-emerald-300 border border-emerald-400/30 mb-3 w-fit" style={{ background: 'rgba(52,211,153,0.15)' }}>
+                    <div className="absolute inset-0 flex flex-col justify-center px-5 sm:px-10" style={{ animation: 'slide-up 0.8s ease-out forwards' }}>
+                      <div className="inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-[7px] sm:text-[8px] font-medium text-emerald-300 border border-emerald-400/30 mb-2 sm:mb-3 w-fit" style={{ background: 'rgba(52,211,153,0.15)' }}>
                         <span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" /></span>
                         Now Accepting New Clients
                       </div>
-                      <div className="text-xl sm:text-3xl md:text-4xl font-bold text-white mb-2 tracking-tight leading-tight" style={{ animation: 'slide-up 0.8s ease-out 0.1s forwards', opacity: 0 }}>
+                      <div className="text-lg sm:text-3xl md:text-4xl font-bold text-white mb-1.5 sm:mb-2 tracking-tight leading-tight" style={{ animation: 'slide-up 0.8s ease-out 0.1s forwards', opacity: 0 }}>
                         Find Your Inner<br/><span style={{ color: '#86efac' }}>Balance</span>
                       </div>
-                      <div className="text-[10px] sm:text-xs text-white/60 mb-4 max-w-[260px] leading-relaxed" style={{ animation: 'slide-up 0.8s ease-out 0.2s forwards', opacity: 0 }}>Premium wellness treatments designed to restore, rejuvenate, and transform</div>
+                      <div className="text-[9px] sm:text-xs text-white/60 mb-3 sm:mb-4 max-w-[220px] sm:max-w-[260px] leading-relaxed" style={{ animation: 'slide-up 0.8s ease-out 0.2s forwards', opacity: 0 }}>Premium wellness treatments designed to restore, rejuvenate, and transform</div>
                       <div className="flex items-center gap-2" style={{ animation: 'slide-up 0.8s ease-out 0.3s forwards', opacity: 0 }}>
-                        <div className="px-4 py-1.5 rounded-lg text-[10px] font-semibold text-emerald-950 shadow-lg shadow-emerald-500/20" style={{ background: 'linear-gradient(135deg, #86efac, #34d399)' }}>Book a Session</div>
-                        <div className="px-3 py-1.5 rounded-lg text-[10px] font-medium text-white/80 border border-white/20 backdrop-blur-sm" style={{ background: 'rgba(255,255,255,0.1)' }}>View Pricing</div>
+                        <div className="px-3 sm:px-4 py-1.5 rounded-lg text-[9px] sm:text-[10px] font-semibold text-emerald-950 shadow-lg shadow-emerald-500/20" style={{ background: 'linear-gradient(135deg, #86efac, #34d399)' }}>Book a Session</div>
+                        <div className="px-2.5 sm:px-3 py-1.5 rounded-lg text-[9px] sm:text-[10px] font-medium text-white/80 border border-white/20 backdrop-blur-sm" style={{ background: 'rgba(255,255,255,0.1)' }}>View Pricing</div>
                       </div>
                     </div>
                   </div>
 
                   {/* Services cards with real photos */}
-                  <div className="px-4 sm:px-6 py-3 sm:py-4" style={{ animation: 'slide-up 0.8s ease-out 0.5s forwards', opacity: 0 }}>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-semibold text-[#2d3c2f] tracking-wide uppercase">Our Services</span>
-                      <span className="text-[9px] text-[#6b9e7a] font-medium">View All →</span>
+                  <div className="px-3 sm:px-6 py-2.5 sm:py-4" style={{ animation: 'slide-up 0.8s ease-out 0.5s forwards', opacity: 0 }}>
+                    <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                      <span className="text-[9px] sm:text-[10px] font-semibold text-[#2d3c2f] tracking-wide uppercase">Our Services</span>
+                      <span className="text-[8px] sm:text-[9px] text-[#6b9e7a] font-medium">View All →</span>
                     </div>
-                    <div className="flex gap-2 sm:gap-3">
+                    <div className="flex gap-1.5 sm:gap-3">
                       {[
                         { src: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=400&q=80', name: 'Relaxation', price: '$89', tag: '' },
                         { src: 'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=400&q=80', name: 'Deep Tissue', price: '$129', tag: 'Popular' },
@@ -551,15 +554,15 @@ export default function HomePage() {
                         { src: 'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=400&q=80', name: 'Aromatherapy', price: '$99', tag: 'New' },
                       ].map((s, i) => (
                         <div key={s.name} className="flex-1 rounded-lg overflow-hidden border border-[#e0ece4] bg-white" style={{ animation: `mini-float 3s ease-in-out infinite ${i * 0.4}s` }}>
-                          <div className="relative" style={{ height: '52px' }}>
+                          <div className="relative h-[40px] sm:h-[52px]">
                             <img src={s.src} alt="" className="w-full h-full object-cover" />
-                            {s.tag && <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded text-[7px] font-bold text-white" style={{ background: s.tag === 'Popular' ? '#6b9e7a' : '#3b82f6' }}>{s.tag}</div>}
+                            {s.tag && <div className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 px-1 sm:px-1.5 py-0.5 rounded text-[6px] sm:text-[7px] font-bold text-white" style={{ background: s.tag === 'Popular' ? '#6b9e7a' : '#3b82f6' }}>{s.tag}</div>}
                           </div>
-                          <div className="p-1.5">
-                            <div className="text-[9px] font-semibold text-[#2d3c2f]">{s.name}</div>
+                          <div className="p-1 sm:p-1.5">
+                            <div className="text-[8px] sm:text-[9px] font-semibold text-[#2d3c2f]">{s.name}</div>
                             <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-bold text-[#6b9e7a]">{s.price}</span>
-                              <span className="text-[7px] text-[#8a9e8f]">per session</span>
+                              <span className="text-[9px] sm:text-[10px] font-bold text-[#6b9e7a]">{s.price}</span>
+                              <span className="hidden sm:inline text-[7px] text-[#8a9e8f]">per session</span>
                             </div>
                           </div>
                         </div>
@@ -568,8 +571,8 @@ export default function HomePage() {
                   </div>
 
                   {/* Trust strip */}
-                  <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-4 py-1.5 text-[8px] text-[#8a9e8f] bg-white border-t border-[#e8efe8]">
-                    <span>★★★★★ 4.9 (520+)</span><span>·</span><span>📍 Charlotte, NC</span><span>·</span><span style={{ color: '#6b9e7a' }}>● Open Today</span>
+                  <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-2 sm:gap-4 py-1 sm:py-1.5 text-[7px] sm:text-[8px] text-[#8a9e8f] bg-white border-t border-[#e8efe8]">
+                    <span>★★★★★ 4.9 (520+)</span><span className="hidden sm:inline">·</span><span className="hidden sm:inline">📍 Charlotte, NC</span><span>·</span><span style={{ color: '#6b9e7a' }}>● Open Today</span>
                   </div>
                 </div>
               </div>
