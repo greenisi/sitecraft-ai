@@ -428,10 +428,10 @@ export default function HomePage() {
               </div>
 
               {/* Split view: Chat + Website Preview */}
-              <div className="flex flex-col sm:flex-row h-[600px] sm:h-[480px]">
+              <div className="flex flex-row h-[280px] sm:h-[480px]">
                 {/* Chat panel */}
-                <div className="flex w-full sm:w-[300px] h-[250px] sm:h-auto border-b sm:border-b-0 sm:border-r border-white/5 flex-col" style={{ background: 'rgba(8,12,24,0.9)' }}>
-                  <div className="px-3 py-2.5 border-b border-white/5">
+                <div className="flex w-[140px] sm:w-[300px] h-auto border-r border-white/5 flex-col flex-shrink-0" style={{ background: 'rgba(8,12,24,0.9)' }}>
+                  <div className="px-1.5 sm:px-3 py-1.5 sm:py-2.5 border-b border-white/5">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7)' }}>
                         <Sparkles className="h-3 w-3 text-white" />
@@ -440,7 +440,7 @@ export default function HomePage() {
                       <span className="ml-auto flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-1.5 w-1.5 rounded-full bg-green-400 opacity-75" /><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" /></span>
                     </div>
                   </div>
-                  <div className="flex-1 p-3 space-y-2 overflow-hidden">
+                  <div className="flex-1 p-1.5 sm:p-3 space-y-1 sm:space-y-2 overflow-hidden">
                     {/* User message 1 */}
                     <div className="flex justify-end">
                       <div className="rounded-2xl rounded-br-sm px-3 py-2 text-[11px] text-white/90 leading-relaxed max-w-[90%]" style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.2)' }}>
@@ -457,7 +457,7 @@ export default function HomePage() {
                       </div>
                     </div>
                     {/* Suggestion pills */}
-                    <div className="flex gap-1.5 pl-7">
+                    <div className="hidden sm:flex gap-1.5 pl-7">
                       <div className="rounded-full px-2.5 py-1 text-[9px] text-violet-400/80 border border-violet-500/20 cursor-pointer hover:bg-violet-500/10 transition-colors" style={{ background: 'rgba(139,92,246,0.06)' }}>Add testimonials</div>
                       <div className="rounded-full px-2.5 py-1 text-[9px] text-violet-400/80 border border-violet-500/20 cursor-pointer hover:bg-violet-500/10 transition-colors" style={{ background: 'rgba(139,92,246,0.06)' }}>Change colors</div>
                     </div>
@@ -495,7 +495,7 @@ export default function HomePage() {
                     </div>
                   </div>
                   {/* Chat input */}
-                  <div className="p-3 border-t border-white/5">
+                  <div className="hidden sm:block p-3 border-t border-white/5">
                     <div className="rounded-xl px-3 py-2.5 text-[11px] text-gray-600 border border-white/[0.08] flex items-center gap-2" style={{ background: 'rgba(255,255,255,0.02)' }}>
                       <MessageSquare className="h-3 w-3" />
                       Describe changes...
