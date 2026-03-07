@@ -606,67 +606,61 @@ export default function HomePage() {
                 <div className="relative aspect-video overflow-hidden">
                   <div className="w-[300%] h-[300%] origin-top-left pointer-events-none" style={{ transform: 'scale(0.333)' }}>
                     <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif', background: '#0c1a0e', overflow: 'hidden' }}>
-                      {/* Sky/nature hero bg */}
-                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '65%', background: 'linear-gradient(170deg, #1a3a2a 0%, #0d2818 25%, #142e1c 50%, #0a1f10 100%)' }} />
-                      {/* Sun/light glow */}
-                      <div style={{ position: 'absolute', top: '5%', right: '15%', width: '120px', height: '120px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(250,204,21,0.15) 0%, rgba(250,204,21,0.05) 40%, transparent 70%)' }} />
-                      {/* Grass texture strip */}
-                      <div style={{ position: 'absolute', top: '42%', left: 0, right: 0, height: '20%', background: 'linear-gradient(180deg, transparent 0%, rgba(34,197,94,0.06) 30%, rgba(22,163,74,0.1) 60%, rgba(34,197,94,0.04) 100%)' }} />
-                      {/* Animated floating leaf */}
-                      <div style={{ position: 'absolute', top: '12%', right: '10%', fontSize: '16px', animation: 'mini-leaf-sway 3s ease-in-out infinite', transformOrigin: 'top center' }}>🍃</div>
-                      <div style={{ position: 'absolute', top: '25%', right: '30%', fontSize: '11px', animation: 'mini-leaf-sway 4s ease-in-out infinite 1s', transformOrigin: 'top center', opacity: 0.6 }}>🌿</div>
-                      {/* Photo-like image blocks */}
-                      <div style={{ position: 'absolute', top: '14%', right: '4%', width: '38%', height: '44%', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.4)' }}>
-                        <div style={{ width: '100%', height: '100%', background: 'linear-gradient(145deg, #1a4a28 0%, #2d6b3f 20%, #1e5530 40%, #3a8b52 60%, #245a34 80%, #1a4025 100%)', position: 'relative' }}>
-                          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '35%', background: 'linear-gradient(180deg, transparent, rgba(101,67,33,0.3))' }} />
-                          <div style={{ position: 'absolute', top: '20%', left: '15%', width: '30%', height: '50%', borderRadius: '4px', background: 'linear-gradient(to bottom, #3d7a4a, #2d5e38)', opacity: 0.6 }} />
-                          <div style={{ position: 'absolute', top: '10%', right: '20%', width: '25%', height: '60%', borderRadius: '50% 50% 0 0', background: 'linear-gradient(to bottom, #4a9960, #2d6b3f)', opacity: 0.5 }} />
-                          {/* Shimmer overlay */}
-                          <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-                            <div style={{ position: 'absolute', top: 0, left: '-100%', width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)', animation: 'mini-shimmer 4s ease-in-out infinite' }} />
-                          </div>
-                        </div>
+                      {/* Full-bleed hero photo */}
+                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '72%' }}>
+                        <img src="https://images.unsplash.com/photo-1558904541-efa843a96f01?w=1200&q=80" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 40%, transparent 70%)' }} />
+                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(to top, #0c1a0e, transparent)' }} />
                       </div>
                       {/* Nav */}
-                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', background: 'rgba(12,26,14,0.9)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(34,197,94,0.15)' }}>
+                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', background: 'rgba(12,26,14,0.7)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(34,197,94,0.15)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <div style={{ width: '26px', height: '26px', borderRadius: '6px', background: 'linear-gradient(135deg, #22c55e, #15803d)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }}>🌱</div>
                           <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>Greenscape Pros</span>
                         </div>
-                        <div style={{ display: 'flex', gap: '18px', fontSize: '11px', color: 'rgba(255,255,255,0.35)', fontWeight: 500 }}>
+                        <div style={{ display: 'flex', gap: '18px', fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}>
                           <span style={{ color: '#4ade80' }}>Home</span><span>Services</span><span>Portfolio</span><span>About</span><span>Contact</span>
                         </div>
                         <div style={{ padding: '5px 14px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, color: '#fff', background: 'linear-gradient(135deg, #22c55e, #15803d)', boxShadow: '0 2px 10px rgba(34,197,94,0.3)' }}>Free Estimate</div>
                       </div>
-                      {/* Hero content */}
+                      {/* Hero content over photo */}
                       <div style={{ position: 'relative', padding: '18px 32px 0' }}>
-                        <div style={{ display: 'inline-block', padding: '3px 10px', borderRadius: '20px', fontSize: '8px', color: '#4ade80', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '8px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)' }}>⭐ Rated #1 in Charlotte, NC</div>
-                        <div style={{ fontSize: '32px', fontWeight: 800, color: '#fff', lineHeight: 1.1, marginBottom: '6px' }}>Beautiful Lawns,<br/><span style={{ color: '#4ade80' }}>Happy Homes</span></div>
-                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.6, marginBottom: '12px', maxWidth: '320px' }}>Professional lawn care, landscape design, and outdoor living spaces. Trusted by 2,000+ homeowners.</div>
+                        <div style={{ display: 'inline-block', padding: '3px 10px', borderRadius: '20px', fontSize: '8px', color: '#4ade80', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '8px', background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.25)', backdropFilter: 'blur(4px)' }}>⭐ Rated #1 in Charlotte, NC</div>
+                        <div style={{ fontSize: '34px', fontWeight: 800, color: '#fff', lineHeight: 1.1, marginBottom: '6px', textShadow: '0 2px 20px rgba(0,0,0,0.5)' }}>Beautiful Lawns,<br/><span style={{ color: '#4ade80' }}>Happy Homes</span></div>
+                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, marginBottom: '12px', maxWidth: '320px', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>Professional lawn care, landscape design, and outdoor living spaces. Trusted by 2,000+ homeowners.</div>
                         <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
                           <div style={{ padding: '7px 16px', borderRadius: '6px', fontSize: '10px', fontWeight: 700, color: '#fff', background: 'linear-gradient(135deg, #22c55e, #15803d)', boxShadow: '0 3px 12px rgba(34,197,94,0.35)', position: 'relative', overflow: 'hidden' }}>
                             Get Free Quote →
                             <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}><div style={{ position: 'absolute', top: 0, left: '-100%', width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)', animation: 'mini-shimmer 3s ease-in-out infinite' }} /></div>
                           </div>
-                          <div style={{ padding: '7px 14px', borderRadius: '6px', fontSize: '10px', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)' }}>Our Work</div>
+                          <div style={{ padding: '7px 14px', borderRadius: '6px', fontSize: '10px', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(4px)' }}>Our Work</div>
                         </div>
-                        <div style={{ display: 'flex', gap: '10px', fontSize: '9px', color: 'rgba(255,255,255,0.3)' }}>
+                        <div style={{ display: 'flex', gap: '10px', fontSize: '9px', color: 'rgba(255,255,255,0.4)' }}>
                           <span>★★★★★ <span style={{ color: '#4ade80' }}>4.9</span> (520+)</span><span>·</span><span>Licensed & Insured</span><span>·</span><span style={{ animation: 'mini-pulse 2s ease-in-out infinite', color: '#4ade80' }}>● Booking Now</span>
                         </div>
                       </div>
-                      {/* Services row */}
-                      <div style={{ position: 'relative', display: 'flex', gap: '5px', padding: '10px 32px 0' }}>
-                        {[{ name: 'Lawn Care', price: 'From $49', icon: '🌱', desc: 'Weekly mowing' }, { name: 'Landscaping', price: 'From $299', icon: '🏡', desc: 'Full design' }, { name: 'Tree Service', price: 'From $149', icon: '🌳', desc: 'Trim & removal' }, { name: 'Irrigation', price: 'From $199', icon: '💧', desc: 'Smart systems' }].map((s, i) => (
-                          <div key={s.name} style={{ flex: 1, padding: '7px 6px', borderRadius: '6px', background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.1)', animation: `mini-float 3s ease-in-out infinite ${i * 0.3}s` }}>
-                            <div style={{ fontSize: '12px', marginBottom: '2px' }}>{s.icon}</div>
-                            <div style={{ fontSize: '9px', color: '#fff', fontWeight: 600 }}>{s.name}</div>
-                            <div style={{ fontSize: '7px', color: 'rgba(255,255,255,0.3)', marginBottom: '2px' }}>{s.desc}</div>
-                            <div style={{ fontSize: '10px', fontWeight: 700, color: '#4ade80' }}>{s.price}</div>
+                      {/* Portfolio gallery row with real photos */}
+                      <div style={{ position: 'relative', display: 'flex', gap: '5px', padding: '12px 32px 0' }}>
+                        {[
+                          { src: 'https://images.unsplash.com/photo-1592417817098-8fd3d9eb14a5?w=400&q=80', label: 'Lawn Care', price: 'From $49' },
+                          { src: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=400&q=80', label: 'Landscaping', price: 'From $299' },
+                          { src: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400&q=80', label: 'Garden Design', price: 'From $199' },
+                          { src: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&q=80', label: 'Outdoor Living', price: 'From $499' },
+                        ].map((s, i) => (
+                          <div key={s.label} style={{ flex: 1, borderRadius: '6px', overflow: 'hidden', border: '1px solid rgba(34,197,94,0.1)', animation: `mini-float 3s ease-in-out infinite ${i * 0.3}s` }}>
+                            <div style={{ height: '48px', position: 'relative', overflow: 'hidden' }}>
+                              <img src={s.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.6), transparent)' }} />
+                            </div>
+                            <div style={{ padding: '4px 6px', background: 'rgba(12,26,14,0.9)' }}>
+                              <div style={{ fontSize: '9px', color: '#fff', fontWeight: 600 }}>{s.label}</div>
+                              <div style={{ fontSize: '9px', fontWeight: 700, color: '#4ade80' }}>{s.price}</div>
+                            </div>
                           </div>
                         ))}
                       </div>
                       {/* Bottom trust bar */}
-                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '7px 0', fontSize: '8px', color: 'rgba(255,255,255,0.25)', background: 'linear-gradient(to top, rgba(12,26,14,0.95), rgba(12,26,14,0.6))' }}>
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '7px 0', fontSize: '8px', color: 'rgba(255,255,255,0.3)', background: 'linear-gradient(to top, rgba(12,26,14,0.95), rgba(12,26,14,0.6))' }}>
                         <span>📍 Charlotte, NC</span><span>·</span><span>2,000+ Happy Clients</span><span>·</span><span>Same Week Service</span><span>·</span><span>Free Estimates</span>
                       </div>
                     </div>
@@ -703,52 +697,41 @@ export default function HomePage() {
                           </div>
                         </div>
                       </div>
-                      {/* Promo banner with animation */}
+                      {/* Promo banner */}
                       <div style={{ textAlign: 'center', padding: '5px 0', fontSize: '9px', fontWeight: 600, letterSpacing: '0.08em', color: '#fff', background: 'linear-gradient(90deg, #111 0%, #2a2a2a 50%, #111 100%)', position: 'relative', overflow: 'hidden' }}>
                         <span style={{ position: 'relative', zIndex: 1 }}>🔥 SUMMER SALE — UP TO 40% OFF — FREE SHIPPING OVER $75</span>
                         <div style={{ position: 'absolute', top: 0, left: '-100%', width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)', animation: 'mini-shimmer 5s ease-in-out infinite' }} />
                       </div>
-                      {/* Hero split */}
+                      {/* Hero split with real photos */}
                       <div style={{ display: 'flex', height: 'calc(100% - 78px)' }}>
-                        {/* Left — featured product */}
-                        <div style={{ width: '45%', position: 'relative', background: 'linear-gradient(135deg, #f0e6d8 0%, #e8dcc8 40%, #ddd0ba 100%)', overflow: 'hidden' }}>
-                          {/* Product image simulation */}
-                          <div style={{ position: 'absolute', top: '15%', left: '15%', width: '70%', height: '65%', borderRadius: '10px', background: 'linear-gradient(160deg, #c4a67a 0%, #ddb88a 30%, #b8956a 60%, #d4a878 100%)', boxShadow: '0 10px 30px rgba(0,0,0,0.15)' }}>
-                            <div style={{ position: 'absolute', top: '20%', left: '20%', width: '60%', height: '50%', borderRadius: '6px', background: 'linear-gradient(145deg, rgba(255,255,255,0.15), transparent)', opacity: 0.6 }} />
-                            <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-                              <div style={{ position: 'absolute', top: 0, left: '-100%', width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)', animation: 'mini-shimmer 4s ease-in-out infinite 1s' }} />
-                            </div>
-                          </div>
+                        {/* Left — featured product with real photo */}
+                        <div style={{ width: '45%', position: 'relative', overflow: 'hidden' }}>
+                          <img src="https://images.unsplash.com/photo-1616627547584-bf28cee262db?w=600&q=80" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           {/* Tag */}
                           <div style={{ position: 'absolute', top: '8px', left: '8px', padding: '3px 8px', borderRadius: '4px', fontSize: '7px', fontWeight: 700, color: '#fff', background: '#111', letterSpacing: '0.05em' }}>FEATURED</div>
                           {/* Bottom info overlay */}
-                          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '8px 10px', background: 'linear-gradient(to top, rgba(0,0,0,0.5), transparent)' }}>
+                          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '10px 10px', background: 'linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.3), transparent)' }}>
                             <div style={{ fontSize: '10px', fontWeight: 600, color: '#fff' }}>Artisan Candle Set</div>
                             <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                               <span style={{ fontSize: '10px', fontWeight: 700, color: '#fff' }}>$68</span>
                               <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.5)', textDecoration: 'line-through' }}>$95</span>
-                              <span style={{ fontSize: '7px', fontWeight: 600, color: '#fbbf24', padding: '1px 4px', borderRadius: '2px', background: 'rgba(251,191,36,0.15)' }}>-28%</span>
+                              <span style={{ fontSize: '7px', fontWeight: 600, color: '#fbbf24', padding: '1px 4px', borderRadius: '2px', background: 'rgba(251,191,36,0.2)' }}>-28%</span>
                             </div>
                           </div>
                         </div>
-                        {/* Right — product grid */}
+                        {/* Right — product grid with real photos */}
                         <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px', padding: '4px' }}>
                           {[
-                            { bg: 'linear-gradient(145deg, #8b7355 0%, #a08868 50%, #7d6548 100%)', label: 'Leather Tote', price: '$128', oldPrice: '$175', tag: 'Bestseller', rating: '4.8' },
-                            { bg: 'linear-gradient(145deg, #c4b5a0 0%, #d4c5b0 50%, #b5a690 100%)', label: 'Ceramic Vase', price: '$42', oldPrice: '', tag: 'New', rating: '4.9' },
-                            { bg: 'linear-gradient(145deg, #6b8f71 0%, #7da083 50%, #5d7f64 100%)', label: 'Linen Throw', price: '$86', oldPrice: '$120', tag: '-28%', rating: '4.7' },
-                            { bg: 'linear-gradient(145deg, #9b8b7a 0%, #ac9c8b 50%, #8d7d6c 100%)', label: 'Woven Basket', price: '$54', oldPrice: '', tag: '', rating: '4.6' },
+                            { src: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=400&q=80', label: 'Leather Tote', price: '$128', oldPrice: '$175', tag: 'Bestseller', rating: '4.8' },
+                            { src: 'https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?w=400&q=80', label: 'Ceramic Vase', price: '$42', oldPrice: '', tag: 'New', rating: '4.9' },
+                            { src: 'https://images.unsplash.com/photo-1629949009765-40fc74c9ec21?w=400&q=80', label: 'Linen Throw', price: '$86', oldPrice: '$120', tag: '-28%', rating: '4.7' },
+                            { src: 'https://images.unsplash.com/photo-1631125915902-d8abe9225ff2?w=400&q=80', label: 'Woven Basket', price: '$54', oldPrice: '', tag: '', rating: '4.6' },
                           ].map((item, idx) => (
                             <div key={item.label} style={{ borderRadius: '5px', overflow: 'hidden', position: 'relative', background: '#fff', border: '1px solid rgba(0,0,0,0.05)' }}>
-                              <div style={{ aspectRatio: '1/1', background: item.bg, position: 'relative', overflow: 'hidden' }}>
-                                {/* Image reflection */}
-                                <div style={{ position: 'absolute', top: '15%', left: '15%', width: '70%', height: '60%', borderRadius: '4px', background: `linear-gradient(135deg, rgba(255,255,255,0.1), transparent)`, opacity: 0.5 }} />
-                                {item.tag && <div style={{ position: 'absolute', top: '4px', left: '4px', padding: '1px 5px', borderRadius: '2px', fontSize: '7px', fontWeight: 700, color: item.tag.startsWith('-') ? '#ef4444' : '#fff', background: item.tag.startsWith('-') ? 'rgba(239,68,68,0.1)' : '#111' }}>{item.tag}</div>}
-                                {/* Heart icon */}
-                                <div style={{ position: 'absolute', top: '4px', right: '4px', width: '16px', height: '16px', borderRadius: '50%', background: 'rgba(255,255,255,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '7px' }}>♡</div>
-                                <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-                                  <div style={{ position: 'absolute', top: 0, left: '-100%', width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)', animation: `mini-shimmer 5s ease-in-out infinite ${idx * 0.8}s` }} />
-                                </div>
+                              <div style={{ aspectRatio: '1/1', position: 'relative', overflow: 'hidden' }}>
+                                <img src={item.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                {item.tag && <div style={{ position: 'absolute', top: '4px', left: '4px', padding: '1px 5px', borderRadius: '2px', fontSize: '7px', fontWeight: 700, color: item.tag.startsWith('-') ? '#fff' : '#fff', background: item.tag.startsWith('-') ? '#ef4444' : '#111' }}>{item.tag}</div>}
+                                <div style={{ position: 'absolute', top: '4px', right: '4px', width: '16px', height: '16px', borderRadius: '50%', background: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '7px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>♡</div>
                               </div>
                               <div style={{ padding: '4px 5px' }}>
                                 <div style={{ fontSize: '8px', fontWeight: 600, color: '#333' }}>{item.label}</div>
@@ -782,29 +765,14 @@ export default function HomePage() {
                 <div className="relative aspect-video overflow-hidden">
                   <div className="w-[300%] h-[300%] origin-top-left pointer-events-none" style={{ transform: 'scale(0.333)' }}>
                     <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'Georgia, serif', background: '#0f0906', overflow: 'hidden' }}>
-                      {/* Warm ambient bg */}
-                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '70%', background: 'linear-gradient(160deg, #1a0f05 0%, #2a1a0a 25%, #1f1108 50%, #0f0906 100%)' }} />
-                      {/* Warm glow orb */}
-                      <div style={{ position: 'absolute', top: '10%', left: '50%', width: '200px', height: '200px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(245,158,11,0.08) 0%, rgba(217,119,6,0.04) 40%, transparent 70%)', transform: 'translateX(-50%)' }} />
-                      {/* Food photo area */}
-                      <div style={{ position: 'absolute', top: '12%', right: '3%', width: '40%', height: '52%', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}>
-                        <div style={{ width: '100%', height: '100%', background: 'linear-gradient(145deg, #4a2810 0%, #6b3a18 20%, #8b4a20 40%, #5c3015 60%, #3d2008 100%)', position: 'relative' }}>
-                          {/* Plate circle */}
-                          <div style={{ position: 'absolute', top: '15%', left: '15%', width: '70%', height: '70%', borderRadius: '50%', background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))', border: '1px solid rgba(255,255,255,0.05)' }}>
-                            <div style={{ position: 'absolute', top: '20%', left: '20%', width: '60%', height: '60%', borderRadius: '50%', background: 'radial-gradient(circle, #7a4422 0%, #5c3418 50%, #4a2810 100%)' }} />
-                          </div>
-                          {/* Steam animation */}
-                          <div style={{ position: 'absolute', top: '5%', left: '40%', fontSize: '10px', opacity: 0.4, animation: 'mini-steam 2.5s ease-out infinite' }}>~</div>
-                          <div style={{ position: 'absolute', top: '5%', left: '50%', fontSize: '10px', opacity: 0.3, animation: 'mini-steam 3s ease-out infinite 0.5s' }}>~</div>
-                          <div style={{ position: 'absolute', top: '5%', left: '55%', fontSize: '10px', opacity: 0.35, animation: 'mini-steam 2.8s ease-out infinite 1s' }}>~</div>
-                          {/* Shimmer */}
-                          <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-                            <div style={{ position: 'absolute', top: 0, left: '-100%', width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)', animation: 'mini-shimmer 5s ease-in-out infinite' }} />
-                          </div>
-                        </div>
+                      {/* Full-bleed restaurant hero photo */}
+                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '72%' }}>
+                        <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=80" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.4) 45%, transparent 75%)' }} />
+                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(to top, #0f0906, transparent)' }} />
                       </div>
                       {/* Nav */}
-                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', borderBottom: '1px solid rgba(245,158,11,0.1)' }}>
+                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', background: 'rgba(15,9,6,0.5)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(245,158,11,0.12)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span style={{ fontSize: '16px' }}>🍷</span>
                           <div>
@@ -812,42 +780,44 @@ export default function HomePage() {
                             <div style={{ fontSize: '6px', color: 'rgba(245,222,179,0.4)', textTransform: 'uppercase', letterSpacing: '0.25em', fontFamily: 'system-ui, sans-serif' }}>Ristorante Italiano</div>
                           </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '18px', fontSize: '11px', color: 'rgba(245,222,179,0.35)', fontWeight: 500, fontFamily: 'system-ui, sans-serif' }}>
+                        <div style={{ display: 'flex', gap: '18px', fontSize: '11px', color: 'rgba(245,222,179,0.4)', fontWeight: 500, fontFamily: 'system-ui, sans-serif' }}>
                           <span style={{ color: '#f59e0b' }}>Home</span><span>Menu</span><span>Reservations</span><span>Events</span><span>Gallery</span>
                         </div>
                         <div style={{ padding: '5px 14px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, color: '#fff', background: 'linear-gradient(135deg, #b45309, #92400e)', boxShadow: '0 2px 10px rgba(180,83,9,0.3)', fontFamily: 'system-ui, sans-serif' }}>Reserve Table</div>
                       </div>
-                      {/* Hero */}
+                      {/* Hero content over photo */}
                       <div style={{ position: 'relative', padding: '18px 32px 0' }}>
                         <div style={{ fontSize: '8px', color: '#f59e0b', fontWeight: 500, letterSpacing: '0.2em', marginBottom: '8px', fontFamily: 'system-ui, sans-serif' }}>✦ AUTHENTIC ITALIAN CUISINE · EST. 2018</div>
-                        <div style={{ fontSize: '34px', fontWeight: 700, color: '#f5deb3', lineHeight: 1.1, marginBottom: '6px', fontStyle: 'italic' }}>A Taste of<br/><span style={{ color: '#f59e0b' }}>Italy</span></div>
-                        <div style={{ fontSize: '11px', color: 'rgba(245,222,179,0.4)', lineHeight: 1.6, marginBottom: '12px', maxWidth: '300px', fontFamily: 'system-ui, sans-serif' }}>Hand-made pasta, wood-fired pizza, and fine wines in an intimate setting in the heart of downtown.</div>
+                        <div style={{ fontSize: '34px', fontWeight: 700, color: '#f5deb3', lineHeight: 1.1, marginBottom: '6px', fontStyle: 'italic', textShadow: '0 2px 20px rgba(0,0,0,0.5)' }}>A Taste of<br/><span style={{ color: '#f59e0b' }}>Italy</span></div>
+                        <div style={{ fontSize: '11px', color: 'rgba(245,222,179,0.6)', lineHeight: 1.6, marginBottom: '12px', maxWidth: '300px', fontFamily: 'system-ui, sans-serif', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>Hand-made pasta, wood-fired pizza, and fine wines in an intimate setting in the heart of downtown.</div>
                         <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
                           <div style={{ padding: '7px 16px', borderRadius: '4px', fontSize: '10px', fontWeight: 700, color: '#fff', background: 'linear-gradient(135deg, #b45309, #92400e)', boxShadow: '0 3px 12px rgba(180,83,9,0.35)', fontFamily: 'system-ui, sans-serif', position: 'relative', overflow: 'hidden' }}>
                             Make Reservation
                             <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}><div style={{ position: 'absolute', top: 0, left: '-100%', width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)', animation: 'mini-shimmer 3s ease-in-out infinite' }} /></div>
                           </div>
-                          <div style={{ padding: '7px 14px', borderRadius: '4px', fontSize: '10px', color: 'rgba(245,222,179,0.5)', border: '1px solid rgba(245,222,179,0.15)', fontFamily: 'system-ui, sans-serif' }}>View Menu</div>
+                          <div style={{ padding: '7px 14px', borderRadius: '4px', fontSize: '10px', color: 'rgba(245,222,179,0.7)', border: '1px solid rgba(245,222,179,0.2)', fontFamily: 'system-ui, sans-serif', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(4px)' }}>View Menu</div>
                         </div>
-                        <div style={{ display: 'flex', gap: '10px', fontSize: '9px', color: 'rgba(245,222,179,0.3)', fontFamily: 'system-ui, sans-serif' }}>
+                        <div style={{ display: 'flex', gap: '10px', fontSize: '9px', color: 'rgba(245,222,179,0.4)', fontFamily: 'system-ui, sans-serif' }}>
                           <span>★★★★★ <span style={{ color: '#f59e0b' }}>4.8</span> (1,200+)</span><span>·</span><span>📍 Nashville, TN</span><span>·</span><span style={{ animation: 'mini-pulse 2s ease-in-out infinite', color: '#22c55e' }}>● Open Tonight</span>
                         </div>
                       </div>
-                      {/* Menu preview cards */}
-                      <div style={{ position: 'relative', display: 'flex', gap: '5px', padding: '10px 32px 0' }}>
+                      {/* Menu items with food photos */}
+                      <div style={{ position: 'relative', display: 'flex', gap: '5px', padding: '12px 32px 0' }}>
                         {[
-                          { name: 'Truffle Risotto', price: '$28', desc: 'Arborio, porcini, shaved truffle', icon: '🍄' },
-                          { name: 'Margherita DOP', price: '$22', desc: 'San Marzano, fior di latte', icon: '🍕' },
-                          { name: 'Osso Buco', price: '$38', desc: 'Braised veal, gremolata', icon: '🥩' },
-                          { name: 'Tiramisu', price: '$14', desc: 'Espresso, mascarpone', icon: '🍰' },
+                          { src: 'https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=400&q=80', name: 'Truffle Risotto', price: '$28' },
+                          { src: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400&q=80', name: 'Margherita DOP', price: '$22' },
+                          { src: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&q=80', name: 'Osso Buco', price: '$38' },
+                          { src: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400&q=80', name: 'Tiramisu', price: '$14' },
                         ].map((item, i) => (
-                          <div key={item.name} style={{ flex: 1, padding: '7px 6px', borderRadius: '6px', background: 'rgba(245,158,11,0.04)', border: '1px solid rgba(245,158,11,0.08)', animation: `mini-float 3s ease-in-out infinite ${i * 0.4}s` }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                              <span style={{ fontSize: '12px' }}>{item.icon}</span>
-                              <span style={{ fontSize: '10px', fontWeight: 700, color: '#f59e0b', fontFamily: 'system-ui' }}>{item.price}</span>
+                          <div key={item.name} style={{ flex: 1, borderRadius: '6px', overflow: 'hidden', border: '1px solid rgba(245,158,11,0.1)', animation: `mini-float 3s ease-in-out infinite ${i * 0.4}s` }}>
+                            <div style={{ height: '48px', position: 'relative', overflow: 'hidden' }}>
+                              <img src={item.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.5), transparent)' }} />
                             </div>
-                            <div style={{ fontSize: '9px', color: '#f5deb3', fontWeight: 600, fontFamily: 'system-ui' }}>{item.name}</div>
-                            <div style={{ fontSize: '7px', color: 'rgba(245,222,179,0.3)', fontFamily: 'system-ui', lineHeight: 1.3 }}>{item.desc}</div>
+                            <div style={{ padding: '4px 6px', background: 'rgba(15,9,6,0.9)' }}>
+                              <div style={{ fontSize: '9px', color: '#f5deb3', fontWeight: 600, fontFamily: 'system-ui' }}>{item.name}</div>
+                              <div style={{ fontSize: '9px', fontWeight: 700, color: '#f59e0b', fontFamily: 'system-ui' }}>{item.price}</div>
+                            </div>
                           </div>
                         ))}
                       </div>
