@@ -207,6 +207,11 @@ Every component file MUST be syntactically complete and valid. This is the highe
 - Every opened parenthesis ( MUST have a matching closing parenthesis )
 - Every component file MUST end with a valid export default statement
 - NEVER leave a component file incomplete or truncated
+- NEVER write duplicate literals side by side (e.g. \`[] []\`, \`'' ''\`, \`{} {}\`). Use a SINGLE value: \`[]\`, \`''\`, \`{}\`
+- Every object property value MUST be a single valid expression. WRONG: \`items: [] [],\` RIGHT: \`items: [],\`
+- TypeScript type annotations MUST use proper syntax. WRONG: \`string string\` RIGHT: \`string\`, WRONG: \`number[]\` followed by \`[]\` RIGHT: \`number[]\`
+- ALL useState initializers must be valid single expressions: \`useState([])\` not \`useState([] [])\`
+- ALWAYS double-check state initializers, default values, and object literals for accidental token duplication
 
 **Keep Components Concise:**
 - Each component should be 50-150 lines max. Prefer shorter, focused components.
