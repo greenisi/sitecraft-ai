@@ -595,62 +595,58 @@ export default function HomePage() {
 
               {/* Card 1 — The Copper Cut (Barbershop / Local Service) */}
               <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-amber-500/10 cursor-pointer">
-                <div className="relative aspect-video bg-muted overflow-hidden">
-                  <div className="h-full w-full overflow-hidden" style={{ background: '#0f0e0c' }}>
-                    <div className="pointer-events-none origin-top-left" style={{ width: '1280px', height: '800px', transform: 'scale(0.28)', transformOrigin: 'top left' }}>
-                      {/* Warm ambient */}
-                      <div className="absolute w-[600px] h-[500px] rounded-full opacity-[0.12]" style={{ top: '-100px', right: '0', background: 'radial-gradient(circle, #d97706, transparent 70%)' }} />
-                      {/* Nav */}
-                      <div className="flex items-center justify-between px-10 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full border-2 border-amber-600/40 flex items-center justify-center text-xs font-bold text-amber-500">TC</div>
-                          <div className="text-base font-semibold text-white/90 tracking-wide">The Copper Cut</div>
-                        </div>
-                        <div className="flex gap-6 text-sm text-white/35 font-medium">
-                          <span className="text-white/60">Home</span><span>Services</span><span>Gallery</span><span>Reviews</span><span>Contact</span>
-                        </div>
-                        <div className="px-5 py-1.5 rounded-md text-sm font-semibold text-amber-950" style={{ background: '#d97706' }}>Book Now</div>
+                <div className="relative aspect-video overflow-hidden" style={{ background: '#0f0e0c' }}>
+                  <div className="pointer-events-none" style={{ width: '1280px', height: '800px', transform: 'scale(0.28)', transformOrigin: 'top left' }}>
+                    <div className="absolute w-[500px] h-[400px] rounded-full opacity-[0.08]" style={{ top: '-80px', right: '40px', background: 'radial-gradient(circle, #d97706, transparent 70%)' }} />
+                    {/* Nav */}
+                    <div className="flex items-center justify-between" style={{ padding: '12px 48px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div className="flex items-center" style={{ gap: '10px' }}>
+                        <div className="rounded-full flex items-center justify-center font-bold text-amber-500" style={{ width: '32px', height: '32px', fontSize: '11px', border: '1.5px solid rgba(217,119,6,0.4)' }}>TC</div>
+                        <div className="font-semibold text-white/90" style={{ fontSize: '15px', letterSpacing: '0.02em' }}>The Copper Cut</div>
                       </div>
-                      {/* Hero */}
-                      <div className="px-10 pt-6">
-                        <div className="flex gap-8">
-                          <div className="flex-1">
-                            <div className="text-[10px] text-amber-500/60 font-semibold tracking-[0.2em] uppercase mb-2">Est. 2019 · Austin, TX</div>
-                            <div className="text-[42px] font-bold text-white/95 leading-[1.1] tracking-tight mb-2">Where Style<br/>Meets <span className="text-amber-500">Craft</span></div>
-                            <div className="text-sm text-white/30 leading-relaxed mb-5 max-w-[400px]">Classic cuts, hot towel shaves, and grooming done right. Walk-ins welcome, appointments preferred.</div>
-                            <div className="flex gap-3">
-                              <div className="px-5 py-2 rounded-md text-sm font-semibold text-amber-950" style={{ background: '#d97706' }}>Book Appointment</div>
-                              <div className="px-5 py-2 rounded-md text-sm text-white/40 border border-white/10">View Pricing</div>
-                            </div>
+                      <div className="flex text-white/35 font-medium" style={{ gap: '28px', fontSize: '13px' }}>
+                        <span className="text-white/60">Home</span><span>Services</span><span>Gallery</span><span>Reviews</span><span>Contact</span>
+                      </div>
+                      <div className="rounded font-semibold text-amber-950" style={{ padding: '7px 18px', fontSize: '13px', background: '#d97706' }}>Book Now</div>
+                    </div>
+                    {/* Hero */}
+                    <div style={{ padding: '40px 48px 0' }}>
+                      <div className="flex" style={{ gap: '40px' }}>
+                        <div className="flex-1">
+                          <div className="text-amber-500/60 font-semibold uppercase" style={{ fontSize: '11px', letterSpacing: '0.15em', marginBottom: '12px' }}>Est. 2019 · Austin, TX</div>
+                          <div className="font-bold text-white/95" style={{ fontSize: '48px', lineHeight: 1.1, letterSpacing: '-0.02em', marginBottom: '16px' }}>Where Style<br/>Meets <span className="text-amber-500">Craft</span></div>
+                          <div className="text-white/30" style={{ fontSize: '15px', lineHeight: 1.6, marginBottom: '28px', maxWidth: '420px' }}>Classic cuts, hot towel shaves, and grooming done right. Walk-ins welcome, appointments preferred.</div>
+                          <div className="flex" style={{ gap: '10px' }}>
+                            <div className="rounded font-semibold text-amber-950" style={{ padding: '9px 22px', fontSize: '13px', background: '#d97706' }}>Book Appointment</div>
+                            <div className="rounded text-white/40" style={{ padding: '9px 22px', fontSize: '13px', border: '1px solid rgba(255,255,255,0.1)' }}>View Pricing</div>
                           </div>
-                          {/* Hours card */}
-                          <div className="w-[180px] flex-shrink-0 flex flex-col rounded-xl p-4 border border-white/[0.06]" style={{ background: 'rgba(255,255,255,0.02)' }}>
-                            <div className="text-[10px] font-semibold text-amber-500/70 mb-3 tracking-[0.15em] uppercase">Hours</div>
-                            <div className="space-y-1.5 text-xs">
-                              <div className="flex justify-between"><span className="text-white/30">Mon-Fri</span><span className="text-white/50">9-7</span></div>
-                              <div className="flex justify-between"><span className="text-white/30">Saturday</span><span className="text-white/50">8-5</span></div>
-                              <div className="flex justify-between"><span className="text-white/30">Sunday</span><span className="text-white/40">Closed</span></div>
-                            </div>
-                            <div className="mt-auto pt-3 flex items-center gap-1.5">
-                              <div className="w-2 h-2 rounded-full bg-green-500" />
-                              <span className="text-[10px] text-green-400/70 font-medium">Open Now</span>
-                            </div>
+                        </div>
+                        <div className="flex-shrink-0 flex flex-col rounded-lg" style={{ width: '200px', padding: '20px', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
+                          <div className="font-semibold text-amber-500/70 uppercase" style={{ fontSize: '10px', letterSpacing: '0.12em', marginBottom: '14px' }}>Hours</div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
+                            <div className="flex justify-between"><span className="text-white/30">Mon-Fri</span><span className="text-white/50">9-7</span></div>
+                            <div className="flex justify-between"><span className="text-white/30">Saturday</span><span className="text-white/50">8-5</span></div>
+                            <div className="flex justify-between"><span className="text-white/30">Sunday</span><span className="text-white/40">Closed</span></div>
+                          </div>
+                          <div className="mt-auto flex items-center" style={{ paddingTop: '16px', gap: '6px' }}>
+                            <div className="rounded-full bg-green-500" style={{ width: '7px', height: '7px' }} />
+                            <span className="text-green-400/70 font-medium" style={{ fontSize: '11px' }}>Open Now</span>
                           </div>
                         </div>
                       </div>
-                      {/* Services strip */}
-                      <div className="flex items-center gap-3 px-10 mt-6">
-                        {[{ name: 'Classic Cut', price: '$35' }, { name: 'Beard Trim', price: '$20' }, { name: 'Hot Shave', price: '$45' }, { name: 'The Works', price: '$65' }].map((s) => (
-                          <div key={s.name} className="flex-1 rounded-lg p-3 border border-white/[0.06]" style={{ background: 'rgba(255,255,255,0.02)' }}>
-                            <div className="text-[10px] text-white/40">{s.name}</div>
-                            <div className="text-sm font-bold text-amber-500 mt-0.5">{s.price}</div>
-                          </div>
-                        ))}
-                      </div>
-                      {/* Trust bar */}
-                      <div className="absolute left-0 right-0 flex items-center justify-center gap-8 py-3 text-xs text-white/20 font-medium" style={{ bottom: 0, background: 'rgba(0,0,0,0.4)', width: '1280px' }}>
-                        <span>★★★★★ 4.9 on Google</span><span>·</span><span>1,200+ Happy Clients</span><span>·</span><span>Walk-ins Welcome</span>
-                      </div>
+                    </div>
+                    {/* Services strip */}
+                    <div className="flex" style={{ gap: '12px', padding: '28px 48px 0' }}>
+                      {[{ name: 'Classic Cut', price: '$35' }, { name: 'Beard Trim', price: '$20' }, { name: 'Hot Shave', price: '$45' }, { name: 'The Works', price: '$65' }].map((s) => (
+                        <div key={s.name} className="flex-1 rounded" style={{ padding: '12px 14px', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
+                          <div className="text-white/40" style={{ fontSize: '11px' }}>{s.name}</div>
+                          <div className="font-bold text-amber-500" style={{ fontSize: '15px', marginTop: '2px' }}>{s.price}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {/* Trust bar */}
+                    <div className="absolute flex items-center justify-center text-white/20 font-medium" style={{ bottom: 0, left: 0, width: '1280px', gap: '32px', padding: '10px 0', fontSize: '12px', background: 'rgba(0,0,0,0.4)' }}>
+                      <span>★★★★★ 4.9 on Google</span><span>·</span><span>1,200+ Happy Clients</span><span>·</span><span>Walk-ins Welcome</span>
                     </div>
                   </div>
                 </div>
@@ -664,50 +660,48 @@ export default function HomePage() {
 
               {/* Card 2 — Maison Moda (E-commerce Fashion) */}
               <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-rose-500/10 cursor-pointer">
-                <div className="relative aspect-video bg-muted overflow-hidden">
-                  <div className="h-full w-full overflow-hidden" style={{ background: '#faf7f5' }}>
-                    <div className="pointer-events-none origin-top-left" style={{ width: '1280px', height: '800px', transform: 'scale(0.28)', transformOrigin: 'top left' }}>
-                      {/* Nav */}
-                      <div className="flex items-center justify-between px-10 py-3" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-                        <div className="text-base font-bold tracking-[0.15em] uppercase text-neutral-900">Maison Moda</div>
-                        <div className="flex gap-6 text-sm text-neutral-400 font-medium">
-                          <span className="text-neutral-700">New In</span><span>Women</span><span>Men</span><span>Accessories</span><span>Sale</span>
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-neutral-500">
-                          <span>Search</span><span>Account</span><span className="font-semibold text-neutral-800">Bag (2)</span>
-                        </div>
+                <div className="relative aspect-video overflow-hidden" style={{ background: '#faf7f5' }}>
+                  <div className="pointer-events-none" style={{ width: '1280px', height: '800px', transform: 'scale(0.28)', transformOrigin: 'top left' }}>
+                    {/* Nav */}
+                    <div className="flex items-center justify-between" style={{ padding: '12px 48px', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+                      <div className="font-bold uppercase text-neutral-900" style={{ fontSize: '15px', letterSpacing: '0.12em' }}>Maison Moda</div>
+                      <div className="flex text-neutral-400 font-medium" style={{ gap: '28px', fontSize: '13px' }}>
+                        <span className="text-neutral-700">New In</span><span>Women</span><span>Men</span><span>Accessories</span><span>Sale</span>
                       </div>
-                      {/* Promo banner */}
-                      <div className="text-center py-1.5 text-[11px] font-medium tracking-[0.15em] text-white" style={{ background: '#1a1a1a' }}>FREE SHIPPING ON ORDERS OVER $150 — USE CODE: STYLE150</div>
-                      {/* Hero */}
-                      <div className="flex">
-                        <div className="flex-1 flex flex-col items-center justify-center px-10 py-8 text-center">
-                          <div className="text-[10px] text-neutral-400 tracking-[0.2em] uppercase mb-2">Summer &apos;26 Collection</div>
-                          <div className="text-[42px] font-light text-neutral-900 leading-tight mb-2">Effortless<br/><span className="font-semibold">Elegance</span></div>
-                          <div className="text-sm text-neutral-400 mb-5 max-w-xs">Timeless pieces for the modern wardrobe</div>
-                          <div className="px-6 py-2 rounded-full text-sm font-semibold text-white" style={{ background: '#1a1a1a' }}>Shop Collection</div>
-                        </div>
-                        {/* Product grid */}
-                        <div className="w-[500px] flex-shrink-0 grid grid-cols-2 gap-2 p-4">
-                          {[
-                            { color: '#e8ddd4', label: 'Linen Blazer', price: '$285' },
-                            { color: '#d4c4b0', label: 'Silk Top', price: '$145' },
-                            { color: '#c9b99a', label: 'Wide Trousers', price: '$195' },
-                            { color: '#ddd5c8', label: 'Wrap Dress', price: '$320' },
-                          ].map((item) => (
-                            <div key={item.label} className="rounded-lg overflow-hidden" style={{ background: item.color }}>
-                              <div className="aspect-[3/4] flex flex-col items-center justify-end p-3 text-center">
-                                <div className="text-xs font-medium text-neutral-700">{item.label}</div>
-                                <div className="text-xs text-neutral-500">{item.price}</div>
-                              </div>
+                      <div className="flex items-center text-neutral-500" style={{ gap: '20px', fontSize: '13px' }}>
+                        <span>Search</span><span>Account</span><span className="font-semibold text-neutral-800">Bag (2)</span>
+                      </div>
+                    </div>
+                    {/* Promo banner */}
+                    <div className="text-center font-medium text-white" style={{ padding: '6px 0', fontSize: '11px', letterSpacing: '0.12em', background: '#1a1a1a' }}>FREE SHIPPING ON ORDERS OVER $150 — USE CODE: STYLE150</div>
+                    {/* Hero */}
+                    <div className="flex" style={{ minHeight: '500px' }}>
+                      <div className="flex-1 flex flex-col items-center justify-center text-center" style={{ padding: '40px' }}>
+                        <div className="text-neutral-400 uppercase" style={{ fontSize: '11px', letterSpacing: '0.18em', marginBottom: '14px' }}>Summer &apos;26 Collection</div>
+                        <div className="font-light text-neutral-900" style={{ fontSize: '48px', lineHeight: 1.15, marginBottom: '12px' }}>Effortless<br/><span className="font-semibold">Elegance</span></div>
+                        <div className="text-neutral-400" style={{ fontSize: '14px', marginBottom: '24px', maxWidth: '300px' }}>Timeless pieces for the modern wardrobe. Sustainable fabrics, impeccable fit.</div>
+                        <div className="rounded-full font-semibold text-white" style={{ padding: '10px 28px', fontSize: '13px', background: '#1a1a1a' }}>Shop Collection</div>
+                      </div>
+                      {/* Product grid */}
+                      <div className="flex-shrink-0 grid grid-cols-2" style={{ width: '520px', gap: '8px', padding: '16px' }}>
+                        {[
+                          { color: '#e8ddd4', label: 'Linen Blazer', price: '$285' },
+                          { color: '#d4c4b0', label: 'Silk Top', price: '$145' },
+                          { color: '#c9b99a', label: 'Wide Trousers', price: '$195' },
+                          { color: '#ddd5c8', label: 'Wrap Dress', price: '$320' },
+                        ].map((item) => (
+                          <div key={item.label} className="rounded overflow-hidden" style={{ background: item.color }}>
+                            <div className="flex flex-col items-center justify-end text-center" style={{ aspectRatio: '3/4', padding: '12px' }}>
+                              <div className="font-medium text-neutral-700" style={{ fontSize: '12px' }}>{item.label}</div>
+                              <div className="text-neutral-500" style={{ fontSize: '12px' }}>{item.price}</div>
                             </div>
-                          ))}
-                        </div>
+                          </div>
+                        ))}
                       </div>
-                      {/* Trust strip */}
-                      <div className="flex items-center justify-center gap-8 px-10 py-2.5 text-[11px] text-neutral-400 font-medium" style={{ borderTop: '1px solid rgba(0,0,0,0.06)' }}>
-                        <span>✦ Free Returns</span><span>✦ Sustainable Materials</span><span>✦ 50K+ Happy Customers</span><span>✦ As Seen in Vogue</span>
-                      </div>
+                    </div>
+                    {/* Trust strip */}
+                    <div className="flex items-center justify-center text-neutral-400 font-medium" style={{ gap: '32px', padding: '10px 48px', fontSize: '11px', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                      <span>✦ Free Returns</span><span>✦ Sustainable Materials</span><span>✦ 50K+ Happy Customers</span><span>✦ As Seen in Vogue</span>
                     </div>
                   </div>
                 </div>
@@ -721,59 +715,56 @@ export default function HomePage() {
 
               {/* Card 3 — Crestline Realty (Real Estate) */}
               <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-sky-500/10 cursor-pointer">
-                <div className="relative aspect-video bg-muted overflow-hidden">
-                  <div className="h-full w-full overflow-hidden" style={{ background: 'linear-gradient(160deg, #0c1829 0%, #081220 50%, #0a1525 100%)' }}>
-                    <div className="pointer-events-none origin-top-left" style={{ width: '1280px', height: '800px', transform: 'scale(0.28)', transformOrigin: 'top left' }}>
-                      {/* Accent glow */}
-                      <div className="absolute w-[600px] h-[500px] rounded-full opacity-10" style={{ top: '-100px', right: '0', background: 'radial-gradient(circle, #3b82f6, transparent 70%)' }} />
-                      {/* Nav */}
-                      <div className="flex items-center justify-between px-10 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded flex items-center justify-center text-sm font-black text-white" style={{ background: 'linear-gradient(135deg, #2563eb, #1d4ed8)' }}>C</div>
-                          <div className="text-base font-semibold text-white/90">Crestline Realty</div>
-                        </div>
-                        <div className="flex gap-6 text-sm text-white/35 font-medium">
-                          <span className="text-white/60">Listings</span><span>Buy</span><span>Sell</span><span>Agents</span><span>About</span><span>Contact</span>
-                        </div>
-                        <div className="px-5 py-1.5 rounded-md text-sm font-semibold text-white" style={{ background: '#2563eb' }}>List My Home</div>
+                <div className="relative aspect-video overflow-hidden" style={{ background: 'linear-gradient(160deg, #0c1829 0%, #081220 50%, #0a1525 100%)' }}>
+                  <div className="pointer-events-none" style={{ width: '1280px', height: '800px', transform: 'scale(0.28)', transformOrigin: 'top left' }}>
+                    <div className="absolute w-[500px] h-[400px] rounded-full opacity-10" style={{ top: '-80px', right: '40px', background: 'radial-gradient(circle, #3b82f6, transparent 70%)' }} />
+                    {/* Nav */}
+                    <div className="flex items-center justify-between" style={{ padding: '12px 48px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <div className="flex items-center" style={{ gap: '10px' }}>
+                        <div className="rounded flex items-center justify-center font-black text-white" style={{ width: '30px', height: '30px', fontSize: '13px', background: 'linear-gradient(135deg, #2563eb, #1d4ed8)' }}>C</div>
+                        <div className="font-semibold text-white/90" style={{ fontSize: '15px' }}>Crestline Realty</div>
                       </div>
-                      {/* Hero */}
-                      <div className="px-10 pt-6">
-                        <div className="text-[10px] text-blue-400/50 font-semibold tracking-[0.2em] uppercase mb-2">Find Your Dream Home</div>
-                        <div className="text-[42px] font-bold text-white/95 leading-[1.1] tracking-tight mb-3">Premium Real Estate<br/>in <span className="text-blue-400">Los Angeles</span></div>
-                        <div className="text-sm text-white/30 mb-5 max-w-[480px]">Discover luxury properties across Beverly Hills, Santa Monica, Malibu, and more.</div>
-                        {/* Search bar */}
-                        <div className="flex items-center gap-2 rounded-xl p-2 mb-6 max-w-[600px]" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                          <div className="flex-1 px-3 text-sm text-white/40">Location, address, or ZIP</div>
-                          <div className="flex items-center gap-1.5">
-                            <div className="px-3 py-1.5 rounded-md text-[11px] text-white/50 border border-white/10 font-medium">Buy</div>
-                            <div className="px-3 py-1.5 rounded-md text-[11px] text-white/30 font-medium">Rent</div>
-                            <div className="px-5 py-1.5 rounded-md text-[11px] font-bold text-white" style={{ background: '#2563eb' }}>Search</div>
-                          </div>
+                      <div className="flex text-white/35 font-medium" style={{ gap: '28px', fontSize: '13px' }}>
+                        <span className="text-white/60">Listings</span><span>Buy</span><span>Sell</span><span>Agents</span><span>About</span><span>Contact</span>
+                      </div>
+                      <div className="rounded font-semibold text-white" style={{ padding: '7px 18px', fontSize: '13px', background: '#2563eb' }}>List My Home</div>
+                    </div>
+                    {/* Hero */}
+                    <div style={{ padding: '36px 48px 0' }}>
+                      <div className="text-blue-400/50 font-semibold uppercase" style={{ fontSize: '11px', letterSpacing: '0.15em', marginBottom: '12px' }}>Find Your Dream Home</div>
+                      <div className="font-bold text-white/95" style={{ fontSize: '48px', lineHeight: 1.1, letterSpacing: '-0.02em', marginBottom: '14px' }}>Premium Real Estate<br/>in <span className="text-blue-400">Los Angeles</span></div>
+                      <div className="text-white/30" style={{ fontSize: '15px', marginBottom: '24px', maxWidth: '500px' }}>Discover luxury properties across Beverly Hills, Santa Monica, Malibu, and more.</div>
+                      {/* Search bar */}
+                      <div className="flex items-center rounded-lg" style={{ padding: '6px', marginBottom: '28px', maxWidth: '640px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                        <div className="flex-1 text-white/40" style={{ padding: '0 12px', fontSize: '13px' }}>Location, address, or ZIP</div>
+                        <div className="flex items-center" style={{ gap: '6px' }}>
+                          <div className="rounded font-medium text-white/50" style={{ padding: '6px 14px', fontSize: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>Buy</div>
+                          <div className="rounded font-medium text-white/30" style={{ padding: '6px 14px', fontSize: '12px' }}>Rent</div>
+                          <div className="rounded font-bold text-white" style={{ padding: '6px 20px', fontSize: '12px', background: '#2563eb' }}>Search</div>
                         </div>
-                        {/* Property cards */}
-                        <div className="flex items-center gap-3">
-                          {[
-                            { beds: '4 bd · 3 ba', price: '$2.45M', area: 'Beverly Hills', sqft: '3,200 sqft' },
-                            { beds: '3 bd · 2 ba', price: '$1.87M', area: 'Santa Monica', sqft: '2,100 sqft' },
-                            { beds: '5 bd · 4 ba', price: '$3.10M', area: 'Malibu', sqft: '4,500 sqft' },
-                            { beds: '2 bd · 2 ba', price: '$1.25M', area: 'Venice Beach', sqft: '1,600 sqft' },
-                          ].map((p) => (
-                            <div key={p.area} className="flex-1 rounded-xl overflow-hidden border border-white/[0.06]" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                              <div className="aspect-[4/3] rounded-t-xl" style={{ background: `linear-gradient(135deg, ${p.area === 'Beverly Hills' ? '#1e3a5f' : p.area === 'Santa Monica' ? '#1c2d4a' : p.area === 'Malibu' ? '#1a3340' : '#1a2844'}, ${p.area === 'Beverly Hills' ? '#172554' : '#131c36'})` }} />
-                              <div className="p-2.5">
-                                <div className="text-sm font-bold text-white/85">{p.price}</div>
-                                <div className="text-[10px] text-white/40 mt-0.5">{p.beds} · {p.sqft}</div>
-                                <div className="text-[10px] text-blue-400/60 mt-0.5">{p.area}</div>
-                              </div>
+                      </div>
+                      {/* Property cards */}
+                      <div className="flex" style={{ gap: '12px' }}>
+                        {[
+                          { beds: '4 bd · 3 ba', price: '$2.45M', area: 'Beverly Hills', sqft: '3,200 sqft' },
+                          { beds: '3 bd · 2 ba', price: '$1.87M', area: 'Santa Monica', sqft: '2,100 sqft' },
+                          { beds: '5 bd · 4 ba', price: '$3.10M', area: 'Malibu', sqft: '4,500 sqft' },
+                          { beds: '2 bd · 2 ba', price: '$1.25M', area: 'Venice Beach', sqft: '1,600 sqft' },
+                        ].map((p) => (
+                          <div key={p.area} className="flex-1 rounded-lg overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.03)' }}>
+                            <div style={{ aspectRatio: '4/3', borderRadius: '8px 8px 0 0', background: `linear-gradient(135deg, ${p.area === 'Beverly Hills' ? '#1e3a5f' : p.area === 'Santa Monica' ? '#1c2d4a' : p.area === 'Malibu' ? '#1a3340' : '#1a2844'}, ${p.area === 'Beverly Hills' ? '#172554' : '#131c36'})` }} />
+                            <div style={{ padding: '10px 12px' }}>
+                              <div className="font-bold text-white/85" style={{ fontSize: '14px' }}>{p.price}</div>
+                              <div className="text-white/40" style={{ fontSize: '11px', marginTop: '2px' }}>{p.beds} · {p.sqft}</div>
+                              <div className="text-blue-400/60" style={{ fontSize: '11px', marginTop: '2px' }}>{p.area}</div>
                             </div>
-                          ))}
-                        </div>
+                          </div>
+                        ))}
                       </div>
-                      {/* Trust bar */}
-                      <div className="absolute left-0 right-0 flex items-center justify-center gap-8 py-3 text-xs text-white/20 font-medium" style={{ bottom: 0, background: 'rgba(0,0,0,0.35)', width: '1280px' }}>
-                        <span>$2.8B+ in Sales</span><span>·</span><span>500+ Homes Sold</span><span>·</span><span>Top 1% LA Agents</span>
-                      </div>
+                    </div>
+                    {/* Trust bar */}
+                    <div className="absolute flex items-center justify-center text-white/20 font-medium" style={{ bottom: 0, left: 0, width: '1280px', gap: '32px', padding: '10px 0', fontSize: '12px', background: 'rgba(0,0,0,0.35)' }}>
+                      <span>$2.8B+ in Sales</span><span>·</span><span>500+ Homes Sold</span><span>·</span><span>Top 1% LA Agents</span>
                     </div>
                   </div>
                 </div>
