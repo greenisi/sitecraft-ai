@@ -166,11 +166,11 @@ export function useChat(projectId: string) {
         if (lastEvent) {
           generationStore.processEvent(lastEvent);
 
-          if (lastEvent.type === 'component-complete') {
+          if (lastEvent.type === 'component-complete' && lastEvent.stage !== 'assembly') {
             const completed = lastEvent.completedFiles ?? 0;
             const total = lastEvent.totalFiles ?? 0;
             updateLastAssistantMessage(
-              `Generating components... (${completed}/${total})`,
+              `Generating components... (${Math.min(completed, total)}/${total})`,
               { stage: 'generating' }
             );
           }
@@ -270,11 +270,11 @@ export function useChat(projectId: string) {
           (event) => {
             generationStore.processEvent(event);
 
-            if (event.type === 'component-complete') {
+            if (event.type === 'component-complete' && event.stage !== 'assembly') {
               const completed = event.completedFiles ?? 0;
               const total = event.totalFiles ?? 0;
               updateLastAssistantMessage(
-                `${planDescription}\n\nGenerating components... (${completed}/${total})`,
+                `${planDescription}\n\nGenerating components... (${Math.min(completed, total)}/${total})`,
                 { stage: 'generating' }
               );
             }

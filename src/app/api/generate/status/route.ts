@@ -106,6 +106,26 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // ── Auto-recovery for stuck project status ─────────────────────────
+  // If the version completed but the project is still 'generating', fix it.
+  if (
+    latestVersion &&
+    latestVersion.status === 'complete' &&
+    project.status === 'generating' &&
+    fileCount > 0
+  ) {
+    await supabase
+      .from('projects')
+      .update({
+        status: 'generated',
+        last_generated_at: latestVersion.completed_at || new Date().toISOString(),
+      })
+      .eq('id', projectId);
+
+    project.status = 'generated';
+    project.last_generated_at = latestVersion.completed_at || new Date().toISOString();
+  }
+
   return NextResponse.json({
     projectStatus: project.status,
     lastGeneratedAt: project.last_generated_at,

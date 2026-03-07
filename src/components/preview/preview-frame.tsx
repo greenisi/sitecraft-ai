@@ -160,6 +160,17 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
           setInlineEditing(false);
           break;
         }
+        case 'sitecraft:request-image-picker': {
+          const { cssPath, currentSrc } = data.data || {};
+          if (cssPath) {
+            useVisualEditorStore.getState().setImagePickerOpen(true, { cssPath, currentSrc: currentSrc || '' });
+          }
+          break;
+        }
+        case 'sitecraft:open-styles-drawer': {
+          useVisualEditorStore.getState().setStylesDrawerOpen(true);
+          break;
+        }
         case 'sitecraft:toolbar-action': {
           // Bridge sends: { type: 'sitecraft:toolbar-action', data: { action, property, value, cssPath } }
           const actionData = data.data || data;
@@ -180,6 +191,24 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
               property: 'display',
               oldValue: '',
               newValue: 'none',
+            });
+          }
+          if (action === 'show' && cssPath) {
+            addPendingChange({
+              type: 'style',
+              cssPath,
+              property: 'display',
+              oldValue: 'none',
+              newValue: '',
+            });
+          }
+          if (action === 'replace-image' && cssPath && actionData.src) {
+            addPendingChange({
+              type: 'style',
+              cssPath,
+              property: 'src',
+              oldValue: '',
+              newValue: actionData.src,
             });
           }
           break;
@@ -232,7 +261,8 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
         <div className="flex items-center gap-2 border-b px-3 py-1.5 bg-violet-50 dark:bg-violet-950/20">
           <div className="h-2 w-2 rounded-full bg-violet-500 animate-pulse" />
           <span className="text-[11px] text-violet-700 dark:text-violet-300 font-medium">
-            Visual editing mode — click to select, double-click text to edit
+            <span className="hidden md:inline">Visual editing mode — click to select, double-click text to edit</span>
+            <span className="md:hidden">Visual editing mode — tap to select &amp; edit</span>
           </span>
         </div>
       )}

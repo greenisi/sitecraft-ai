@@ -13,6 +13,8 @@ import { ColorPicker } from './color-picker';
 import { SpacingEditor } from './spacing-editor';
 import { TypographyControls } from './typography-controls';
 import { EffectsControls } from './effects-controls';
+import { SectionManager } from './section-manager';
+import { ImageReplacer } from './image-replacer';
 
 interface PropertiesPanelProps {
   onSave: () => void;
@@ -215,16 +217,21 @@ export function PropertiesPanel({ onSave }: PropertiesPanelProps) {
       </div>
 
       {!selectedElement ? (
-        /* Empty state */
-        <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted mb-4">
-            <MousePointerClick className="h-7 w-7 text-muted-foreground/50" />
+        /* Empty state + Section manager */
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <div className="flex flex-col items-center justify-center px-6 py-8 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted mb-4">
+              <MousePointerClick className="h-7 w-7 text-muted-foreground/50" />
+            </div>
+            <p className="text-sm font-medium">No element selected</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Click any element in the preview to select it. Double-click text to
+              edit it inline.
+            </p>
           </div>
-          <p className="text-sm font-medium">No element selected</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Click any element in the preview to select it. Double-click text to
-            edit it inline.
-          </p>
+          <div className="border-t px-4 py-3 flex-1 overflow-auto">
+            <SectionManager />
+          </div>
         </div>
       ) : (
         /* Properties editor */
@@ -282,6 +289,12 @@ export function PropertiesPanel({ onSave }: PropertiesPanelProps) {
             <ScrollArea className="flex-1">
               <div className="px-4 py-3">
                 <TabsContent value="style" className="mt-0 space-y-4">
+                  {selectedElement.isImage && (
+                    <ImageReplacer
+                      currentSrc={selectedElement.imageSrc}
+                      cssPath={selectedElement.cssPath}
+                    />
+                  )}
                   <ColorPicker
                     label="Text Color"
                     value={selectedElement.styles.color}

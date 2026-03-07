@@ -43,6 +43,8 @@ export interface SelectedElement {
   href?: string;
   target?: string;
   title?: string;
+  isImage?: boolean;
+  imageSrc?: string;
 }
 
 export type PendingChangeType = 'text' | 'style';
@@ -71,6 +73,14 @@ interface VisualEditorState {
   pendingChanges: PendingChange[];
   isSaving: boolean;
 
+  // Mobile image picker
+  isImagePickerOpen: boolean;
+  imagePickerData: { cssPath: string; currentSrc: string } | null;
+
+  // Mobile styles drawer
+  isStylesDrawerOpen: boolean;
+  mobileDrawerInitialTab: PropertiesTab | null;
+
   // Undo/Redo
   undoStack: PendingChange[][];
   redoStack: PendingChange[][];
@@ -89,6 +99,9 @@ interface VisualEditorState {
   setSaving: (saving: boolean) => void;
   undo: () => void;
   redo: () => void;
+  setImagePickerOpen: (open: boolean, data?: { cssPath: string; currentSrc: string }) => void;
+  setStylesDrawerOpen: (open: boolean) => void;
+  setMobileDrawerInitialTab: (tab: PropertiesTab | null) => void;
 }
 
 let changeCounter = 0;
@@ -100,6 +113,10 @@ export const useVisualEditorStore = create<VisualEditorState>((set, get) => ({
   propertiesPanelTab: 'style',
   pendingChanges: [],
   isSaving: false,
+  isImagePickerOpen: false,
+  imagePickerData: null,
+  isStylesDrawerOpen: false,
+  mobileDrawerInitialTab: null,
   undoStack: [],
   redoStack: [],
 
@@ -191,4 +208,10 @@ export const useVisualEditorStore = create<VisualEditorState>((set, get) => ({
         pendingChanges: nextState,
       };
     }),
+
+  setImagePickerOpen: (open, data) =>
+    set({ isImagePickerOpen: open, imagePickerData: data || null }),
+
+  setStylesDrawerOpen: (open) => set({ isStylesDrawerOpen: open }),
+  setMobileDrawerInitialTab: (tab) => set({ mobileDrawerInitialTab: tab }),
 }));

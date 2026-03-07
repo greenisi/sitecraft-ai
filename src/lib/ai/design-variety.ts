@@ -599,12 +599,18 @@ This website must look COMPLETELY DIFFERENT from every other website you have ev
 - The features/services section MUST use the "${variety.sectionLayout.name}" layout — NOT a basic 3-column card grid
 - The testimonials MUST use the "${variety.testimonialLayout.name}" pattern — NOT the same cards-in-a-row
 - The navbar MUST follow the "${variety.navbarVariant.id}" style — NOT default glassmorphism
-- VARY the section backgrounds: alternate between white, tinted (primary-50), dark (gray-900), and gradient backgrounds
-- Use CREATIVE section dividers: wave SVGs, angled clip-paths, or overlapping elements — NOT just flat color changes
-- This site's color mood is "${variety.palette.mood}" — let this mood INFUSE every design decision
+- SECTION BACKGROUNDS: Mostly white/light (bg-white, bg-gray-50, bg-primary-50). Use dark (bg-gray-900) on at most 1-2 sections per page (hero and/or CTA). Do NOT make every section dark.
+- This site's color mood is "${variety.palette.mood}" — let this mood INFUSE the color accents and typography
 - Typography pairing is "${variety.fonts.name}" (${variety.fonts.vibe}) — use this to create the right emotional tone
 
-If your output looks like a generic template, you have FAILED. This must look like a custom \$10,000+ design.
+DESIGN QUALITY RULES:
+- Think premium WordPress theme (Divi, Avada) — NOT a dark-themed tech demo
+- Use real Unsplash photography as the primary visual element — photos make sites look expensive
+- Clean white/light backgrounds with strategic color accents — NOT neon gradients everywhere
+- NO floating decorative elements (stars, sparkles, emoji shapes) — these look AI-generated
+- NO neon glow effects on borders or buttons — use clean, solid colors
+- Subtle shadows (shadow-sm, shadow-md) — NOT shadow-2xl with colored glow
+- This must look like a custom \$10,000+ WordPress build — clean, confident, professional.
 `;
 }
 

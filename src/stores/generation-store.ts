@@ -94,11 +94,36 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
           const components = new Map(state.components);
           const existing = components.get(event.componentName);
           if (existing) {
-            components.set(event.componentName, {
-              ...existing,
-              chunks: [...existing.chunks, event.chunk],
-            });
-            set({ components, events });
+            // Strip markdown fences from chunks so the live code viewer
+            // only shows clean source code (not ```tsx:path headers).
+            let cleanChunk = event.chunk;
+            // Remove opening fence lines like ```tsx:src/components/Hero.tsx
+            cleanChunk = cleanChunk.replace(/```\w*:[^\n]*\n?/g, '');
+            // Remove closing fences
+            cleanChunk = cleanChunk.replace(/^```\s*$/gm, '');
+
+            if (cleanChunk) {
+              components.set(event.componentName, {
+                ...existing,
+                chunks: [...existing.chunks, cleanChunk],
+              });
+              set({ components, events });
+            }
+          } else {
+            // Auto-register component on first chunk if component-start
+            // was missed (e.g. header split across chunks)
+            let cleanChunk = event.chunk;
+            cleanChunk = cleanChunk.replace(/```\w*:[^\n]*\n?/g, '');
+            cleanChunk = cleanChunk.replace(/^```\s*$/gm, '');
+
+            if (cleanChunk) {
+              components.set(event.componentName, {
+                name: event.componentName,
+                status: 'generating',
+                chunks: [cleanChunk],
+              });
+              set({ components, events });
+            }
           }
         }
         break;
@@ -106,17 +131,37 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
       case 'component-complete': {
         if (event.componentName) {
           const components = new Map(state.components);
+          const existing = components.get(event.componentName);
+
+          // For components that were streamed, preserve their code chunks.
+          // For scaffold/assembly files that had no streaming phase,
+          // use the file content as a single chunk so the code viewer
+          // always has something to display.
+          let chunks = existing?.chunks ?? [];
+          if (chunks.length === 0 && event.file?.content) {
+            chunks = [event.file.content];
+          }
+
           components.set(event.componentName, {
             name: event.componentName,
             status: 'complete',
             filePath: event.file?.path,
-            chunks: components.get(event.componentName)?.chunks ?? [],
+            chunks,
           });
 
-          const progress = {
-            total: event.totalFiles ?? state.progress.total,
-            completed: event.completedFiles ?? state.progress.completed + 1,
-          };
+          // Only update progress counters from the components stage.
+          // Assembly-stage completions (scaffold files) should NOT
+          // inflate the counter beyond the total.
+          const isAssemblyStage = event.stage === 'assembly';
+          const progress = isAssemblyStage
+            ? state.progress
+            : {
+                total: event.totalFiles ?? state.progress.total,
+                completed: Math.min(
+                  event.completedFiles ?? state.progress.completed + 1,
+                  event.totalFiles ?? state.progress.total
+                ),
+              };
 
           const files = event.file
             ? { ...state.files, [event.file.path]: event.file.content }

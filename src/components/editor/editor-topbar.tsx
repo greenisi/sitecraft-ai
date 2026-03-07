@@ -69,7 +69,7 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
   const isExportable =
     project && ['generated', 'deployed', 'published'].includes(project.status);
   const isEditable =
-    project && ['generated', 'deployed', 'published'].includes(project.status);
+    project && ['generating', 'generated', 'deployed', 'published'].includes(project.status);
   const isPublishable =
     project && ['generated', 'deployed', 'published'].includes(project.status);
   const isAlreadyPublished =

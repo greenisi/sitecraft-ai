@@ -52,8 +52,13 @@ function LiveCodeStream() {
   const completedComponents = Array.from(components.values()).filter(
     (c) => c.status === 'complete'
   );
-  const latestComplete = completedComponents[completedComponents.length - 1];
-  const displayComponent = activeComponent || latestComplete;
+  // For display, prefer the actively-generating component.
+  // If none, show the last completed component that has actual code chunks
+  // (skip scaffold/config files that only have JSON or short content).
+  const latestCompleteWithCode = [...completedComponents]
+    .reverse()
+    .find((c) => c.chunks.length > 0 && c.chunks.join('').length > 50);
+  const displayComponent = activeComponent || latestCompleteWithCode;
   const codeContent = displayComponent ? displayComponent.chunks.join('') : '';
 
   useEffect(() => {
@@ -132,7 +137,7 @@ function LiveCodeStream() {
             style={{
               width:
                 progress.total > 0
-                  ? `${Math.round((progress.completed / progress.total) * 100)}%`
+                  ? `${Math.min(Math.round((progress.completed / progress.total) * 100), 100)}%`
                   : currentStage === 'complete'
                   ? '100%'
                   : '0%',
@@ -143,7 +148,7 @@ function LiveCodeStream() {
         </div>
         {progress.total > 0 && (
           <span className="text-[10px] font-mono text-green-400/60 shrink-0">
-            {progress.completed}/{progress.total} files
+            {Math.min(progress.completed, progress.total)}/{progress.total} files
           </span>
         )}
       </div>

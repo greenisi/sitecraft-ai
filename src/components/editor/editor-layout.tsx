@@ -1,11 +1,14 @@
 'use client';
 
 import { useRef, useState, useCallback, useEffect } from 'react';
-import { MessageSquare, Eye, MousePointerClick } from 'lucide-react';
+import { MessageSquare, Eye } from 'lucide-react';
 import { EditorTopbar } from './editor-topbar';
 import { ChatPanel } from './chat-panel';
 import { PreviewPanel } from './preview-panel';
 import { PropertiesPanel } from '@/components/visual-editor/properties-panel';
+import { MobileBottomBar } from '@/components/visual-editor/mobile-bottom-bar';
+import { MobileStylesDrawer } from '@/components/visual-editor/mobile-styles-drawer';
+import { MobileImagePicker } from '@/components/visual-editor/mobile-image-picker';
 import { useVisualEditorStore } from '@/stores/visual-editor-store';
 import { useVisualEditorSave } from '@/lib/hooks/use-visual-editor-save';
 import { usePageTour } from '@/components/tour/use-page-tour';
@@ -91,11 +94,6 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
     <ChatPanel projectId={projectId} />
   );
 
-  const mobileLeftLabel = isVisualEditorActive ? 'Properties' : 'Chat';
-  const MobileLeftIcon = isVisualEditorActive
-    ? MousePointerClick
-    : MessageSquare;
-
   return (
     <div className="fixed inset-0 flex flex-col bg-background overflow-hidden">
       {/* Top bar - always pinned */}
@@ -124,67 +122,79 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
         </div>
       </div>
 
-      {/* Mobile: single panel with toggle */}
-      <div className="flex flex-1 flex-col overflow-hidden md:hidden min-h-0">
-        <div
-          className={cn(
-            'flex-1 min-h-0 overflow-hidden',
-            mobileView !== 'chat' && 'hidden'
-          )}
-        >
-          {leftPanel}
-        </div>
-        <div
-          className={cn(
-            'flex-1 min-h-0 overflow-hidden',
-            mobileView !== 'preview' && 'hidden'
-          )}
-        >
+      {/* Mobile: visual editor mode — preview fullscreen + bottom sheet */}
+      {isVisualEditorActive && (
+        <div className="flex flex-1 flex-col overflow-hidden md:hidden min-h-0 relative">
           <PreviewPanel projectId={projectId} />
+          <MobileBottomBar onSave={save} />
+          <MobileStylesDrawer onSave={save} />
+          <MobileImagePicker />
         </div>
+      )}
 
-        {/* Bottom tab bar - always pinned */}
-        <div className="flex border-t border-border/50 bg-background/95 backdrop-blur-sm flex-shrink-0 safe-area-bottom z-50">
-          <button
-            onClick={() => setMobileView('chat')}
+      {/* Mobile: normal mode — single panel with toggle */}
+      {!isVisualEditorActive && (
+        <div className="flex flex-1 flex-col overflow-hidden md:hidden min-h-0">
+          <div
             className={cn(
-              'flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium transition-all',
-              mobileView === 'chat'
-                ? 'text-violet-600 dark:text-violet-400'
-                : 'text-muted-foreground'
+              'flex-1 min-h-0 overflow-hidden',
+              mobileView !== 'chat' && 'hidden'
             )}
           >
-            <div
-              className={cn(
-                'flex h-8 w-8 items-center justify-center rounded-xl transition-all',
-                mobileView === 'chat' && 'bg-violet-500/10'
-              )}
-            >
-              <MobileLeftIcon className="h-4.5 w-4.5" />
-            </div>
-            {mobileLeftLabel}
-          </button>
-          <button
-            onClick={() => setMobileView('preview')}
+            <ChatPanel projectId={projectId} />
+          </div>
+          <div
             className={cn(
-              'flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium transition-all',
-              mobileView === 'preview'
-                ? 'text-violet-600 dark:text-violet-400'
-                : 'text-muted-foreground'
+              'flex-1 min-h-0 overflow-hidden',
+              mobileView !== 'preview' && 'hidden'
             )}
           >
-            <div
+            <PreviewPanel projectId={projectId} />
+          </div>
+
+          {/* Bottom tab bar */}
+          <div className="flex border-t border-border/50 bg-background/95 backdrop-blur-sm flex-shrink-0 safe-area-bottom z-50">
+            <button
+              onClick={() => setMobileView('chat')}
               className={cn(
-                'flex h-8 w-8 items-center justify-center rounded-xl transition-all',
-                mobileView === 'preview' && 'bg-violet-500/10'
+                'flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium transition-all',
+                mobileView === 'chat'
+                  ? 'text-violet-600 dark:text-violet-400'
+                  : 'text-muted-foreground'
               )}
             >
-              <Eye className="h-4.5 w-4.5" />
-            </div>
-            Preview
-          </button>
+              <div
+                className={cn(
+                  'flex h-8 w-8 items-center justify-center rounded-xl transition-all',
+                  mobileView === 'chat' && 'bg-violet-500/10'
+                )}
+              >
+                <MessageSquare className="h-4.5 w-4.5" />
+              </div>
+              Chat
+            </button>
+            <button
+              onClick={() => setMobileView('preview')}
+              className={cn(
+                'flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium transition-all',
+                mobileView === 'preview'
+                  ? 'text-violet-600 dark:text-violet-400'
+                  : 'text-muted-foreground'
+              )}
+            >
+              <div
+                className={cn(
+                  'flex h-8 w-8 items-center justify-center rounded-xl transition-all',
+                  mobileView === 'preview' && 'bg-violet-500/10'
+                )}
+              >
+                <Eye className="h-4.5 w-4.5" />
+              </div>
+              Preview
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
             }
