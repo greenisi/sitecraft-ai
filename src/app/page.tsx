@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, Zap, Globe, Sparkles, MessageSquare, Palette, Rocket, Check, Play, Code2, LayoutDashboard, MousePointerClick } from 'lucide-react';
+import { ArrowRight, Zap, Globe, Sparkles, MessageSquare, Palette, Rocket, Check, Play, Code2, LayoutDashboard, MousePointerClick, Loader2, User, Mail, Lock, X } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 
 function useInView(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
@@ -46,6 +47,15 @@ function Counter({ target, suffix = '', duration = 2000 }: { target: number; suf
   return <span ref={ref}>{count.toLocaleString()}{suffix}</span>;
 }
 
+const PLACEHOLDER_PROMPTS = [
+  'Build me a modern coffee shop website with online ordering...',
+  'Create a dental practice site with appointment booking...',
+  'Design a yoga studio page with class schedules...',
+  'Make a real estate site with property listings...',
+  'Build a restaurant website with a menu and reservations...',
+  'Create an e-commerce store for handmade jewelry...',
+];
+
 export default function HomePage() {
   const hero = useInView(0.1);
   const features = useInView();
@@ -53,6 +63,140 @@ export default function HomePage() {
   const stats = useInView();
   const showcase = useInView();
   const cta = useInView();
+
+  // Prompt bar state
+  const [promptText, setPromptText] = useState('');
+  const promptInputRef = useRef<HTMLInputElement>(null);
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [placeholderText, setPlaceholderText] = useState('');
+  const [isPlaceholderDeleting, setIsPlaceholderDeleting] = useState(false);
+
+  // Signup modal state
+  const [showSignupModal, setShowSignupModal] = useState(false);
+  const [signupName, setSignupName] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
+  const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
+  const [signupError, setSignupError] = useState<string | null>(null);
+  const [signupLoading, setSignupLoading] = useState(false);
+
+  // Rotating placeholder effect
+  useEffect(() => {
+    if (promptText) return;
+    const word = PLACEHOLDER_PROMPTS[placeholderIndex];
+    const speed = isPlaceholderDeleting ? 30 : 50;
+    if (!isPlaceholderDeleting && placeholderText === word) {
+      const t = setTimeout(() => setIsPlaceholderDeleting(true), 2500);
+      return () => clearTimeout(t);
+    }
+    if (isPlaceholderDeleting && placeholderText === '') {
+      setIsPlaceholderDeleting(false);
+      setPlaceholderIndex((i) => (i + 1) % PLACEHOLDER_PROMPTS.length);
+      return;
+    }
+    const t = setTimeout(() => {
+      setPlaceholderText(
+        isPlaceholderDeleting
+          ? word.slice(0, placeholderText.length - 1)
+          : word.slice(0, placeholderText.length + 1)
+      );
+    }, speed);
+    return () => clearTimeout(t);
+  }, [placeholderText, isPlaceholderDeleting, placeholderIndex, promptText]);
+
+  // Handlers
+  const handlePromptSubmit = () => {
+    if (!promptText.trim()) return;
+    localStorage.setItem('sitecraft_pending_prompt', promptText.trim());
+    setShowSignupModal(true);
+  };
+
+  const handleEmailSignupFromModal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSignupError(null);
+
+    if (!signupName.trim()) { setSignupError('Please enter your name.'); return; }
+    if (!signupEmail.trim()) { setSignupError('Please enter your email.'); return; }
+    if (!signupPassword) { setSignupError('Please enter a password.'); return; }
+    if (signupPassword.length < 6) { setSignupError('Password must be at least 6 characters.'); return; }
+    if (signupPassword !== signupConfirmPassword) { setSignupError('Passwords do not match.'); return; }
+
+    setSignupLoading(true);
+
+    try {
+      // Step 1: Create account
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: signupEmail.trim(),
+          password: signupPassword,
+          displayName: signupName.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        setSignupError(data.error || 'Signup failed');
+        setSignupLoading(false);
+        return;
+      }
+
+      // Step 2: Sign in
+      const supabase = createClient();
+      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: signupEmail.trim(),
+        password: signupPassword,
+      });
+
+      if (signInError || !authData.user) {
+        setSignupError(signInError?.message || 'Sign in failed');
+        setSignupLoading(false);
+        return;
+      }
+
+      // Step 3: Create project with user's prompt
+      const prompt = promptText.trim() || localStorage.getItem('sitecraft_pending_prompt') || '';
+      const slug = 'my-website-' + Date.now().toString(36);
+
+      const { data: projectData, error: projectError } = await supabase
+        .from('projects')
+        .insert({
+          user_id: authData.user.id,
+          name: 'My Website',
+          slug,
+          site_type: 'business',
+          status: 'draft',
+        })
+        .select()
+        .single();
+
+      if (projectError || !projectData) {
+        localStorage.removeItem('sitecraft_pending_prompt');
+        window.location.href = '/dashboard';
+        return;
+      }
+
+      // Step 4: Redirect to editor with prompt
+      localStorage.removeItem('sitecraft_pending_prompt');
+      window.location.href = `/projects/${projectData.id}?desc=${encodeURIComponent(prompt)}`;
+    } catch {
+      setSignupError('An unexpected error occurred. Please try again.');
+      setSignupLoading(false);
+    }
+  };
+
+  const handleGoogleSignup = async () => {
+    localStorage.setItem('sitecraft_pending_prompt', promptText.trim());
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/callback?redirect=${encodeURIComponent('/dashboard')}`,
+      },
+    });
+    if (error) setSignupError(error.message);
+  };
 
   return (
     <div className="min-h-screen relative overflow-x-hidden" style={{ background: '#050810' }}>
@@ -62,6 +206,8 @@ export default function HomePage() {
         @keyframes gradient-x { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
         @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 20px rgba(139,92,246,0.3); } 50% { box-shadow: 0 0 40px rgba(139,92,246,0.6), 0 0 80px rgba(139,92,246,0.2); } }
         @keyframes slide-up { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes glow-shift { 0%, 100% { background-position: 0% 50%; opacity: 0.5; transform: scale(1); } 25% { opacity: 0.7; } 50% { background-position: 100% 50%; opacity: 0.5; transform: scale(1.02); } 75% { opacity: 0.65; } }
+        @keyframes glow-pulse { 0%, 100% { opacity: 0.25; transform: scale(1); } 50% { opacity: 0.45; transform: scale(1.03); } }
         .animate-float-slow { animation: float-slow 8s ease-in-out infinite; }
         .animate-float-medium { animation: float-medium 6s ease-in-out infinite; }
         .animate-gradient-x { animation: gradient-x 6s ease infinite; background-size: 200% 200%; }
@@ -71,6 +217,8 @@ export default function HomePage() {
         .anim-up-3 { animation: slide-up 0.8s ease-out 0.45s forwards; opacity: 0; }
         .anim-up-4 { animation: slide-up 0.8s ease-out 0.6s forwards; opacity: 0; }
         .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+        .animate-glow-shift { animation: glow-shift 6s ease-in-out infinite; background-size: 200% 200%; will-change: transform, opacity; }
+        .animate-glow-pulse { animation: glow-pulse 4s ease-in-out infinite; will-change: transform, opacity; }
       ` }} />
 
       {/* Floating orbs */}
@@ -122,13 +270,51 @@ export default function HomePage() {
 
           <p className="anim-up-3 mt-4 text-base text-gray-500 max-w-xl">No code. No templates. Just tell our AI what you need and get a professional, multi-page website in minutes.</p>
 
-          <div className="anim-up-4 mt-10 flex flex-col sm:flex-row items-center gap-4">
-            <Link href="/signup" className="group relative inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-lg font-semibold text-white transition-all hover:scale-105 animate-pulse-glow" style={{ background: 'linear-gradient(135deg, #7c3aed, #6d28d9)' }}>
-              <Sparkles className="h-5 w-5" />Start Building &mdash; It&apos;s Free<ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-            </Link>
-            <Link href="#how-it-works" className="inline-flex items-center gap-2 px-6 py-4 rounded-2xl text-base font-medium text-gray-400 hover:text-white border border-white/10 hover:border-white/20 transition-all hover:bg-white/5">
-              <Play className="h-4 w-4" />See How It Works
-            </Link>
+          {/* PROMPT BAR */}
+          <div className="anim-up-4 mt-10 w-full max-w-2xl mx-auto">
+            <div className="relative">
+              {/* Outer ambient glow */}
+              <div className="absolute -inset-1.5 rounded-2xl animate-glow-shift"
+                style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.4), rgba(99,102,241,0.3), rgba(236,72,153,0.3), rgba(139,92,246,0.4))' }}
+              />
+              {/* Inner edge glow */}
+              <div className="absolute -inset-0.5 rounded-2xl animate-glow-pulse"
+                style={{ background: 'linear-gradient(135deg, rgba(167,139,250,0.5), rgba(129,140,248,0.4), rgba(192,132,252,0.4))' }}
+              />
+
+              {/* The input bar */}
+              <div className="relative flex items-center rounded-2xl border border-white/[0.12] overflow-hidden"
+                style={{ background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(20px)' }}
+              >
+                <Sparkles className="h-5 w-5 text-violet-400 ml-4 sm:ml-5 flex-shrink-0" />
+                <input
+                  ref={promptInputRef}
+                  type="text"
+                  value={promptText}
+                  onChange={(e) => setPromptText(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && promptText.trim()) handlePromptSubmit(); }}
+                  placeholder={placeholderText || 'Describe your dream website...'}
+                  className="flex-1 bg-transparent text-white text-sm sm:text-base placeholder-gray-500 px-3 sm:px-4 py-4 sm:py-5 outline-none min-w-0"
+                />
+                <button
+                  onClick={handlePromptSubmit}
+                  disabled={!promptText.trim()}
+                  className="flex-shrink-0 mr-2 sm:mr-3 p-2.5 sm:p-3 rounded-xl text-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
+                  style={{ background: promptText.trim() ? 'linear-gradient(135deg, #7c3aed, #6d28d9)' : 'rgba(255,255,255,0.05)' }}
+                >
+                  <ArrowRight className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* See How It Works link */}
+            <div className="mt-5 flex items-center justify-center gap-6">
+              <Link href="#how-it-works" className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-300 transition-colors">
+                <Play className="h-3.5 w-3.5" />See How It Works
+              </Link>
+              <span className="text-gray-700">•</span>
+              <span className="text-xs text-gray-600">No credit card required</span>
+            </div>
           </div>
 
           {/* Mock browser */}
@@ -283,9 +469,9 @@ export default function HomePage() {
                 </h2>
                 <p className="mt-6 text-gray-400 max-w-lg mx-auto text-lg">Join hundreds of businesses who launched their website in minutes, not months.</p>
                 <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <Link href="/signup" className="group inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-lg font-semibold text-white transition-all hover:scale-105 animate-pulse-glow" style={{ background: 'linear-gradient(135deg, #7c3aed, #6d28d9)' }}>
+                  <button onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); setTimeout(() => promptInputRef.current?.focus(), 600); }} className="group inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-lg font-semibold text-white transition-all hover:scale-105 animate-pulse-glow" style={{ background: 'linear-gradient(135deg, #7c3aed, #6d28d9)' }}>
                     <Sparkles className="h-5 w-5" />Get Started Free<ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                  </Link>
+                  </button>
                 </div>
                 <p className="mt-4 text-xs text-gray-600">No credit card required. Start building in 30 seconds.</p>
               </div>
@@ -306,6 +492,127 @@ export default function HomePage() {
           <p className="text-xs text-gray-700">&copy; 2026 Innovated Marketing. All rights reserved.</p>
         </div>
       </footer>
+
+      {/* SIGNUP MODAL */}
+      {showSignupModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" style={{ animation: 'slide-up 0.3s ease-out' }}>
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={() => { if (!signupLoading) setShowSignupModal(false); }} />
+
+          {/* Modal card */}
+          <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl p-6 sm:p-8"
+            style={{
+              background: 'linear-gradient(135deg, rgba(30,41,59,0.97), rgba(15,23,42,0.97))',
+              border: '1px solid rgba(139,92,246,0.25)',
+              backdropFilter: 'blur(20px)',
+              boxShadow: '0 0 60px rgba(139,92,246,0.15), 0 25px 50px rgba(0,0,0,0.5)',
+            }}
+          >
+            {/* Close button */}
+            <button onClick={() => { if (!signupLoading) setShowSignupModal(false); }}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10">
+              <X className="h-5 w-5" />
+            </button>
+
+            {/* Header with prompt preview */}
+            <div className="mb-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl flex-shrink-0"
+                  style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7)' }}>
+                  <Sparkles className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-white">Let&apos;s bring your vision to life</h2>
+                  <p className="text-xs text-gray-400">Create a free account to start building</p>
+                </div>
+              </div>
+              {/* User's prompt */}
+              <div className="rounded-xl p-3 text-sm text-violet-300/90 border border-violet-500/20 italic"
+                style={{ background: 'rgba(139,92,246,0.08)' }}>
+                &ldquo;{promptText}&rdquo;
+              </div>
+            </div>
+
+            {/* Error display */}
+            {signupError && (
+              <div className="rounded-lg px-4 py-3 text-sm text-red-400 mb-4"
+                style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                {signupError}
+              </div>
+            )}
+
+            {/* Google OAuth */}
+            <button onClick={handleGoogleSignup} disabled={signupLoading}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium text-white border border-white/10 hover:border-white/20 hover:bg-white/5 transition-all mb-4 disabled:opacity-50"
+              style={{ background: 'rgba(255,255,255,0.03)' }}>
+              <svg className="h-4 w-4" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+              Continue with Google
+            </button>
+
+            {/* OR divider */}
+            <div className="relative mb-4">
+              <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-white/10" /></div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="px-3 text-gray-500" style={{ background: 'rgb(22,33,52)' }}>or</span>
+              </div>
+            </div>
+
+            {/* Signup form */}
+            <form onSubmit={handleEmailSignupFromModal} className="space-y-3">
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <input type="text" value={signupName} onChange={(e) => setSignupName(e.target.value)}
+                  placeholder="Your name" disabled={signupLoading} autoFocus
+                  className="w-full rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-gray-500 outline-none transition-all focus:ring-2 focus:ring-violet-500/50"
+                  style={{ background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(71,85,105,0.4)' }}
+                />
+              </div>
+
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <input type="email" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)}
+                  placeholder="you@example.com" disabled={signupLoading}
+                  className="w-full rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-gray-500 outline-none transition-all focus:ring-2 focus:ring-violet-500/50"
+                  style={{ background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(71,85,105,0.4)' }}
+                />
+              </div>
+
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <input type="password" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)}
+                  placeholder="Password (min. 6 characters)" disabled={signupLoading}
+                  className="w-full rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-gray-500 outline-none transition-all focus:ring-2 focus:ring-violet-500/50"
+                  style={{ background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(71,85,105,0.4)' }}
+                />
+              </div>
+
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <input type="password" value={signupConfirmPassword} onChange={(e) => setSignupConfirmPassword(e.target.value)}
+                  placeholder="Confirm password" disabled={signupLoading}
+                  className="w-full rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-gray-500 outline-none transition-all focus:ring-2 focus:ring-violet-500/50"
+                  style={{ background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(71,85,105,0.4)' }}
+                />
+              </div>
+
+              <button type="submit" disabled={signupLoading}
+                className="w-full py-3.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+                style={{ background: 'linear-gradient(135deg, #7c3aed, #6d28d9)' }}>
+                {signupLoading ? (
+                  <><Loader2 className="h-4 w-4 animate-spin" />Creating your site...</>
+                ) : (
+                  <><Sparkles className="h-4 w-4" />Create Account &amp; Start Building</>
+                )}
+              </button>
+            </form>
+
+            <p className="mt-4 text-center text-xs text-gray-500">
+              Already have an account?{' '}
+              <Link href="/login" className="text-violet-400 hover:text-violet-300 transition-colors">Sign in</Link>
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
