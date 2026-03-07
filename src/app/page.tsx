@@ -280,9 +280,9 @@ export default function HomePage() {
 
       {/* Navbar */}
       <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b border-white/[0.06]" style={{ background: 'rgba(5,8,16,0.8)' }}>
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 py-3">
+        <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 py-4">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo.png" alt="Innovated Marketing" width={844} height={563} className="brightness-0 invert w-auto" style={{ height: '120px' }} priority />
+            <Image src="/logo.png" alt="Innovated Marketing" width={844} height={563} className="brightness-0 invert" style={{ height: '120px', width: 'auto' }} priority />
           </Link>
           <nav className="flex items-center gap-2">
             {userLoading ? (
