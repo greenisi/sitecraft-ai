@@ -181,6 +181,11 @@ export default function LeadsPage() {
                   <span className="text-xs text-gray-500">{formatFormType(s.form_type)}</span>
                   <span className="text-gray-700">&middot;</span>
                   <span className="text-xs text-gray-500">{timeAgo(s.created_at)}</span>
+                  {s.form_data?.uploaded_images?.length > 0 && (
+                    <span className="text-xs text-purple-400" title={`${s.form_data.uploaded_images.length} image(s)`}>
+                      <svg className="w-3.5 h-3.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    </span>
+                  )}
                 </div>
                 {s.message && (
                   <p className="text-xs text-gray-400 mt-1.5 line-clamp-2">{s.message}</p>
@@ -246,12 +251,36 @@ export default function LeadsPage() {
                   </div>
                 )}
 
+                {/* Uploaded Images */}
+                {selected.form_data?.uploaded_images && Array.isArray(selected.form_data.uploaded_images) && selected.form_data.uploaded_images.length > 0 && (
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-gray-500 mb-2">Attachments ({selected.form_data.uploaded_images.length})</div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {selected.form_data.uploaded_images.map((url: string, i: number) => (
+                        <a
+                          key={i}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block aspect-square rounded-lg overflow-hidden border border-gray-700 hover:border-purple-500 transition-colors group"
+                        >
+                          <img
+                            src={url}
+                            alt={`Attachment ${i + 1}`}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Extra form data */}
-                {selected.form_data && Object.keys(selected.form_data).length > 0 && (
+                {selected.form_data && Object.entries(selected.form_data).filter(([key]) => key !== 'uploaded_images').length > 0 && (
                   <div>
                     <div className="text-[10px] uppercase tracking-wider text-gray-500 mb-2">Additional Fields</div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {Object.entries(selected.form_data).map(([key, val]) => (
+                      {Object.entries(selected.form_data).filter(([key]) => key !== 'uploaded_images').map(([key, val]) => (
                         <div key={key} className="bg-gray-800/50 rounded-lg px-4 py-3">
                           <div className="text-[10px] uppercase tracking-wider text-gray-500 mb-1">{formatKey(key)}</div>
                           <div className="text-sm text-white">{String(val)}</div>

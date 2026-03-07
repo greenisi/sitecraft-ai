@@ -60,7 +60,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
   const hasCustomHours = !!(bizData?.hours && Object.keys(bizData.hours).length > 0);
 
   const steps: Record<string, boolean> = {
-    'business-type': !!rawType,
+    'business-type': !!project.business_type,
     'business-info': hasRealBusinessInfo,
     'business-hours': hasCustomHours,
     'first-service': !!(servicesRes.data && servicesRes.data.length > 0),

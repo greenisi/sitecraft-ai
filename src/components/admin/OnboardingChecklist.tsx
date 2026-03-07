@@ -5,8 +5,8 @@ import Link from 'next/link';
 
 const STEP_CONFIG: Record<string, { label: string; description: string; path: string }> = {
   'business-type': { label: 'Choose Business Type', description: 'Select your industry to customize the experience', path: '/setup' },
-  'business-info': { label: 'Add Business Info', description: 'Name, description, contact details', path: '/setup' },
-  'business-hours': { label: 'Set Business Hours', description: 'Let customers know when you are open', path: '/setup' },
+  'business-info': { label: 'Add Business Info', description: 'Name, description, contact details', path: '/business-info' },
+  'business-hours': { label: 'Set Business Hours', description: 'Let customers know when you are open', path: '/business-info' },
   'first-service': { label: 'Create Your First Service', description: 'Add a service you offer to customers', path: '/services' },
   'first-product': { label: 'Add Your First Product', description: 'List a product for your store', path: '/products' },
   'gallery': { label: 'Upload Gallery Images', description: 'Showcase your work with photos', path: '/gallery' },
