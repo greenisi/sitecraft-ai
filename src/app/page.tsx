@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Zap, Globe, Sparkles, MessageSquare, Palette, Rocket, Check, Play, Code2, LayoutDashboard, MousePointerClick, Loader2, User, Mail, Lock, X, ShoppingBag, FileText } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { useUser } from '@/lib/hooks/use-user';
 
 function useInView(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
@@ -78,6 +79,7 @@ const SITE_TYPES = [
 ] as const;
 
 export default function HomePage() {
+  const { user, loading: userLoading } = useUser();
   const hero = useInView(0.1);
   const features = useInView();
   const howItWorks = useInView();
@@ -283,11 +285,22 @@ export default function HomePage() {
             <Image src="/logo.png" alt="Innovated Marketing" width={844} height={563} className="brightness-0 invert w-auto" style={{ height: '50px' }} priority />
           </Link>
           <nav className="flex items-center gap-2">
-            <Link href="/login" className="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white transition-colors">Log in</Link>
-            <Link href="/signup" className="group relative px-5 py-2.5 rounded-xl text-sm font-semibold text-white overflow-hidden transition-all hover:scale-105" style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}>
-              <span className="relative z-10">Get Started Free</span>
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'linear-gradient(135deg, #a78bfa, #8b5cf6)' }} />
-            </Link>
+            {userLoading ? (
+              <div className="w-[100px]" />
+            ) : user ? (
+              <Link href="/dashboard" className="group relative px-5 py-2.5 rounded-xl text-sm font-semibold text-white overflow-hidden transition-all hover:scale-105" style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}>
+                <span className="relative z-10 flex items-center gap-2"><LayoutDashboard className="h-4 w-4" />Dashboard</span>
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'linear-gradient(135deg, #a78bfa, #8b5cf6)' }} />
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white transition-colors">Log in</Link>
+                <Link href="/signup" className="group relative px-5 py-2.5 rounded-xl text-sm font-semibold text-white overflow-hidden transition-all hover:scale-105" style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}>
+                  <span className="relative z-10">Get Started Free</span>
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'linear-gradient(135deg, #a78bfa, #8b5cf6)' }} />
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       </header>
@@ -911,11 +924,17 @@ export default function HomePage() {
                 </h2>
                 <p className="mt-6 text-gray-400 max-w-lg mx-auto text-lg">Join hundreds of businesses who launched their website in minutes, not months.</p>
                 <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <button onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); setTimeout(() => promptInputRef.current?.focus(), 600); }} className="group inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-lg font-semibold text-white transition-all hover:scale-105 animate-pulse-glow" style={{ background: 'linear-gradient(135deg, #7c3aed, #6d28d9)' }}>
-                    <Sparkles className="h-5 w-5" />Get Started Free<ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                  </button>
+                  {user ? (
+                    <Link href="/dashboard" className="group inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-lg font-semibold text-white transition-all hover:scale-105 animate-pulse-glow" style={{ background: 'linear-gradient(135deg, #7c3aed, #6d28d9)' }}>
+                      <LayoutDashboard className="h-5 w-5" />Go to Dashboard<ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  ) : (
+                    <button onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); setTimeout(() => promptInputRef.current?.focus(), 600); }} className="group inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-lg font-semibold text-white transition-all hover:scale-105 animate-pulse-glow" style={{ background: 'linear-gradient(135deg, #7c3aed, #6d28d9)' }}>
+                      <Sparkles className="h-5 w-5" />Get Started Free<ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  )}
                 </div>
-                <p className="mt-4 text-xs text-gray-600">No credit card required. Start building in 30 seconds.</p>
+                <p className="mt-4 text-xs text-gray-600">{user ? 'Welcome back! Your projects are waiting.' : 'No credit card required. Start building in 30 seconds.'}</p>
               </div>
             </div>
           </div>
