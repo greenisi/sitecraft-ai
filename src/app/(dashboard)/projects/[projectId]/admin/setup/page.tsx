@@ -1,6 +1,7 @@
 'use client';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 const BUSINESS_TYPES = [
   { value: 'service', label: 'Service Business', desc: 'Offer services with booking and scheduling' },
@@ -30,8 +31,8 @@ export default function SetupPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ business_type: businessType }),
         });
-        if (res.ok) { setCurrentType(businessType); alert('Business type updated!'); }
-        else { alert('Failed to update'); }
+        if (res.ok) { setCurrentType(businessType); toast.success('Business type updated!'); }
+        else { toast.error('Failed to update business type'); }
         setSaving(false);
   }
 

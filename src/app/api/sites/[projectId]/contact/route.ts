@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient as createClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 export async function POST(
   request: NextRequest,
@@ -7,7 +10,7 @@ export async function POST(
 ) {
   try {
     const { projectId } = await params;
-    const supabase = await createClient();
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Verify project exists
     const { data: project } = await supabase
@@ -27,15 +30,19 @@ export async function POST(
       return NextResponse.json({ error: 'Name and email are required' }, { status: 400 });
     }
 
-    const { data: lead, error: insertError } = await supabase
-      .from('leads')
+    // Write to form_submissions (unified table)
+    const { data: submission, error: insertError } = await supabase
+      .from('form_submissions')
       .insert({
         project_id: projectId,
+        form_type: 'contact',
         name,
         email,
         phone: phone || null,
         message: message || null,
-        source: 'contact_form',
+        form_data: {},
+        source_page: 'contact',
+        ip_address: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown',
         status: 'new',
       })
       .select()
@@ -55,7 +62,7 @@ export async function POST(
       status: 'pending',
     });
 
-    return NextResponse.json({ success: true, lead }, { status: 201 });
+    return NextResponse.json({ success: true, submission }, { status: 201 });
   } catch {
     return NextResponse.json({ error: 'Failed to submit contact form' }, { status: 500 });
   }

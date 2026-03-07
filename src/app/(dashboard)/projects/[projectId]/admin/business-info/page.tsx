@@ -1,6 +1,9 @@
 'use client';
 import { useParams } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
+import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface BusinessInfo {
   phone: string;
@@ -58,11 +61,20 @@ export default function BusinessInfoPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
-    await fetch(`/api/projects/${projectId}/business-info`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
+    try {
+      const res = await fetch(`/api/projects/${projectId}/business-info`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (res.ok) {
+        toast.success('Business info saved!');
+      } else {
+        toast.error('Failed to save business info');
+      }
+    } catch {
+      toast.error('Failed to save business info');
+    }
     setSaving(false);
   }
 
@@ -87,21 +99,45 @@ export default function BusinessInfoPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 space-y-4">
           <h2 className="text-lg font-semibold text-white">Contact Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="Phone" className="px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white" />
-            <input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="Email" className="px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white" />
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone</Label>
+              <Input id="phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="(555) 123-4567" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="contact@business.com" />
+            </div>
           </div>
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 space-y-4">
           <h2 className="text-lg font-semibold text-white">Address</h2>
-          <input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="Street Address" className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white" />
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="City" className="px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white" />
-            <input value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} placeholder="State" className="px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white" />
-            <input value={form.zip} onChange={(e) => setForm({ ...form, zip: e.target.value })} placeholder="ZIP" className="px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white" />
-            <input value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} placeholder="Country" className="px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white" />
+          <div className="space-y-2">
+            <Label htmlFor="address">Street Address</Label>
+            <Input id="address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="123 Main Street" />
           </div>
-          <input value={form.google_maps_url} onChange={(e) => setForm({ ...form, google_maps_url: e.target.value })} placeholder="Google Maps URL" className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="city">City</Label>
+              <Input id="city" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="City" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="state">State</Label>
+              <Input id="state" value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} placeholder="State" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="zip">ZIP</Label>
+              <Input id="zip" value={form.zip} onChange={(e) => setForm({ ...form, zip: e.target.value })} placeholder="ZIP" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="country">Country</Label>
+              <Input id="country" value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} placeholder="Country" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="maps">Google Maps URL</Label>
+            <Input id="maps" value={form.google_maps_url} onChange={(e) => setForm({ ...form, google_maps_url: e.target.value })} placeholder="https://maps.google.com/..." />
+          </div>
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 space-y-4">
@@ -128,7 +164,10 @@ export default function BusinessInfoPage() {
           <h2 className="text-lg font-semibold text-white">Social Media Links</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {['facebook', 'instagram', 'twitter', 'linkedin', 'youtube'].map((platform) => (
-              <input key={platform} value={form.social_links[platform] || ''} onChange={(e) => updateSocial(platform, e.target.value)} placeholder={platform.charAt(0).toUpperCase() + platform.slice(1) + ' URL'} className="px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white" />
+              <div key={platform} className="space-y-2">
+                <Label htmlFor={`social-${platform}`}>{platform.charAt(0).toUpperCase() + platform.slice(1)}</Label>
+                <Input id={`social-${platform}`} value={form.social_links[platform] || ''} onChange={(e) => updateSocial(platform, e.target.value)} placeholder={`https://${platform}.com/...`} />
+              </div>
             ))}
           </div>
         </div>

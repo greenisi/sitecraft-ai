@@ -42,10 +42,10 @@ export async function POST(
       // Use service role to bypass RLS for inserts
       const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-      // Verify project exists
+      // Verify project exists and get owner info for notifications
       const { data: project } = await supabase
           .from('projects')
-          .select('id')
+          .select('id, user_id')
           .eq('id', projectId)
           .single();
 
@@ -85,6 +85,36 @@ export async function POST(
                 { error: 'Failed to submit form' },
                 { status: 500, headers }
                       );
+      }
+
+      // Create notification for project owner
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', project.user_id)
+          .single();
+
+        if (profile) {
+          const submitterName = name || email || 'Someone';
+          await supabase.from('notifications').insert({
+            project_id: projectId,
+            type: 'new_lead',
+            recipient_email: email || '',
+            subject: `New ${form_type} submission from ${submitterName}`,
+            body: [
+              name && `Name: ${name}`,
+              email && `Email: ${email}`,
+              phone && `Phone: ${phone}`,
+              message && `Message: ${message}`,
+              service_needed && `Service: ${service_needed}`,
+            ].filter(Boolean).join('\n'),
+            status: 'pending',
+          });
+        }
+      } catch (notifErr) {
+        // Don't fail the submission if notification fails
+        console.error('Notification creation error:', notifErr);
       }
 
       return NextResponse.json(
