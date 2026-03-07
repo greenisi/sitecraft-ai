@@ -247,31 +247,27 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
             )}
           </Button>
 
-          {/* Undo/Redo Buttons - only visible when visual editor is active */}
-          {isVisualEditorActive && (
-            <>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                onClick={undo}
-                disabled={undoStack.length === 0}
-                title="Undo (Ctrl+Z)"
-              >
-                <Undo2 className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                onClick={redo}
-                disabled={redoStack.length === 0}
-                title="Redo (Ctrl+Shift+Z)"
-              >
-                <Redo2 className="h-3.5 w-3.5" />
-              </Button>
-            </>
-          )}
+          {/* Undo/Redo Buttons */}
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8"
+            onClick={undo}
+            disabled={!isVisualEditorActive || undoStack.length === 0}
+            title="Undo (Ctrl+Z)"
+          >
+            <Undo2 className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8"
+            onClick={redo}
+            disabled={!isVisualEditorActive || redoStack.length === 0}
+            title="Redo (Ctrl+Shift+Z)"
+          >
+            <Redo2 className="h-3.5 w-3.5" />
+          </Button>
 
           {/* Autofill Button */}
             <Button
