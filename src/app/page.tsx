@@ -253,6 +253,14 @@ export default function HomePage() {
         .animate-glow-pulse { animation: glow-pulse 4s ease-in-out infinite; will-change: transform, opacity; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes mini-shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
+        @keyframes mini-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+        @keyframes mini-pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+        @keyframes mini-grow { 0% { width: 0%; } 100% { width: 100%; } }
+        @keyframes mini-fade-slide { 0%, 10% { opacity: 0; transform: translateY(6px); } 15%, 85% { opacity: 1; transform: translateY(0); } 90%, 100% { opacity: 0; transform: translateY(-6px); } }
+        @keyframes mini-leaf-sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+        @keyframes mini-cart-bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+        @keyframes mini-steam { 0% { opacity: 0; transform: translateY(0) scale(0.8); } 50% { opacity: 0.6; } 100% { opacity: 0; transform: translateY(-10px) scale(1.2); } }
       ` }} />
 
       {/* Floating orbs */}
@@ -593,196 +601,267 @@ export default function HomePage() {
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 anim-up-1">
 
-              {/* Card 1 — The Copper Cut (Barbershop) */}
-              <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-amber-500/10 cursor-pointer">
+              {/* Card 1 — Greenscape Pros (Landscaping) */}
+              <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-emerald-500/10 cursor-pointer">
                 <div className="relative aspect-video overflow-hidden">
                   <div className="w-[300%] h-[300%] origin-top-left pointer-events-none" style={{ transform: 'scale(0.333)' }}>
-                    <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif', background: '#0f0e0c' }}>
-                      {/* Full-width hero background */}
-                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '70%', background: 'linear-gradient(135deg, #1a1510 0%, #2a1f10 30%, #1c1508 60%, #0f0e0c 100%)' }} />
-                      <div style={{ position: 'absolute', top: '10%', right: '5%', width: '35%', height: '55%', borderRadius: '12px', background: 'linear-gradient(145deg, #3d2b14 0%, #5c3d1a 40%, #2a1d0e 100%)', opacity: 0.5 }} />
-                      <div style={{ position: 'absolute', top: '15%', right: '8%', width: '30%', height: '45%', borderRadius: '10px', background: 'linear-gradient(160deg, #4a3520 0%, #6b4c28 50%, #3d2b14 100%)', opacity: 0.4 }} />
-                      {/* Nav */}
-                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', background: 'rgba(15,14,12,0.85)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(217,119,6,0.15)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: 'linear-gradient(135deg, #d97706, #b45309)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 700, color: '#fff' }}>TC</div>
-                          <span style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>The Copper Cut</span>
+                    <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif', background: '#0c1a0e', overflow: 'hidden' }}>
+                      {/* Sky/nature hero bg */}
+                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '65%', background: 'linear-gradient(170deg, #1a3a2a 0%, #0d2818 25%, #142e1c 50%, #0a1f10 100%)' }} />
+                      {/* Sun/light glow */}
+                      <div style={{ position: 'absolute', top: '5%', right: '15%', width: '120px', height: '120px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(250,204,21,0.15) 0%, rgba(250,204,21,0.05) 40%, transparent 70%)' }} />
+                      {/* Grass texture strip */}
+                      <div style={{ position: 'absolute', top: '42%', left: 0, right: 0, height: '20%', background: 'linear-gradient(180deg, transparent 0%, rgba(34,197,94,0.06) 30%, rgba(22,163,74,0.1) 60%, rgba(34,197,94,0.04) 100%)' }} />
+                      {/* Animated floating leaf */}
+                      <div style={{ position: 'absolute', top: '12%', right: '10%', fontSize: '16px', animation: 'mini-leaf-sway 3s ease-in-out infinite', transformOrigin: 'top center' }}>🍃</div>
+                      <div style={{ position: 'absolute', top: '25%', right: '30%', fontSize: '11px', animation: 'mini-leaf-sway 4s ease-in-out infinite 1s', transformOrigin: 'top center', opacity: 0.6 }}>🌿</div>
+                      {/* Photo-like image blocks */}
+                      <div style={{ position: 'absolute', top: '14%', right: '4%', width: '38%', height: '44%', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.4)' }}>
+                        <div style={{ width: '100%', height: '100%', background: 'linear-gradient(145deg, #1a4a28 0%, #2d6b3f 20%, #1e5530 40%, #3a8b52 60%, #245a34 80%, #1a4025 100%)', position: 'relative' }}>
+                          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '35%', background: 'linear-gradient(180deg, transparent, rgba(101,67,33,0.3))' }} />
+                          <div style={{ position: 'absolute', top: '20%', left: '15%', width: '30%', height: '50%', borderRadius: '4px', background: 'linear-gradient(to bottom, #3d7a4a, #2d5e38)', opacity: 0.6 }} />
+                          <div style={{ position: 'absolute', top: '10%', right: '20%', width: '25%', height: '60%', borderRadius: '50% 50% 0 0', background: 'linear-gradient(to bottom, #4a9960, #2d6b3f)', opacity: 0.5 }} />
+                          {/* Shimmer overlay */}
+                          <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+                            <div style={{ position: 'absolute', top: 0, left: '-100%', width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)', animation: 'mini-shimmer 4s ease-in-out infinite' }} />
+                          </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '20px', fontSize: '11px', color: 'rgba(255,255,255,0.35)', fontWeight: 500 }}>
-                          <span style={{ color: '#d97706' }}>Home</span><span>Services</span><span>Gallery</span><span>Reviews</span><span>Contact</span>
-                        </div>
-                        <div style={{ padding: '5px 14px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, color: '#fff', background: 'linear-gradient(135deg, #d97706, #b45309)' }}>Book Now</div>
                       </div>
-                      {/* Hero content over background */}
-                      <div style={{ position: 'relative', padding: '24px 32px 0' }}>
-                        <div style={{ fontSize: '8px', color: '#d97706', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '8px' }}>✦ Premium Barbershop · Austin, TX</div>
-                        <div style={{ fontSize: '34px', fontWeight: 700, color: '#fff', lineHeight: 1.1, marginBottom: '8px' }}>Where Style<br/>Meets <span style={{ color: '#d97706' }}>Craft</span></div>
-                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.5, marginBottom: '14px', maxWidth: '320px' }}>Classic cuts, hot towel shaves, and grooming done right. Walk-ins welcome.</div>
-                        <div style={{ display: 'flex', gap: '6px', marginBottom: '16px' }}>
-                          <div style={{ padding: '6px 14px', borderRadius: '4px', fontSize: '10px', fontWeight: 600, color: '#fff', background: 'linear-gradient(135deg, #d97706, #b45309)', boxShadow: '0 2px 8px rgba(217,119,6,0.3)' }}>Book Appointment →</div>
-                          <div style={{ padding: '6px 14px', borderRadius: '4px', fontSize: '10px', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)' }}>View Pricing</div>
+                      {/* Nav */}
+                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', background: 'rgba(12,26,14,0.9)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(34,197,94,0.15)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ width: '26px', height: '26px', borderRadius: '6px', background: 'linear-gradient(135deg, #22c55e, #15803d)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }}>🌱</div>
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>Greenscape Pros</span>
                         </div>
-                        <div style={{ display: 'flex', gap: '12px', fontSize: '9px', color: 'rgba(255,255,255,0.3)', marginBottom: '14px' }}>
-                          <span>★★★★★ <span style={{ color: 'rgba(255,255,255,0.5)' }}>4.9</span> (380+)</span>
-                          <span>·</span><span style={{ color: '#22c55e' }}>● Open Now</span>
+                        <div style={{ display: 'flex', gap: '18px', fontSize: '11px', color: 'rgba(255,255,255,0.35)', fontWeight: 500 }}>
+                          <span style={{ color: '#4ade80' }}>Home</span><span>Services</span><span>Portfolio</span><span>About</span><span>Contact</span>
+                        </div>
+                        <div style={{ padding: '5px 14px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, color: '#fff', background: 'linear-gradient(135deg, #22c55e, #15803d)', boxShadow: '0 2px 10px rgba(34,197,94,0.3)' }}>Free Estimate</div>
+                      </div>
+                      {/* Hero content */}
+                      <div style={{ position: 'relative', padding: '18px 32px 0' }}>
+                        <div style={{ display: 'inline-block', padding: '3px 10px', borderRadius: '20px', fontSize: '8px', color: '#4ade80', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '8px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)' }}>⭐ Rated #1 in Charlotte, NC</div>
+                        <div style={{ fontSize: '32px', fontWeight: 800, color: '#fff', lineHeight: 1.1, marginBottom: '6px' }}>Beautiful Lawns,<br/><span style={{ color: '#4ade80' }}>Happy Homes</span></div>
+                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.6, marginBottom: '12px', maxWidth: '320px' }}>Professional lawn care, landscape design, and outdoor living spaces. Trusted by 2,000+ homeowners.</div>
+                        <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+                          <div style={{ padding: '7px 16px', borderRadius: '6px', fontSize: '10px', fontWeight: 700, color: '#fff', background: 'linear-gradient(135deg, #22c55e, #15803d)', boxShadow: '0 3px 12px rgba(34,197,94,0.35)', position: 'relative', overflow: 'hidden' }}>
+                            Get Free Quote →
+                            <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}><div style={{ position: 'absolute', top: 0, left: '-100%', width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)', animation: 'mini-shimmer 3s ease-in-out infinite' }} /></div>
+                          </div>
+                          <div style={{ padding: '7px 14px', borderRadius: '6px', fontSize: '10px', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)' }}>Our Work</div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px', fontSize: '9px', color: 'rgba(255,255,255,0.3)' }}>
+                          <span>★★★★★ <span style={{ color: '#4ade80' }}>4.9</span> (520+)</span><span>·</span><span>Licensed & Insured</span><span>·</span><span style={{ animation: 'mini-pulse 2s ease-in-out infinite', color: '#4ade80' }}>● Booking Now</span>
                         </div>
                       </div>
                       {/* Services row */}
-                      <div style={{ position: 'relative', display: 'flex', gap: '6px', padding: '0 32px' }}>
-                        {[{ name: 'Classic Cut', price: '$35', icon: '✂' }, { name: 'Hot Shave', price: '$45', icon: '🪒' }, { name: 'Beard Trim', price: '$20', icon: '✦' }, { name: 'The Works', price: '$65', icon: '👑' }].map((s) => (
-                          <div key={s.name} style={{ flex: 1, padding: '8px', borderRadius: '6px', background: 'rgba(217,119,6,0.06)', border: '1px solid rgba(217,119,6,0.12)' }}>
-                            <div style={{ fontSize: '10px', marginBottom: '3px' }}>{s.icon}</div>
-                            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>{s.name}</div>
-                            <div style={{ fontSize: '12px', fontWeight: 700, color: '#d97706' }}>{s.price}</div>
+                      <div style={{ position: 'relative', display: 'flex', gap: '5px', padding: '10px 32px 0' }}>
+                        {[{ name: 'Lawn Care', price: 'From $49', icon: '🌱', desc: 'Weekly mowing' }, { name: 'Landscaping', price: 'From $299', icon: '🏡', desc: 'Full design' }, { name: 'Tree Service', price: 'From $149', icon: '🌳', desc: 'Trim & removal' }, { name: 'Irrigation', price: 'From $199', icon: '💧', desc: 'Smart systems' }].map((s, i) => (
+                          <div key={s.name} style={{ flex: 1, padding: '7px 6px', borderRadius: '6px', background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.1)', animation: `mini-float 3s ease-in-out infinite ${i * 0.3}s` }}>
+                            <div style={{ fontSize: '12px', marginBottom: '2px' }}>{s.icon}</div>
+                            <div style={{ fontSize: '9px', color: '#fff', fontWeight: 600 }}>{s.name}</div>
+                            <div style={{ fontSize: '7px', color: 'rgba(255,255,255,0.3)', marginBottom: '2px' }}>{s.desc}</div>
+                            <div style={{ fontSize: '10px', fontWeight: 700, color: '#4ade80' }}>{s.price}</div>
                           </div>
                         ))}
                       </div>
-                      {/* Bottom bar */}
-                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '7px 0', fontSize: '9px', color: 'rgba(255,255,255,0.25)', background: 'linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0.2))' }}>
-                        <span>📍 Downtown Austin</span><span>·</span><span>1,200+ Clients</span><span>·</span><span>Walk-ins Welcome</span>
+                      {/* Bottom trust bar */}
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '7px 0', fontSize: '8px', color: 'rgba(255,255,255,0.25)', background: 'linear-gradient(to top, rgba(12,26,14,0.95), rgba(12,26,14,0.6))' }}>
+                        <span>📍 Charlotte, NC</span><span>·</span><span>2,000+ Happy Clients</span><span>·</span><span>Same Week Service</span><span>·</span><span>Free Estimates</span>
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="p-4" style={{ background: 'rgba(15,23,42,0.8)' }}>
                   <div className="flex items-center justify-between">
-                    <div><h3 className="text-sm font-semibold text-white">The Copper Cut</h3><p className="text-xs text-gray-500">Barbershop · Austin, TX</p></div>
-                    <ArrowRight className="h-4 w-4 text-gray-600 group-hover:text-amber-400 group-hover:translate-x-1 transition-all" />
+                    <div><h3 className="text-sm font-semibold text-white">Greenscape Pros</h3><p className="text-xs text-gray-500">Landscaping · Charlotte, NC</p></div>
+                    <ArrowRight className="h-4 w-4 text-gray-600 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
                   </div>
                 </div>
               </div>
 
-              {/* Card 2 — Maison Moda (E-commerce Fashion) */}
-              <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-rose-500/10 cursor-pointer">
+              {/* Card 2 — LUXE Collective (E-commerce Lifestyle) */}
+              <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-orange-500/10 cursor-pointer">
                 <div className="relative aspect-video overflow-hidden">
                   <div className="w-[300%] h-[300%] origin-top-left pointer-events-none" style={{ transform: 'scale(0.333)' }}>
-                    <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif', background: '#f8f5f1' }}>
+                    <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif', background: '#faf8f5', overflow: 'hidden' }}>
                       {/* Nav */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', background: '#fff', borderBottom: '1px solid #eee' }}>
-                        <span style={{ fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#111' }}>Maison Moda</span>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', background: '#fff', borderBottom: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontSize: '15px', fontWeight: 800, letterSpacing: '-0.02em', color: '#111' }}>LUXE</span>
+                          <span style={{ fontSize: '10px', fontWeight: 400, color: '#999', letterSpacing: '0.1em' }}>COLLECTIVE</span>
+                        </div>
                         <div style={{ display: 'flex', gap: '18px', fontSize: '11px', color: '#888', fontWeight: 500 }}>
-                          <span style={{ color: '#111', borderBottom: '1.5px solid #111', paddingBottom: '2px' }}>New In</span><span>Women</span><span>Men</span><span>Accessories</span><span style={{ color: '#dc2626' }}>Sale</span>
+                          <span style={{ color: '#111', fontWeight: 600 }}>Shop</span><span>New Arrivals</span><span>Bestsellers</span><span>Gifts</span><span style={{ color: '#dc2626' }}>Sale</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '11px', color: '#666' }}>
-                          <span>🔍</span><span>♡</span><span style={{ fontWeight: 600, color: '#111' }}>Bag (2)</span>
-                        </div>
-                      </div>
-                      {/* Promo */}
-                      <div style={{ textAlign: 'center', padding: '4px 0', fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#fff', background: '#111' }}>FREE SHIPPING ON ORDERS OVER $150 — USE CODE: STYLE150</div>
-                      {/* Hero with large visual */}
-                      <div style={{ display: 'flex', height: 'calc(100% - 82px)' }}>
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 32px' }}>
-                          <div style={{ fontSize: '8px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '8px' }}>Summer &apos;26 Collection</div>
-                          <div style={{ fontSize: '32px', fontWeight: 300, color: '#111', lineHeight: 1.15, marginBottom: '6px' }}>Effortless<br/><span style={{ fontWeight: 600 }}>Elegance</span></div>
-                          <div style={{ fontSize: '11px', color: '#999', marginBottom: '14px', maxWidth: '220px', lineHeight: 1.5 }}>Timeless pieces for the modern wardrobe.</div>
-                          <div style={{ display: 'flex', gap: '6px' }}>
-                            <div style={{ padding: '7px 18px', borderRadius: '20px', fontSize: '10px', fontWeight: 600, color: '#fff', background: '#111' }}>Shop Collection →</div>
-                            <div style={{ padding: '7px 14px', borderRadius: '20px', fontSize: '10px', color: '#666', border: '1px solid #ddd' }}>Lookbook</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '11px', color: '#666' }}>
+                          <span>🔍</span>
+                          <span>👤</span>
+                          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                            <span>🛒</span>
+                            <div style={{ position: 'absolute', top: '-4px', right: '-6px', width: '12px', height: '12px', borderRadius: '50%', background: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '7px', fontWeight: 700, color: '#fff', animation: 'mini-cart-bounce 2s ease-in-out infinite' }}>3</div>
                           </div>
                         </div>
-                        {/* Product grid — rich with color blocks */}
-                        <div style={{ width: '55%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', padding: '8px 8px 8px 0' }}>
+                      </div>
+                      {/* Promo banner with animation */}
+                      <div style={{ textAlign: 'center', padding: '5px 0', fontSize: '9px', fontWeight: 600, letterSpacing: '0.08em', color: '#fff', background: 'linear-gradient(90deg, #111 0%, #2a2a2a 50%, #111 100%)', position: 'relative', overflow: 'hidden' }}>
+                        <span style={{ position: 'relative', zIndex: 1 }}>🔥 SUMMER SALE — UP TO 40% OFF — FREE SHIPPING OVER $75</span>
+                        <div style={{ position: 'absolute', top: 0, left: '-100%', width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)', animation: 'mini-shimmer 5s ease-in-out infinite' }} />
+                      </div>
+                      {/* Hero split */}
+                      <div style={{ display: 'flex', height: 'calc(100% - 78px)' }}>
+                        {/* Left — featured product */}
+                        <div style={{ width: '45%', position: 'relative', background: 'linear-gradient(135deg, #f0e6d8 0%, #e8dcc8 40%, #ddd0ba 100%)', overflow: 'hidden' }}>
+                          {/* Product image simulation */}
+                          <div style={{ position: 'absolute', top: '15%', left: '15%', width: '70%', height: '65%', borderRadius: '10px', background: 'linear-gradient(160deg, #c4a67a 0%, #ddb88a 30%, #b8956a 60%, #d4a878 100%)', boxShadow: '0 10px 30px rgba(0,0,0,0.15)' }}>
+                            <div style={{ position: 'absolute', top: '20%', left: '20%', width: '60%', height: '50%', borderRadius: '6px', background: 'linear-gradient(145deg, rgba(255,255,255,0.15), transparent)', opacity: 0.6 }} />
+                            <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+                              <div style={{ position: 'absolute', top: 0, left: '-100%', width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)', animation: 'mini-shimmer 4s ease-in-out infinite 1s' }} />
+                            </div>
+                          </div>
+                          {/* Tag */}
+                          <div style={{ position: 'absolute', top: '8px', left: '8px', padding: '3px 8px', borderRadius: '4px', fontSize: '7px', fontWeight: 700, color: '#fff', background: '#111', letterSpacing: '0.05em' }}>FEATURED</div>
+                          {/* Bottom info overlay */}
+                          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '8px 10px', background: 'linear-gradient(to top, rgba(0,0,0,0.5), transparent)' }}>
+                            <div style={{ fontSize: '10px', fontWeight: 600, color: '#fff' }}>Artisan Candle Set</div>
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                              <span style={{ fontSize: '10px', fontWeight: 700, color: '#fff' }}>$68</span>
+                              <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.5)', textDecoration: 'line-through' }}>$95</span>
+                              <span style={{ fontSize: '7px', fontWeight: 600, color: '#fbbf24', padding: '1px 4px', borderRadius: '2px', background: 'rgba(251,191,36,0.15)' }}>-28%</span>
+                            </div>
+                          </div>
+                        </div>
+                        {/* Right — product grid */}
+                        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px', padding: '4px' }}>
                           {[
-                            { bg: 'linear-gradient(145deg, #d4c4b0 0%, #c9b99a 50%, #bfad8a 100%)', label: 'Linen Blazer', price: '$285', tag: 'New' },
-                            { bg: 'linear-gradient(145deg, #e8ddd4 0%, #ddd0c2 50%, #d4c4b0 100%)', label: 'Silk Camisole', price: '$145', tag: '' },
-                            { bg: 'linear-gradient(145deg, #c9b99a 0%, #bfad8a 50%, #b5a37a 100%)', label: 'Wide Trousers', price: '$195', tag: 'Best Seller' },
-                            { bg: 'linear-gradient(145deg, #ddd5c8 0%, #d4c8b8 50%, #cbbfad 100%)', label: 'Wrap Dress', price: '$320', tag: '' },
-                          ].map((item) => (
-                            <div key={item.label} style={{ borderRadius: '4px', overflow: 'hidden', position: 'relative' }}>
-                              <div style={{ aspectRatio: '3/4', background: item.bg, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '6px 8px' }}>
-                                {item.tag && <div style={{ position: 'absolute', top: '6px', left: '6px', padding: '2px 6px', borderRadius: '2px', fontSize: '7px', fontWeight: 600, color: '#fff', background: '#111' }}>{item.tag}</div>}
-                                <div style={{ fontSize: '9px', fontWeight: 600, color: '#3d3325' }}>{item.label}</div>
-                                <div style={{ fontSize: '9px', color: '#6b5c4c' }}>{item.price}</div>
+                            { bg: 'linear-gradient(145deg, #8b7355 0%, #a08868 50%, #7d6548 100%)', label: 'Leather Tote', price: '$128', oldPrice: '$175', tag: 'Bestseller', rating: '4.8' },
+                            { bg: 'linear-gradient(145deg, #c4b5a0 0%, #d4c5b0 50%, #b5a690 100%)', label: 'Ceramic Vase', price: '$42', oldPrice: '', tag: 'New', rating: '4.9' },
+                            { bg: 'linear-gradient(145deg, #6b8f71 0%, #7da083 50%, #5d7f64 100%)', label: 'Linen Throw', price: '$86', oldPrice: '$120', tag: '-28%', rating: '4.7' },
+                            { bg: 'linear-gradient(145deg, #9b8b7a 0%, #ac9c8b 50%, #8d7d6c 100%)', label: 'Woven Basket', price: '$54', oldPrice: '', tag: '', rating: '4.6' },
+                          ].map((item, idx) => (
+                            <div key={item.label} style={{ borderRadius: '5px', overflow: 'hidden', position: 'relative', background: '#fff', border: '1px solid rgba(0,0,0,0.05)' }}>
+                              <div style={{ aspectRatio: '1/1', background: item.bg, position: 'relative', overflow: 'hidden' }}>
+                                {/* Image reflection */}
+                                <div style={{ position: 'absolute', top: '15%', left: '15%', width: '70%', height: '60%', borderRadius: '4px', background: `linear-gradient(135deg, rgba(255,255,255,0.1), transparent)`, opacity: 0.5 }} />
+                                {item.tag && <div style={{ position: 'absolute', top: '4px', left: '4px', padding: '1px 5px', borderRadius: '2px', fontSize: '7px', fontWeight: 700, color: item.tag.startsWith('-') ? '#ef4444' : '#fff', background: item.tag.startsWith('-') ? 'rgba(239,68,68,0.1)' : '#111' }}>{item.tag}</div>}
+                                {/* Heart icon */}
+                                <div style={{ position: 'absolute', top: '4px', right: '4px', width: '16px', height: '16px', borderRadius: '50%', background: 'rgba(255,255,255,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '7px' }}>♡</div>
+                                <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+                                  <div style={{ position: 'absolute', top: 0, left: '-100%', width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)', animation: `mini-shimmer 5s ease-in-out infinite ${idx * 0.8}s` }} />
+                                </div>
+                              </div>
+                              <div style={{ padding: '4px 5px' }}>
+                                <div style={{ fontSize: '8px', fontWeight: 600, color: '#333' }}>{item.label}</div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                  <span style={{ fontSize: '9px', fontWeight: 700, color: '#111' }}>{item.price}</span>
+                                  {item.oldPrice && <span style={{ fontSize: '7px', color: '#bbb', textDecoration: 'line-through' }}>{item.oldPrice}</span>}
+                                </div>
+                                <div style={{ fontSize: '7px', color: '#f59e0b' }}>{'★'.repeat(5)} <span style={{ color: '#bbb' }}>{item.rating}</span></div>
                               </div>
                             </div>
                           ))}
                         </div>
                       </div>
-                      {/* Trust */}
-                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '6px 0', fontSize: '8px', color: '#aaa', background: '#fff', borderTop: '1px solid #eee' }}>
-                        <span>✦ Free Returns</span><span>✦ Sustainable</span><span>✦ 50K+ Customers</span><span>✦ As Seen in Vogue</span>
+                      {/* Trust bar */}
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '18px', padding: '5px 0', fontSize: '8px', color: '#999', background: '#fff', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+                        <span>🚚 Free Shipping</span><span>↩️ 30-Day Returns</span><span>🔒 Secure Checkout</span><span>⭐ 12K+ Reviews</span>
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="p-4" style={{ background: 'rgba(15,23,42,0.8)' }}>
                   <div className="flex items-center justify-between">
-                    <div><h3 className="text-sm font-semibold text-white">Maison Moda</h3><p className="text-xs text-gray-500">E-commerce · Fashion</p></div>
-                    <ArrowRight className="h-4 w-4 text-gray-600 group-hover:text-rose-400 group-hover:translate-x-1 transition-all" />
+                    <div><h3 className="text-sm font-semibold text-white">LUXE Collective</h3><p className="text-xs text-gray-500">E-commerce · Lifestyle</p></div>
+                    <ArrowRight className="h-4 w-4 text-gray-600 group-hover:text-orange-400 group-hover:translate-x-1 transition-all" />
                   </div>
                 </div>
               </div>
 
-              {/* Card 3 — Crestline Realty (Real Estate) */}
-              <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-sky-500/10 cursor-pointer">
+              {/* Card 3 — Bella Cucina (Italian Restaurant) */}
+              <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-amber-500/10 cursor-pointer">
                 <div className="relative aspect-video overflow-hidden">
                   <div className="w-[300%] h-[300%] origin-top-left pointer-events-none" style={{ transform: 'scale(0.333)' }}>
-                    <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif', background: '#0a1628' }}>
-                      {/* Cinematic bg */}
-                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '55%', background: 'linear-gradient(180deg, #162544 0%, #1a3052 30%, #0f2035 60%, #0a1628 100%)' }} />
-                      <div style={{ position: 'absolute', top: '5%', left: '50%', width: '60%', height: '40%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.12), transparent 70%)', transform: 'translateX(-50%)' }} />
+                    <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'Georgia, serif', background: '#0f0906', overflow: 'hidden' }}>
+                      {/* Warm ambient bg */}
+                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '70%', background: 'linear-gradient(160deg, #1a0f05 0%, #2a1a0a 25%, #1f1108 50%, #0f0906 100%)' }} />
+                      {/* Warm glow orb */}
+                      <div style={{ position: 'absolute', top: '10%', left: '50%', width: '200px', height: '200px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(245,158,11,0.08) 0%, rgba(217,119,6,0.04) 40%, transparent 70%)', transform: 'translateX(-50%)' }} />
+                      {/* Food photo area */}
+                      <div style={{ position: 'absolute', top: '12%', right: '3%', width: '40%', height: '52%', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}>
+                        <div style={{ width: '100%', height: '100%', background: 'linear-gradient(145deg, #4a2810 0%, #6b3a18 20%, #8b4a20 40%, #5c3015 60%, #3d2008 100%)', position: 'relative' }}>
+                          {/* Plate circle */}
+                          <div style={{ position: 'absolute', top: '15%', left: '15%', width: '70%', height: '70%', borderRadius: '50%', background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div style={{ position: 'absolute', top: '20%', left: '20%', width: '60%', height: '60%', borderRadius: '50%', background: 'radial-gradient(circle, #7a4422 0%, #5c3418 50%, #4a2810 100%)' }} />
+                          </div>
+                          {/* Steam animation */}
+                          <div style={{ position: 'absolute', top: '5%', left: '40%', fontSize: '10px', opacity: 0.4, animation: 'mini-steam 2.5s ease-out infinite' }}>~</div>
+                          <div style={{ position: 'absolute', top: '5%', left: '50%', fontSize: '10px', opacity: 0.3, animation: 'mini-steam 3s ease-out infinite 0.5s' }}>~</div>
+                          <div style={{ position: 'absolute', top: '5%', left: '55%', fontSize: '10px', opacity: 0.35, animation: 'mini-steam 2.8s ease-out infinite 1s' }}>~</div>
+                          {/* Shimmer */}
+                          <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+                            <div style={{ position: 'absolute', top: 0, left: '-100%', width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)', animation: 'mini-shimmer 5s ease-in-out infinite' }} />
+                          </div>
+                        </div>
+                      </div>
                       {/* Nav */}
-                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', background: 'rgba(10,22,40,0.8)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(59,130,246,0.1)' }}>
+                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', borderBottom: '1px solid rgba(245,158,11,0.1)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '24px', height: '24px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 900, color: '#fff', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' }}>C</div>
-                          <span style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>Crestline Realty</span>
+                          <span style={{ fontSize: '16px' }}>🍷</span>
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: 700, color: '#f5deb3', fontStyle: 'italic', letterSpacing: '0.02em' }}>Bella Cucina</div>
+                            <div style={{ fontSize: '6px', color: 'rgba(245,222,179,0.4)', textTransform: 'uppercase', letterSpacing: '0.25em', fontFamily: 'system-ui, sans-serif' }}>Ristorante Italiano</div>
+                          </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '18px', fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}>
-                          <span style={{ color: '#60a5fa' }}>Listings</span><span>Buy</span><span>Sell</span><span>Agents</span><span>Contact</span>
+                        <div style={{ display: 'flex', gap: '18px', fontSize: '11px', color: 'rgba(245,222,179,0.35)', fontWeight: 500, fontFamily: 'system-ui, sans-serif' }}>
+                          <span style={{ color: '#f59e0b' }}>Home</span><span>Menu</span><span>Reservations</span><span>Events</span><span>Gallery</span>
                         </div>
-                        <div style={{ padding: '5px 14px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, color: '#fff', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', boxShadow: '0 2px 8px rgba(59,130,246,0.3)' }}>List My Home</div>
+                        <div style={{ padding: '5px 14px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, color: '#fff', background: 'linear-gradient(135deg, #b45309, #92400e)', boxShadow: '0 2px 10px rgba(180,83,9,0.3)', fontFamily: 'system-ui, sans-serif' }}>Reserve Table</div>
                       </div>
                       {/* Hero */}
-                      <div style={{ position: 'relative', padding: '20px 32px 0' }}>
-                        <div style={{ fontSize: '8px', color: '#60a5fa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '6px' }}>✦ Los Angeles Luxury Real Estate</div>
-                        <div style={{ fontSize: '32px', fontWeight: 700, color: '#fff', lineHeight: 1.1, marginBottom: '8px' }}>Find Your<br/><span style={{ color: '#60a5fa' }}>Dream Home</span></div>
-                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', marginBottom: '12px', maxWidth: '360px', lineHeight: 1.5 }}>Luxury properties across Beverly Hills, Malibu, Santa Monica & more.</div>
-                        {/* Search */}
-                        <div style={{ display: 'flex', alignItems: 'center', borderRadius: '6px', padding: '4px', marginBottom: '14px', maxWidth: '460px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(59,130,246,0.15)' }}>
-                          <div style={{ flex: 1, padding: '0 8px', fontSize: '10px', color: 'rgba(255,255,255,0.3)' }}>Search by city, ZIP, or address...</div>
-                          <div style={{ display: 'flex', gap: '3px' }}>
-                            <div style={{ padding: '4px 8px', borderRadius: '3px', fontSize: '9px', fontWeight: 600, color: '#fff', background: 'rgba(59,130,246,0.2)', border: '1px solid rgba(59,130,246,0.3)' }}>Buy</div>
-                            <div style={{ padding: '4px 8px', borderRadius: '3px', fontSize: '9px', color: 'rgba(255,255,255,0.3)' }}>Rent</div>
-                            <div style={{ padding: '4px 12px', borderRadius: '3px', fontSize: '9px', fontWeight: 700, color: '#fff', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' }}>Search</div>
+                      <div style={{ position: 'relative', padding: '18px 32px 0' }}>
+                        <div style={{ fontSize: '8px', color: '#f59e0b', fontWeight: 500, letterSpacing: '0.2em', marginBottom: '8px', fontFamily: 'system-ui, sans-serif' }}>✦ AUTHENTIC ITALIAN CUISINE · EST. 2018</div>
+                        <div style={{ fontSize: '34px', fontWeight: 700, color: '#f5deb3', lineHeight: 1.1, marginBottom: '6px', fontStyle: 'italic' }}>A Taste of<br/><span style={{ color: '#f59e0b' }}>Italy</span></div>
+                        <div style={{ fontSize: '11px', color: 'rgba(245,222,179,0.4)', lineHeight: 1.6, marginBottom: '12px', maxWidth: '300px', fontFamily: 'system-ui, sans-serif' }}>Hand-made pasta, wood-fired pizza, and fine wines in an intimate setting in the heart of downtown.</div>
+                        <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+                          <div style={{ padding: '7px 16px', borderRadius: '4px', fontSize: '10px', fontWeight: 700, color: '#fff', background: 'linear-gradient(135deg, #b45309, #92400e)', boxShadow: '0 3px 12px rgba(180,83,9,0.35)', fontFamily: 'system-ui, sans-serif', position: 'relative', overflow: 'hidden' }}>
+                            Make Reservation
+                            <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}><div style={{ position: 'absolute', top: 0, left: '-100%', width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)', animation: 'mini-shimmer 3s ease-in-out infinite' }} /></div>
                           </div>
+                          <div style={{ padding: '7px 14px', borderRadius: '4px', fontSize: '10px', color: 'rgba(245,222,179,0.5)', border: '1px solid rgba(245,222,179,0.15)', fontFamily: 'system-ui, sans-serif' }}>View Menu</div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px', fontSize: '9px', color: 'rgba(245,222,179,0.3)', fontFamily: 'system-ui, sans-serif' }}>
+                          <span>★★★★★ <span style={{ color: '#f59e0b' }}>4.8</span> (1,200+)</span><span>·</span><span>📍 Nashville, TN</span><span>·</span><span style={{ animation: 'mini-pulse 2s ease-in-out infinite', color: '#22c55e' }}>● Open Tonight</span>
                         </div>
                       </div>
-                      {/* Property cards with rich gradients */}
-                      <div style={{ position: 'relative', display: 'flex', gap: '6px', padding: '0 32px' }}>
+                      {/* Menu preview cards */}
+                      <div style={{ position: 'relative', display: 'flex', gap: '5px', padding: '10px 32px 0' }}>
                         {[
-                          { price: '$2.45M', area: 'Beverly Hills', beds: '4 bd · 3 ba', bg: 'linear-gradient(135deg, #1e3a5f 0%, #2a4a6f 50%, #1a3050 100%)' },
-                          { price: '$1.87M', area: 'Santa Monica', beds: '3 bd · 2 ba', bg: 'linear-gradient(135deg, #1c2d4a 0%, #24405e 50%, #182840 100%)' },
-                          { price: '$3.10M', area: 'Malibu', beds: '5 bd · 4 ba', bg: 'linear-gradient(135deg, #1a3340 0%, #224555 50%, #162d3a 100%)' },
-                          { price: '$1.25M', area: 'Venice', beds: '2 bd · 2 ba', bg: 'linear-gradient(135deg, #1a2844 0%, #223858 50%, #16223a 100%)' },
-                        ].map((p) => (
-                          <div key={p.area} style={{ flex: 1, borderRadius: '5px', overflow: 'hidden', border: '1px solid rgba(59,130,246,0.1)', background: 'rgba(255,255,255,0.02)' }}>
-                            <div style={{ height: '56px', background: p.bg, position: 'relative' }}>
-                              <div style={{ position: 'absolute', bottom: '4px', left: '6px', padding: '1px 5px', borderRadius: '2px', fontSize: '7px', fontWeight: 600, color: '#fff', background: 'rgba(0,0,0,0.5)' }}>📷 12</div>
+                          { name: 'Truffle Risotto', price: '$28', desc: 'Arborio, porcini, shaved truffle', icon: '🍄' },
+                          { name: 'Margherita DOP', price: '$22', desc: 'San Marzano, fior di latte', icon: '🍕' },
+                          { name: 'Osso Buco', price: '$38', desc: 'Braised veal, gremolata', icon: '🥩' },
+                          { name: 'Tiramisu', price: '$14', desc: 'Espresso, mascarpone', icon: '🍰' },
+                        ].map((item, i) => (
+                          <div key={item.name} style={{ flex: 1, padding: '7px 6px', borderRadius: '6px', background: 'rgba(245,158,11,0.04)', border: '1px solid rgba(245,158,11,0.08)', animation: `mini-float 3s ease-in-out infinite ${i * 0.4}s` }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                              <span style={{ fontSize: '12px' }}>{item.icon}</span>
+                              <span style={{ fontSize: '10px', fontWeight: 700, color: '#f59e0b', fontFamily: 'system-ui' }}>{item.price}</span>
                             </div>
-                            <div style={{ padding: '5px 6px' }}>
-                              <div style={{ fontSize: '11px', fontWeight: 700, color: '#fff' }}>{p.price}</div>
-                              <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', marginTop: '1px' }}>{p.beds}</div>
-                              <div style={{ fontSize: '8px', color: '#60a5fa', marginTop: '1px' }}>{p.area}</div>
-                            </div>
+                            <div style={{ fontSize: '9px', color: '#f5deb3', fontWeight: 600, fontFamily: 'system-ui' }}>{item.name}</div>
+                            <div style={{ fontSize: '7px', color: 'rgba(245,222,179,0.3)', fontFamily: 'system-ui', lineHeight: 1.3 }}>{item.desc}</div>
                           </div>
                         ))}
                       </div>
-                      {/* Stats bar */}
-                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '24px', padding: '7px 0', background: 'linear-gradient(to top, rgba(10,22,40,0.95), rgba(10,22,40,0.7))' }}>
-                        {[{ val: '$2.8B+', label: 'in Sales' }, { val: '500+', label: 'Homes Sold' }, { val: 'Top 1%', label: 'LA Agents' }].map((s) => (
-                          <div key={s.label} style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '11px', fontWeight: 700, color: '#60a5fa' }}>{s.val}</div>
-                            <div style={{ fontSize: '7px', color: 'rgba(255,255,255,0.3)' }}>{s.label}</div>
-                          </div>
-                        ))}
+                      {/* Bottom bar */}
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '7px 0', fontSize: '8px', color: 'rgba(245,222,179,0.25)', background: 'linear-gradient(to top, rgba(15,9,6,0.95), rgba(15,9,6,0.5))', fontFamily: 'system-ui, sans-serif' }}>
+                        <span>🕕 Tue-Sun 5-11pm</span><span>·</span><span>📞 (615) 555-0142</span><span>·</span><span>Private Events Available</span>
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="p-4" style={{ background: 'rgba(15,23,42,0.8)' }}>
                   <div className="flex items-center justify-between">
-                    <div><h3 className="text-sm font-semibold text-white">Crestline Realty</h3><p className="text-xs text-gray-500">Real Estate · Los Angeles</p></div>
-                    <ArrowRight className="h-4 w-4 text-gray-600 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
+                    <div><h3 className="text-sm font-semibold text-white">Bella Cucina</h3><p className="text-xs text-gray-500">Restaurant · Nashville, TN</p></div>
+                    <ArrowRight className="h-4 w-4 text-gray-600 group-hover:text-amber-400 group-hover:translate-x-1 transition-all" />
                   </div>
                 </div>
               </div>
