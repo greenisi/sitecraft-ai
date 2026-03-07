@@ -428,9 +428,9 @@ export default function HomePage() {
               </div>
 
               {/* Split view: Chat + Website Preview */}
-              <div className="flex h-[350px] sm:h-[480px]">
-                {/* Chat panel — hidden on mobile for better layout */}
-                <div className="hidden sm:flex w-[300px] border-r border-white/5 flex-col" style={{ background: 'rgba(8,12,24,0.9)' }}>
+              <div className="flex flex-col sm:flex-row h-[600px] sm:h-[480px]">
+                {/* Chat panel */}
+                <div className="flex w-full sm:w-[300px] h-[250px] sm:h-auto border-b sm:border-b-0 sm:border-r border-white/5 flex-col" style={{ background: 'rgba(8,12,24,0.9)' }}>
                   <div className="px-3 py-2.5 border-b border-white/5">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7)' }}>
@@ -506,18 +506,15 @@ export default function HomePage() {
                 {/* Website preview — rich spa with real photos */}
                 <div className="flex-1 relative overflow-hidden" style={{ background: '#f0f7f4' }}>
                   {/* Nav */}
-                  <div className="flex items-center justify-between px-4 sm:px-8 py-2 sm:py-2.5" style={{ background: '#fff', borderBottom: '1px solid #e8efe8' }}>
+                  <div className="flex items-center justify-between px-3 sm:px-8 py-2 sm:py-2.5" style={{ background: '#fff', borderBottom: '1px solid #e8efe8' }}>
                     <div className="flex items-center gap-1.5 sm:gap-2">
                       <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full" style={{ background: 'linear-gradient(135deg, #86efac, #34d399)' }} />
-                      <span className="text-[#2d3c2f] text-[11px] sm:text-sm font-semibold tracking-wide">Bloom Wellness</span>
+                      <span className="text-[#2d3c2f] text-[10px] sm:text-sm font-semibold tracking-wide">Bloom Wellness</span>
                     </div>
                     <div className="hidden sm:flex gap-5 text-[10px] text-[#8a9e8f] font-medium tracking-wider uppercase">
                       <span className="text-[#2d3c2f] font-semibold">Home</span><span>Services</span><span>Pricing</span><span>Book</span><span>Contact</span>
                     </div>
-                    <div className="flex gap-3 sm:gap-4 text-[8px] sm:hidden text-[#8a9e8f] font-medium tracking-wider uppercase">
-                      <span className="text-[#2d3c2f] font-semibold">Home</span><span>Services</span><span>Pricing</span><span>Book</span>
-                    </div>
-                    <div className="px-2 sm:px-3 py-1 rounded-md text-[9px] sm:text-[10px] font-semibold text-white" style={{ background: '#6b9e7a' }}>Book Now</div>
+                    <div className="px-2 sm:px-3 py-1 rounded-md text-[8px] sm:text-[10px] font-semibold text-white" style={{ background: '#6b9e7a' }}>Book Now</div>
                   </div>
 
                   {/* Hero with real photo background */}
