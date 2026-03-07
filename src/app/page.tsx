@@ -760,70 +760,79 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Card 3 — Bella Cucina (Italian Restaurant) */}
+              {/* Card 3 — Bella Cucina (Italian Restaurant) — SPLIT LAYOUT: text left, photo mosaic right */}
               <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-amber-500/10 cursor-pointer">
                 <div className="relative aspect-video overflow-hidden">
                   <div className="w-[300%] h-[300%] origin-top-left pointer-events-none" style={{ transform: 'scale(0.333)' }}>
-                    <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'Georgia, serif', background: '#0f0906', overflow: 'hidden' }}>
-                      {/* Full-bleed restaurant hero photo */}
-                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '72%' }}>
-                        <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=80" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.4) 45%, transparent 75%)' }} />
-                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(to top, #0f0906, transparent)' }} />
-                      </div>
-                      {/* Nav */}
-                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', background: 'rgba(15,9,6,0.5)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(245,158,11,0.12)' }}>
+                    <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'Georgia, serif', background: '#faf6f0', overflow: 'hidden' }}>
+                      {/* Nav — warm cream/elegant */}
+                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', background: '#fff', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span style={{ fontSize: '16px' }}>🍷</span>
                           <div>
-                            <div style={{ fontSize: '14px', fontWeight: 700, color: '#f5deb3', fontStyle: 'italic', letterSpacing: '0.02em' }}>Bella Cucina</div>
-                            <div style={{ fontSize: '6px', color: 'rgba(245,222,179,0.4)', textTransform: 'uppercase', letterSpacing: '0.25em', fontFamily: 'system-ui, sans-serif' }}>Ristorante Italiano</div>
+                            <div style={{ fontSize: '14px', fontWeight: 700, color: '#2c1810', fontStyle: 'italic', letterSpacing: '0.02em' }}>Bella Cucina</div>
+                            <div style={{ fontSize: '6px', color: '#a08060', textTransform: 'uppercase', letterSpacing: '0.25em', fontFamily: 'system-ui, sans-serif' }}>Ristorante Italiano · Est. 2018</div>
                           </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '18px', fontSize: '11px', color: 'rgba(245,222,179,0.4)', fontWeight: 500, fontFamily: 'system-ui, sans-serif' }}>
-                          <span style={{ color: '#f59e0b' }}>Home</span><span>Menu</span><span>Reservations</span><span>Events</span><span>Gallery</span>
+                        <div style={{ display: 'flex', gap: '18px', fontSize: '11px', color: '#999', fontWeight: 500, fontFamily: 'system-ui, sans-serif' }}>
+                          <span style={{ color: '#2c1810', fontWeight: 600 }}>Home</span><span>Menu</span><span>Reservations</span><span>Events</span><span>Gallery</span>
                         </div>
-                        <div style={{ padding: '5px 14px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, color: '#fff', background: 'linear-gradient(135deg, #b45309, #92400e)', boxShadow: '0 2px 10px rgba(180,83,9,0.3)', fontFamily: 'system-ui, sans-serif' }}>Reserve Table</div>
+                        <div style={{ padding: '5px 14px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, color: '#fff', background: '#2c1810', boxShadow: '0 2px 8px rgba(44,24,16,0.2)', fontFamily: 'system-ui, sans-serif' }}>Reserve Table</div>
                       </div>
-                      {/* Hero content over photo */}
-                      <div style={{ position: 'relative', padding: '18px 32px 0' }}>
-                        <div style={{ fontSize: '8px', color: '#f59e0b', fontWeight: 500, letterSpacing: '0.2em', marginBottom: '8px', fontFamily: 'system-ui, sans-serif' }}>✦ AUTHENTIC ITALIAN CUISINE · EST. 2018</div>
-                        <div style={{ fontSize: '34px', fontWeight: 700, color: '#f5deb3', lineHeight: 1.1, marginBottom: '6px', fontStyle: 'italic', textShadow: '0 2px 20px rgba(0,0,0,0.5)' }}>A Taste of<br/><span style={{ color: '#f59e0b' }}>Italy</span></div>
-                        <div style={{ fontSize: '11px', color: 'rgba(245,222,179,0.6)', lineHeight: 1.6, marginBottom: '12px', maxWidth: '300px', fontFamily: 'system-ui, sans-serif', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>Hand-made pasta, wood-fired pizza, and fine wines in an intimate setting in the heart of downtown.</div>
-                        <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
-                          <div style={{ padding: '7px 16px', borderRadius: '4px', fontSize: '10px', fontWeight: 700, color: '#fff', background: 'linear-gradient(135deg, #b45309, #92400e)', boxShadow: '0 3px 12px rgba(180,83,9,0.35)', fontFamily: 'system-ui, sans-serif', position: 'relative', overflow: 'hidden' }}>
-                            Make Reservation
-                            <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}><div style={{ position: 'absolute', top: 0, left: '-100%', width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)', animation: 'mini-shimmer 3s ease-in-out infinite' }} /></div>
+                      {/* Split hero: text left, photo mosaic right */}
+                      <div style={{ display: 'flex', height: 'calc(100% - 42px)' }}>
+                        {/* Left — elegant text content */}
+                        <div style={{ width: '42%', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 28px 0 32px' }}>
+                          <div style={{ fontSize: '8px', color: '#b45309', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '8px', fontFamily: 'system-ui, sans-serif' }}>✦ Nashville, TN</div>
+                          <div style={{ fontSize: '34px', fontWeight: 700, color: '#2c1810', lineHeight: 1.1, marginBottom: '8px', fontStyle: 'italic' }}>A Taste of<br/><span style={{ color: '#b45309' }}>Italy</span></div>
+                          <div style={{ fontSize: '11px', color: '#8a7a6a', lineHeight: 1.6, marginBottom: '14px', fontFamily: 'system-ui, sans-serif' }}>Hand-made pasta, wood-fired pizza, and fine wines in an intimate downtown setting.</div>
+                          <div style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
+                            <div style={{ padding: '7px 16px', borderRadius: '20px', fontSize: '10px', fontWeight: 700, color: '#fff', background: '#2c1810', fontFamily: 'system-ui, sans-serif', position: 'relative', overflow: 'hidden' }}>
+                              Reserve a Table →
+                              <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}><div style={{ position: 'absolute', top: 0, left: '-100%', width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)', animation: 'mini-shimmer 3s ease-in-out infinite' }} /></div>
+                            </div>
+                            <div style={{ padding: '7px 14px', borderRadius: '20px', fontSize: '10px', color: '#8a7a6a', border: '1px solid #ddd', fontFamily: 'system-ui, sans-serif' }}>Our Menu</div>
                           </div>
-                          <div style={{ padding: '7px 14px', borderRadius: '4px', fontSize: '10px', color: 'rgba(245,222,179,0.7)', border: '1px solid rgba(245,222,179,0.2)', fontFamily: 'system-ui, sans-serif', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(4px)' }}>View Menu</div>
+                          <div style={{ display: 'flex', gap: '8px', fontSize: '9px', color: '#aaa', fontFamily: 'system-ui, sans-serif' }}>
+                            <span style={{ color: '#f59e0b' }}>★★★★★</span> <span>4.8 (1,200+)</span>
+                          </div>
+                          {/* Hours card */}
+                          <div style={{ marginTop: '12px', padding: '8px 10px', borderRadius: '6px', background: 'rgba(44,24,16,0.04)', border: '1px solid rgba(44,24,16,0.08)', fontFamily: 'system-ui, sans-serif' }}>
+                            <div style={{ fontSize: '8px', fontWeight: 600, color: '#2c1810', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '3px' }}>Hours</div>
+                            <div style={{ fontSize: '8px', color: '#8a7a6a', lineHeight: 1.5 }}>Tue–Thu 5–10pm · Fri–Sat 5–11pm · Sun 4–9pm</div>
+                            <div style={{ fontSize: '8px', color: '#22c55e', fontWeight: 600, marginTop: '2px', animation: 'mini-pulse 2s ease-in-out infinite' }}>● Open Tonight</div>
+                          </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '10px', fontSize: '9px', color: 'rgba(245,222,179,0.4)', fontFamily: 'system-ui, sans-serif' }}>
-                          <span>★★★★★ <span style={{ color: '#f59e0b' }}>4.8</span> (1,200+)</span><span>·</span><span>📍 Nashville, TN</span><span>·</span><span style={{ animation: 'mini-pulse 2s ease-in-out infinite', color: '#22c55e' }}>● Open Tonight</span>
-                        </div>
-                      </div>
-                      {/* Menu items with food photos */}
-                      <div style={{ position: 'relative', display: 'flex', gap: '5px', padding: '12px 32px 0' }}>
-                        {[
-                          { src: 'https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=400&q=80', name: 'Truffle Risotto', price: '$28' },
-                          { src: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400&q=80', name: 'Margherita DOP', price: '$22' },
-                          { src: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&q=80', name: 'Osso Buco', price: '$38' },
-                          { src: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400&q=80', name: 'Tiramisu', price: '$14' },
-                        ].map((item, i) => (
-                          <div key={item.name} style={{ flex: 1, borderRadius: '6px', overflow: 'hidden', border: '1px solid rgba(245,158,11,0.1)', animation: `mini-float 3s ease-in-out infinite ${i * 0.4}s` }}>
-                            <div style={{ height: '48px', position: 'relative', overflow: 'hidden' }}>
+                        {/* Right — photo mosaic grid */}
+                        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1.2fr 0.8fr 0.8fr', gap: '3px', padding: '6px 6px 6px 0' }}>
+                          {/* Large hero food photo spanning 2 cols */}
+                          <div style={{ gridColumn: '1 / -1', borderRadius: '6px', overflow: 'hidden', position: 'relative' }}>
+                            <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '8px 10px', background: 'linear-gradient(to top, rgba(0,0,0,0.6), transparent)' }}>
+                              <div style={{ fontSize: '10px', fontWeight: 600, color: '#fff', fontFamily: 'system-ui' }}>Chef&apos;s Tasting Menu</div>
+                              <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.6)', fontFamily: 'system-ui' }}>5-course seasonal experience · $85/person</div>
+                            </div>
+                          </div>
+                          {/* 4 smaller food photos */}
+                          {[
+                            { src: 'https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=400&q=80', name: 'Truffle Risotto', price: '$28' },
+                            { src: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400&q=80', name: 'Margherita DOP', price: '$22' },
+                            { src: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&q=80', name: 'Osso Buco', price: '$38' },
+                            { src: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400&q=80', name: 'Tiramisu', price: '$14' },
+                          ].map((item) => (
+                            <div key={item.name} style={{ borderRadius: '5px', overflow: 'hidden', position: 'relative' }}>
                               <img src={item.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.5), transparent)' }} />
+                              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '4px 6px', background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)' }}>
+                                <div style={{ fontSize: '8px', fontWeight: 600, color: '#fff', fontFamily: 'system-ui' }}>{item.name}</div>
+                                <div style={{ fontSize: '8px', fontWeight: 700, color: '#fbbf24', fontFamily: 'system-ui' }}>{item.price}</div>
+                              </div>
                             </div>
-                            <div style={{ padding: '4px 6px', background: 'rgba(15,9,6,0.9)' }}>
-                              <div style={{ fontSize: '9px', color: '#f5deb3', fontWeight: 600, fontFamily: 'system-ui' }}>{item.name}</div>
-                              <div style={{ fontSize: '9px', fontWeight: 700, color: '#f59e0b', fontFamily: 'system-ui' }}>{item.price}</div>
-                            </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
                       {/* Bottom bar */}
-                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '7px 0', fontSize: '8px', color: 'rgba(245,222,179,0.25)', background: 'linear-gradient(to top, rgba(15,9,6,0.95), rgba(15,9,6,0.5))', fontFamily: 'system-ui, sans-serif' }}>
-                        <span>🕕 Tue-Sun 5-11pm</span><span>·</span><span>📞 (615) 555-0142</span><span>·</span><span>Private Events Available</span>
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '6px 0', fontSize: '8px', color: '#bbb', background: '#fff', borderTop: '1px solid rgba(0,0,0,0.05)', fontFamily: 'system-ui, sans-serif' }}>
+                        <span>📍 Downtown Nashville</span><span>·</span><span>📞 (615) 555-0142</span><span>·</span><span>Private Dining Available</span><span>·</span><span>🍷 Full Bar</span>
                       </div>
                     </div>
                   </div>
