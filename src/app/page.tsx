@@ -286,7 +286,6 @@ export default function HomePage() {
 
       {/* HERO */}
       <section ref={hero.ref} className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-32 sm:pt-40 md:pt-48 pb-24">
-        {hero.inView && (<>
           <div className="anim-up inline-flex items-center gap-2 px-4 py-2 rounded-full border border-violet-500/30 mb-8" style={{ background: 'rgba(139,92,246,0.08)' }}>
             <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" /></span>
             <span className="text-sm text-gray-300 font-medium">Now in Public Beta &mdash; Join 500+ builders</span>
@@ -506,7 +505,6 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-        </>)}
       </section>
 
       {/* SOCIAL PROOF */}
