@@ -593,57 +593,53 @@ export default function HomePage() {
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 anim-up-1">
 
-              {/* Card 1 — The Copper Cut (Barbershop / Local Service) */}
+              {/* Card 1 — The Copper Cut (Barbershop) */}
               <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-amber-500/10 cursor-pointer">
-                <div className="relative aspect-video overflow-hidden" style={{ background: '#0f0e0c' }}>
+                <div className="relative aspect-video overflow-hidden">
                   <div className="w-[300%] h-[300%] origin-top-left pointer-events-none" style={{ transform: 'scale(0.333)' }}>
-                    <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif' }}>
-                      <div style={{ position: 'absolute', width: '500px', height: '400px', borderRadius: '50%', opacity: 0.08, top: '-80px', right: '40px', background: 'radial-gradient(circle, #d97706, transparent 70%)' }} />
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif', background: '#0f0e0c' }}>
+                      {/* Full-width hero background */}
+                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '70%', background: 'linear-gradient(135deg, #1a1510 0%, #2a1f10 30%, #1c1508 60%, #0f0e0c 100%)' }} />
+                      <div style={{ position: 'absolute', top: '10%', right: '5%', width: '35%', height: '55%', borderRadius: '12px', background: 'linear-gradient(145deg, #3d2b14 0%, #5c3d1a 40%, #2a1d0e 100%)', opacity: 0.5 }} />
+                      <div style={{ position: 'absolute', top: '15%', right: '8%', width: '30%', height: '45%', borderRadius: '10px', background: 'linear-gradient(160deg, #4a3520 0%, #6b4c28 50%, #3d2b14 100%)', opacity: 0.4 }} />
+                      {/* Nav */}
+                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', background: 'rgba(15,14,12,0.85)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(217,119,6,0.15)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '26px', height: '26px', borderRadius: '50%', border: '1.5px solid rgba(217,119,6,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 700, color: '#d97706' }}>TC</div>
-                          <span style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.02em' }}>The Copper Cut</span>
+                          <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: 'linear-gradient(135deg, #d97706, #b45309)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 700, color: '#fff' }}>TC</div>
+                          <span style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>The Copper Cut</span>
                         </div>
                         <div style={{ display: 'flex', gap: '20px', fontSize: '11px', color: 'rgba(255,255,255,0.35)', fontWeight: 500 }}>
-                          <span style={{ color: 'rgba(255,255,255,0.6)' }}>Home</span><span>Services</span><span>Gallery</span><span>Reviews</span><span>Contact</span>
+                          <span style={{ color: '#d97706' }}>Home</span><span>Services</span><span>Gallery</span><span>Reviews</span><span>Contact</span>
                         </div>
-                        <div style={{ padding: '5px 14px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, color: '#451a03', background: '#d97706' }}>Book Now</div>
+                        <div style={{ padding: '5px 14px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, color: '#fff', background: 'linear-gradient(135deg, #d97706, #b45309)' }}>Book Now</div>
                       </div>
-                      <div style={{ padding: '28px 32px 0' }}>
-                        <div style={{ display: 'flex', gap: '28px' }}>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: '9px', color: 'rgba(217,119,6,0.6)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '8px' }}>Est. 2019 · Austin, TX</div>
-                            <div style={{ fontSize: '36px', fontWeight: 700, color: 'rgba(255,255,255,0.95)', lineHeight: 1.1, letterSpacing: '-0.02em', marginBottom: '10px' }}>Where Style<br/>Meets <span style={{ color: '#d97706' }}>Craft</span></div>
-                            <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.3)', lineHeight: 1.6, marginBottom: '20px', maxWidth: '360px' }}>Classic cuts, hot towel shaves, and grooming done right. Walk-ins welcome, appointments preferred.</div>
-                            <div style={{ display: 'flex', gap: '8px' }}>
-                              <div style={{ padding: '7px 16px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, color: '#451a03', background: '#d97706' }}>Book Appointment</div>
-                              <div style={{ padding: '7px 16px', borderRadius: '4px', fontSize: '11px', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)' }}>View Pricing</div>
-                            </div>
-                          </div>
-                          <div style={{ width: '160px', flexShrink: 0, display: 'flex', flexDirection: 'column', borderRadius: '8px', padding: '14px', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
-                            <div style={{ fontSize: '8px', fontWeight: 600, color: 'rgba(217,119,6,0.7)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '10px' }}>Hours</div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '10px' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: 'rgba(255,255,255,0.3)' }}>Mon-Fri</span><span style={{ color: 'rgba(255,255,255,0.5)' }}>9-7</span></div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: 'rgba(255,255,255,0.3)' }}>Saturday</span><span style={{ color: 'rgba(255,255,255,0.5)' }}>8-5</span></div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: 'rgba(255,255,255,0.3)' }}>Sunday</span><span style={{ color: 'rgba(255,255,255,0.4)' }}>Closed</span></div>
-                            </div>
-                            <div style={{ marginTop: 'auto', paddingTop: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} />
-                              <span style={{ fontSize: '9px', color: 'rgba(74,222,128,0.7)', fontWeight: 500 }}>Open Now</span>
-                            </div>
-                          </div>
+                      {/* Hero content over background */}
+                      <div style={{ position: 'relative', padding: '24px 32px 0' }}>
+                        <div style={{ fontSize: '8px', color: '#d97706', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '8px' }}>✦ Premium Barbershop · Austin, TX</div>
+                        <div style={{ fontSize: '34px', fontWeight: 700, color: '#fff', lineHeight: 1.1, marginBottom: '8px' }}>Where Style<br/>Meets <span style={{ color: '#d97706' }}>Craft</span></div>
+                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.5, marginBottom: '14px', maxWidth: '320px' }}>Classic cuts, hot towel shaves, and grooming done right. Walk-ins welcome.</div>
+                        <div style={{ display: 'flex', gap: '6px', marginBottom: '16px' }}>
+                          <div style={{ padding: '6px 14px', borderRadius: '4px', fontSize: '10px', fontWeight: 600, color: '#fff', background: 'linear-gradient(135deg, #d97706, #b45309)', boxShadow: '0 2px 8px rgba(217,119,6,0.3)' }}>Book Appointment →</div>
+                          <div style={{ padding: '6px 14px', borderRadius: '4px', fontSize: '10px', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)' }}>View Pricing</div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px', fontSize: '9px', color: 'rgba(255,255,255,0.3)', marginBottom: '14px' }}>
+                          <span>★★★★★ <span style={{ color: 'rgba(255,255,255,0.5)' }}>4.9</span> (380+)</span>
+                          <span>·</span><span style={{ color: '#22c55e' }}>● Open Now</span>
                         </div>
                       </div>
-                      <div style={{ display: 'flex', gap: '8px', padding: '20px 32px 0' }}>
-                        {[{ name: 'Classic Cut', price: '$35' }, { name: 'Beard Trim', price: '$20' }, { name: 'Hot Shave', price: '$45' }, { name: 'The Works', price: '$65' }].map((s) => (
-                          <div key={s.name} style={{ flex: 1, padding: '8px 10px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
-                            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)' }}>{s.name}</div>
-                            <div style={{ fontSize: '13px', fontWeight: 700, color: '#d97706', marginTop: '2px' }}>{s.price}</div>
+                      {/* Services row */}
+                      <div style={{ position: 'relative', display: 'flex', gap: '6px', padding: '0 32px' }}>
+                        {[{ name: 'Classic Cut', price: '$35', icon: '✂' }, { name: 'Hot Shave', price: '$45', icon: '🪒' }, { name: 'Beard Trim', price: '$20', icon: '✦' }, { name: 'The Works', price: '$65', icon: '👑' }].map((s) => (
+                          <div key={s.name} style={{ flex: 1, padding: '8px', borderRadius: '6px', background: 'rgba(217,119,6,0.06)', border: '1px solid rgba(217,119,6,0.12)' }}>
+                            <div style={{ fontSize: '10px', marginBottom: '3px' }}>{s.icon}</div>
+                            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>{s.name}</div>
+                            <div style={{ fontSize: '12px', fontWeight: 700, color: '#d97706' }}>{s.price}</div>
                           </div>
                         ))}
                       </div>
-                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '24px', padding: '8px 0', fontSize: '10px', color: 'rgba(255,255,255,0.2)', fontWeight: 500, background: 'rgba(0,0,0,0.4)' }}>
-                        <span>★★★★★ 4.9 on Google</span><span>·</span><span>1,200+ Happy Clients</span><span>·</span><span>Walk-ins Welcome</span>
+                      {/* Bottom bar */}
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '7px 0', fontSize: '9px', color: 'rgba(255,255,255,0.25)', background: 'linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0.2))' }}>
+                        <span>📍 Downtown Austin</span><span>·</span><span>1,200+ Clients</span><span>·</span><span>Walk-ins Welcome</span>
                       </div>
                     </div>
                   </div>
@@ -658,44 +654,53 @@ export default function HomePage() {
 
               {/* Card 2 — Maison Moda (E-commerce Fashion) */}
               <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-rose-500/10 cursor-pointer">
-                <div className="relative aspect-video overflow-hidden" style={{ background: '#faf7f5' }}>
+                <div className="relative aspect-video overflow-hidden">
                   <div className="w-[300%] h-[300%] origin-top-left pointer-events-none" style={{ transform: 'scale(0.333)' }}>
-                    <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-                        <span style={{ fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#171717' }}>Maison Moda</span>
-                        <div style={{ display: 'flex', gap: '20px', fontSize: '11px', color: '#a3a3a3', fontWeight: 500 }}>
-                          <span style={{ color: '#404040' }}>New In</span><span>Women</span><span>Men</span><span>Accessories</span><span>Sale</span>
+                    <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif', background: '#f8f5f1' }}>
+                      {/* Nav */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', background: '#fff', borderBottom: '1px solid #eee' }}>
+                        <span style={{ fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#111' }}>Maison Moda</span>
+                        <div style={{ display: 'flex', gap: '18px', fontSize: '11px', color: '#888', fontWeight: 500 }}>
+                          <span style={{ color: '#111', borderBottom: '1.5px solid #111', paddingBottom: '2px' }}>New In</span><span>Women</span><span>Men</span><span>Accessories</span><span style={{ color: '#dc2626' }}>Sale</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '11px', color: '#737373' }}>
-                          <span>Search</span><span>Account</span><span style={{ fontWeight: 600, color: '#262626' }}>Bag (2)</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '11px', color: '#666' }}>
+                          <span>🔍</span><span>♡</span><span style={{ fontWeight: 600, color: '#111' }}>Bag (2)</span>
                         </div>
                       </div>
-                      <div style={{ textAlign: 'center', padding: '5px 0', fontSize: '9px', fontWeight: 500, letterSpacing: '0.12em', color: '#fff', background: '#1a1a1a' }}>FREE SHIPPING ON ORDERS OVER $150 — USE CODE: STYLE150</div>
-                      <div style={{ display: 'flex' }}>
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '28px', textAlign: 'center' }}>
-                          <div style={{ fontSize: '9px', color: '#a3a3a3', textTransform: 'uppercase', letterSpacing: '0.18em', marginBottom: '10px' }}>Summer &apos;26 Collection</div>
-                          <div style={{ fontSize: '36px', fontWeight: 300, color: '#171717', lineHeight: 1.15, marginBottom: '8px' }}>Effortless<br/><span style={{ fontWeight: 600 }}>Elegance</span></div>
-                          <div style={{ fontSize: '12px', color: '#a3a3a3', marginBottom: '18px', maxWidth: '260px' }}>Timeless pieces for the modern wardrobe. Sustainable fabrics, impeccable fit.</div>
-                          <div style={{ padding: '8px 22px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, color: '#fff', background: '#1a1a1a' }}>Shop Collection</div>
+                      {/* Promo */}
+                      <div style={{ textAlign: 'center', padding: '4px 0', fontSize: '9px', fontWeight: 500, letterSpacing: '0.1em', color: '#fff', background: '#111' }}>FREE SHIPPING ON ORDERS OVER $150 — USE CODE: STYLE150</div>
+                      {/* Hero with large visual */}
+                      <div style={{ display: 'flex', height: 'calc(100% - 82px)' }}>
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 32px' }}>
+                          <div style={{ fontSize: '8px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '8px' }}>Summer &apos;26 Collection</div>
+                          <div style={{ fontSize: '32px', fontWeight: 300, color: '#111', lineHeight: 1.15, marginBottom: '6px' }}>Effortless<br/><span style={{ fontWeight: 600 }}>Elegance</span></div>
+                          <div style={{ fontSize: '11px', color: '#999', marginBottom: '14px', maxWidth: '220px', lineHeight: 1.5 }}>Timeless pieces for the modern wardrobe.</div>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <div style={{ padding: '7px 18px', borderRadius: '20px', fontSize: '10px', fontWeight: 600, color: '#fff', background: '#111' }}>Shop Collection →</div>
+                            <div style={{ padding: '7px 14px', borderRadius: '20px', fontSize: '10px', color: '#666', border: '1px solid #ddd' }}>Lookbook</div>
+                          </div>
                         </div>
-                        <div style={{ width: '400px', flexShrink: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', padding: '12px' }}>
+                        {/* Product grid — rich with color blocks */}
+                        <div style={{ width: '55%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', padding: '8px 8px 8px 0' }}>
                           {[
-                            { color: '#e8ddd4', label: 'Linen Blazer', price: '$285' },
-                            { color: '#d4c4b0', label: 'Silk Top', price: '$145' },
-                            { color: '#c9b99a', label: 'Wide Trousers', price: '$195' },
-                            { color: '#ddd5c8', label: 'Wrap Dress', price: '$320' },
+                            { bg: 'linear-gradient(145deg, #d4c4b0 0%, #c9b99a 50%, #bfad8a 100%)', label: 'Linen Blazer', price: '$285', tag: 'New' },
+                            { bg: 'linear-gradient(145deg, #e8ddd4 0%, #ddd0c2 50%, #d4c4b0 100%)', label: 'Silk Camisole', price: '$145', tag: '' },
+                            { bg: 'linear-gradient(145deg, #c9b99a 0%, #bfad8a 50%, #b5a37a 100%)', label: 'Wide Trousers', price: '$195', tag: 'Best Seller' },
+                            { bg: 'linear-gradient(145deg, #ddd5c8 0%, #d4c8b8 50%, #cbbfad 100%)', label: 'Wrap Dress', price: '$320', tag: '' },
                           ].map((item) => (
-                            <div key={item.label} style={{ borderRadius: '4px', overflow: 'hidden', background: item.color }}>
-                              <div style={{ aspectRatio: '3/4', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', padding: '8px', textAlign: 'center' }}>
-                                <div style={{ fontSize: '10px', fontWeight: 500, color: '#404040' }}>{item.label}</div>
-                                <div style={{ fontSize: '10px', color: '#737373' }}>{item.price}</div>
+                            <div key={item.label} style={{ borderRadius: '4px', overflow: 'hidden', position: 'relative' }}>
+                              <div style={{ aspectRatio: '3/4', background: item.bg, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '6px 8px' }}>
+                                {item.tag && <div style={{ position: 'absolute', top: '6px', left: '6px', padding: '2px 6px', borderRadius: '2px', fontSize: '7px', fontWeight: 600, color: '#fff', background: '#111' }}>{item.tag}</div>}
+                                <div style={{ fontSize: '9px', fontWeight: 600, color: '#3d3325' }}>{item.label}</div>
+                                <div style={{ fontSize: '9px', color: '#6b5c4c' }}>{item.price}</div>
                               </div>
                             </div>
                           ))}
                         </div>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '24px', padding: '8px 32px', fontSize: '9px', color: '#a3a3a3', fontWeight: 500, borderTop: '1px solid rgba(0,0,0,0.06)' }}>
-                        <span>✦ Free Returns</span><span>✦ Sustainable Materials</span><span>✦ 50K+ Happy Customers</span><span>✦ As Seen in Vogue</span>
+                      {/* Trust */}
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '6px 0', fontSize: '8px', color: '#aaa', background: '#fff', borderTop: '1px solid #eee' }}>
+                        <span>✦ Free Returns</span><span>✦ Sustainable</span><span>✦ 50K+ Customers</span><span>✦ As Seen in Vogue</span>
                       </div>
                     </div>
                   </div>
@@ -710,52 +715,66 @@ export default function HomePage() {
 
               {/* Card 3 — Crestline Realty (Real Estate) */}
               <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-sky-500/10 cursor-pointer">
-                <div className="relative aspect-video overflow-hidden" style={{ background: 'linear-gradient(160deg, #0c1829 0%, #081220 50%, #0a1525 100%)' }}>
+                <div className="relative aspect-video overflow-hidden">
                   <div className="w-[300%] h-[300%] origin-top-left pointer-events-none" style={{ transform: 'scale(0.333)' }}>
-                    <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif' }}>
-                      <div style={{ position: 'absolute', width: '500px', height: '400px', borderRadius: '50%', opacity: 0.1, top: '-80px', right: '40px', background: 'radial-gradient(circle, #3b82f6, transparent 70%)' }} />
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif', background: '#0a1628' }}>
+                      {/* Cinematic bg */}
+                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '55%', background: 'linear-gradient(180deg, #162544 0%, #1a3052 30%, #0f2035 60%, #0a1628 100%)' }} />
+                      <div style={{ position: 'absolute', top: '5%', left: '50%', width: '60%', height: '40%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.12), transparent 70%)', transform: 'translateX(-50%)' }} />
+                      {/* Nav */}
+                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', background: 'rgba(10,22,40,0.8)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(59,130,246,0.1)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '24px', height: '24px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 900, color: '#fff', background: 'linear-gradient(135deg, #2563eb, #1d4ed8)' }}>C</div>
-                          <span style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>Crestline Realty</span>
+                          <div style={{ width: '24px', height: '24px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 900, color: '#fff', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' }}>C</div>
+                          <span style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>Crestline Realty</span>
                         </div>
-                        <div style={{ display: 'flex', gap: '20px', fontSize: '11px', color: 'rgba(255,255,255,0.35)', fontWeight: 500 }}>
-                          <span style={{ color: 'rgba(255,255,255,0.6)' }}>Listings</span><span>Buy</span><span>Sell</span><span>Agents</span><span>About</span><span>Contact</span>
+                        <div style={{ display: 'flex', gap: '18px', fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}>
+                          <span style={{ color: '#60a5fa' }}>Listings</span><span>Buy</span><span>Sell</span><span>Agents</span><span>Contact</span>
                         </div>
-                        <div style={{ padding: '5px 14px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, color: '#fff', background: '#2563eb' }}>List My Home</div>
+                        <div style={{ padding: '5px 14px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, color: '#fff', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', boxShadow: '0 2px 8px rgba(59,130,246,0.3)' }}>List My Home</div>
                       </div>
-                      <div style={{ padding: '24px 32px 0' }}>
-                        <div style={{ fontSize: '9px', color: 'rgba(96,165,250,0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '8px' }}>Find Your Dream Home</div>
-                        <div style={{ fontSize: '36px', fontWeight: 700, color: 'rgba(255,255,255,0.95)', lineHeight: 1.1, letterSpacing: '-0.02em', marginBottom: '10px' }}>Premium Real Estate<br/>in <span style={{ color: '#60a5fa' }}>Los Angeles</span></div>
-                        <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.3)', marginBottom: '18px', maxWidth: '420px' }}>Discover luxury properties across Beverly Hills, Santa Monica, Malibu, and more.</div>
-                        <div style={{ display: 'flex', alignItems: 'center', borderRadius: '6px', padding: '5px', marginBottom: '20px', maxWidth: '520px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                          <div style={{ flex: 1, padding: '0 10px', fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Location, address, or ZIP</div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <div style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '10px', fontWeight: 500, color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}>Buy</div>
-                            <div style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '10px', fontWeight: 500, color: 'rgba(255,255,255,0.3)' }}>Rent</div>
-                            <div style={{ padding: '4px 14px', borderRadius: '4px', fontSize: '10px', fontWeight: 700, color: '#fff', background: '#2563eb' }}>Search</div>
+                      {/* Hero */}
+                      <div style={{ position: 'relative', padding: '20px 32px 0' }}>
+                        <div style={{ fontSize: '8px', color: '#60a5fa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '6px' }}>✦ Los Angeles Luxury Real Estate</div>
+                        <div style={{ fontSize: '32px', fontWeight: 700, color: '#fff', lineHeight: 1.1, marginBottom: '8px' }}>Find Your<br/><span style={{ color: '#60a5fa' }}>Dream Home</span></div>
+                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', marginBottom: '12px', maxWidth: '360px', lineHeight: 1.5 }}>Luxury properties across Beverly Hills, Malibu, Santa Monica & more.</div>
+                        {/* Search */}
+                        <div style={{ display: 'flex', alignItems: 'center', borderRadius: '6px', padding: '4px', marginBottom: '14px', maxWidth: '460px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(59,130,246,0.15)' }}>
+                          <div style={{ flex: 1, padding: '0 8px', fontSize: '10px', color: 'rgba(255,255,255,0.3)' }}>Search by city, ZIP, or address...</div>
+                          <div style={{ display: 'flex', gap: '3px' }}>
+                            <div style={{ padding: '4px 8px', borderRadius: '3px', fontSize: '9px', fontWeight: 600, color: '#fff', background: 'rgba(59,130,246,0.2)', border: '1px solid rgba(59,130,246,0.3)' }}>Buy</div>
+                            <div style={{ padding: '4px 8px', borderRadius: '3px', fontSize: '9px', color: 'rgba(255,255,255,0.3)' }}>Rent</div>
+                            <div style={{ padding: '4px 12px', borderRadius: '3px', fontSize: '9px', fontWeight: 700, color: '#fff', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' }}>Search</div>
                           </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          {[
-                            { beds: '4 bd · 3 ba', price: '$2.45M', area: 'Beverly Hills', sqft: '3,200 sqft' },
-                            { beds: '3 bd · 2 ba', price: '$1.87M', area: 'Santa Monica', sqft: '2,100 sqft' },
-                            { beds: '5 bd · 4 ba', price: '$3.10M', area: 'Malibu', sqft: '4,500 sqft' },
-                            { beds: '2 bd · 2 ba', price: '$1.25M', area: 'Venice Beach', sqft: '1,600 sqft' },
-                          ].map((p) => (
-                            <div key={p.area} style={{ flex: 1, borderRadius: '6px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.03)' }}>
-                              <div style={{ aspectRatio: '4/3', borderRadius: '6px 6px 0 0', background: `linear-gradient(135deg, ${p.area === 'Beverly Hills' ? '#1e3a5f' : p.area === 'Santa Monica' ? '#1c2d4a' : p.area === 'Malibu' ? '#1a3340' : '#1a2844'}, ${p.area === 'Beverly Hills' ? '#172554' : '#131c36'})` }} />
-                              <div style={{ padding: '7px 8px' }}>
-                                <div style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.85)' }}>{p.price}</div>
-                                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', marginTop: '1px' }}>{p.beds} · {p.sqft}</div>
-                                <div style={{ fontSize: '9px', color: 'rgba(96,165,250,0.6)', marginTop: '1px' }}>{p.area}</div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
                       </div>
-                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '24px', padding: '8px 0', fontSize: '10px', color: 'rgba(255,255,255,0.2)', fontWeight: 500, background: 'rgba(0,0,0,0.35)' }}>
-                        <span>$2.8B+ in Sales</span><span>·</span><span>500+ Homes Sold</span><span>·</span><span>Top 1% LA Agents</span>
+                      {/* Property cards with rich gradients */}
+                      <div style={{ position: 'relative', display: 'flex', gap: '6px', padding: '0 32px' }}>
+                        {[
+                          { price: '$2.45M', area: 'Beverly Hills', beds: '4 bd · 3 ba', bg: 'linear-gradient(135deg, #1e3a5f 0%, #2a4a6f 50%, #1a3050 100%)' },
+                          { price: '$1.87M', area: 'Santa Monica', beds: '3 bd · 2 ba', bg: 'linear-gradient(135deg, #1c2d4a 0%, #24405e 50%, #182840 100%)' },
+                          { price: '$3.10M', area: 'Malibu', beds: '5 bd · 4 ba', bg: 'linear-gradient(135deg, #1a3340 0%, #224555 50%, #162d3a 100%)' },
+                          { price: '$1.25M', area: 'Venice', beds: '2 bd · 2 ba', bg: 'linear-gradient(135deg, #1a2844 0%, #223858 50%, #16223a 100%)' },
+                        ].map((p) => (
+                          <div key={p.area} style={{ flex: 1, borderRadius: '5px', overflow: 'hidden', border: '1px solid rgba(59,130,246,0.1)', background: 'rgba(255,255,255,0.02)' }}>
+                            <div style={{ height: '56px', background: p.bg, position: 'relative' }}>
+                              <div style={{ position: 'absolute', bottom: '4px', left: '6px', padding: '1px 5px', borderRadius: '2px', fontSize: '7px', fontWeight: 600, color: '#fff', background: 'rgba(0,0,0,0.5)' }}>📷 12</div>
+                            </div>
+                            <div style={{ padding: '5px 6px' }}>
+                              <div style={{ fontSize: '11px', fontWeight: 700, color: '#fff' }}>{p.price}</div>
+                              <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', marginTop: '1px' }}>{p.beds}</div>
+                              <div style={{ fontSize: '8px', color: '#60a5fa', marginTop: '1px' }}>{p.area}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {/* Stats bar */}
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '24px', padding: '7px 0', background: 'linear-gradient(to top, rgba(10,22,40,0.95), rgba(10,22,40,0.7))' }}>
+                        {[{ val: '$2.8B+', label: 'in Sales' }, { val: '500+', label: 'Homes Sold' }, { val: 'Top 1%', label: 'LA Agents' }].map((s) => (
+                          <div key={s.label} style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '11px', fontWeight: 700, color: '#60a5fa' }}>{s.val}</div>
+                            <div style={{ fontSize: '7px', color: 'rgba(255,255,255,0.3)' }}>{s.label}</div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
