@@ -56,7 +56,7 @@ export function SpaceNavbar() {
       {/* ===== TOP HEADER ===== */}
       <header className="relative z-20 flex items-center justify-between px-4 md:px-8 lg:px-12 py-4">
         {/* Logo */}
-        <a href="/dashboard" className="flex items-center gap-2">
+        <a href="/" className="flex items-center gap-2">
           <Image
             src="/logo.png"
             alt="Innovated Marketing"
@@ -192,14 +192,16 @@ export function SpaceNavbar() {
           className="flex items-center justify-between px-5 py-4"
           style={{ borderBottom: '1px solid rgba(71,85,105,0.2)' }}
         >
-          <Image
-            src="/logo.png"
-            alt="Innovated Marketing"
-            width={844}
-            height={563}
-            className="brightness-0 invert w-auto"
-            style={{ height: '120px' }}
-          />
+          <a href="/">
+            <Image
+              src="/logo.png"
+              alt="Innovated Marketing"
+              width={844}
+              height={563}
+              className="brightness-0 invert w-auto"
+              style={{ height: '120px' }}
+            />
+          </a>
           <button
             onClick={() => setMenuOpen(false)}
             className="flex items-center justify-center w-8 h-8 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-colors"

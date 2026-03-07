@@ -16,7 +16,7 @@ export default function AuthLayout({
       </div>
 
       {/* Logo */}
-      <div className="relative z-10 mb-8">
+      <a href="/" className="relative z-10 mb-8 block">
         <Image
           src="/logo.png"
           alt="Innovated Marketing"
@@ -26,7 +26,7 @@ export default function AuthLayout({
           style={{ height: '120px' }}
           priority
         />
-      </div>
+      </a>
 
       {/* Auth card */}
       <div className="relative z-10 w-full max-w-md mx-4">

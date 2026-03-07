@@ -66,14 +66,16 @@ export function Sidebar() {
     <>
       {/* Logo */}
       <div className="flex h-14 items-center gap-3 px-5">
-        <Image
-          src="/logo.png"
-          alt="Innovated Marketing"
-          width={140}
-          height={36}
-          className="object-contain brightness-0 invert"
-          priority
-        />
+        <a href="/">
+          <Image
+            src="/logo.png"
+            alt="Innovated Marketing"
+            width={140}
+            height={36}
+            className="object-contain brightness-0 invert"
+            priority
+          />
+        </a>
         <Button
           variant="ghost"
           size="icon"
