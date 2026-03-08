@@ -315,7 +315,7 @@ export default function HomePage() {
       <section ref={hero.ref} className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-32 sm:pt-40 md:pt-48 pb-24">
           <div className="anim-up inline-flex items-center gap-2 px-4 py-2 rounded-full border border-violet-500/30 mb-8" style={{ background: 'rgba(139,92,246,0.08)' }}>
             <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" /></span>
-            <span className="text-sm text-gray-300 font-medium">Now in Public Beta. Join 500+ builders</span>
+            <span className="text-sm text-gray-300 font-medium">Now in Public Beta</span>
           </div>
 
           <h1 className="anim-up-1 text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold leading-[1.05] max-w-5xl tracking-tight">
@@ -592,9 +592,7 @@ export default function HomePage() {
       {/* SOCIAL PROOF */}
       <section ref={stats.ref} className="relative z-10 py-16 border-y border-white/5" style={{ background: 'rgba(139,92,246,0.03)' }}>
         {stats.inView && (
-          <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 px-4 text-center anim-up">
-            <div><div className="text-3xl md:text-4xl font-extrabold text-white"><Counter target={500} suffix="+" /></div><div className="text-sm text-gray-500 mt-1">Websites Built</div></div>
-            <div><div className="text-3xl md:text-4xl font-extrabold text-white"><Counter target={50} suffix="+" /></div><div className="text-sm text-gray-500 mt-1">Active Builders</div></div>
+          <div className="max-w-3xl mx-auto grid grid-cols-2 gap-8 px-4 text-center anim-up">
             <div><div className="text-3xl md:text-4xl font-extrabold text-white"><Counter target={2} suffix=" min" /></div><div className="text-sm text-gray-500 mt-1">Avg. Build Time</div></div>
             <div><div className="text-3xl md:text-4xl font-extrabold text-white"><Counter target={99} suffix="%" /></div><div className="text-sm text-gray-500 mt-1">Uptime</div></div>
           </div>
