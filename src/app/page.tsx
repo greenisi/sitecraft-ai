@@ -285,24 +285,24 @@ export default function HomePage() {
       </div>
 
       {/* Navbar */}
-      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b border-white/[0.06]" style={{ background: 'rgba(5,8,16,0.8)' }}>
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 py-1">
-          <Link href="/" className="flex items-center gap-2 -my-4">
-            <Image src="/logo.png" alt="Innovated Marketing" width={844} height={563} className="brightness-0 invert" style={{ height: '120px', width: 'auto' }} priority />
+      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b border-white/[0.06]" style={{ background: 'rgba(5,8,16,0.85)' }}>
+        <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 h-14 sm:h-16">
+          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+            <Image src="/logo.png" alt="Innovated Marketing" width={844} height={563} className="brightness-0 invert" style={{ height: '80px', width: 'auto' }} priority />
           </Link>
-          <nav className="flex items-center gap-2">
+          <nav className="flex items-center gap-2 sm:gap-3">
             {userLoading ? (
               <div className="w-[100px]" />
             ) : user ? (
-              <Link href="/dashboard" className="group relative px-5 py-2.5 rounded-xl text-sm font-semibold text-white overflow-hidden transition-all hover:scale-105" style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}>
-                <span className="relative z-10 flex items-center gap-2"><LayoutDashboard className="h-4 w-4" />Dashboard</span>
+              <Link href="/dashboard" className="group relative px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white overflow-hidden transition-all hover:scale-105" style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}>
+                <span className="relative z-10 flex items-center gap-1.5 sm:gap-2"><LayoutDashboard className="h-3.5 w-3.5 sm:h-4 sm:w-4" />Dashboard</span>
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'linear-gradient(135deg, #a78bfa, #8b5cf6)' }} />
               </Link>
             ) : (
               <>
-                <Link href="/login" className="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white transition-colors">Log in</Link>
-                <Link href="/signup" className="group relative px-5 py-2.5 rounded-xl text-sm font-semibold text-white overflow-hidden transition-all hover:scale-105" style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}>
-                  <span className="relative z-10">Get Started Free</span>
+                <Link href="/login" className="px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium text-gray-400 hover:text-white transition-colors">Log in</Link>
+                <Link href="/signup" className="group relative px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white overflow-hidden transition-all hover:scale-105" style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}>
+                  <span className="relative z-10">Get Started</span>
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'linear-gradient(135deg, #a78bfa, #8b5cf6)' }} />
                 </Link>
               </>
@@ -940,7 +940,7 @@ export default function HomePage() {
                     </Link>
                   ) : (
                     <button onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); setTimeout(() => promptInputRef.current?.focus(), 600); }} className="group inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-lg font-semibold text-white transition-all hover:scale-105 animate-pulse-glow" style={{ background: 'linear-gradient(135deg, #7c3aed, #6d28d9)' }}>
-                      <Sparkles className="h-5 w-5" />Get Started Free<ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                      <Sparkles className="h-5 w-5" />Get Started<ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                     </button>
                   )}
                 </div>
