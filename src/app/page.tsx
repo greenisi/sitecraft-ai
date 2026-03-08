@@ -430,10 +430,6 @@ export default function HomePage() {
                   <Rocket className="h-3.5 w-3.5 text-violet-400" />Zero limits
                 </span>
               </div>
-              <Link href="#how-it-works" className="group inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium text-gray-500 hover:text-violet-300 border border-white/[0.04] hover:border-violet-500/20 transition-all duration-300 hover:bg-violet-500/[0.04] animate-fade-in-up" style={{ animationDelay: '1.4s', animationFillMode: 'both' }}>
-                <Play className="h-3 w-3 transition-transform group-hover:scale-110" />Watch it in action
-                <ArrowRight className="h-3 w-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
-              </Link>
             </div>
           </div>
 
