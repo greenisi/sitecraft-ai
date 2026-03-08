@@ -589,15 +589,6 @@ export default function HomePage() {
           </div>
       </section>
 
-      {/* SOCIAL PROOF */}
-      <section ref={stats.ref} className="relative z-10 py-16 border-y border-white/5" style={{ background: 'rgba(139,92,246,0.03)' }}>
-        {stats.inView && (
-          <div className="max-w-3xl mx-auto grid grid-cols-2 gap-8 px-4 text-center anim-up">
-            <div><div className="text-3xl md:text-4xl font-extrabold text-white"><Counter target={2} suffix=" min" /></div><div className="text-sm text-gray-500 mt-1">Avg. Build Time</div></div>
-            <div><div className="text-3xl md:text-4xl font-extrabold text-white"><Counter target={99} suffix="%" /></div><div className="text-sm text-gray-500 mt-1">Uptime</div></div>
-          </div>
-        )}
-      </section>
 
       {/* HOW IT WORKS */}
       <section id="how-it-works" ref={howItWorks.ref} className="relative z-10 py-24 px-4">
