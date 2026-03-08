@@ -415,21 +415,14 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Animated trust signals */}
-            <div className="mt-6 flex flex-col items-center gap-3">
-              <div className="flex items-center gap-3 sm:gap-5">
-                <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-gray-400 animate-fade-in-up" style={{ animationDelay: '0.8s', animationFillMode: 'both' }}>
-                  <Zap className="h-3.5 w-3.5 text-yellow-400" />Zero code
-                </span>
-                <span className="text-gray-700/50">·</span>
-                <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-gray-400 animate-fade-in-up" style={{ animationDelay: '1s', animationFillMode: 'both' }}>
-                  <Palette className="h-3.5 w-3.5 text-pink-400" />Zero templates
-                </span>
-                <span className="text-gray-700/50">·</span>
-                <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-gray-400 animate-fade-in-up" style={{ animationDelay: '1.2s', animationFillMode: 'both' }}>
-                  <Rocket className="h-3.5 w-3.5 text-violet-400" />Zero limits
-                </span>
-              </div>
+            {/* Big CTA text below composer */}
+            <div className="mt-8 sm:mt-10 flex flex-col items-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.8s', animationFillMode: 'both' }}>
+              <p className="text-lg sm:text-2xl md:text-3xl font-bold text-center leading-snug max-w-xl">
+                <span className="text-white">Your website, live in minutes.</span>
+                <br />
+                <span className="bg-clip-text text-transparent animate-gradient-x" style={{ backgroundImage: 'linear-gradient(135deg, #a78bfa, #818cf8, #c084fc, #a78bfa)' }}>No designers. No developers. No waiting.</span>
+              </p>
+              <p className="text-sm sm:text-base text-gray-500 text-center max-w-md">Just describe what you want and watch your entire site come to life — pages, photos, content, and all.</p>
             </div>
           </div>
 
