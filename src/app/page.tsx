@@ -518,9 +518,9 @@ export default function HomePage() {
                     </div>
                   </div>
                   {/* Chat input */}
-                  <div className="hidden sm:block p-3 border-t border-white/5">
-                    <div className="rounded-xl px-3 py-2.5 text-[11px] text-gray-600 border border-white/[0.08] flex items-center gap-2" style={{ background: 'rgba(255,255,255,0.02)' }}>
-                      <MessageSquare className="h-3 w-3" />
+                  <div className="p-2 sm:p-3 border-t border-white/5">
+                    <div className="rounded-xl px-3 py-2 sm:py-2.5 text-[10px] sm:text-[11px] text-gray-600 border border-white/[0.08] flex items-center gap-2" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                      <MessageSquare className="h-3 w-3 flex-shrink-0" />
                       Describe changes...
                     </div>
                   </div>
