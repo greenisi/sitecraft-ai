@@ -88,7 +88,7 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 bg-black/30 text-white hover:bg-black/50 hover:text-white backdrop-blur-sm rounded-lg"
+                className="h-10 w-10 bg-black/30 text-white hover:bg-black/50 hover:text-white backdrop-blur-sm rounded-lg"
               >
                 <MoreHorizontal className="h-4 w-4" />
               </Button>

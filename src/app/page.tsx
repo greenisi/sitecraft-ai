@@ -300,8 +300,9 @@ export default function HomePage() {
               </Link>
             ) : (
               <>
-                <Link href="/login" className="px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium text-gray-400 hover:text-white transition-colors">Log in</Link>
-                <Link href="/signup" className="group relative px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white overflow-hidden transition-all hover:scale-105" style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}>
+                <Link href="/pricing" className="px-3 sm:px-4 py-2.5 sm:py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white transition-colors min-h-[44px] flex items-center">Pricing</Link>
+                <Link href="/login" className="px-3 sm:px-4 py-2.5 sm:py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white transition-colors min-h-[44px] flex items-center">Log in</Link>
+                <Link href="/signup" className="group relative px-4 sm:px-5 py-2.5 sm:py-2.5 rounded-xl text-sm font-semibold text-white overflow-hidden transition-all hover:scale-105 min-h-[44px] flex items-center" style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}>
                   <span className="relative z-10">Get Started</span>
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'linear-gradient(135deg, #a78bfa, #8b5cf6)' }} />
                 </Link>
@@ -946,10 +947,10 @@ export default function HomePage() {
       <footer className="relative z-10 border-t border-white/5 py-12 px-4">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <Image src="/logo.png" alt="Innovated Marketing" width={844} height={563} className="brightness-0 invert w-auto" style={{ height: '36px' }} />
-          <div className="flex items-center gap-6 text-sm text-gray-600">
-            <Link href="/pricing" className="hover:text-gray-400 transition-colors">Pricing</Link>
-            <Link href="/login" className="hover:text-gray-400 transition-colors">Log In</Link>
-            <Link href="/signup" className="hover:text-gray-400 transition-colors">Sign Up</Link>
+          <div className="flex items-center gap-4 text-sm text-gray-600">
+            <Link href="/pricing" className="hover:text-gray-400 transition-colors py-2 px-1 min-h-[44px] flex items-center">Pricing</Link>
+            <Link href="/login" className="hover:text-gray-400 transition-colors py-2 px-1 min-h-[44px] flex items-center">Log In</Link>
+            <Link href="/signup" className="hover:text-gray-400 transition-colors py-2 px-1 min-h-[44px] flex items-center">Sign Up</Link>
           </div>
           <p className="text-xs text-gray-700">&copy; 2026 Innovated Marketing. All rights reserved.</p>
         </div>

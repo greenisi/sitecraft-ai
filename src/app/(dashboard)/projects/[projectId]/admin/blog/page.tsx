@@ -90,7 +90,7 @@ export default function BlogPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Blog Posts</h1>
-        <button onClick={() => { setShowForm(true); setEditing(null); setForm({ title: '', slug: '', content: '', excerpt: '', featured_image: '', author: '', status: 'draft' }); }} className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">New Post</button>
+        <button onClick={() => { setShowForm(true); setEditing(null); setForm({ title: '', slug: '', content: '', excerpt: '', featured_image: '', author: '', status: 'draft' }); }} className="px-5 py-3 md:px-4 md:py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 min-h-[44px] md:min-h-0 text-sm font-medium">New Post</button>
       </div>
 
       {showForm && (
@@ -113,8 +113,8 @@ export default function BlogPage() {
             {form.featured_image && <img src={form.featured_image} alt="Preview" className="mt-2 h-32 object-cover rounded" />}
           </div>
           <div className="flex gap-2">
-            <button type="submit" className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">{editing ? 'Update' : 'Create'}</button>
-            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600">Cancel</button>
+            <button type="submit" className="px-5 py-3 md:px-4 md:py-2 bg-purple-600 text-white rounded hover:bg-purple-700 min-h-[44px] md:min-h-0 text-sm font-medium">{editing ? 'Update' : 'Create'}</button>
+            <button type="button" onClick={() => setShowForm(false)} className="px-5 py-3 md:px-4 md:py-2 bg-gray-700 text-white rounded hover:bg-gray-600 min-h-[44px] md:min-h-0 text-sm font-medium">Cancel</button>
           </div>
         </form>
       )}
@@ -127,13 +127,13 @@ export default function BlogPage() {
               <div>
                 <div className="font-medium text-white">{post.title}</div>
                 <div className="text-sm text-gray-400">/{post.slug} {post.author && `• by ${post.author}`}</div>
-                <span className={`text-xs px-2 py-0.5 rounded ${post.status === 'published' ? 'bg-green-600' : 'bg-yellow-600'} text-white`}>{post.status}</span>
+                <span className={`text-xs px-3 py-1 rounded ${post.status === 'published' ? 'bg-green-600' : 'bg-yellow-600'} text-white`}>{post.status}</span>
               </div>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => togglePublish(post)} className="px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-600">{post.status === 'published' ? 'Unpublish' : 'Publish'}</button>
-              <button onClick={() => { setEditing(post); setForm({ title: post.title, slug: post.slug, content: post.content || '', excerpt: post.excerpt || '', featured_image: post.featured_image || '', author: post.author || '', status: post.status }); setShowForm(true); }} className="px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-600">Edit</button>
-              <button onClick={() => handleDelete(post.id)} className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
+              <button onClick={() => togglePublish(post)} className="px-4 py-2.5 md:px-3 md:py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-600 min-h-[44px] md:min-h-0">{post.status === 'published' ? 'Unpublish' : 'Publish'}</button>
+              <button onClick={() => { setEditing(post); setForm({ title: post.title, slug: post.slug, content: post.content || '', excerpt: post.excerpt || '', featured_image: post.featured_image || '', author: post.author || '', status: post.status }); setShowForm(true); }} className="px-4 py-2.5 md:px-3 md:py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-600 min-h-[44px] md:min-h-0">Edit</button>
+              <button onClick={() => handleDelete(post.id)} className="px-4 py-2.5 md:px-3 md:py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 min-h-[44px] md:min-h-0">Delete</button>
             </div>
           </div>
         ))}

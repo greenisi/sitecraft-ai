@@ -59,6 +59,13 @@ export async function POST(request: Request) {
     // Publish to subdomain
     const result = await publishToSubdomain(projectId, user.id);
 
+    // Fire-and-forget: auto-generate baseline SEO metadata
+    const origin = new URL(request.url).origin;
+    fetch(`${origin}/api/projects/${projectId}/seo/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: request.headers.get('cookie') || '' },
+    }).catch(() => {/* ignore SEO generation failures */});
+
     return NextResponse.json({ data: result });
   } catch (error) {
     const { error: errBody, status } = formatErrorResponse(error);

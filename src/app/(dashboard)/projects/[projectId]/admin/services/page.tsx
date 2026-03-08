@@ -77,7 +77,7 @@ export default function ServicesPage() {
         <h1 className="text-2xl font-bold text-white">Services</h1>
         <button
           onClick={() => { setShowForm(true); setEditing(null); setForm({ name: '', description: '', price: 0, duration: '', image_url: '', is_active: true }); }}
-          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+          className="px-5 py-3 md:px-4 md:py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 min-h-[44px] md:min-h-0 text-sm font-medium"
         >
           Add Service
         </button>
@@ -121,10 +121,10 @@ export default function ServicesPage() {
             {form.image_url && <img src={form.image_url} alt="Preview" className="mt-2 h-24 object-cover rounded" />}
           </div>
           <div className="flex gap-2">
-            <button type="submit" className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+            <button type="submit" className="px-5 py-3 md:px-4 md:py-2 bg-purple-600 text-white rounded hover:bg-purple-700 min-h-[44px] md:min-h-0 text-sm font-medium">
               {editing ? 'Update' : 'Create'}
             </button>
-            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600">
+            <button type="button" onClick={() => setShowForm(false)} className="px-5 py-3 md:px-4 md:py-2 bg-gray-700 text-white rounded hover:bg-gray-600 min-h-[44px] md:min-h-0 text-sm font-medium">
               Cancel
             </button>
           </div>
@@ -144,13 +144,13 @@ export default function ServicesPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => { setEditing(s); setForm({ ...s, image_url: s.image_url || '' }); setShowForm(true); }}
-                className="px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-600"
+                className="px-4 py-2.5 md:px-3 md:py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-600 min-h-[44px] md:min-h-0"
               >
                 Edit
               </button>
               <button
                 onClick={() => handleDelete(s.id)}
-                className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+                className="px-4 py-2.5 md:px-3 md:py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 min-h-[44px] md:min-h-0"
               >
                 Delete
               </button>

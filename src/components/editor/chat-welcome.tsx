@@ -1,20 +1,48 @@
 'use client';
 
-import { Sparkles, MessageSquare, Palette, Layout, Globe, Lock } from 'lucide-react';
+import { Sparkles, MessageSquare, Palette, Layout, Globe, Lock, Search, Share2, MapPin } from 'lucide-react';
 
 interface ChatWelcomeProps {
   onSuggestionClick: (prompt: string) => void;
   projectName?: string;
   projectDescription?: string;
   isPaid?: boolean;
+  projectStatus?: string;
 }
 
-export function ChatWelcome({ onSuggestionClick, projectName, projectDescription, isPaid = true }: ChatWelcomeProps) {
+export function ChatWelcome({ onSuggestionClick, projectName, projectDescription, isPaid = true, projectStatus = 'draft' }: ChatWelcomeProps) {
   const hasProjectInfo = projectName && projectName !== 'Untitled Project';
   const isLocked = !isPaid;
+  const showMarketing = projectStatus === 'generated' || projectStatus === 'published';
+
+  // Marketing-focused questions for generated/published sites
+  const marketingQuestions = [
+    {
+      label: 'Optimize for Google',
+      icon: Search,
+      prompt: `Optimize my website for Google search. Generate SEO metadata, titles, descriptions, and keywords for all pages.`,
+    },
+    {
+      label: 'Create social posts',
+      icon: Share2,
+      prompt: `Create a week's worth of social media posts to promote ${projectName || 'my website'}. Include posts for Instagram, Facebook, and X.`,
+    },
+    {
+      label: 'Get on Google Maps',
+      icon: MapPin,
+      prompt: `Help me set up a Google Business Profile so ${projectName || 'my business'} shows up on Google Maps and local search.`,
+    },
+    {
+      label: 'Improve my site',
+      icon: Sparkles,
+      prompt: `What can I improve about my website? I want to make it better for visitors and search engines.`,
+    },
+  ];
 
   // Smart starter questions based on project info
-  const smartQuestions = hasProjectInfo
+  const smartQuestions = showMarketing
+    ? marketingQuestions
+    : hasProjectInfo
     ? [
         {
           label: 'Build my website',
@@ -66,7 +94,16 @@ export function ChatWelcome({ onSuggestionClick, projectName, projectDescription
         <Sparkles className="h-6 w-6 text-white" />
       </div>
 
-      {hasProjectInfo ? (
+      {showMarketing ? (
+        <>
+          <h2 className="text-lg font-bold mb-1.5 animate-fade-in text-center">
+            {"Time to grow "}{projectName || 'your business'}{"!"}
+          </h2>
+          <p className="text-sm text-muted-foreground text-center mb-6 max-w-xs animate-fade-in">
+            Your site is live. Now let&apos;s get customers.
+          </p>
+        </>
+      ) : hasProjectInfo ? (
         <>
           <h2 className="text-lg font-bold mb-1.5 animate-fade-in text-center">
             {"Let's build "}{projectName}{"!"}

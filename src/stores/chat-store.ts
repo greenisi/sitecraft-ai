@@ -9,6 +9,7 @@ export interface ChatMessageLocal {
     stage?: 'parsing' | 'generating' | 'complete' | 'error';
     generationVersionId?: string;
     followUpSuggestions?: string[];
+    marketingAction?: string;
   };
   created_at: string;
 }

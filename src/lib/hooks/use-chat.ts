@@ -508,7 +508,7 @@ export function useChat(projectId: string) {
           throw new Error(err.error || 'Failed to parse prompt');
         }
 
-        const { config, planDescription, followUpSuggestions, mode, editInstructions, targetFiles } =
+        const { config, planDescription, followUpSuggestions, mode, editInstructions, targetFiles, marketingAction, marketingOptions } =
           await parseResponse.json();
 
         if (mode === 'conversation') {
@@ -572,6 +572,155 @@ export function useChat(projectId: string) {
           return;
         }
 
+        // MODE: Marketing - SEO, social posts, ads, Google Business Profile
+        if (mode === 'marketing') {
+          const marketingPlanMessage: ChatMessageLocal = {
+            id: crypto.randomUUID(),
+            project_id: projectId,
+            role: 'assistant',
+            content: planDescription || 'Working on your marketing...',
+            metadata: { stage: 'generating' },
+            created_at: new Date().toISOString(),
+          };
+          addMessage(marketingPlanMessage);
+          supabase
+            .from('chat_messages')
+            .insert({
+              id: marketingPlanMessage.id,
+              project_id: projectId,
+              role: 'assistant',
+              content: marketingPlanMessage.content,
+              metadata: marketingPlanMessage.metadata,
+            })
+            .then();
+
+          try {
+            const marketingRes = await fetch(
+              `/api/projects/${projectId}/marketing/generate`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  type: marketingAction || 'generate_seo',
+                  options: marketingOptions || {},
+                }),
+              }
+            );
+
+            if (!marketingRes.ok) {
+              const errData = await marketingRes.json();
+              throw new Error(errData.error || 'Marketing generation failed');
+            }
+
+            const marketingData = await marketingRes.json();
+
+            // Build result summary based on action type
+            let resultContent = '';
+            if (marketingAction === 'seo_score') {
+              // The API returns { summary, score: { score, maxScore, categories, checklist } }
+              resultContent = marketingData.summary || '';
+              const scoreData = marketingData.score;
+              if (!resultContent && scoreData) {
+                resultContent = `**SEO Score: ${scoreData.score}/${scoreData.maxScore}**\n\n`;
+                if (scoreData.checklist) {
+                  const issues = scoreData.checklist.filter((item: { status: string }) => item.status !== 'pass');
+                  if (issues.length > 0) {
+                    resultContent += `**${issues.length} items need attention:**\n`;
+                    for (const issue of issues) {
+                      const icon = issue.status === 'fail' ? 'X' : '!';
+                      resultContent += `- [${icon}] ${issue.label}\n`;
+                    }
+                  }
+                }
+              }
+            } else if (marketingAction === 'google_business_guide') {
+              resultContent = marketingData.content || marketingData.guide || 'Your Google Business Profile guide has been generated.';
+            } else if (marketingAction === 'social_posts') {
+              const assets = marketingData.assets || [];
+              resultContent = marketingData.summary || `Generated **${assets.length} social media posts**.`;
+              resultContent += '\n\n';
+              for (const asset of assets.slice(0, 3)) {
+                const platform = asset.platform ? `[${asset.platform}] ` : '';
+                const preview = (asset.content || '').slice(0, 100);
+                resultContent += `${platform}${preview}${asset.content?.length > 100 ? '...' : ''}\n\n`;
+              }
+              if (assets.length > 3) {
+                resultContent += `...and ${assets.length - 3} more.`;
+              }
+              resultContent += '\n\nView and download your branded graphics in the Marketing tab.';
+            } else if (marketingAction === 'generate_seo') {
+              const seoData = marketingData.seoData || [];
+              resultContent = marketingData.summary || `Generated SEO metadata for ${seoData.length} pages.`;
+              resultContent += '\n\nView and edit your SEO settings in the Marketing tab.';
+            } else if (marketingAction === 'ad_copy') {
+              const ads = marketingData.assets || [];
+              resultContent = marketingData.summary || `Generated **${ads.length} ad variations**.`;
+              if (marketingData.budget_suggestion) {
+                resultContent += `\n\n**Budget tip:** ${marketingData.budget_suggestion}`;
+              }
+              resultContent += '\n\nView and edit your ads in the Marketing tab.';
+            } else {
+              resultContent = marketingData.summary || marketingData.message || 'Marketing content generated successfully.';
+            }
+
+            const resultMessage: ChatMessageLocal = {
+              id: crypto.randomUUID(),
+              project_id: projectId,
+              role: 'assistant',
+              content: resultContent,
+              metadata: {
+                stage: 'complete',
+                followUpSuggestions: followUpSuggestions || [],
+                marketingAction,
+              },
+              created_at: new Date().toISOString(),
+            };
+            addMessage(resultMessage);
+
+            supabase
+              .from('chat_messages')
+              .insert({
+                id: resultMessage.id,
+                project_id: projectId,
+                role: 'assistant',
+                content: resultMessage.content,
+                metadata: resultMessage.metadata,
+              })
+              .then();
+
+            setProcessing(false, 'complete');
+          } catch (marketingError) {
+            const errMsg =
+              marketingError instanceof Error
+                ? marketingError.message
+                : 'Marketing generation failed';
+
+            const errorMessage: ChatMessageLocal = {
+              id: crypto.randomUUID(),
+              project_id: projectId,
+              role: 'assistant',
+              content: `Sorry, something went wrong with marketing: ${errMsg}. Please try again.`,
+              metadata: { stage: 'error' },
+              created_at: new Date().toISOString(),
+            };
+            addMessage(errorMessage);
+
+            supabase
+              .from('chat_messages')
+              .insert({
+                id: errorMessage.id,
+                project_id: projectId,
+                role: 'assistant',
+                content: errorMessage.content,
+                metadata: errorMessage.metadata,
+              })
+              .then();
+
+            setProcessing(false, 'error');
+            toast.error('Marketing generation failed', { description: errMsg });
+          }
+          return;
+        }
 
         const planMessage: ChatMessageLocal = {
           id: crypto.randomUUID(),

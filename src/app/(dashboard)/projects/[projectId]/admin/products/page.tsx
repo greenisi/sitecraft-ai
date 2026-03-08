@@ -73,7 +73,7 @@ export default function ProductsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Products</h1>
-        <button onClick={() => { setShowForm(true); setEditing(null); setForm({ name: '', description: '', price: 0, compare_at_price: '', category: '', sku: '', inventory_count: 0, image_url: '', is_active: true }); }} className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Add Product</button>
+        <button onClick={() => { setShowForm(true); setEditing(null); setForm({ name: '', description: '', price: 0, compare_at_price: '', category: '', sku: '', inventory_count: 0, image_url: '', is_active: true }); }} className="px-5 py-3 md:px-4 md:py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 min-h-[44px] md:min-h-0 text-sm font-medium">Add Product</button>
       </div>
 
       {showForm && (
@@ -94,8 +94,8 @@ export default function ProductsPage() {
             {form.image_url && <img src={form.image_url} alt="Preview" className="mt-2 h-24 object-cover rounded" />}
           </div>
           <div className="flex gap-2">
-            <button type="submit" className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">{editing ? 'Update' : 'Create'}</button>
-            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600">Cancel</button>
+            <button type="submit" className="px-5 py-3 md:px-4 md:py-2 bg-purple-600 text-white rounded hover:bg-purple-700 min-h-[44px] md:min-h-0 text-sm font-medium">{editing ? 'Update' : 'Create'}</button>
+            <button type="button" onClick={() => setShowForm(false)} className="px-5 py-3 md:px-4 md:py-2 bg-gray-700 text-white rounded hover:bg-gray-600 min-h-[44px] md:min-h-0 text-sm font-medium">Cancel</button>
           </div>
         </form>
       )}
@@ -111,8 +111,8 @@ export default function ProductsPage() {
               </div>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => { setEditing(p); setForm({...p, compare_at_price: p.compare_at_price?.toString() || '', image_url: p.image_url || ''}); setShowForm(true); }} className="px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-600">Edit</button>
-              <button onClick={() => handleDelete(p.id)} className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
+              <button onClick={() => { setEditing(p); setForm({...p, compare_at_price: p.compare_at_price?.toString() || '', image_url: p.image_url || ''}); setShowForm(true); }} className="px-4 py-2.5 md:px-3 md:py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-600 min-h-[44px] md:min-h-0">Edit</button>
+              <button onClick={() => handleDelete(p.id)} className="px-4 py-2.5 md:px-3 md:py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 min-h-[44px] md:min-h-0">Delete</button>
             </div>
           </div>
         ))}

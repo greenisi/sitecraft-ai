@@ -53,7 +53,7 @@ export default function OnboardingChecklist({ projectId }: { projectId: string }
   const dashOffset = circumference - (circumference * pct) / 100;
 
   if (dismissed) {
-    return (<button onClick={restore} className="text-sm text-purple-400 hover:text-purple-300 transition-colors mb-2">Show setup guide</button>);
+    return (<button onClick={restore} className="text-sm text-purple-400 hover:text-purple-300 transition-colors mb-2 py-2 px-3 min-h-[44px]">Show setup guide</button>);
   }
 
   const stylesArr = [
@@ -106,12 +106,12 @@ export default function OnboardingChecklist({ projectId }: { projectId: string }
                 <p className={`text-sm font-medium ${step.completed ? 'line-through text-gray-400' : 'text-white'}`}>{step.label}</p>
                 <p className="text-xs text-gray-500 truncate">{step.description}</p>
               </div>
-              {!step.completed && (<Link href={step.href} className="flex-shrink-0 text-xs px-3 py-1 rounded-full bg-purple-600 hover:bg-purple-500 text-white font-medium transition-colors">Go →</Link>)}
+              {!step.completed && (<Link href={step.href} className="flex-shrink-0 text-sm px-4 py-2.5 rounded-full bg-purple-600 hover:bg-purple-500 text-white font-medium transition-colors min-h-[44px] flex items-center">Go →</Link>)}
             </div>
           ))}
         </div>
         <div className="mt-4 pt-4 border-t border-gray-800">
-          <button onClick={dismiss} className="text-xs text-gray-500 hover:text-gray-400 transition-colors">Dismiss checklist</button>
+          <button onClick={dismiss} className="text-sm text-gray-500 hover:text-gray-400 transition-colors py-2 px-3 min-h-[44px]">Dismiss checklist</button>
         </div>
       </div>
     </>

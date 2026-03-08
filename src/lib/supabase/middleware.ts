@@ -55,7 +55,7 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/settings') ||
     request.nextUrl.pathname.startsWith('/admin') ||
     request.nextUrl.pathname.startsWith('/affiliates') ||
-    request.nextUrl.pathname.startsWith('/pricing');
+    request.nextUrl.pathname.startsWith('/billing');
 
   // Also protect API routes that require authentication
   const isProtectedApiRoute =

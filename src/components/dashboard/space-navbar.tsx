@@ -101,14 +101,14 @@ export function SpaceNavbar() {
             Projects
           </a>
           <a
-            href="/pricing"
+            href="/billing"
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive('/pricing')
+              isActive('/billing')
                 ? 'bg-white/10 text-white'
                 : 'text-gray-400 hover:text-white hover:bg-white/5'
             }`}
           >
-            Pricing
+            Billing
           </a>
           <a
             href="/affiliates"
@@ -204,7 +204,7 @@ export function SpaceNavbar() {
           </a>
           <button
             onClick={() => setMenuOpen(false)}
-            className="flex items-center justify-center w-8 h-8 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="flex items-center justify-center w-11 h-11 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
             aria-label="Close menu"
           >
             <X className="h-5 w-5" />
@@ -250,14 +250,14 @@ export function SpaceNavbar() {
             Projects
           </button>
           <button
-            onClick={() => navTo('/pricing')}
+            onClick={() => navTo('/billing')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-              isActive('/pricing') ? 'text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'
+              isActive('/billing') ? 'text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'
             }`}
-            style={isActive('/pricing') ? { background: 'rgba(139,92,246,0.15)', color: '#e2d9f3' } : {}}
+            style={isActive('/billing') ? { background: 'rgba(139,92,246,0.15)', color: '#e2d9f3' } : {}}
           >
-            <CreditCard className={`h-4 w-4 ${isActive('/pricing') ? 'text-purple-400' : ''}`} />
-            Pricing
+            <CreditCard className={`h-4 w-4 ${isActive('/billing') ? 'text-purple-400' : ''}`} />
+            Billing
           </button>
           <button
             onClick={() => navTo('/affiliates')}

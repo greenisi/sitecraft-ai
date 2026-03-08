@@ -337,7 +337,7 @@ export default function DashboardPage() {
           )}
           <button
             onClick={openNewProjectModal}
-            className="flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-all w-full sm:w-auto"
+            className="flex items-center justify-center gap-2 rounded-xl px-5 py-3 md:px-4 md:py-2 text-sm font-semibold text-white transition-all w-full sm:w-auto min-h-[44px] md:min-h-0"
             style={{
               background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
             }}
@@ -413,16 +413,16 @@ export default function DashboardPage() {
                       <Clock className="h-3 w-3" />
                       {formatDate(project.updated_at || project.created_at)}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
                       <button
                         onClick={() => setConfirmDeleteId(project.id)}
                         disabled={deletingId === project.id || isProjectGenerating}
-                        className="text-gray-500 hover:text-red-400 transition-colors disabled:opacity-50"
+                        className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:text-red-400 hover:bg-white/5 transition-colors disabled:opacity-50"
                       >
                         {deletingId === project.id ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash2 className="h-4 w-4" />
                         )}
                       </button>
                       <button
@@ -430,28 +430,28 @@ export default function DashboardPage() {
                           e.stopPropagation();
                           router.push(`/projects/${project.id}/leads`);
                         }}
-                        className="text-gray-500 hover:text-emerald-400 transition-colors"
+                        className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:text-emerald-400 hover:bg-white/5 transition-colors"
                         title="View leads & orders"
                       >
-                        <Inbox className="h-3.5 w-3.5" />
+                        <Inbox className="h-4 w-4" />
                       </button>
-                                          <button
-                                                                  onClick={(e) => {
-                                                                                            e.stopPropagation();
-                                                                                            router.push(`/projects/${project.id}/admin`);
-                                                                  }}
-                                                                  className="text-gray-500 hover:text-violet-400 transition-colors"
-                                                                  title="Settings"
-                                                                >
-                                                                <Settings className="h-3.5 w-3.5" />
-                                          </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/projects/${project.id}/admin`);
+                        }}
+                        className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:text-violet-400 hover:bg-white/5 transition-colors"
+                        title="Settings"
+                      >
+                        <Settings className="h-4 w-4" />
+                      </button>
                       <button
                         onClick={() =>
                           router.push(`/projects/${project.id}`)
                         }
-                        className="flex items-center gap-1 text-xs text-violet-400 hover:text-violet-300 font-medium transition-colors"
+                        className="flex items-center justify-center gap-1.5 h-10 px-3 rounded-lg text-sm text-violet-400 hover:text-violet-300 hover:bg-white/5 font-medium transition-colors"
                       >
-                        <Pencil className="h-3 w-3" />
+                        <Pencil className="h-3.5 w-3.5" />
                         {isProjectGenerating ? 'View' : 'Edit'}
                       </button>
                     </div>
@@ -549,7 +549,7 @@ export default function DashboardPage() {
           >
             <button
               onClick={() => setShowModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+              className="absolute top-3 right-3 flex items-center justify-center w-10 h-10 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
             >
               <X className="h-5 w-5" />
             </button>

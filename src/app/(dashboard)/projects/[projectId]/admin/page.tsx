@@ -80,6 +80,8 @@ export default function AdminDashboard() {
   const [config, setConfig] = useState<any>(null);
   const [recentLeads, setRecentLeads] = useState<Submission[]>([]);
   const [newLeadCount, setNewLeadCount] = useState(0);
+  const [seoScore, setSeoScore] = useState<number | null>(null);
+  const [marketingAssetCount, setMarketingAssetCount] = useState(0);
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -131,6 +133,15 @@ export default function AdminDashboard() {
       // Recent leads (top 5)
       setRecentLeads(submissions.slice(0, 5));
       setNewLeadCount(submissions.filter((s: Submission) => s.status === 'new').length);
+
+      // Marketing stats (fire-and-forget, non-blocking)
+      Promise.all([
+        fetch(`/api/projects/${projectId}/seo/score`).then(r => r.ok ? r.json() : null),
+        fetch(`/api/projects/${projectId}/marketing`).then(r => r.ok ? r.json() : null),
+      ]).then(([scoreData, assetsData]) => {
+        if (scoreData?.overall != null) setSeoScore(scoreData.overall);
+        if (assetsData?.assets) setMarketingAssetCount(assetsData.assets.length);
+      }).catch(() => {});
     }
     loadData();
   }, [projectId]);
@@ -196,12 +207,12 @@ export default function AdminDashboard() {
                 </h1>
               )}
               {isPublished ? (
-                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-500/20 text-green-400 border border-green-500/30">
+                <span className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30 min-h-[32px]">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                   Live
                 </span>
               ) : (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-700/50 text-gray-400 border border-gray-600">
+                <span className="px-3 py-1.5 rounded-full text-xs font-medium bg-gray-700/50 text-gray-400 border border-gray-600 min-h-[32px] flex items-center">
                   Draft
                 </span>
               )}
@@ -220,7 +231,7 @@ export default function AdminDashboard() {
           <div className="flex-shrink-0 ml-4 flex flex-col gap-2">
             <Link
               href={`/projects/${projectId}`}
-              className="flex items-center justify-center gap-1.5 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium rounded-lg transition-colors"
+              className="flex items-center justify-center gap-1.5 px-5 py-3 md:px-4 md:py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium rounded-lg transition-colors min-h-[44px] md:min-h-0"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
               Edit Site
@@ -230,7 +241,7 @@ export default function AdminDashboard() {
                 href={project.published_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-1.5 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors border border-gray-700"
+                className="flex items-center justify-center gap-1.5 px-5 py-3 md:px-4 md:py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors border border-gray-700 min-h-[44px] md:min-h-0"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                 View Live
@@ -274,6 +285,29 @@ export default function AdminDashboard() {
           </Link>
         ))}
       </div>
+
+      {/* Marketing Quick Stats */}
+      {(seoScore !== null || marketingAssetCount > 0) && (
+        <Link
+          href={`${basePath}/marketing`}
+          className="bg-gray-900 border border-gray-800 rounded-lg p-5 hover:border-purple-500 transition-colors group block"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex flex-col">
+                <span className="text-xs text-gray-500 mb-1">SEO Score</span>
+                <span className="text-2xl font-bold text-white">{seoScore ?? '—'}<span className="text-sm text-gray-500">/100</span></span>
+              </div>
+              <div className="w-px h-10 bg-gray-800" />
+              <div className="flex flex-col">
+                <span className="text-xs text-gray-500 mb-1">Marketing Assets</span>
+                <span className="text-2xl font-bold text-white">{marketingAssetCount}</span>
+              </div>
+            </div>
+            <span className="text-xs text-gray-500 group-hover:text-gray-400">View Marketing &rarr;</span>
+          </div>
+        </Link>
+      )}
 
       {/* Recent Form Submissions */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">

@@ -29,6 +29,7 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
 
   const [projectName, setProjectName] = useState<string>('');
   const [projectDescription, setProjectDescription] = useState<string>('');
+  const [projectStatus, setProjectStatus] = useState<string>('draft');
   const [inputPrefill, setInputPrefill] = useState<string>('');
 
   // Only show generation UI if it belongs to THIS project
@@ -39,11 +40,12 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
       const supabase = createClient();
       const { data } = await supabase
         .from('projects')
-        .select('name')
+        .select('name, status')
         .eq('id', projectId)
         .single();
       if (data) {
         setProjectName(data.name || '');
+        setProjectStatus(data.status || 'draft');
       }
       const desc = searchParams.get('desc') || '';
       if (desc) setProjectDescription(desc);
@@ -88,6 +90,7 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
             projectName={projectName}
             projectDescription={projectDescription}
             isPaid={isPaid}
+            projectStatus={projectStatus}
           />
         ) : (
           <div className="flex flex-col gap-1 p-4">

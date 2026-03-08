@@ -5,10 +5,10 @@ import { useParams, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const NAV_VISIBILITY: Record<string, string[]> = {
-  service: ['Dashboard', 'Setup', 'Services', 'Bookings', 'Blog', 'Gallery', 'Reviews', 'Leads', 'Business Info', 'Notifications'],
-  ecommerce: ['Dashboard', 'Setup', 'Products', 'Orders', 'Blog', 'Gallery', 'Reviews', 'Leads', 'Business Info', 'Notifications'],
-  realestate: ['Dashboard', 'Setup', 'Properties', 'Blog', 'Gallery', 'Reviews', 'Leads', 'Business Info', 'Notifications'],
-  general: ['Dashboard', 'Setup', 'Services', 'Products', 'Blog', 'Gallery', 'Reviews', 'Leads', 'Business Info', 'Notifications'],
+  service: ['Dashboard', 'Setup', 'Services', 'Bookings', 'Blog', 'Gallery', 'Reviews', 'Leads', 'Marketing', 'Business Info', 'Notifications'],
+  ecommerce: ['Dashboard', 'Setup', 'Products', 'Orders', 'Blog', 'Gallery', 'Reviews', 'Leads', 'Marketing', 'Business Info', 'Notifications'],
+  realestate: ['Dashboard', 'Setup', 'Properties', 'Blog', 'Gallery', 'Reviews', 'Leads', 'Marketing', 'Business Info', 'Notifications'],
+  general: ['Dashboard', 'Setup', 'Services', 'Products', 'Blog', 'Gallery', 'Reviews', 'Leads', 'Marketing', 'Business Info', 'Notifications'],
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -43,6 +43,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: 'Gallery', href: `${basePath}/gallery` },
     { label: 'Reviews', href: `${basePath}/reviews` },
     { label: 'Leads', href: `${basePath}/leads` },
+    { label: 'Marketing', href: `${basePath}/marketing` },
     { label: 'Business Info', href: `${basePath}/business-info` },
     { label: 'Notifications', href: `${basePath}/notifications` },
   ];
@@ -66,7 +67,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="flex items-center gap-2">
           <Link
             href={`/projects/${projectId}`}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors whitespace-nowrap"
+            className="flex items-center gap-1.5 px-4 py-3 md:px-3 md:py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors whitespace-nowrap min-h-[44px] md:min-h-0"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             Editor
@@ -81,7 +82,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-3 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                  className={`px-4 py-3 md:px-3 md:py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors min-h-[44px] md:min-h-0 ${
                     isActive
                       ? 'border-purple-500 text-purple-400'
                       : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600'

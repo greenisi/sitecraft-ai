@@ -94,8 +94,8 @@ export async function POST(request: NextRequest) {
       customer: customerId,
       mode: isSubscription ? 'subscription' : 'payment',
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${origin}/pricing?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/pricing?payment=cancelled`,
+      success_url: `${origin}/billing?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/billing?payment=cancelled`,
       metadata: {
         supabase_user_id: user.id,
         price_type: priceType,
