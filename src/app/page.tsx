@@ -263,6 +263,12 @@ export default function HomePage() {
         @keyframes mini-leaf-sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
         @keyframes mini-cart-bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
         @keyframes mini-steam { 0% { opacity: 0; transform: translateY(0) scale(0.8); } 50% { opacity: 0.6; } 100% { opacity: 0; transform: translateY(-10px) scale(1.2); } }
+        @keyframes fade-in-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes text-shimmer { 0% { background-position: -200% 50%; } 100% { background-position: 200% 50%; } }
+        @keyframes pulse-subtle { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+        .animate-fade-in-up { animation: fade-in-up 0.6s ease-out forwards; }
+        .animate-text-shimmer { animation: text-shimmer 3s ease-in-out infinite; }
+        .animate-pulse-subtle { animation: pulse-subtle 3s ease-in-out infinite; }
       ` }} />
 
       {/* Floating orbs */}
@@ -366,8 +372,13 @@ export default function HomePage() {
                   ))}
                 </div>
 
-                {/* Textarea */}
+                {/* Describe label + Textarea */}
                 <div className="relative px-4 sm:px-5">
+                  <div className="flex items-center gap-2 pt-3 pb-1">
+                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-violet-500/20 to-transparent" />
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-400/70 animate-pulse-subtle">Describe your vision</span>
+                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-violet-500/20 to-transparent" />
+                  </div>
                   <textarea
                     ref={promptInputRef}
                     value={promptText}
@@ -375,7 +386,7 @@ export default function HomePage() {
                     onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && promptText.trim()) { e.preventDefault(); handlePromptSubmit(); } }}
                     placeholder={placeholderText || 'Describe your dream website...'}
                     rows={3}
-                    className="w-full bg-transparent text-white text-base sm:text-lg placeholder-gray-600 py-4 sm:py-5 outline-none resize-none leading-relaxed"
+                    className="w-full bg-transparent text-white text-base sm:text-lg placeholder-gray-600 py-3 sm:py-4 outline-none resize-none leading-relaxed"
                     style={{ minHeight: '80px' }}
                   />
                 </div>
@@ -389,7 +400,7 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="hidden sm:inline text-xs text-gray-600">No credit card required</span>
+                    <span className="hidden sm:inline text-xs font-medium bg-clip-text text-transparent animate-text-shimmer" style={{ backgroundImage: 'linear-gradient(110deg, #6b7280 0%, #a78bfa 45%, #c084fc 55%, #6b7280 100%)', backgroundSize: '200% 100%' }}>Idea → Website in 60s</span>
                     <button
                       onClick={handlePromptSubmit}
                       disabled={!promptText.trim()}
@@ -404,13 +415,25 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* See How It Works link */}
-            <div className="mt-5 flex items-center justify-center gap-6">
-              <Link href="#how-it-works" className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-300 transition-colors">
-                <Play className="h-3.5 w-3.5" />See How It Works
+            {/* Animated trust signals */}
+            <div className="mt-6 flex flex-col items-center gap-3">
+              <div className="flex items-center gap-3 sm:gap-5">
+                <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-gray-400 animate-fade-in-up" style={{ animationDelay: '0.8s', animationFillMode: 'both' }}>
+                  <Zap className="h-3.5 w-3.5 text-yellow-400" />Zero code
+                </span>
+                <span className="text-gray-700/50">·</span>
+                <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-gray-400 animate-fade-in-up" style={{ animationDelay: '1s', animationFillMode: 'both' }}>
+                  <Palette className="h-3.5 w-3.5 text-pink-400" />Zero templates
+                </span>
+                <span className="text-gray-700/50">·</span>
+                <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-gray-400 animate-fade-in-up" style={{ animationDelay: '1.2s', animationFillMode: 'both' }}>
+                  <Rocket className="h-3.5 w-3.5 text-violet-400" />Zero limits
+                </span>
+              </div>
+              <Link href="#how-it-works" className="group inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium text-gray-500 hover:text-violet-300 border border-white/[0.04] hover:border-violet-500/20 transition-all duration-300 hover:bg-violet-500/[0.04] animate-fade-in-up" style={{ animationDelay: '1.4s', animationFillMode: 'both' }}>
+                <Play className="h-3 w-3 transition-transform group-hover:scale-110" />Watch it in action
+                <ArrowRight className="h-3 w-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
               </Link>
-              <span className="text-gray-700">•</span>
-              <span className="text-xs text-gray-600">Free to start &mdash; no credit card</span>
             </div>
           </div>
 
