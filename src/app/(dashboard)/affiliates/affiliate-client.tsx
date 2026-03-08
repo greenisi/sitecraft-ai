@@ -218,14 +218,14 @@ export function AffiliateClient({ affiliate, referrals, userPlan }: Props) {
                         {r.status.replace('_', ' ')}
                       </span>
                     </td>
-                    <td className="px-6 py-3 text-gray-400 capitalize">{r.plan_purchased || '—'}</td>
+                    <td className="px-6 py-3 text-gray-400 capitalize">{r.plan_purchased || '-'}</td>
                     <td className="px-6 py-3">
                       {r.status === 'rewarded' ? (
                         <span className="text-emerald-400 font-medium">+1 free month</span>
                       ) : r.status === 'converted' ? (
                         <span className="text-amber-400 text-xs">Pending reward</span>
                       ) : (
-                        <span className="text-gray-600">—</span>
+                        <span className="text-gray-600">-</span>
                       )}
                     </td>
                   </tr>

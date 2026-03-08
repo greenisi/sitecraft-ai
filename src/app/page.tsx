@@ -315,7 +315,7 @@ export default function HomePage() {
       <section ref={hero.ref} className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-32 sm:pt-40 md:pt-48 pb-24">
           <div className="anim-up inline-flex items-center gap-2 px-4 py-2 rounded-full border border-violet-500/30 mb-8" style={{ background: 'rgba(139,92,246,0.08)' }}>
             <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" /></span>
-            <span className="text-sm text-gray-300 font-medium">Now in Public Beta &mdash; Join 500+ builders</span>
+            <span className="text-sm text-gray-300 font-medium">Now in Public Beta. Join 500+ builders</span>
           </div>
 
           <h1 className="anim-up-1 text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold leading-[1.05] max-w-5xl tracking-tight">
@@ -422,7 +422,7 @@ export default function HomePage() {
                 <br />
                 <span className="bg-clip-text text-transparent animate-gradient-x" style={{ backgroundImage: 'linear-gradient(135deg, #a78bfa, #818cf8, #c084fc, #a78bfa)' }}>No designers. No developers. No waiting.</span>
               </p>
-              <p className="text-sm sm:text-base text-gray-500 text-center max-w-md">Just describe what you want and watch your entire site come to life — pages, photos, content, and all.</p>
+              <p className="text-sm sm:text-base text-gray-500 text-center max-w-md">Just describe what you want and watch your entire site come to life. Pages, photos, content, and all.</p>
             </div>
           </div>
 
@@ -643,12 +643,12 @@ export default function HomePage() {
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
-                { icon: Sparkles, title: 'AI Generation', desc: 'Full multi-page websites built from a simple conversation. Not templates — truly unique code.', color: '#a855f7' },
+                { icon: Sparkles, title: 'AI Generation', desc: 'Full multi-page websites built from a simple conversation. Not templates. Truly unique code.', color: '#a855f7' },
                 { icon: Code2, title: 'Clean Code Output', desc: 'Export production-ready Next.js + Tailwind CSS code. No vendor lock-in.', color: '#3b82f6' },
                 { icon: LayoutDashboard, title: 'Built-in CMS', desc: 'Manage services, blog posts, gallery, reviews, bookings, and more from your dashboard.', color: '#06b6d4' },
                 { icon: Globe, title: 'One-Click Publish', desc: 'Go live instantly on a .innovated.site subdomain or connect your own custom domain.', color: '#10b981' },
                 { icon: MousePointerClick, title: 'AI Autofill', desc: 'One click fills your entire site with your business data from the CMS. Like magic.', color: '#f59e0b' },
-                { icon: Palette, title: 'Full Customization', desc: 'Chat with AI to tweak any part of your site. Colors, layout, copy — whatever you want.', color: '#ef4444' },
+                { icon: Palette, title: 'Full Customization', desc: 'Chat with AI to tweak any part of your site. Colors, layout, copy. Whatever you want.', color: '#ef4444' },
               ].map((f) => (
                 <div key={f.title} className="group relative rounded-2xl p-6 border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-1 anim-up" style={{ background: 'rgba(15,23,42,0.4)' }}>
                   <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: `linear-gradient(135deg, ${f.color}06, transparent)` }} />
@@ -773,7 +773,7 @@ export default function HomePage() {
                       </div>
                       {/* Promo banner */}
                       <div style={{ textAlign: 'center', padding: '5px 0', fontSize: '9px', fontWeight: 600, letterSpacing: '0.08em', color: '#fff', background: 'linear-gradient(90deg, #111 0%, #2a2a2a 50%, #111 100%)', position: 'relative', overflow: 'hidden' }}>
-                        <span style={{ position: 'relative', zIndex: 1 }}>🔥 SUMMER SALE — UP TO 40% OFF — FREE SHIPPING OVER $75</span>
+                        <span style={{ position: 'relative', zIndex: 1 }}>🔥 SUMMER SALE | UP TO 40% OFF | FREE SHIPPING OVER $75</span>
                         <div style={{ position: 'absolute', top: 0, left: '-100%', width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)', animation: 'mini-shimmer 5s ease-in-out infinite' }} />
                       </div>
                       {/* Hero split with real photos */}

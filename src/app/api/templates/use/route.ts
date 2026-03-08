@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     .from('projects')
     .insert({
       user_id: user.id,
-      name: `${template.name} — ${template.config.business.name}`,
+      name: `${template.name} - ${template.config.business.name}`,
       slug: uniqueSlug,
       site_type: template.config.siteType,
       status: 'draft',

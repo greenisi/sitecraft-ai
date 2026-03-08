@@ -125,7 +125,7 @@ export default async function LeadsPage({ params }: { params: Promise<{ projectI
             <Link href="/dashboard" className="text-sm text-gray-400 hover:text-white mb-2 inline-block">
               &larr; Back to dashboard
             </Link>
-            <h1 className="text-2xl font-bold">{project.name} &mdash; Leads &amp; Orders</h1>
+            <h1 className="text-2xl font-bold">{project.name} | Leads &amp; Orders</h1>
             <p className="text-gray-400 text-sm mt-1">Manage all form submissions, inquiries, and orders from your website</p>
           </div>
         </div>
@@ -178,9 +178,9 @@ export default async function LeadsPage({ params }: { params: Promise<{ projectI
                             {new Date(s.created_at).toLocaleDateString()}<br/>
                             {new Date(s.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </td>
-                          <td className="px-4 py-3 font-medium">{s.name || '—'}</td>
-                          <td className="px-4 py-3 text-blue-400 text-xs">{s.email || '—'}</td>
-                          <td className="px-4 py-3 text-xs">{s.phone || '—'}</td>
+                          <td className="px-4 py-3 font-medium">{s.name || '-'}</td>
+                          <td className="px-4 py-3 text-blue-400 text-xs">{s.email || '-'}</td>
+                          <td className="px-4 py-3 text-xs">{s.phone || '-'}</td>
                           <td className="px-4 py-3 max-w-md">
                             {s.message && <p className="text-gray-300 text-xs mb-1">{s.message}</p>}
                             {s.service_needed && <p className="text-xs text-violet-400">Service: {s.service_needed}</p>}
@@ -267,7 +267,7 @@ export default async function LeadsPage({ params }: { params: Promise<{ projectI
                               {o.items.length > 3 && <p className="text-gray-500">+{o.items.length - 3} more</p>}
                             </div>
                           ) : (
-                            <span className="text-gray-500">—</span>
+                            <span className="text-gray-500">-</span>
                           )}
                         </td>
                         <td className="px-4 py-3 font-semibold">${Number(o.total).toFixed(2)} <span className="text-gray-500 text-xs">{o.currency}</span></td>

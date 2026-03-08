@@ -292,7 +292,7 @@ export function useChat(projectId: string) {
 
         if (isConnectionError(rawMsg)) {
           updateLastAssistantMessage(
-            `${planDescription}\n\nConnection interrupted — checking if the generation finished on the server...`,
+            `${planDescription}\n\nConnection interrupted. Checking if the generation finished on the server...`,
             { stage: 'generating' }
           );
 
@@ -330,7 +330,7 @@ export function useChat(projectId: string) {
           }
 
           throw new Error(
-            'The connection was lost and we could not confirm the generation completed. Please refresh the page — your site may already be ready.'
+            'The connection was lost and we could not confirm the generation completed. Please refresh the page. Your site may already be ready.'
           );
         }
 
@@ -642,7 +642,7 @@ export function useChat(projectId: string) {
         let errorMsg = rawMsg;
         if (isConnectionError(rawMsg)) {
           errorMsg =
-            'The generation timed out or the connection was lost. This can happen with complex sites. Please try again — the generation should be faster now.';
+            'The generation timed out or the connection was lost. This can happen with complex sites. Please try again. The generation should be faster now.';
         }
 
         const errorMessage: ChatMessageLocal = {

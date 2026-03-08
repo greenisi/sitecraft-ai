@@ -55,7 +55,7 @@ function DomainSuccessPageContent() {
       }
     } catch {
       setStatus('error');
-      setMessage('Network error. Your payment was received — the domain will be registered shortly.');
+      setMessage('Network error. Your payment was received. The domain will be registered shortly.');
     }
   }
 

@@ -12,9 +12,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Innovated Marketing — AI-Powered Website Generator',
+  title: 'Innovated Marketing | AI-Powered Website Generator',
   description:
-    'Generate high-end websites with AI. Landing pages, portfolios, e-commerce, and SaaS — built with Next.js and Tailwind CSS.',
+    'Generate high-end websites with AI. Landing pages, portfolios, e-commerce, and SaaS. Built with Next.js and Tailwind CSS.',
 };
 
 export default function RootLayout({

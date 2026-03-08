@@ -305,7 +305,7 @@ export default function SettingsPage() {
                   ? 'Subscribe to a plan to start building'
                   : credits > 0
                   ? `${credits} generation credits remaining`
-                  : 'No credits — purchase below to continue'}
+                  : 'No credits. Purchase below to continue'}
               </p>
             </div>
             <div className="text-right">
@@ -392,7 +392,7 @@ export default function SettingsPage() {
                     ) : (
                       <ShoppingCart className="mr-2 h-3 w-3" />
                     )}
-                    10 Credits — $9
+                    10 Credits - $9
                   </Button>
                   <Button
                     onClick={() => handleCheckout('credits_50')}
@@ -406,7 +406,7 @@ export default function SettingsPage() {
                     ) : (
                       <ShoppingCart className="mr-2 h-3 w-3" />
                     )}
-                    50 Credits — $39
+                    50 Credits - $39
                     <span className="ml-1 text-[10px] text-emerald-500 font-bold">
                       SAVE 13%
                     </span>

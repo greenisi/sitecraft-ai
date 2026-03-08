@@ -171,7 +171,7 @@ export default function PricingPage() {
               className="w-full py-3 rounded-xl text-center text-sm font-medium text-gray-500"
               style={{ background: 'rgba(255,255,255,0.03)' }}
             >
-              —
+              -
             </div>
           )}
         </div>
@@ -188,7 +188,7 @@ export default function PricingPage() {
           </div>
           <h3 className="text-xl font-bold text-white mb-1">Beta Pro</h3>
           <p className="text-gray-500 text-sm mb-4">
-            Exclusive early adopter pricing — locked forever
+            Exclusive early adopter pricing, locked forever
           </p>
           <div className="mb-6">
             <span className="text-4xl font-bold text-white">$49</span>
@@ -238,7 +238,7 @@ export default function PricingPage() {
       <div className="text-center mb-10">
         <h2 className="text-3xl font-bold text-white mb-2">Credit Store</h2>
         <p className="text-gray-400">
-          Purchase credits for AI generations — each build uses 1 credit
+          Purchase credits for AI generations. Each build uses 1 credit
         </p>
       </div>
 

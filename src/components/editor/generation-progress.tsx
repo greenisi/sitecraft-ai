@@ -92,7 +92,7 @@ function LiveCodeStream() {
             <div className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
           </div>
           <span className="text-[10px] text-green-400/60 font-mono ml-2">
-            innovated-marketing — building your website
+            innovated-marketing | building your website
           </span>
         </div>
         {displayComponent && (
