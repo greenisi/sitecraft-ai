@@ -832,7 +832,146 @@ export async function publishToSubdomain(
   tree.addFile('next.config.js', NC_CONTENT, 'config');
 
   // Add build-retry.js for resilient builds
-  const BUILD_RETRY = "const { execSync } = require('child_process');\nconst fs = require('fs');\nconst path = require('path');\n\nconst MAX_RETRIES = 5;\n\nfunction findErrorFile(stderr) {\n  const patterns = [\n    /\\.\\/src\\/components\\/([\\w]+)\\.tsx/,\n    /\\/src\\/components\\/([\\w]+)\\.tsx/,\n  ];\n  for (const p of patterns) {\n    const m = stderr.match(p);\n    if (m) return m[1];\n  }\n  return null;\n}\n\nfunction removeComponentFromPages(componentName) {\n  const appDir = path.join(__dirname, 'src', 'app');\n  if (!fs.existsSync(appDir)) return;\n  function walkDir(dir) {\n    for (const f of fs.readdirSync(dir, { withFileTypes: true })) {\n      const fp = path.join(dir, f.name);\n      if (f.isDirectory()) { walkDir(fp); continue; }\n      if (!f.name.endsWith('.tsx') && !f.name.endsWith('.ts')) continue;\n      let content = fs.readFileSync(fp, 'utf8');\n      const re1 = new RegExp(\"import\\\\s+\" + componentName + \"\\\\s+from\\\\s+['\\\"][^'\\\"]+['\\\"];?\\\\s*\\\\n?\", 'g');\n      const re2 = new RegExp(\"\\\\s*<\" + componentName + \"[^>]*/?>\", 'g');\n      const re3 = new RegExp(\"\\\\s*</\" + componentName + \">\", 'g');\n      const newContent = content.replace(re1, '').replace(re2, '').replace(re3, '');\n      if (newContent !== content) {\n        fs.writeFileSync(fp, newContent);\n        console.log('Cleaned ' + componentName + ' from ' + fp);\n      }\n    }\n  }\n  walkDir(appDir);\n}\n\nfor (let attempt = 0; attempt < MAX_RETRIES; attempt++) {\n  try {\n    console.log('Build attempt ' + (attempt + 1) + '...');\n    execSync('npx next build', { stdio: ['pipe', 'inherit', 'pipe'] });\n    console.log('Build succeeded!');\n    process.exit(0);\n  } catch (err) {\n    const stderr = (err.stderr || '').toString();\n    const componentName = findErrorFile(stderr);\n    if (!componentName) {\n      console.error('Build failed, could not find problematic file.');\n      if (attempt === MAX_RETRIES - 1) process.exit(0);\n      continue;\n    }\n    console.log('Removing broken component: ' + componentName);\n    const compPath = path.join(__dirname, 'src', 'components', componentName + '.tsx');\n    if (fs.existsSync(compPath)) fs.unlinkSync(compPath);\n    removeComponentFromPages(componentName);\n  }\n}\nprocess.exit(0);\n";
+  const BUILD_RETRY = `const { execSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+
+const MAX_RETRIES = 5;
+
+function findErrorFile(stderr) {
+  // Match component files
+  const componentPatterns = [
+    /\\.\\/src\\/components\\/([\\w]+)\\.tsx/,
+    /\\/src\\/components\\/([\\w]+)\\.tsx/,
+  ];
+  for (const p of componentPatterns) {
+    const m = stderr.match(p);
+    if (m) return { type: 'component', name: m[1] };
+  }
+  // Match page/layout files
+  const pagePatterns = [
+    /\\.\\/src\\/app\\/([\\w/[\\]-]+)\\.tsx/,
+    /\\/src\\/app\\/([\\w/[\\]-]+)\\.tsx/,
+  ];
+  for (const p of pagePatterns) {
+    const m = stderr.match(p);
+    if (m) return { type: 'page', path: 'src/app/' + m[1] + '.tsx' };
+  }
+  // Match module not found errors
+  const moduleMatch = stderr.match(/Module not found.*'([^']+)'/);
+  if (moduleMatch) return { type: 'module', name: moduleMatch[1] };
+  return null;
+}
+
+function removeComponentFromPages(componentName) {
+  const appDir = path.join(__dirname, 'src', 'app');
+  if (!fs.existsSync(appDir)) return;
+  function walkDir(dir) {
+    for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
+      const fp = path.join(dir, f.name);
+      if (f.isDirectory()) { walkDir(fp); continue; }
+      if (!f.name.endsWith('.tsx') && !f.name.endsWith('.ts')) continue;
+      let content = fs.readFileSync(fp, 'utf8');
+      const re1 = new RegExp("import\\\\s+" + componentName + "\\\\s+from\\\\s+['\\""][^'\\"]+['\\""];?\\\\s*\\\\n?", 'g');
+      const re2 = new RegExp("\\\\s*<" + componentName + "[^>]*/?>", 'g');
+      const re3 = new RegExp("\\\\s*</" + componentName + ">", 'g');
+      const newContent = content.replace(re1, '').replace(re2, '').replace(re3, '');
+      if (newContent !== content) {
+        fs.writeFileSync(fp, newContent);
+        console.log('Cleaned ' + componentName + ' from ' + fp);
+      }
+    }
+  }
+  walkDir(appDir);
+}
+
+function fixPageFile(filePath) {
+  const fullPath = path.join(__dirname, filePath);
+  if (!fs.existsSync(fullPath)) return false;
+  // Try to fix common issues: remove problematic imports, add missing 'use client'
+  let content = fs.readFileSync(fullPath, 'utf8');
+  const original = content;
+  // Remove broken imports
+  content = content.replace(/import\\s+\\w+\\s+from\\s+['"][^'"]*['"];?\\s*\\n?/g, (match) => {
+    const modPath = match.match(/from\\s+['"]([^'"]+)['"]/);
+    if (!modPath) return match;
+    const mod = modPath[1];
+    // Keep relative and package imports that likely exist
+    if (mod.startsWith('.') || mod.startsWith('@/')) {
+      const resolved = mod.startsWith('@/') ? path.join(__dirname, mod.replace('@/', 'src/')) : path.join(path.dirname(fullPath), mod);
+      const candidates = [resolved + '.tsx', resolved + '.ts', resolved + '/index.tsx', resolved + '/index.ts'];
+      if (!candidates.some(c => fs.existsSync(c))) {
+        console.log('Removing broken import: ' + mod + ' from ' + filePath);
+        return '';
+      }
+    }
+    return match;
+  });
+  if (content !== original) {
+    fs.writeFileSync(fullPath, content);
+    return true;
+  }
+  return false;
+}
+
+let lastStderr = '';
+for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+  try {
+    console.log('Build attempt ' + (attempt + 1) + '...');
+    execSync('npx next build', { stdio: ['pipe', 'inherit', 'pipe'] });
+    console.log('Build succeeded!');
+    process.exit(0);
+  } catch (err) {
+    const stderr = (err.stderr || '').toString();
+    lastStderr = stderr;
+    console.error('Build error output:', stderr.slice(0, 2000));
+    const errorInfo = findErrorFile(stderr);
+    if (!errorInfo) {
+      console.error('Build failed, could not identify problematic file.');
+      if (attempt === MAX_RETRIES - 1) {
+        console.error('All ' + MAX_RETRIES + ' build attempts failed. Exiting with error.');
+        process.exit(1);
+      }
+      continue;
+    }
+    if (errorInfo.type === 'component') {
+      console.log('Removing broken component: ' + errorInfo.name);
+      const compPath = path.join(__dirname, 'src', 'components', errorInfo.name + '.tsx');
+      if (fs.existsSync(compPath)) fs.unlinkSync(compPath);
+      removeComponentFromPages(errorInfo.name);
+    } else if (errorInfo.type === 'page') {
+      console.log('Fixing broken page: ' + errorInfo.path);
+      if (!fixPageFile(errorInfo.path)) {
+        console.log('Could not auto-fix page, removing it');
+        const fullPath = path.join(__dirname, errorInfo.path);
+        if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+      }
+    } else if (errorInfo.type === 'module') {
+      console.log('Missing module: ' + errorInfo.name + ' — scanning files for broken imports');
+      // Remove imports of the missing module from all files
+      const srcDir = path.join(__dirname, 'src');
+      function fixImports(dir) {
+        if (!fs.existsSync(dir)) return;
+        for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
+          const fp = path.join(dir, f.name);
+          if (f.isDirectory()) { fixImports(fp); continue; }
+          if (!f.name.endsWith('.tsx') && !f.name.endsWith('.ts')) continue;
+          let content = fs.readFileSync(fp, 'utf8');
+          const re = new RegExp("import\\\\s+[^;]*from\\\\s+['\\""]" + errorInfo.name.replace(/[.*+?^\${}()|[\\]\\\\]/g, '\\\\$&') + "['\\""];?\\\\s*\\\\n?", 'g');
+          const newContent = content.replace(re, '');
+          if (newContent !== content) {
+            fs.writeFileSync(fp, newContent);
+            console.log('Removed import of ' + errorInfo.name + ' from ' + fp);
+          }
+        }
+      }
+      fixImports(srcDir);
+    }
+  }
+}
+console.error('All ' + MAX_RETRIES + ' build attempts failed.');
+process.exit(1);
+`;
   tree.addFile('build-retry.js', BUILD_RETRY, 'config');
 
     // Force-override package.json to make build always succeed
@@ -927,22 +1066,45 @@ export async function publishToSubdomain(
     console.error(`Failed to add domain alias ${subdomain} to project ${vercelProjectName}`);
   }
 
-    // 9b. Wait for Vercel build to complete (up to 60s)
+    // 9b. Wait for Vercel build to complete (up to 120s)
     // This prevents DEPLOYMENT_NOT_FOUND when user visits the URL immediately
+    let deploymentReady = false;
+    let deploymentState = 'UNKNOWN';
     try {
-          const { ready, state } = await waitForDeploymentReady(
-                  deployment.deploymentId,
-            { token: PLATFORM_TOKEN, teamId: TEAM_ID },
-                  60000,
-                  4000
-                );
-          if (!ready) {
-                  console.warn(`Deployment ${deployment.deploymentId} not ready after 60s (state: ${state})`);
-          }
+      const { ready, state } = await waitForDeploymentReady(
+        deployment.deploymentId,
+        { token: PLATFORM_TOKEN, teamId: TEAM_ID },
+        120000,  // 2 minutes max wait
+        5000     // poll every 5s
+      );
+      deploymentReady = ready;
+      deploymentState = state;
+      if (!ready) {
+        console.warn(`Deployment ${deployment.deploymentId} not ready after 120s (state: ${state})`);
+      }
     } catch (waitError) {
-          console.warn('Error waiting for deployment ready:', waitError);
+      console.warn('Error waiting for deployment ready:', waitError);
     }
-  
+
+    // If the build failed, don't mark as published — throw error so the user knows
+    if (deploymentState === 'ERROR' || deploymentState === 'CANCELED') {
+      // Update project status to reflect the failure
+      await admin
+        .from('projects')
+        .update({
+          status: 'generated', // revert to generated so user can retry
+          vercel_project_name: vercelProjectName,
+          vercel_project_id: vercelProjectId,
+        })
+        .eq('id', projectId);
+
+      throw new Error(
+        `Website build failed on Vercel (state: ${deploymentState}). ` +
+        'This usually means the AI-generated code has an issue. ' +
+        'Try regenerating the website or editing the code in the editor.'
+      );
+    }
+
   // 10. Update project in DB
   await admin
     .from('projects')
