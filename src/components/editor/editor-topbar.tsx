@@ -33,6 +33,7 @@ import { useUpgradeGate } from '@/components/editor/upgrade-gate';
 import { useVisualEditorStore } from '@/stores/visual-editor-store';
 import { useVisualEditorSave } from '@/lib/hooks/use-visual-editor-save';
 import { isGenerating as bgIsGenerating } from '@/lib/generation/background-generation';
+import { reloadPreviewIframe } from '@/lib/visual-editor/iframe-ref';
 import { toast } from 'sonner';
 
 interface EditorTopbarProps {
@@ -41,7 +42,7 @@ interface EditorTopbarProps {
 
 export function EditorTopbar({ projectId }: EditorTopbarProps) {
   const router = useRouter();
-  const { data: project } = useProject(projectId);
+  const { data: project, isLoading: projectLoading } = useProject(projectId);
   const { publish, isPublishing, reset: resetPublish } = usePublish(projectId);
   const { isPaid, loading: planLoading } = usePlan();
   const { modal: upgradeModal, showUpgrade } = useUpgradeGate();
@@ -207,7 +208,7 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
           </Button>
 
           <h1 className="text-sm font-semibold truncate max-w-[120px] md:max-w-[200px]">
-            {project?.name || 'Untitled Project'}
+            {projectLoading ? '' : (project?.name || 'Untitled Project')}
           </h1>
 
           {isAlreadyPublished && (
@@ -504,6 +505,7 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
               variant="outline"
               onClick={() => {
                 clearPendingChanges();
+                reloadPreviewIframe();
                 toggleVisualEditor();
                 setShowUnsavedDialog(false);
               }}

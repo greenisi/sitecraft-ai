@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useVisualEditorStore } from '@/stores/visual-editor-store';
-import { sendToPreviewIframe } from '@/lib/visual-editor/iframe-ref';
+import { sendToPreviewIframe, reloadPreviewIframe } from '@/lib/visual-editor/iframe-ref';
 import { ColorPicker } from './color-picker';
 import { SpacingEditor } from './spacing-editor';
 import { TypographyControls } from './typography-controls';
@@ -31,6 +31,7 @@ export function PropertiesPanel({ onSave }: PropertiesPanelProps) {
     exitVisualEditor,
     addPendingChange,
     clearPendingChanges,
+    updateSelectedElementStyle,
     undo,
     redo,
     undoStack,
@@ -93,8 +94,11 @@ export function PropertiesPanel({ onSave }: PropertiesPanelProps) {
         oldValue: selectedElement.styles[styleKey] || '',
         newValue: value,
       });
+
+      // Optimistically update the style in store so controls stay in sync
+      updateSelectedElementStyle(property, value);
     },
-    [selectedElement, sendToIframe, addPendingChange]
+    [selectedElement, sendToIframe, addPendingChange, updateSelectedElementStyle]
   );
 
   const handleBorderRadiusChange = useCallback(
@@ -584,7 +588,10 @@ export function PropertiesPanel({ onSave }: PropertiesPanelProps) {
               variant="outline"
               size="sm"
               className="flex-1 h-8 text-xs"
-              onClick={clearPendingChanges}
+              onClick={() => {
+                clearPendingChanges();
+                reloadPreviewIframe();
+              }}
               disabled={isSaving}
             >
               <Trash2 className="h-3 w-3 mr-1.5" />

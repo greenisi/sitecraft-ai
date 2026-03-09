@@ -239,10 +239,13 @@ function StageChecklist() {
         ))}
       </div>
 
-      {/* Error message */}
+      {/* Error message with retry */}
       {isError && error && (
         <div className="mx-3 mb-3 rounded-lg bg-destructive/5 border border-destructive/10 px-3 py-2.5">
-          <p className="text-xs text-destructive/80">{error}</p>
+          <p className="text-xs text-destructive/80 mb-2">{error}</p>
+          <p className="text-xs text-muted-foreground">
+            Try sending your request again, or describe what you want differently.
+          </p>
         </div>
       )}
 

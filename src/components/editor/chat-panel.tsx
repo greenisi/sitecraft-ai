@@ -10,7 +10,7 @@ import { ChatInput } from './chat-input';
 import { ChatWelcome } from './chat-welcome';
 import { GenerationProgress } from './generation-progress';
 import { useUpgradeGate, LockBadge } from './upgrade-gate';
-import { Sparkles, Lock } from 'lucide-react';
+import { Sparkles, Lock, RefreshCw } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 interface ChatPanelProps {
@@ -129,6 +129,44 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
                       )}
                     </div>
                   )}
+
+                {/* Show retry button after error messages */}
+                {message.metadata?.stage === 'error' &&
+                  index === messages.length - 1 &&
+                  !isProcessing && (
+                    <div className="flex flex-wrap gap-2 mt-3 ml-11">
+                      <button
+                        onClick={() => {
+                          // Find last user message to retry
+                          const lastUserMsg = [...messages]
+                            .reverse()
+                            .find((m) => m.role === 'user');
+                          if (lastUserMsg) {
+                            handleSuggestionClick(lastUserMsg.content);
+                          }
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border transition-all duration-200 border-destructive/20 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:border-destructive/40 hover:scale-105"
+                      >
+                        <RefreshCw className="h-3 w-3" />
+                        Try again
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleSuggestionClick(
+                            'Build me a simple, clean website'
+                          )
+                        }
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border transition-all duration-200 ${
+                          isPaid
+                            ? 'border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/40 hover:scale-105'
+                            : 'border-gray-500/20 bg-gray-500/5 text-gray-400 cursor-not-allowed'
+                        }`}
+                      >
+                        <Sparkles className="h-3 w-3" />
+                        Try a simpler request
+                      </button>
+                    </div>
+                  )}
               </div>
             ))}
 
@@ -159,7 +197,7 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
         prefillValue={inputPrefill}
         onPrefillConsumed={() => setInputPrefill('')}
         placeholder={
-          !isPaid
+          !isPaid && !planLoading
             ? 'Upgrade to Pro to use AI generation...'
             : messages.length === 0
             ? 'Describe the website you want to build...'

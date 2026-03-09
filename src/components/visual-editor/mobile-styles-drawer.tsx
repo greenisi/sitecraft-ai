@@ -62,6 +62,7 @@ export function MobileStylesDrawer({ onSave }: MobileStylesDrawerProps) {
     isSaving,
     clearPendingChanges,
     addPendingChange,
+    updateSelectedElementStyle,
   } = useVisualEditorStore();
 
   // Local tab state — decoupled from desktop PropertiesPanel
@@ -99,8 +100,10 @@ export function MobileStylesDrawer({ onSave }: MobileStylesDrawerProps) {
         oldValue: selectedElement.styles[styleKey] || '',
         newValue: value,
       });
+      // Optimistically update the style in store so controls stay in sync
+      updateSelectedElementStyle(property, value);
     },
-    [selectedElement, sendToIframe, addPendingChange]
+    [selectedElement, sendToIframe, addPendingChange, updateSelectedElementStyle]
   );
 
   const handleBorderStyleChange = useCallback(

@@ -1292,6 +1292,9 @@ export function getIframeBridgeScript(): string {
   window.addEventListener('scroll', updateOverlays, true);
   window.addEventListener('resize', updateOverlays);
 
+  // ========== ANNOUNCE READY ==========
+  window.parent.postMessage({ type: 'sitecraft:bridge-ready' }, '*');
+
   // ========== VISUAL VIEWPORT (keyboard-aware toolbar on mobile) ==========
   function onVisualViewportResize() {
     if (isInlineEditing && toolbarMode === 'text-editing') {

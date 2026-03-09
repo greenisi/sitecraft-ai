@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   ChevronUp,
   ChevronDown,
@@ -26,23 +26,57 @@ interface SectionInfo {
 export function SectionManager() {
   const [sections, setSections] = useState<SectionInfo[]>([]);
   const [loading, setLoading] = useState(false);
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const retryCountRef = useRef(0);
+  const gotResponseRef = useRef(false);
 
   const refreshSections = useCallback(() => {
     setLoading(true);
+    gotResponseRef.current = false;
     sendToPreviewIframe({ type: 'sitecraft:get-sections' });
     // The response comes via postMessage
   }, []);
 
+  // On mount, request sections. Also retry with backoff if bridge isn't ready yet.
   useEffect(() => {
-    refreshSections();
-  }, [refreshSections]);
+    retryCountRef.current = 0;
+    gotResponseRef.current = false;
 
-  // Listen for sections-list response
+    function tryRefresh() {
+      if (gotResponseRef.current) return;
+      sendToPreviewIframe({ type: 'sitecraft:get-sections' });
+      setLoading(true);
+      retryCountRef.current += 1;
+      // Retry up to 5 times with increasing delay (300ms, 600ms, 1s, 1.5s, 2s)
+      if (retryCountRef.current < 5) {
+        retryTimerRef.current = setTimeout(tryRefresh, retryCountRef.current * 300);
+      } else {
+        // Give up — show empty state instead of infinite loading
+        setLoading(false);
+      }
+    }
+
+    tryRefresh();
+
+    return () => {
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+    };
+  }, []);
+
+  // Listen for sections-list response AND bridge-ready signal
   useEffect(() => {
     function handleMessage(e: MessageEvent) {
       if (e.data?.type === 'sitecraft:sections-list') {
+        gotResponseRef.current = true;
+        if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
         setSections(e.data.data || []);
         setLoading(false);
+      }
+      // When the bridge announces it's ready, request sections
+      if (e.data?.type === 'sitecraft:bridge-ready') {
+        retryCountRef.current = 0;
+        sendToPreviewIframe({ type: 'sitecraft:get-sections' });
+        setLoading(true);
       }
     }
     window.addEventListener('message', handleMessage);

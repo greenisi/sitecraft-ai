@@ -92,6 +92,7 @@ interface VisualEditorState {
   toggleVisualEditor: () => void;
   exitVisualEditor: () => void;
   setSelectedElement: (element: SelectedElement | null) => void;
+  updateSelectedElementStyle: (property: string, value: string) => void;
   setInlineEditing: (editing: boolean) => void;
   setPropertiesPanelTab: (tab: PropertiesTab) => void;
   addPendingChange: (change: Omit<PendingChange, 'id'>) => void;
@@ -140,6 +141,19 @@ export const useVisualEditorStore = create<VisualEditorState>((set, get) => ({
 
   setSelectedElement: (element) =>
     set({ selectedElement: element, isInlineEditing: false }),
+  updateSelectedElementStyle: (property: string, value: string) => {
+    const { selectedElement } = get();
+    if (!selectedElement) return;
+    set({
+      selectedElement: {
+        ...selectedElement,
+        styles: {
+          ...selectedElement.styles,
+          [property]: value,
+        },
+      },
+    });
+  },
 
   setInlineEditing: (editing) => set({ isInlineEditing: editing }),
 

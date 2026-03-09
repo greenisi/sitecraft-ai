@@ -116,7 +116,7 @@ function useDebouncedColorize(code: string, isActive: boolean): string {
 
 // ─── Main Component ─────────────────────────────────────────────────
 export function PreviewPanel({ projectId }: PreviewPanelProps) {
-  const { data: generated } = useGeneratedFiles(projectId);
+  const { data: generated, isLoading: filesLoading } = useGeneratedFiles(projectId);
   const {
     files: realtimeFiles,
     isGenerating,
@@ -210,14 +210,27 @@ export function PreviewPanel({ projectId }: PreviewPanelProps) {
   const files = hasRealtimeFiles ? realtimeFiles : generated?.files || {};
   const hasFiles = Object.keys(files).length > 0;
 
-  // Should we show the code editor? During generation OR briefly after
-  // (while waiting for the preview transition)
+  // Should we show the code editor? Only during an ACTIVE generation
+  // or briefly after (while waiting for the preview transition).
+  // When files come from the DB (no active generation), go straight to preview.
   const showCodeEditor =
-    (isGenerating || (currentStage === 'complete' && !showPreview)) &&
+    (isGenerating || (currentStage === 'complete' && !showPreview && hasRealtimeFiles)) &&
     !showPreview;
 
-  // ---- EMPTY STATE ----
-  if (!hasFiles && !isGenerating && !showCodeEditor) {
+  // ---- LOADING STATE (fetching files from DB after refresh) ----
+  if (filesLoading && !hasFiles && !isGenerating) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center bg-muted/30">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground/50" />
+          <p className="text-sm text-muted-foreground">Loading preview…</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ---- EMPTY STATE (no files exist at all) ----
+  if (!hasFiles && !isGenerating && !showCodeEditor && !filesLoading) {
     return (
       <div className="flex h-full flex-col items-center justify-center bg-muted/30">
         <div className="flex flex-col items-center gap-4 text-center px-8">

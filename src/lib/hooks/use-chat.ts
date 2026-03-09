@@ -104,6 +104,7 @@ export function useChat(projectId: string) {
   const generationStore = useGenerationStore();
   const templateAutoTriggered = useRef(false);
   const followUpSuggestionsRef = useRef<string[]>([]);
+  const completionHandledRef = useRef(false);
 
   // ── Reset generation store when projectId changes ──
   // This prevents generation state from project A leaking into project B
@@ -320,6 +321,11 @@ export function useChat(projectId: string) {
   }, [projectId]);
 
   const handleGenerationComplete = useCallback(async () => {
+    // Guard against duplicate calls — both runGeneration() and bgSubscribe
+    // can fire for the same completion event
+    if (completionHandledRef.current) return;
+    completionHandledRef.current = true;
+
     const supabase = createClient();
 
     setProcessing(false, 'complete');
@@ -366,6 +372,7 @@ export function useChat(projectId: string) {
       opts?: { isTemplate?: boolean; projectName?: string }
     ) => {
       const generationStartedAt = new Date().toISOString();
+      completionHandledRef.current = false; // Reset dedup guard for new generation
       setProcessing(true, 'generating');
       generationStore.startGeneration(projectId);
 
