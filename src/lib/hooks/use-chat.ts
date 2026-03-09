@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { useChatStore, type ChatMessageLocal } from '@/stores/chat-store';
@@ -211,6 +211,84 @@ export function useChat(projectId: string) {
     });
 
     return unsub;
+  }, [projectId]);
+
+  // ── Warn before leaving during active generation ──
+  useEffect(() => {
+    if (!isProcessing) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      // Modern browsers show a generic message; setting returnValue is required
+      e.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isProcessing]);
+
+  // ── Recover from page refresh during an active generation ──
+  // On mount, check if the server has an in-progress generation and poll
+  // until it completes, then load the finished files into the preview.
+  const recoveryRanRef = useRef(false);
+  useEffect(() => {
+    if (recoveryRanRef.current) return;
+    recoveryRanRef.current = true;
+
+    // Don't run recovery if a generation is already tracked client-side
+    if (generationStore.isGenerating) return;
+
+    const recover = async () => {
+      try {
+        const res = await fetch(
+          `/api/generate/status?projectId=${encodeURIComponent(projectId)}`
+        );
+        if (!res.ok) return;
+        const data: GenerationStatus = await res.json();
+
+        // If the latest version is still generating, poll for completion
+        if (data.latestVersion && data.latestVersion.status === 'generating') {
+          setProcessing(true, 'generating');
+          toast.info('Reconnecting to generation…', {
+            description: 'Your website is still being generated on the server.',
+          });
+
+          const status = await pollForCompletion(
+            projectId,
+            data.latestVersion.createdAt
+          );
+
+          if (
+            status &&
+            (status.projectStatus === 'generated' ||
+              (status.latestVersion && status.latestVersion.status === 'complete'))
+          ) {
+            // Files are in DB — refresh the query cache
+            queryClient.invalidateQueries({
+              queryKey: ['generated-files', projectId],
+            });
+            queryClient.invalidateQueries({
+              queryKey: ['project', projectId],
+            });
+            setProcessing(false, 'complete');
+            toast.success('Generation recovered', {
+              description: 'Your website was generated successfully.',
+            });
+          } else {
+            setProcessing(false, 'error');
+            toast.error('Generation may have failed', {
+              description: 'Please try generating again.',
+            });
+          }
+        }
+      } catch {
+        // Silent — recovery is best-effort
+      }
+    };
+
+    // Slight delay to let chat messages load first
+    const timer = setTimeout(recover, 1000);
+    return () => clearTimeout(timer);
   }, [projectId]);
 
   const handleGenerationComplete = useCallback(async () => {
