@@ -85,7 +85,14 @@ CRITICAL RULES:
 - The PRIMARY and SECONDARY colors should have CLEAR VISUAL CONTRAST — they should not look similar.
 - The ACCENT color should POP — it's used for CTA buttons and attention-grabbing elements.
 - The NEUTRAL palette should complement the primary, not just be generic gray. For warm primaries use warm neutrals (stone, amber tints). For cool primaries use cool neutrals (slate, blue-gray).
-- Make each color scale RICH with distinct shades — the 50 should be very light, the 950 very dark.`;
+- Make each color scale RICH with distinct shades — the 50 should be very light, the 950 very dark.
+
+TEXT CONTRAST — NON-NEGOTIABLE:
+- Shades 50-200 are BACKGROUND shades — they MUST be light enough that dark text (gray-900, primary-900, neutral-900) is easily readable on top of them.
+- Shades 700-950 are DARK shades — they MUST be dark enough that white or very light text is easily readable on top of them.
+- NEVER generate shades where 50-200 are mid-tones — they must be very light/pastel.
+- The 50 shade should be almost white with just a hint of color. The 100 shade should be very pale.
+- This ensures WCAG AA contrast (4.5:1 minimum) when pairing light backgrounds with dark text and dark backgrounds with light text.`;
 
   const userPrompt = `Generate a UNIQUE, distinctive design system for:
 Business: "${config.business.name}" (${config.business.industry})

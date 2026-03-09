@@ -89,6 +89,26 @@ The #1 problem with AI-generated sites is they look "over-designed" with too man
 - Vary section backgrounds: mostly white/light, with 1-2 dark or colored accent sections per page
 - Vary spacing, padding, and section heights — not every section should be the same height
 
+=== TEXT CONTRAST — NON-NEGOTIABLE ===
+**This is the #1 quality issue. Light text on light backgrounds is UNACCEPTABLE and looks broken.**
+
+**THE RULE IS SIMPLE:**
+- Light/white backgrounds (bg-white, bg-gray-50, bg-primary-50, bg-neutral-50, bg-*-100, bg-*-200) → ALL text MUST be DARK: text-gray-900, text-gray-800, text-gray-700, text-neutral-900, or text-primary-900. NEVER use text-white, text-gray-100, text-gray-200, text-primary-100, or any light color on a light background.
+- Dark backgrounds (bg-gray-900, bg-primary-900, bg-neutral-900, bg-*-800, bg-*-700) → ALL text MUST be LIGHT: text-white, text-gray-100, text-gray-200. NEVER use text-gray-900, text-gray-800, or dark colors on a dark background.
+- Medium backgrounds (bg-*-300, bg-*-400, bg-*-500) → Avoid these as section backgrounds entirely. If you must use them, pair with text-white ONLY for shades 500+ and text-gray-900 ONLY for shades 300-400.
+
+**Common mistakes to NEVER make:**
+- Hero section with a light/white background but white or light-colored heading text
+- Card descriptions using text-gray-400 or text-gray-500 — too faint on white. Use text-gray-600 minimum.
+- Colored section (bg-primary-50 or bg-primary-100) with text-primary-200 or text-primary-300 — these are unreadable. Use text-primary-900 or text-gray-900.
+- Subtitle/body text using light shades like text-primary-200, text-gray-300, text-neutral-300 on any light background
+- Using text-white on bg-white or bg-gray-50 — this makes text INVISIBLE
+
+**Before writing ANY component, verify:**
+1. What is the background color of this section? (light or dark?)
+2. Is EVERY piece of text (headings, body, captions, labels) using a contrasting color?
+3. Would someone with normal vision immediately be able to read all text?
+
 === OUTPUT FORMAT ===
 Return ONLY fenced code blocks. Each block MUST use a language tag followed by a
 colon and the file path relative to the project root. Example:

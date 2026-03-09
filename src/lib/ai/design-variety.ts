@@ -611,6 +611,12 @@ DESIGN QUALITY RULES:
 - NO neon glow effects on borders or buttons — use clean, solid colors
 - Subtle shadows (shadow-sm, shadow-md) — NOT shadow-2xl with colored glow
 - This must look like a custom \$10,000+ WordPress build — clean, confident, professional.
+
+TEXT CONTRAST — MANDATORY CHECK BEFORE EVERY COMPONENT:
+- On light backgrounds (bg-white, bg-gray-50, bg-*-50, bg-*-100): headings MUST be text-gray-900 or text-primary-900, body text MUST be text-gray-700 or text-gray-600. NEVER use light text colors.
+- On dark backgrounds (bg-gray-900, bg-*-900, bg-*-800): ALL text MUST be text-white or text-gray-100. NEVER use dark text colors.
+- Body text should NEVER be lighter than text-gray-600 on any light background. text-gray-400 and text-gray-500 are too faint.
+- If you cannot guarantee readable contrast, default to text-gray-900 on light and text-white on dark.
 `;
 }
 
