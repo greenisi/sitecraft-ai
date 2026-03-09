@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Clock, Pencil, Trash2, Sparkles, Loader2, X, Inbox , Settings} from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -161,7 +161,105 @@ export default function DashboardPage() {
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
 
-  // Track background generations
+  // Helper to refresh project list from Supabase
+  const refreshProjects = useCallback(async () => {
+    if (!user) return;
+    const supabase = createClient();
+    const { data } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false });
+    if (data) setProjects(data);
+  }, [user]);
+
+  // Poll server for generating projects that the client doesn't know about
+  // (e.g. after page refresh or new tab)
+  const pollingRef = useRef<ReturnType<typeof setInterval>>();
+  const serverCheckRanRef = useRef(false);
+
+  useEffect(() => {
+    if (!user || !projects.length) return;
+    if (serverCheckRanRef.current) return;
+    serverCheckRanRef.current = true;
+
+    // Find projects with 'generating' status in DB that we don't already
+    // know about via the module-level background generation tracker
+    const serverGenerating = projects.filter(
+      (p) => p.status === 'generating' && !bgIsGenerating(p.id)
+    );
+
+    if (serverGenerating.length > 0) {
+      setGeneratingIds((prev) => {
+        const next = new Set(prev);
+        serverGenerating.forEach((p) => next.add(p.id));
+        return next;
+      });
+
+      // Poll the server for these projects until they complete
+      pollingRef.current = setInterval(async () => {
+        let anyStillGenerating = false;
+
+        for (const proj of serverGenerating) {
+          try {
+            const res = await fetch(
+              `/api/generate/status?projectId=${encodeURIComponent(proj.id)}`
+            );
+            if (!res.ok) continue;
+            const data = await res.json();
+
+            const isComplete =
+              data.projectStatus === 'generated' ||
+              data.projectStatus === 'published' ||
+              data.projectStatus === 'deployed' ||
+              (data.latestVersion && data.latestVersion.status === 'complete');
+
+            const isError =
+              data.projectStatus === 'error' ||
+              (data.latestVersion && data.latestVersion.status === 'error');
+
+            if (isComplete) {
+              setGeneratingIds((prev) => {
+                const next = new Set(prev);
+                next.delete(proj.id);
+                return next;
+              });
+              toast.success('Website generated!', {
+                description: `${proj.name} is ready. Click the project to view it.`,
+                duration: 5000,
+              });
+              refreshProjects();
+            } else if (isError) {
+              setGeneratingIds((prev) => {
+                const next = new Set(prev);
+                next.delete(proj.id);
+                return next;
+              });
+              refreshProjects();
+            } else {
+              anyStillGenerating = true;
+            }
+          } catch {
+            anyStillGenerating = true;
+          }
+        }
+
+        if (!anyStillGenerating && pollingRef.current) {
+          clearInterval(pollingRef.current);
+          pollingRef.current = undefined;
+        }
+      }, 5000);
+    }
+
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = undefined;
+      }
+    };
+  }, [user, projects.length, refreshProjects]);
+
+  // Track background generations (module-level — survives in-app navigation)
   useEffect(() => {
     // Initialize with currently active generations
     const active = getAllActiveGenerations();
@@ -181,17 +279,21 @@ export default function DashboardPage() {
         return next;
       });
 
-      // Show toast when background generation completes
+      // Refresh project list and show toast when background generation completes
       if (state.status === 'complete') {
         toast.success('Website generated!', {
           description: 'Your site is ready. Click the project to view it.',
           duration: 5000,
         });
+        refreshProjects();
+      }
+      if (state.status === 'error') {
+        refreshProjects();
       }
     });
 
     return unsub;
-  }, []);
+  }, [refreshProjects]);
 
   useEffect(() => {
     if (user) {

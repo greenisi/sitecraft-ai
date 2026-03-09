@@ -213,20 +213,6 @@ export function useChat(projectId: string) {
     return unsub;
   }, [projectId]);
 
-  // ── Warn before leaving during active generation ──
-  useEffect(() => {
-    if (!isProcessing) return;
-
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      // Modern browsers show a generic message; setting returnValue is required
-      e.returnValue = '';
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [isProcessing]);
-
   // ── Recover from page refresh during an active generation ──
   // On mount, check if the server has an in-progress generation and poll
   // until it completes, then load the finished files into the preview.
