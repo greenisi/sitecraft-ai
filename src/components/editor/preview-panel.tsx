@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useGeneratedFiles } from '@/lib/hooks/use-preview';
 import { useGenerationStore } from '@/stores/generation-store';
 import { PreviewFrame } from '@/components/preview/preview-frame';
@@ -21,6 +21,57 @@ const STAGE_LABELS: Record<string, string> = {
   complete: 'Build Complete',
 };
 
+// ─── Typewriter Hook ────────────────────────────────────────────────
+// Reveals code character-by-character for the actively generating
+// component. For completed/tab-selected components, returns full content.
+function useTypewriter(
+  fullContent: string,
+  isTyping: boolean,
+  componentKey: string | undefined
+) {
+  const displayLenRef = useRef(0);
+  const [, setTick] = useState(0);
+  const rafRef = useRef(0);
+  const prevKeyRef = useRef(componentKey);
+
+  // Reset on component switch (new file starts generating)
+  if (componentKey !== prevKeyRef.current) {
+    prevKeyRef.current = componentKey;
+    displayLenRef.current = 0;
+  }
+
+  // If not typing (viewing a completed component tab), show everything
+  if (!isTyping) {
+    displayLenRef.current = fullContent.length;
+  }
+
+  // Typewriter animation loop — only runs for the active component
+  useEffect(() => {
+    if (!isTyping) return;
+
+    const animate = () => {
+      const target = fullContent.length;
+      const current = displayLenRef.current;
+
+      if (current < target) {
+        const gap = target - current;
+        // Adaptive speed: fast when lots buffered, smooth at steady state
+        const speed = gap > 500 ? 40 : gap > 200 ? 20 : gap > 80 ? 10 : 4;
+        displayLenRef.current = Math.min(current + speed, target);
+        setTick((n) => n + 1); // trigger re-render
+      }
+
+      rafRef.current = requestAnimationFrame(animate);
+    };
+
+    rafRef.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [isTyping, fullContent.length, componentKey]);
+
+  return fullContent.slice(0, displayLenRef.current);
+}
+
+// ─── Main Component ─────────────────────────────────────────────────
 export function PreviewPanel({ projectId }: PreviewPanelProps) {
   const { data: generated } = useGeneratedFiles(projectId);
   const {
@@ -48,9 +99,17 @@ export function PreviewPanel({ projectId }: PreviewPanelProps) {
     ? componentsList.find((c) => c.name === selectedTab)
     : activeComp || completedComps[completedComps.length - 1];
 
-  const codeContent = displayComp ? displayComp.chunks.join('') : '';
-  const lineCount = codeContent ? codeContent.split('\n').length : 0;
+  const fullCodeContent = displayComp ? displayComp.chunks.join('') : '';
   const isViewingActive = displayComp === activeComp;
+
+  // Typewriter: animate code for active component, show full for tabs
+  const displayedCode = useTypewriter(
+    fullCodeContent,
+    isViewingActive && !!activeComp,
+    displayComp?.name
+  );
+
+  const lineCount = displayedCode ? displayedCode.split('\n').length : 0;
 
   // Auto-follow when a new component starts generating
   useEffect(() => {
@@ -59,14 +118,19 @@ export function PreviewPanel({ projectId }: PreviewPanelProps) {
     }
   }, [activeComp?.name]);
 
-  // After generation ends, show preview
+  // After generation ends, transition to preview
   useEffect(() => {
-    if (!isGenerating && Object.keys(realtimeFiles).length > 0) {
-      const t = setTimeout(() => setShowPreview(true), 1200);
+    const hasRtFiles = Object.keys(realtimeFiles).length > 0;
+    const isDone = !isGenerating || currentStage === 'complete';
+
+    if (isDone && hasRtFiles) {
+      const t = setTimeout(() => setShowPreview(true), 1500);
       return () => clearTimeout(t);
     }
-    if (isGenerating) setShowPreview(false);
-  }, [isGenerating, realtimeFiles]);
+    if (isGenerating && currentStage !== 'complete') {
+      setShowPreview(false);
+    }
+  }, [isGenerating, currentStage, realtimeFiles]);
 
   // Reset on new generation
   useEffect(() => {
@@ -77,21 +141,31 @@ export function PreviewPanel({ projectId }: PreviewPanelProps) {
   }, [isGenerating, currentStage]);
 
   // Auto-scroll code area when viewing the active component
-  useEffect(() => {
+  const scrollToBottom = useCallback(() => {
     if (codeRef.current && isViewingActive) {
       codeRef.current.scrollTop = codeRef.current.scrollHeight;
     }
-  });
+  }, [isViewingActive]);
 
-  // Memoize syntax-highlighted code
-  const colorizedCode = useMemo(() => colorize(codeContent), [codeContent]);
+  useEffect(() => {
+    scrollToBottom();
+  }, [displayedCode, scrollToBottom]);
+
+  // Memoize syntax-highlighted code from the typewriter output
+  const colorizedCode = useMemo(() => colorize(displayedCode), [displayedCode]);
 
   const hasRealtimeFiles = Object.keys(realtimeFiles).length > 0;
   const files = hasRealtimeFiles ? realtimeFiles : generated?.files || {};
   const hasFiles = Object.keys(files).length > 0;
 
+  // Should we show the code editor? During generation OR briefly after
+  // (while waiting for the preview transition)
+  const showCodeEditor =
+    (isGenerating || (currentStage === 'complete' && !showPreview)) &&
+    !showPreview;
+
   // ---- EMPTY STATE ----
-  if (!hasFiles && !isGenerating) {
+  if (!hasFiles && !isGenerating && !showCodeEditor) {
     return (
       <div className="flex h-full flex-col items-center justify-center bg-muted/30">
         <div className="flex flex-col items-center gap-4 text-center px-8">
@@ -111,10 +185,12 @@ export function PreviewPanel({ projectId }: PreviewPanelProps) {
   }
 
   // ---- GENERATION IN PROGRESS: IDE-like code streaming ----
-  if (isGenerating && !showPreview) {
+  if (showCodeEditor) {
     const displayFilePath = displayComp?.filePath || displayComp?.name || '';
     const pathSegments = displayFilePath ? displayFilePath.split('/') : [];
-    const stageLabel = currentStage ? STAGE_LABELS[currentStage] || 'Building...' : 'Starting...';
+    const stageLabel = currentStage
+      ? STAGE_LABELS[currentStage] || 'Building...'
+      : 'Starting...';
 
     return (
       <div className="flex h-full flex-col bg-[#0d1117]">
@@ -126,12 +202,17 @@ export function PreviewPanel({ projectId }: PreviewPanelProps) {
           {componentsList.map((comp) => {
             const isActive = comp === activeComp;
             const isSelected =
-              selectedTab === comp.name || (!selectedTab && comp === displayComp);
+              selectedTab === comp.name ||
+              (!selectedTab && comp === displayComp);
             const fileName = comp.filePath
               ? comp.filePath.split('/').pop() || comp.name
               : comp.name;
-            const ext = fileName.includes('.') ? fileName.slice(fileName.lastIndexOf('.')) : '';
-            const nameWithoutExt = ext ? fileName.slice(0, -ext.length) : fileName;
+            const ext = fileName.includes('.')
+              ? fileName.slice(fileName.lastIndexOf('.'))
+              : '';
+            const nameWithoutExt = ext
+              ? fileName.slice(0, -ext.length)
+              : fileName;
 
             return (
               <button
@@ -193,13 +274,16 @@ export function PreviewPanel({ projectId }: PreviewPanelProps) {
           </div>
         )}
 
-        {/* ── Code Editor Area ── */}
+        {/* ── Code Editor Area with Typewriter Effect ── */}
         <div className="flex-1 flex min-h-0 overflow-hidden">
-          {codeContent ? (
+          {displayedCode ? (
             <div
               ref={codeRef}
               className="flex-1 overflow-auto min-h-0 font-mono text-[10px] md:text-[11px] leading-[1.7]"
-              style={{ scrollbarWidth: 'thin', scrollbarColor: '#21262d transparent' }}
+              style={{
+                scrollbarWidth: 'thin',
+                scrollbarColor: '#21262d transparent',
+              }}
             >
               <div className="flex min-h-full">
                 {/* Line numbers gutter */}
@@ -227,13 +311,14 @@ export function PreviewPanel({ projectId }: PreviewPanelProps) {
                     className="whitespace-pre-wrap break-words text-gray-300"
                     dangerouslySetInnerHTML={{ __html: colorizedCode }}
                   />
-                  {/* Blinking cursor */}
+                  {/* Blinking cursor at typing position */}
                   {isViewingActive && activeComp && (
                     <span
                       className="inline-block w-[8px] h-[16px] ml-0.5 align-text-bottom"
                       style={{
                         background: '#58a6ff',
-                        boxShadow: '0 0 8px #58a6ff, 0 0 20px rgba(88,166,255,0.3)',
+                        boxShadow:
+                          '0 0 8px #58a6ff, 0 0 20px rgba(88,166,255,0.3)',
                         animation: 'cursorBlink 1s step-end infinite',
                       }}
                     />
@@ -305,7 +390,9 @@ export function PreviewPanel({ projectId }: PreviewPanelProps) {
             </span>
 
             <span className="text-[#484f58] hidden lg:inline">
-              {currentStage === 'complete' ? 'Build complete' : 'AI Engine Active'}
+              {currentStage === 'complete'
+                ? 'Build complete'
+                : 'AI Engine Active'}
             </span>
           </div>
         </div>
