@@ -24,6 +24,9 @@ const STAGE_LABELS: Record<string, string> = {
 // ─── Typewriter Hook ────────────────────────────────────────────────
 // Reveals code character-by-character for the actively generating
 // component. For completed/tab-selected components, returns full content.
+// Performance: rAF runs at 60fps for smooth position tracking but only
+// triggers React re-renders at ~20fps (every 3rd frame) to keep the
+// DOM work manageable.
 function useTypewriter(
   fullContent: string,
   isTyping: boolean,
@@ -33,11 +36,13 @@ function useTypewriter(
   const [, setTick] = useState(0);
   const rafRef = useRef(0);
   const prevKeyRef = useRef(componentKey);
+  const frameRef = useRef(0);
 
   // Reset on component switch (new file starts generating)
   if (componentKey !== prevKeyRef.current) {
     prevKeyRef.current = componentKey;
     displayLenRef.current = 0;
+    frameRef.current = 0;
   }
 
   // If not typing (viewing a completed component tab), show everything
@@ -58,7 +63,13 @@ function useTypewriter(
         // Adaptive speed: fast when lots buffered, smooth at steady state
         const speed = gap > 500 ? 40 : gap > 200 ? 20 : gap > 80 ? 10 : 4;
         displayLenRef.current = Math.min(current + speed, target);
-        setTick((n) => n + 1); // trigger re-render
+
+        // Only trigger React re-render every 3rd frame (~20fps)
+        // This reduces colorize() + DOM work by 3x while keeping motion smooth
+        frameRef.current++;
+        if (frameRef.current % 3 === 0) {
+          setTick((n) => n + 1);
+        }
       }
 
       rafRef.current = requestAnimationFrame(animate);
@@ -69,6 +80,38 @@ function useTypewriter(
   }, [isTyping, fullContent.length, componentKey]);
 
   return fullContent.slice(0, displayLenRef.current);
+}
+
+// ─── Debounced Colorize Hook ─────────────────────────────────────────
+// Runs syntax highlighting at a throttled rate (~8fps) during active
+// typing to avoid running 7 regex passes on the full code every render.
+// For completed/tab-selected code, colorizes immediately.
+function useDebouncedColorize(code: string, isActive: boolean): string {
+  const [colorized, setColorized] = useState(() => colorize(code));
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const lastCodeRef = useRef(code);
+
+  useEffect(() => {
+    // When not actively typing, colorize synchronously (tab switch, etc.)
+    if (!isActive) {
+      if (code !== lastCodeRef.current) {
+        lastCodeRef.current = code;
+        setColorized(colorize(code));
+      }
+      return;
+    }
+
+    // During active typing: throttle colorize to every 120ms
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      lastCodeRef.current = code;
+      setColorized(colorize(code));
+    }, 120);
+
+    return () => clearTimeout(timerRef.current);
+  }, [code, isActive]);
+
+  return colorized;
 }
 
 // ─── Main Component ─────────────────────────────────────────────────
@@ -109,7 +152,11 @@ export function PreviewPanel({ projectId }: PreviewPanelProps) {
     displayComp?.name
   );
 
-  const lineCount = displayedCode ? displayedCode.split('\n').length : 0;
+  // Memoize line count — avoid split('\n') on the full string every render
+  const lineCount = useMemo(
+    () => (displayedCode ? displayedCode.split('\n').length : 0),
+    [displayedCode]
+  );
 
   // Auto-follow when a new component starts generating
   useEffect(() => {
@@ -140,19 +187,24 @@ export function PreviewPanel({ projectId }: PreviewPanelProps) {
     }
   }, [isGenerating, currentStage]);
 
-  // Auto-scroll code area when viewing the active component
-  const scrollToBottom = useCallback(() => {
-    if (codeRef.current && isViewingActive) {
-      codeRef.current.scrollTop = codeRef.current.scrollHeight;
-    }
-  }, [isViewingActive]);
-
+  // Throttled auto-scroll — only scroll at most every 100ms to avoid layout thrash
+  const scrollTimerRef = useRef<ReturnType<typeof setTimeout>>();
   useEffect(() => {
-    scrollToBottom();
-  }, [displayedCode, scrollToBottom]);
+    if (!codeRef.current || !isViewingActive) return;
+    clearTimeout(scrollTimerRef.current);
+    scrollTimerRef.current = setTimeout(() => {
+      if (codeRef.current) {
+        codeRef.current.scrollTop = codeRef.current.scrollHeight;
+      }
+    }, 100);
+    return () => clearTimeout(scrollTimerRef.current);
+  }, [displayedCode, isViewingActive]);
 
-  // Memoize syntax-highlighted code from the typewriter output
-  const colorizedCode = useMemo(() => colorize(displayedCode), [displayedCode]);
+  // Debounced syntax highlighting — runs at ~8fps instead of every render
+  const colorizedCode = useDebouncedColorize(
+    displayedCode,
+    isViewingActive && !!activeComp
+  );
 
   const hasRealtimeFiles = Object.keys(realtimeFiles).length > 0;
   const files = hasRealtimeFiles ? realtimeFiles : generated?.files || {};
@@ -283,6 +335,8 @@ export function PreviewPanel({ projectId }: PreviewPanelProps) {
               style={{
                 scrollbarWidth: 'thin',
                 scrollbarColor: '#21262d transparent',
+                willChange: isViewingActive ? 'scroll-position' : 'auto',
+                contain: 'layout style',
               }}
             >
               <div className="flex min-h-full">
