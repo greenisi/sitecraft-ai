@@ -27,17 +27,29 @@ export async function GET(request: NextRequest) {
           overflow: 'hidden',
         }}
       >
-        {/* Ambient glow - center */}
+        {/* Ambient glow - top right */}
         <div
           style={{
             position: 'absolute',
-            width: 900,
-            height: 900,
-            borderRadius: 450,
-            background: 'radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 60%)',
-            top: -200,
-            left: '50%',
-            marginLeft: -450,
+            width: 700,
+            height: 700,
+            borderRadius: 350,
+            background: 'radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 60%)',
+            top: -250,
+            right: -100,
+            display: 'flex',
+          }}
+        />
+        {/* Ambient glow - bottom left */}
+        <div
+          style={{
+            position: 'absolute',
+            width: 500,
+            height: 500,
+            borderRadius: 250,
+            background: 'radial-gradient(circle, rgba(59,130,246,0.06) 0%, transparent 60%)',
+            bottom: -150,
+            left: -50,
             display: 'flex',
           }}
         />
@@ -47,7 +59,8 @@ export async function GET(request: NextRequest) {
           style={{
             display: 'flex',
             alignItems: 'center',
-            padding: '32px 52px',
+            justifyContent: 'space-between',
+            padding: '28px 48px',
           }}
         >
           {logoBase64 ? (
@@ -57,44 +70,40 @@ export async function GET(request: NextRequest) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 background: '#ffffff',
-                borderRadius: 16,
-                padding: '10px 28px',
+                borderRadius: 14,
+                padding: '8px 24px',
               }}
             >
-              <img
-                src={logoBase64}
-                height={40}
-              />
+              <img src={logoBase64} height={36} />
             </div>
           ) : (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-              }}
-            >
+            <div style={{ display: 'flex', alignItems: 'center' }}>
               <div
                 style={{
-                  width: 44,
-                  height: 44,
+                  width: 40,
+                  height: 40,
                   borderRadius: 10,
                   background: 'linear-gradient(135deg, #7c3aed, #6366f1)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: 20,
+                  fontSize: 18,
                   fontWeight: 800,
                   color: '#fff',
-                  marginRight: 14,
+                  marginRight: 12,
                 }}
               >
                 IM
               </div>
-              <div style={{ fontSize: 22, fontWeight: 700, color: '#ffffff', display: 'flex' }}>
+              <div style={{ fontSize: 20, fontWeight: 700, color: '#ffffff', display: 'flex' }}>
                 Innovated Marketing
               </div>
             </div>
           )}
+          {/* Tagline on right */}
+          <div style={{ fontSize: 15, color: '#71717a', display: 'flex' }}>
+            AI-Powered Website Builder
+          </div>
         </div>
 
         {/* Main content area */}
@@ -102,7 +111,7 @@ export async function GET(request: NextRequest) {
           style={{
             display: 'flex',
             flex: 1,
-            padding: '0 52px 44px',
+            padding: '0 48px 36px',
             position: 'relative',
           }}
         >
@@ -113,7 +122,7 @@ export async function GET(request: NextRequest) {
               flexDirection: 'column',
               justifyContent: 'center',
               flex: 1,
-              paddingRight: 40,
+              paddingRight: 32,
             }}
           >
             {/* User message */}
@@ -122,25 +131,32 @@ export async function GET(request: NextRequest) {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'flex-end',
-                marginBottom: 20,
+                marginBottom: 16,
               }}
             >
               <div
                 style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginBottom: 6,
+                }}
+              >
+                <div style={{ fontSize: 12, color: '#a1a1aa', marginRight: 8, display: 'flex' }}>You</div>
+                <div style={{ width: 24, height: 24, borderRadius: 12, background: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#fff' }}>U</div>
+              </div>
+              <div
+                style={{
                   background: 'linear-gradient(135deg, #7c3aed, #6366f1)',
                   color: '#ffffff',
-                  fontSize: 18,
-                  padding: '14px 22px',
-                  borderRadius: '18px 18px 4px 18px',
-                  maxWidth: 380,
+                  fontSize: 17,
+                  padding: '14px 20px',
+                  borderRadius: '16px 16px 4px 16px',
+                  maxWidth: 360,
                   lineHeight: 1.5,
                   display: 'flex',
                 }}
               >
-                Build me a modern bakery website with online ordering
-              </div>
-              <div style={{ fontSize: 12, color: '#52525b', marginTop: 6, display: 'flex' }}>
-                You
+                Build me a modern bakery website with online ordering and a menu page
               </div>
             </div>
 
@@ -150,43 +166,77 @@ export async function GET(request: NextRequest) {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'flex-start',
-                marginBottom: 20,
+                marginBottom: 16,
               }}
             >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginBottom: 6,
+                }}
+              >
+                <div style={{ width: 24, height: 24, borderRadius: 12, background: 'linear-gradient(135deg, #7c3aed, #3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: '#fff' }}>AI</div>
+                <div style={{ fontSize: 12, color: '#a1a1aa', marginLeft: 8, display: 'flex' }}>Innovated AI</div>
+              </div>
               <div
                 style={{
                   background: 'rgba(39,39,42,0.8)',
                   border: '1px solid rgba(63,63,70,0.5)',
                   color: '#e4e4e7',
-                  fontSize: 18,
-                  padding: '14px 22px',
-                  borderRadius: '18px 18px 18px 4px',
-                  maxWidth: 400,
+                  fontSize: 17,
+                  padding: '14px 20px',
+                  borderRadius: '16px 16px 16px 4px',
+                  maxWidth: 380,
                   lineHeight: 1.5,
                   display: 'flex',
+                  flexDirection: 'column',
                 }}
               >
-                Done! Your bakery site is live with a menu, ordering system, and contact page.
-              </div>
-              <div style={{ fontSize: 12, color: '#52525b', marginTop: 6, display: 'flex' }}>
-                AI
+                <div style={{ display: 'flex', marginBottom: 6 }}>
+                  Your bakery site is live! I built:
+                </div>
+                <div style={{ display: 'flex', fontSize: 15, color: '#a1a1aa' }}>
+                  ✓ Homepage with hero &amp; gallery
+                </div>
+                <div style={{ display: 'flex', fontSize: 15, color: '#a1a1aa' }}>
+                  ✓ Menu with categories &amp; prices
+                </div>
+                <div style={{ display: 'flex', fontSize: 15, color: '#a1a1aa' }}>
+                  ✓ Online ordering system
+                </div>
               </div>
             </div>
 
-            {/* Typing indicator area */}
+            {/* Input bar */}
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 background: 'rgba(39,39,42,0.4)',
                 border: '1px solid rgba(63,63,70,0.3)',
-                borderRadius: 14,
-                padding: '12px 20px',
+                borderRadius: 12,
+                padding: '11px 18px',
                 marginTop: 4,
               }}
             >
-              <div style={{ fontSize: 15, color: '#71717a', display: 'flex' }}>
+              <div style={{ fontSize: 14, color: '#52525b', display: 'flex', flex: 1 }}>
                 Describe your dream website...
+              </div>
+              <div
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 8,
+                  background: '#6366f1',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 14,
+                  color: '#fff',
+                }}
+              >
+                →
               </div>
             </div>
           </div>
@@ -198,18 +248,10 @@ export async function GET(request: NextRequest) {
               flexDirection: 'column',
               justifyContent: 'center',
               alignItems: 'center',
-              width: 60,
+              width: 48,
             }}
           >
-            <div
-              style={{
-                fontSize: 32,
-                color: '#8b5cf6',
-                display: 'flex',
-              }}
-            >
-              →
-            </div>
+            <div style={{ fontSize: 28, color: '#8b5cf6', display: 'flex' }}>→</div>
           </div>
 
           {/* Right side - Generated website preview */}
@@ -218,7 +260,7 @@ export async function GET(request: NextRequest) {
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
-              width: 420,
+              width: 440,
             }}
           >
             {/* Browser frame */}
@@ -247,7 +289,7 @@ export async function GET(request: NextRequest) {
                 <div
                   style={{
                     flex: 1,
-                    marginLeft: 14,
+                    marginLeft: 12,
                     height: 24,
                     background: 'rgba(39,39,42,0.8)',
                     borderRadius: 5,
@@ -262,106 +304,144 @@ export async function GET(request: NextRequest) {
                 </div>
               </div>
 
-              {/* Website content mockup */}
-              <div style={{ display: 'flex', flexDirection: 'column', padding: 18 }}>
+              {/* Website content - detailed mockup */}
+              <div style={{ display: 'flex', flexDirection: 'column', padding: '14px 16px' }}>
                 {/* Nav */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <div style={{ width: 18, height: 18, borderRadius: 4, background: '#f59e0b', display: 'flex' }} />
-                    <div style={{ width: 60, height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.2)', marginLeft: 8, display: 'flex' }} />
+                    <div style={{ width: 16, height: 16, borderRadius: 4, background: '#f59e0b', display: 'flex' }} />
+                    <div style={{ width: 52, height: 7, borderRadius: 3, background: 'rgba(255,255,255,0.2)', marginLeft: 6, display: 'flex' }} />
                   </div>
-                  <div style={{ display: 'flex' }}>
-                    <div style={{ width: 32, height: 7, borderRadius: 3, background: 'rgba(255,255,255,0.1)', display: 'flex' }} />
-                    <div style={{ width: 32, height: 7, borderRadius: 3, background: 'rgba(255,255,255,0.1)', marginLeft: 10, display: 'flex' }} />
-                    <div style={{ width: 50, height: 22, borderRadius: 5, background: '#f59e0b', marginLeft: 10, display: 'flex' }} />
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{ width: 28, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.1)', display: 'flex' }} />
+                    <div style={{ width: 28, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.1)', marginLeft: 8, display: 'flex' }} />
+                    <div style={{ width: 28, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.1)', marginLeft: 8, display: 'flex' }} />
+                    <div style={{ width: 44, height: 20, borderRadius: 4, background: '#f59e0b', marginLeft: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, color: '#000' }}>
+                      Order
+                    </div>
                   </div>
                 </div>
 
-                {/* Hero image placeholder */}
+                {/* Hero section */}
                 <div
                   style={{
                     width: '100%',
-                    height: 90,
-                    borderRadius: 10,
-                    background: 'linear-gradient(135deg, rgba(245,158,11,0.2), rgba(217,119,6,0.1))',
-                    marginTop: 16,
+                    height: 80,
+                    borderRadius: 8,
+                    background: 'linear-gradient(135deg, rgba(245,158,11,0.25), rgba(217,119,6,0.12))',
+                    marginTop: 12,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexDirection: 'column',
                   }}
                 >
-                  <div style={{ width: 140, height: 10, borderRadius: 5, background: 'rgba(255,255,255,0.2)', display: 'flex' }} />
-                  <div style={{ width: 90, height: 7, borderRadius: 3, background: 'rgba(255,255,255,0.08)', marginTop: 8, display: 'flex' }} />
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.7)', display: 'flex' }}>
+                    Sweet Dreams Bakery
+                  </div>
+                  <div style={{ width: 80, height: 5, borderRadius: 2, background: 'rgba(255,255,255,0.1)', marginTop: 6, display: 'flex' }} />
+                  <div style={{ width: 48, height: 16, borderRadius: 4, background: '#f59e0b', marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 7, color: '#000' }}>
+                    View Menu
+                  </div>
+                </div>
+
+                {/* Section heading */}
+                <div style={{ display: 'flex', alignItems: 'center', marginTop: 12 }}>
+                  <div style={{ width: 60, height: 7, borderRadius: 3, background: 'rgba(255,255,255,0.18)', display: 'flex' }} />
                 </div>
 
                 {/* Product cards */}
-                <div style={{ display: 'flex', marginTop: 14 }}>
+                <div style={{ display: 'flex', marginTop: 8 }}>
                   <div
                     style={{
                       flex: 1,
-                      borderRadius: 8,
+                      borderRadius: 6,
                       border: '1px solid rgba(63,63,70,0.3)',
                       overflow: 'hidden',
                       display: 'flex',
                       flexDirection: 'column',
                     }}
                   >
-                    <div style={{ height: 36, background: 'rgba(245,158,11,0.15)', display: 'flex' }} />
-                    <div style={{ padding: 8, display: 'flex', flexDirection: 'column' }}>
-                      <div style={{ width: 50, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.15)', display: 'flex' }} />
-                      <div style={{ width: 30, height: 5, borderRadius: 2, background: 'rgba(245,158,11,0.4)', marginTop: 5, display: 'flex' }} />
+                    <div style={{ height: 32, background: 'linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.08))', display: 'flex' }} />
+                    <div style={{ padding: '6px 7px', display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ width: 44, height: 5, borderRadius: 2, background: 'rgba(255,255,255,0.18)', display: 'flex' }} />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 5 }}>
+                        <div style={{ width: 22, height: 4, borderRadius: 2, background: 'rgba(245,158,11,0.5)', display: 'flex' }} />
+                        <div style={{ width: 24, height: 12, borderRadius: 3, background: 'rgba(245,158,11,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 6, color: '#f59e0b' }}>
+                          +
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div
                     style={{
                       flex: 1,
-                      borderRadius: 8,
+                      borderRadius: 6,
                       border: '1px solid rgba(63,63,70,0.3)',
                       overflow: 'hidden',
-                      marginLeft: 10,
+                      marginLeft: 8,
                       display: 'flex',
                       flexDirection: 'column',
                     }}
                   >
-                    <div style={{ height: 36, background: 'rgba(245,158,11,0.1)', display: 'flex' }} />
-                    <div style={{ padding: 8, display: 'flex', flexDirection: 'column' }}>
-                      <div style={{ width: 50, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.15)', display: 'flex' }} />
-                      <div style={{ width: 30, height: 5, borderRadius: 2, background: 'rgba(245,158,11,0.4)', marginTop: 5, display: 'flex' }} />
+                    <div style={{ height: 32, background: 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05))', display: 'flex' }} />
+                    <div style={{ padding: '6px 7px', display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ width: 44, height: 5, borderRadius: 2, background: 'rgba(255,255,255,0.18)', display: 'flex' }} />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 5 }}>
+                        <div style={{ width: 22, height: 4, borderRadius: 2, background: 'rgba(245,158,11,0.5)', display: 'flex' }} />
+                        <div style={{ width: 24, height: 12, borderRadius: 3, background: 'rgba(245,158,11,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 6, color: '#f59e0b' }}>
+                          +
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div
                     style={{
                       flex: 1,
-                      borderRadius: 8,
+                      borderRadius: 6,
                       border: '1px solid rgba(63,63,70,0.3)',
                       overflow: 'hidden',
-                      marginLeft: 10,
+                      marginLeft: 8,
                       display: 'flex',
                       flexDirection: 'column',
                     }}
                   >
-                    <div style={{ height: 36, background: 'rgba(245,158,11,0.08)', display: 'flex' }} />
-                    <div style={{ padding: 8, display: 'flex', flexDirection: 'column' }}>
-                      <div style={{ width: 50, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.15)', display: 'flex' }} />
-                      <div style={{ width: 30, height: 5, borderRadius: 2, background: 'rgba(245,158,11,0.4)', marginTop: 5, display: 'flex' }} />
+                    <div style={{ height: 32, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.03))', display: 'flex' }} />
+                    <div style={{ padding: '6px 7px', display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ width: 44, height: 5, borderRadius: 2, background: 'rgba(255,255,255,0.18)', display: 'flex' }} />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 5 }}>
+                        <div style={{ width: 22, height: 4, borderRadius: 2, background: 'rgba(245,158,11,0.5)', display: 'flex' }} />
+                        <div style={{ width: 24, height: 12, borderRadius: 3, background: 'rgba(245,158,11,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 6, color: '#f59e0b' }}>
+                          +
+                        </div>
+                      </div>
                     </div>
+                  </div>
+                </div>
+
+                {/* Footer section */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingTop: 8, borderTop: '1px solid rgba(63,63,70,0.2)' }}>
+                  <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.08)', display: 'flex' }} />
+                  <div style={{ display: 'flex' }}>
+                    <div style={{ width: 10, height: 10, borderRadius: 5, background: 'rgba(255,255,255,0.06)', display: 'flex' }} />
+                    <div style={{ width: 10, height: 10, borderRadius: 5, background: 'rgba(255,255,255,0.06)', marginLeft: 6, display: 'flex' }} />
+                    <div style={{ width: 10, height: 10, borderRadius: 5, background: 'rgba(255,255,255,0.06)', marginLeft: 6, display: 'flex' }} />
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* "Live" badge under browser */}
+            {/* "Live" badge */}
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                marginTop: 12,
+                marginTop: 10,
               }}
             >
               <div style={{ width: 6, height: 6, borderRadius: 3, background: '#22c55e', display: 'flex' }} />
-              <div style={{ fontSize: 12, color: '#22c55e', marginLeft: 6, display: 'flex' }}>
+              <div style={{ fontSize: 11, color: '#22c55e', marginLeft: 6, display: 'flex' }}>
                 Live in 30 seconds
               </div>
             </div>
