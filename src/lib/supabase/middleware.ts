@@ -65,7 +65,8 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith('/api/stripe/webhook') &&
     !request.nextUrl.pathname.startsWith('/api/stripe/connect/webhook') &&
     !request.nextUrl.pathname.startsWith('/api/sites/') &&
-    !request.nextUrl.pathname.startsWith('/api/affiliates/track');
+    !request.nextUrl.pathname.startsWith('/api/affiliates/track') &&
+    !request.nextUrl.pathname.startsWith('/api/og');
 
   if ((isProtectedRoute || isProtectedApiRoute) && !user) {
     // For API routes, return 401 instead of redirect
