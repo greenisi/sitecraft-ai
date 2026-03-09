@@ -35,6 +35,12 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
 
   const hasFiles = Object.keys(files).length > 0;
 
+  const handleRefresh = useCallback(() => {
+    setIframeKey((k) => k + 1);
+    setLoading(true);
+    bridgeInjectedRef.current = false;
+  }, []);
+
   // Register iframe ref in singleton so PropertiesPanel can reach it
   useEffect(() => {
     setPreviewIframe(iframeRef.current);
@@ -235,7 +241,7 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
     <div className="flex h-full flex-col overflow-hidden md:rounded-lg md:border bg-muted">
       {/* Hide device toolbar on mobile — just show page tabs */}
       <div className="hidden md:block">
-        <DeviceToolbar pages={pages} />
+        <DeviceToolbar pages={pages} onRefresh={handleRefresh} />
       </div>
       {/* Mobile: only page tabs if multiple pages */}
       {pages.length > 1 && (

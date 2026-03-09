@@ -1,6 +1,6 @@
 'use client';
 
-import { Monitor, Tablet, Smartphone, Maximize2 } from 'lucide-react';
+import { Monitor, Tablet, Smartphone, Maximize2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils/cn';
 import { usePreviewStore } from '@/stores/preview-store';
@@ -18,9 +18,10 @@ interface PageInfo {
 
 interface DeviceToolbarProps {
   pages?: PageInfo[];
+  onRefresh?: () => void;
 }
 
-export function DeviceToolbar({ pages = [] }: DeviceToolbarProps) {
+export function DeviceToolbar({ pages = [], onRefresh }: DeviceToolbarProps) {
   const { viewport, autoFit, activePage, setViewport, setAutoFit, setActivePage } = usePreviewStore();
 
   const hasMultiplePages = pages.length > 1;
@@ -67,19 +68,30 @@ export function DeviceToolbar({ pages = [] }: DeviceToolbarProps) {
           ))}
         </div>
 
-        <Button
-          variant={autoFit ? 'default' : 'ghost'}
-          size="sm"
-          className={cn(
-            'h-8 px-2 text-xs gap-1',
-            autoFit && 'bg-primary text-primary-foreground'
-          )}
-          onClick={() => setAutoFit(!autoFit)}
-          title="Fit preview to available width"
-        >
-          <Maximize2 className="h-3.5 w-3.5" />
-          Fit
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={onRefresh}
+            title="Refresh preview"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            variant={autoFit ? 'default' : 'ghost'}
+            size="sm"
+            className={cn(
+              'h-8 px-2 text-xs gap-1',
+              autoFit && 'bg-primary text-primary-foreground'
+            )}
+            onClick={() => setAutoFit(!autoFit)}
+            title="Fit preview to available width"
+          >
+            <Maximize2 className="h-3.5 w-3.5" />
+            Fit
+          </Button>
+        </div>
       </div>
     </div>
   );
