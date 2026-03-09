@@ -277,7 +277,29 @@ function validateAndFixFileTree(tree: VirtualFileTree): void {
     }
   }
 
-  // PASS 5: Fix Image component issues — add unoptimized prop for non-whitelisted sources
+  // PASS 5: Fix common AI syntax errors (duplicate literals, trailing commas in bad spots)
+  for (const [path, file] of tree.entries()) {
+    if (!path.endsWith('.tsx') && !path.endsWith('.ts')) continue;
+    let content = file.content;
+    let modified = false;
+
+    // Fix duplicate array/object literals: `[] []` → `[]`, `{} {}` → `{}`
+    const before = content;
+    content = content.replace(/\[\]\s*\[\]/g, '[]');
+    content = content.replace(/\{\}\s*\{\}/g, '{}');
+    // Fix `= = ` double assignment
+    content = content.replace(/=\s+=\s+/g, '= ');
+    if (content !== before) {
+      modified = true;
+    }
+
+    if (modified) {
+      tree.addFile(path, content, file.type);
+      fixed.push(path + ' (syntax)');
+    }
+  }
+
+  // PASS 6: Fix Image component issues — add unoptimized prop for non-whitelisted sources
   for (const [path, file] of tree.entries()) {
     if (!path.endsWith('.tsx')) continue;
     if (!file.content.includes('next/image')) continue;
