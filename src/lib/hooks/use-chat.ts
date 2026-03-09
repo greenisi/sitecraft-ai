@@ -213,6 +213,22 @@ export function useChat(projectId: string) {
     return unsub;
   }, [projectId]);
 
+  // ── Warn before closing/refreshing the tab during active generation ──
+  // In-app navigation (Back button) is fine — the module-level background
+  // generation keeps the SSE stream alive. But a full page refresh or tab
+  // close kills the client connection, so warn the user.
+  useEffect(() => {
+    if (!isProcessing) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isProcessing]);
+
   // ── Recover from page refresh during an active generation ──
   // On mount, check if the server has an in-progress generation and poll
   // until it completes, then load the finished files into the preview.
@@ -235,8 +251,24 @@ export function useChat(projectId: string) {
         // If the latest version is still generating, poll for completion
         if (data.latestVersion && data.latestVersion.status === 'generating') {
           setProcessing(true, 'generating');
+
+          // Activate the generation store so the progress checklist
+          // appears in the chat while we poll for completion
+          generationStore.startGeneration(projectId);
+
+          // If files already exist, move the stage forward so the
+          // checklist shows partial progress instead of all-pending
+          if (data.fileCount > 0) {
+            generationStore.processEvent({
+              type: 'stage-start',
+              stage: 'components',
+              totalFiles: data.fileCount,
+            });
+          }
+
           toast.info('Reconnecting to generation…', {
-            description: 'Your website is still being generated on the server.',
+            description:
+              'Your website is still being generated. Please don\u2019t close this tab.',
           });
 
           const status = await pollForCompletion(
@@ -249,6 +281,13 @@ export function useChat(projectId: string) {
             (status.projectStatus === 'generated' ||
               (status.latestVersion && status.latestVersion.status === 'complete'))
           ) {
+            // Mark generation as complete in the store so checklist
+            // shows all-green checks
+            generationStore.processEvent({
+              type: 'generation-complete',
+              totalFiles: status.fileCount,
+            });
+
             // Files are in DB — refresh the query cache
             queryClient.invalidateQueries({
               queryKey: ['generated-files', projectId],
@@ -261,6 +300,9 @@ export function useChat(projectId: string) {
               description: 'Your website was generated successfully.',
             });
           } else {
+            generationStore.setError(
+              'Generation may have failed. Please try generating again.'
+            );
             setProcessing(false, 'error');
             toast.error('Generation may have failed', {
               description: 'Please try generating again.',
