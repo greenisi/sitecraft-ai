@@ -177,6 +177,111 @@ ${footerLinks}
 
 
 
+/**
+ * Generate the build-retry.js script content.
+ * Separated into a function to avoid template literal escaping issues.
+ */
+function generateBuildRetryScript(): string {
+  // Build the script line-by-line with proper escaping
+  const L: string[] = [];
+  const add = (s: string) => L.push(s);
+
+  add("const { execSync } = require('child_process');");
+  add("const fs = require('fs');");
+  add("const path = require('path');");
+  add("");
+  add("const MAX_RETRIES = 5;");
+  add("");
+  add("function findErrorFile(output) {");
+  add("  // Match component files: ./src/components/Name.tsx");
+  add("  var m = output.match(/\\.?\\/src\\/components\\/(\\w+)\\.tsx/);");
+  add("  if (m) return { type: 'component', name: m[1] };");
+  add("  // Match page/layout files: ./src/app/.../page.tsx");
+  add("  m = output.match(/\\.?\\/src\\/app\\/([\\w\\/\\[\\]\\-]+)\\.tsx/);");
+  add("  if (m) return { type: 'page', path: 'src/app/' + m[1] + '.tsx' };");
+  add("  // Match module not found");
+  add("  m = output.match(/Module not found.*['\"]([^'\"]+)['\"]/);");
+  add("  if (m) return { type: 'module', name: m[1] };");
+  add("  return null;");
+  add("}");
+  add("");
+  add("function removeComponentFromPages(name) {");
+  add("  var appDir = path.join(__dirname, 'src', 'app');");
+  add("  if (!fs.existsSync(appDir)) return;");
+  add("  function walk(dir) {");
+  add("    fs.readdirSync(dir, { withFileTypes: true }).forEach(function(f) {");
+  add("      var fp = path.join(dir, f.name);");
+  add("      if (f.isDirectory()) return walk(fp);");
+  add("      if (!f.name.endsWith('.tsx') && !f.name.endsWith('.ts')) return;");
+  add("      var content = fs.readFileSync(fp, 'utf8');");
+  add("      var re1 = new RegExp('import\\\\s+' + name + '\\\\s+from\\\\s+[\\'\"][^\\'\"]+[\\'\"];?\\\\s*\\\\n?', 'g');");
+  add("      var re2 = new RegExp('\\\\s*<' + name + '[^>]*/?>',  'g');");
+  add("      var re3 = new RegExp('\\\\s*</' + name + '>', 'g');");
+  add("      var next = content.replace(re1, '').replace(re2, '').replace(re3, '');");
+  add("      if (next !== content) { fs.writeFileSync(fp, next); console.log('Cleaned ' + name + ' from ' + fp); }");
+  add("    });");
+  add("  }");
+  add("  walk(appDir);");
+  add("}");
+  add("");
+  add("function removeImportsOf(modName) {");
+  add("  var srcDir = path.join(__dirname, 'src');");
+  add("  if (!fs.existsSync(srcDir)) return;");
+  add("  function walk(dir) {");
+  add("    fs.readdirSync(dir, { withFileTypes: true }).forEach(function(f) {");
+  add("      var fp = path.join(dir, f.name);");
+  add("      if (f.isDirectory()) return walk(fp);");
+  add("      if (!f.name.endsWith('.tsx') && !f.name.endsWith('.ts')) return;");
+  add("      var content = fs.readFileSync(fp, 'utf8');");
+  add("      var escaped = modName.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');");
+  add("      var re = new RegExp('import\\\\s+[^;]*from\\\\s+[\\'\"]' + escaped + '[\\'\"];?\\\\s*\\\\n?', 'g');");
+  add("      var next = content.replace(re, '');");
+  add("      if (next !== content) { fs.writeFileSync(fp, next); console.log('Removed import of ' + modName + ' from ' + fp); }");
+  add("    });");
+  add("  }");
+  add("  walk(srcDir);");
+  add("}");
+  add("");
+  add("for (var attempt = 0; attempt < MAX_RETRIES; attempt++) {");
+  add("  try {");
+  add("    console.log('Build attempt ' + (attempt + 1) + '...');");
+  // KEY FIX: use stdio 'pipe' to capture BOTH stdout and stderr
+  // Next.js writes errors to stdout, not stderr
+  add("    execSync('npx next build', { stdio: 'pipe', maxBuffer: 10 * 1024 * 1024 });");
+  add("    console.log('Build succeeded!');");
+  add("    process.exit(0);");
+  add("  } catch (err) {");
+  // Combine stdout + stderr since Next.js may write errors to either
+  add("    var output = ((err.stdout || '') + '\\n' + (err.stderr || '')).toString();");
+  add("    console.error('Build failed. Output (last 3000 chars):');");
+  add("    console.error(output.slice(-3000));");
+  add("    var info = findErrorFile(output);");
+  add("    if (!info) {");
+  add("      console.error('Could not identify problematic file.');");
+  add("      if (attempt >= MAX_RETRIES - 1) { console.error('All retries exhausted.'); process.exit(1); }");
+  add("      continue;");
+  add("    }");
+  add("    if (info.type === 'component') {");
+  add("      console.log('Removing broken component: ' + info.name);");
+  add("      var cp = path.join(__dirname, 'src', 'components', info.name + '.tsx');");
+  add("      if (fs.existsSync(cp)) fs.unlinkSync(cp);");
+  add("      removeComponentFromPages(info.name);");
+  add("    } else if (info.type === 'page') {");
+  add("      console.log('Removing broken page: ' + info.path);");
+  add("      var pp = path.join(__dirname, info.path);");
+  add("      if (fs.existsSync(pp)) fs.unlinkSync(pp);");
+  add("    } else if (info.type === 'module') {");
+  add("      console.log('Missing module: ' + info.name);");
+  add("      removeImportsOf(info.name);");
+  add("    }");
+  add("  }");
+  add("}");
+  add("console.error('All build attempts failed.');");
+  add("process.exit(1);");
+
+  return L.join('\n');
+}
+
 export interface PublishResult {
   url: string;
   domain: string;
@@ -832,146 +937,8 @@ export async function publishToSubdomain(
   tree.addFile('next.config.js', NC_CONTENT, 'config');
 
   // Add build-retry.js for resilient builds
-  const BUILD_RETRY = `const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
-
-const MAX_RETRIES = 5;
-
-function findErrorFile(stderr) {
-  // Match component files
-  const componentPatterns = [
-    /\\.\\/src\\/components\\/([\\w]+)\\.tsx/,
-    /\\/src\\/components\\/([\\w]+)\\.tsx/,
-  ];
-  for (const p of componentPatterns) {
-    const m = stderr.match(p);
-    if (m) return { type: 'component', name: m[1] };
-  }
-  // Match page/layout files
-  const pagePatterns = [
-    /\\.\\/src\\/app\\/([\\w/[\\]-]+)\\.tsx/,
-    /\\/src\\/app\\/([\\w/[\\]-]+)\\.tsx/,
-  ];
-  for (const p of pagePatterns) {
-    const m = stderr.match(p);
-    if (m) return { type: 'page', path: 'src/app/' + m[1] + '.tsx' };
-  }
-  // Match module not found errors
-  const moduleMatch = stderr.match(/Module not found.*'([^']+)'/);
-  if (moduleMatch) return { type: 'module', name: moduleMatch[1] };
-  return null;
-}
-
-function removeComponentFromPages(componentName) {
-  const appDir = path.join(__dirname, 'src', 'app');
-  if (!fs.existsSync(appDir)) return;
-  function walkDir(dir) {
-    for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
-      const fp = path.join(dir, f.name);
-      if (f.isDirectory()) { walkDir(fp); continue; }
-      if (!f.name.endsWith('.tsx') && !f.name.endsWith('.ts')) continue;
-      let content = fs.readFileSync(fp, 'utf8');
-      const re1 = new RegExp("import\\\\s+" + componentName + "\\\\s+from\\\\s+['\\""][^'\\"]+['\\""];?\\\\s*\\\\n?", 'g');
-      const re2 = new RegExp("\\\\s*<" + componentName + "[^>]*/?>", 'g');
-      const re3 = new RegExp("\\\\s*</" + componentName + ">", 'g');
-      const newContent = content.replace(re1, '').replace(re2, '').replace(re3, '');
-      if (newContent !== content) {
-        fs.writeFileSync(fp, newContent);
-        console.log('Cleaned ' + componentName + ' from ' + fp);
-      }
-    }
-  }
-  walkDir(appDir);
-}
-
-function fixPageFile(filePath) {
-  const fullPath = path.join(__dirname, filePath);
-  if (!fs.existsSync(fullPath)) return false;
-  // Try to fix common issues: remove problematic imports, add missing 'use client'
-  let content = fs.readFileSync(fullPath, 'utf8');
-  const original = content;
-  // Remove broken imports
-  content = content.replace(/import\\s+\\w+\\s+from\\s+['"][^'"]*['"];?\\s*\\n?/g, (match) => {
-    const modPath = match.match(/from\\s+['"]([^'"]+)['"]/);
-    if (!modPath) return match;
-    const mod = modPath[1];
-    // Keep relative and package imports that likely exist
-    if (mod.startsWith('.') || mod.startsWith('@/')) {
-      const resolved = mod.startsWith('@/') ? path.join(__dirname, mod.replace('@/', 'src/')) : path.join(path.dirname(fullPath), mod);
-      const candidates = [resolved + '.tsx', resolved + '.ts', resolved + '/index.tsx', resolved + '/index.ts'];
-      if (!candidates.some(c => fs.existsSync(c))) {
-        console.log('Removing broken import: ' + mod + ' from ' + filePath);
-        return '';
-      }
-    }
-    return match;
-  });
-  if (content !== original) {
-    fs.writeFileSync(fullPath, content);
-    return true;
-  }
-  return false;
-}
-
-let lastStderr = '';
-for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-  try {
-    console.log('Build attempt ' + (attempt + 1) + '...');
-    execSync('npx next build', { stdio: ['pipe', 'inherit', 'pipe'] });
-    console.log('Build succeeded!');
-    process.exit(0);
-  } catch (err) {
-    const stderr = (err.stderr || '').toString();
-    lastStderr = stderr;
-    console.error('Build error output:', stderr.slice(0, 2000));
-    const errorInfo = findErrorFile(stderr);
-    if (!errorInfo) {
-      console.error('Build failed, could not identify problematic file.');
-      if (attempt === MAX_RETRIES - 1) {
-        console.error('All ' + MAX_RETRIES + ' build attempts failed. Exiting with error.');
-        process.exit(1);
-      }
-      continue;
-    }
-    if (errorInfo.type === 'component') {
-      console.log('Removing broken component: ' + errorInfo.name);
-      const compPath = path.join(__dirname, 'src', 'components', errorInfo.name + '.tsx');
-      if (fs.existsSync(compPath)) fs.unlinkSync(compPath);
-      removeComponentFromPages(errorInfo.name);
-    } else if (errorInfo.type === 'page') {
-      console.log('Fixing broken page: ' + errorInfo.path);
-      if (!fixPageFile(errorInfo.path)) {
-        console.log('Could not auto-fix page, removing it');
-        const fullPath = path.join(__dirname, errorInfo.path);
-        if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
-      }
-    } else if (errorInfo.type === 'module') {
-      console.log('Missing module: ' + errorInfo.name + ' — scanning files for broken imports');
-      // Remove imports of the missing module from all files
-      const srcDir = path.join(__dirname, 'src');
-      function fixImports(dir) {
-        if (!fs.existsSync(dir)) return;
-        for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
-          const fp = path.join(dir, f.name);
-          if (f.isDirectory()) { fixImports(fp); continue; }
-          if (!f.name.endsWith('.tsx') && !f.name.endsWith('.ts')) continue;
-          let content = fs.readFileSync(fp, 'utf8');
-          const re = new RegExp("import\\\\s+[^;]*from\\\\s+['\\""]" + errorInfo.name.replace(/[.*+?^\${}()|[\\]\\\\]/g, '\\\\$&') + "['\\""];?\\\\s*\\\\n?", 'g');
-          const newContent = content.replace(re, '');
-          if (newContent !== content) {
-            fs.writeFileSync(fp, newContent);
-            console.log('Removed import of ' + errorInfo.name + ' from ' + fp);
-          }
-        }
-      }
-      fixImports(srcDir);
-    }
-  }
-}
-console.error('All ' + MAX_RETRIES + ' build attempts failed.');
-process.exit(1);
-`;
+  // Uses string array to avoid template literal escaping issues
+  const BUILD_RETRY = generateBuildRetryScript();
   tree.addFile('build-retry.js', BUILD_RETRY, 'config');
 
     // Force-override package.json to make build always succeed
