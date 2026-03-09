@@ -3,6 +3,7 @@ import { deployToVercel } from '@/lib/export/vercel-deployer';
 import { buildScaffoldingTree } from '@/lib/export/file-tree';
 import { addDomainToProject, getVercelProject, waitForDeploymentReady } from '@/lib/export/vercel-domains';
 import type { DesignSystem } from '@/types/project';
+import { VirtualFileTree } from '@/types/generation';
 
 const PLATFORM_TOKEN = process.env.VERCEL_PLATFORM_TOKEN!;
 const TEAM_ID = process.env.VERCEL_TEAM_ID!;
@@ -44,24 +45,263 @@ function isFileTruncated(content: string): boolean {
   return false;
 }
 
+// ─── Pre-deploy validation system ────────────────────────────────────────────
+// Validates and auto-fixes the file tree BEFORE uploading to Vercel.
+// Core strategy: stub missing files instead of deleting references.
+
+interface ImportRecord {
+  importedNames: string[];
+  fromPath: string;
+  resolvedPath: string | null;
+  isDefault: boolean;
+}
+
 /**
- * Remove references to missing components from page files.
+ * Generate a minimal stub component that renders nothing but exports properly.
  */
-function cleanPageFile(content: string, availableComponents: Set<string>): string {
-  let result = content;
-  const importRegex = /import\s+(\w+)\s+from\s+['"]@\/components\/(\w+)['"];?\s*\n?/g;
-  const missing: string[] = [];
-  let m;
-  while ((m = importRegex.exec(content)) !== null) {
-    if (!availableComponents.has(m[2])) missing.push(m[1]);
+function generateComponentStub(name: string): string {
+  return `export default function ${name}() {\n  return null;\n}\n`;
+}
+
+/**
+ * Generate a stub for missing utility modules.
+ */
+function generateUtilityStub(name: string, isDefault: boolean): string {
+  if (isDefault) {
+    return `export default function ${name}(...args: any[]) { return ''; }\n`;
   }
-  for (const name of missing) {
-    result = result.replace(new RegExp(`import\\s+${name}\\s+from\\s+['"][^'"]+['"];?\\s*\\n?`, 'g'), '');
-    result = result.replace(new RegExp(`\\s*<${name}\\s*/>`, 'g'), '');
-    result = result.replace(new RegExp(`\\s*<${name}[^>]*>`, 'g'), '');
-    result = result.replace(new RegExp(`\\s*</${name}>`, 'g'), '');
+  return `export function ${name}(...args: any[]) { return ''; }\n`;
+}
+
+/**
+ * Resolve an import path like '@/components/Hero' to a real file path in the tree.
+ * Tries: exact, .tsx, .ts, /index.tsx, /index.ts
+ */
+function resolveImportPath(
+  importPath: string,
+  fromFile: string,
+  tree: VirtualFileTree
+): string | null {
+  let normalized = importPath.replace(/^@\//, 'src/');
+
+  // Handle relative paths
+  if (importPath.startsWith('./') || importPath.startsWith('../')) {
+    const fromDir = fromFile.substring(0, fromFile.lastIndexOf('/'));
+    const parts = (fromDir + '/' + importPath).split('/');
+    const resolved: string[] = [];
+    for (const p of parts) {
+      if (p === '..') resolved.pop();
+      else if (p !== '.') resolved.push(p);
+    }
+    normalized = resolved.join('/');
   }
-  return result;
+
+  if (tree.getFile(normalized)) return normalized;
+  for (const ext of ['.tsx', '.ts', '.jsx', '.js']) {
+    if (tree.getFile(normalized + ext)) return normalized + ext;
+  }
+  for (const ext of ['.tsx', '.ts']) {
+    if (tree.getFile(normalized + '/index' + ext)) return normalized + '/index' + ext;
+  }
+  return null;
+}
+
+/**
+ * Parse import clause to extract imported names.
+ * Handles: `Name`, `{ A, B }`, `Name, { A, B }`, `* as Name`
+ */
+function parseImportNames(clause: string): string[] {
+  const names: string[] = [];
+  const defaultMatch = clause.match(/^(\w+)/);
+  if (defaultMatch && !clause.startsWith('{') && !clause.startsWith('*')) {
+    names.push(defaultMatch[1]);
+  }
+  const namedMatch = clause.match(/\{([^}]+)\}/);
+  if (namedMatch) {
+    namedMatch[1].split(',').forEach((n) => {
+      const trimmed = n.trim().split(/\s+as\s+/).pop()?.trim();
+      if (trimmed) names.push(trimmed);
+    });
+  }
+  return names;
+}
+
+/**
+ * Build an import graph for all files in the tree.
+ * Returns a map from file path to its import records.
+ */
+function buildImportGraph(tree: VirtualFileTree): Map<string, ImportRecord[]> {
+  const graph = new Map<string, ImportRecord[]>();
+
+  for (const [filePath, file] of tree.entries()) {
+    if (!filePath.endsWith('.tsx') && !filePath.endsWith('.ts')) continue;
+
+    const imports: ImportRecord[] = [];
+    const importRegex = /^import\s+(?:type\s+)?(.+?)\s+from\s+['"]([^'"]+)['"]/gm;
+    let m;
+    while ((m = importRegex.exec(file.content)) !== null) {
+      const importClause = m[1];
+      const fromPath = m[2];
+
+      // Skip external packages
+      if (
+        !fromPath.startsWith('@/') &&
+        !fromPath.startsWith('./') &&
+        !fromPath.startsWith('../')
+      ) {
+        continue;
+      }
+      // Skip type-only imports (don't affect build)
+      if (m[0].includes('import type')) continue;
+
+      const isDefault = /^\w+/.test(importClause) && !importClause.startsWith('{');
+      const resolvedPath = resolveImportPath(fromPath, filePath, tree);
+
+      imports.push({
+        importedNames: parseImportNames(importClause),
+        fromPath,
+        resolvedPath,
+        isDefault,
+      });
+    }
+
+    graph.set(filePath, imports);
+  }
+
+  return graph;
+}
+
+/**
+ * Insert an import statement after 'use client' directive (if present)
+ * or at the top of the file.
+ */
+function insertImport(content: string, importLine: string): string {
+  const trimmed = content.trimStart();
+  if (trimmed.startsWith("'use client'") || trimmed.startsWith('"use client"')) {
+    return content.replace(/(['"]use client['"];?\s*\n)/, '$1' + importLine + '\n');
+  }
+  return importLine + '\n' + content;
+}
+
+/**
+ * Comprehensive pre-deploy validation and auto-fix.
+ * Runs 5 passes to ensure the file tree will build on Vercel.
+ */
+function validateAndFixFileTree(tree: VirtualFileTree): void {
+  const stubbed: string[] = [];
+  const fixed: string[] = [];
+
+  // PASS 1: Replace truncated component files with stubs
+  for (const [path, file] of tree.entries()) {
+    if (!path.endsWith('.tsx') && !path.endsWith('.ts')) continue;
+    if (!path.startsWith('src/components/')) continue;
+    const componentName = path.match(/\/([^/]+)\.tsx$/)?.[1];
+    if (!componentName) continue;
+    // Skip critical components that have dedicated fallback logic
+    if (['Navbar', 'Footer', 'ClientLayout', 'FormAutoWire'].includes(componentName)) continue;
+
+    if (isFileTruncated(file.content)) {
+      tree.addFile(path, generateComponentStub(componentName), 'component');
+      stubbed.push(componentName);
+    }
+  }
+
+  // PASS 2: Build import graph and stub all missing internal imports
+  const importGraph = buildImportGraph(tree);
+
+  for (const [, imports] of importGraph) {
+    for (const imp of imports) {
+      if (imp.resolvedPath !== null) continue; // Already exists
+
+      // Convert to expected file path
+      let targetPath = imp.fromPath.replace(/^@\//, 'src/');
+      if (!targetPath.match(/\.\w+$/)) targetPath += '.tsx';
+
+      // Don't create stubs for paths that already exist (double-check)
+      if (tree.getFile(targetPath)) continue;
+
+      const name =
+        imp.importedNames[0] || targetPath.match(/\/([^/]+)\.\w+$/)?.[1] || 'Component';
+
+      if (targetPath.startsWith('src/components/')) {
+        tree.addFile(targetPath, generateComponentStub(name), 'component');
+        stubbed.push(name);
+      } else if (targetPath.startsWith('src/lib/') || targetPath.startsWith('src/utils/')) {
+        tree.addFile(targetPath, generateUtilityStub(name, imp.isDefault), 'data');
+        stubbed.push(name);
+      }
+    }
+  }
+
+  // PASS 3: Fix missing utility imports (cn, clsx)
+  for (const [path, file] of tree.entries()) {
+    if (!path.endsWith('.tsx') && !path.endsWith('.ts')) continue;
+    let content = file.content;
+    let modified = false;
+
+    if (/\bclsx\s*\(/.test(content) && !/import\s.*clsx/.test(content)) {
+      content = insertImport(content, "import clsx from 'clsx';");
+      modified = true;
+    }
+    if (/\bcn\s*\(/.test(content) && !/import\s.*\bcn\b.*from/.test(content)) {
+      content = insertImport(content, "import { cn } from '@/lib/utils';");
+      modified = true;
+    }
+
+    if (modified) {
+      tree.addFile(path, content, file.type);
+      fixed.push(path);
+    }
+  }
+
+  // PASS 4: Fix missing 'use client' directives
+  const clientIndicators = [
+    /\buseState\b/, /\buseEffect\b/, /\buseRef\b/, /\buseCallback\b/,
+    /\buseMemo\b/, /\buseContext\b/, /\buseReducer\b/, /\buseLayoutEffect\b/,
+    /\bwindow\.\b/, /\bdocument\.\b/, /\blocalStorage\b/, /\bsessionStorage\b/,
+    /\bonClick\s*[={]/, /\bonChange\s*[={]/, /\bonSubmit\s*[={]/,
+    /\bonScroll\s*[={]/, /\bonKeyDown\s*[={]/,
+  ];
+
+  for (const [path, file] of tree.entries()) {
+    if (!path.endsWith('.tsx') && !path.endsWith('.ts')) continue;
+    const content = file.content;
+    const trimmed = content.trimStart();
+    if (trimmed.startsWith("'use client'") || trimmed.startsWith('"use client"')) continue;
+    // Skip config/utility files
+    if (path.includes('/lib/') || path.includes('/utils/') || path.endsWith('.config.ts')) continue;
+
+    if (clientIndicators.some((rx) => rx.test(content))) {
+      tree.addFile(path, "'use client';\n" + content, file.type);
+      fixed.push(path + ' (use client)');
+    }
+  }
+
+  // PASS 5: Fix Image component issues — add unoptimized prop for non-whitelisted sources
+  for (const [path, file] of tree.entries()) {
+    if (!path.endsWith('.tsx')) continue;
+    if (!file.content.includes('next/image')) continue;
+
+    let content = file.content;
+    let modified = false;
+
+    // Add unoptimized to all Image tags that don't already have it
+    content = content.replace(/<Image\b([^>]*?)(\/?>)/g, (full, attrs, close) => {
+      if (/\bunoptimized\b/.test(attrs)) return full;
+      modified = true;
+      return `<Image unoptimized${attrs}${close}`;
+    });
+
+    if (modified) {
+      tree.addFile(path, content, file.type);
+      fixed.push(path + ' (images)');
+    }
+  }
+
+  console.log(
+    `[validateAndFixFileTree] Stubbed ${stubbed.length} missing files: ${stubbed.join(', ') || 'none'}. ` +
+      `Fixed ${fixed.length} files: ${fixed.join(', ') || 'none'}.`
+  );
 }
 
 /**
@@ -179,10 +419,10 @@ ${footerLinks}
 
 /**
  * Generate the build-retry.js script content.
- * Separated into a function to avoid template literal escaping issues.
+ * Uses stub-first recovery: replace broken files with stubs instead of deleting.
+ * Only deletes as a last resort on final retries.
  */
 function generateBuildRetryScript(): string {
-  // Build the script line-by-line with proper escaping
   const L: string[] = [];
   const add = (s: string) => L.push(s);
 
@@ -192,19 +432,48 @@ function generateBuildRetryScript(): string {
   add("");
   add("const MAX_RETRIES = 5;");
   add("");
-  add("function findErrorFile(output) {");
-  add("  // Match component files: ./src/components/Name.tsx");
-  add("  var m = output.match(/\\.?\\/src\\/components\\/(\\w+)\\.tsx/);");
-  add("  if (m) return { type: 'component', name: m[1] };");
-  add("  // Match page/layout files: ./src/app/.../page.tsx");
+  // Enhanced error detection with multiple patterns
+  add("function findErrors(output) {");
+  add("  var errors = [];");
+  add("  var m;");
+  add("  // Pattern 1: Component file");
+  add("  m = output.match(/\\.?\\/src\\/components\\/(\\w+)\\.tsx/);");
+  add("  if (m) errors.push({ type: 'component', name: m[1] });");
+  add("  // Pattern 2: Page/layout file");
   add("  m = output.match(/\\.?\\/src\\/app\\/([\\w\\/\\[\\]\\-]+)\\.tsx/);");
-  add("  if (m) return { type: 'page', path: 'src/app/' + m[1] + '.tsx' };");
-  add("  // Match module not found");
+  add("  if (m) errors.push({ type: 'page', path: 'src/app/' + m[1] + '.tsx' });");
+  add("  // Pattern 3: Module not found");
   add("  m = output.match(/Module not found.*['\"]([^'\"]+)['\"]/);");
-  add("  if (m) return { type: 'module', name: m[1] };");
-  add("  return null;");
+  add("  if (m) errors.push({ type: 'module', name: m[1] });");
+  add("  // Pattern 4: Cannot find module");
+  add("  m = output.match(/Cannot find module\\s+['\"]([^'\"]+)['\"]/);");
+  add("  if (m) errors.push({ type: 'module', name: m[1] });");
+  add("  // Pattern 5: Not exported from");
+  add("  m = output.match(/'(\\w+)' is not exported from ['\"]([^'\"]+)['\"]/);");
+  add("  if (m) errors.push({ type: 'missing_export', name: m[1], from: m[2] });");
+  add("  return errors;");
   add("}");
   add("");
+  // Stub a component file instead of deleting it
+  add("function stubComponent(name) {");
+  add("  var fp = path.join(__dirname, 'src', 'components', name + '.tsx');");
+  add("  fs.writeFileSync(fp, 'export default function ' + name + '() { return null; }\\n');");
+  add("  console.log('Stubbed component: ' + name);");
+  add("}");
+  add("");
+  // Stub a module at an arbitrary internal path
+  add("function stubModule(modPath) {");
+  add("  var fsPath = modPath.replace(/^@\\//, 'src/');");
+  add("  if (!fsPath.endsWith('.tsx') && !fsPath.endsWith('.ts')) fsPath += '.tsx';");
+  add("  var fullPath = path.join(__dirname, fsPath);");
+  add("  var dir = path.dirname(fullPath);");
+  add("  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });");
+  add("  var name = path.basename(fsPath, path.extname(fsPath));");
+  add("  fs.writeFileSync(fullPath, 'export default function ' + name + '() { return null; }\\n');");
+  add("  console.log('Stubbed module: ' + modPath);");
+  add("}");
+  add("");
+  // Last resort: remove component and clean references from pages
   add("function removeComponentFromPages(name) {");
   add("  var appDir = path.join(__dirname, 'src', 'app');");
   add("  if (!fs.existsSync(appDir)) return;");
@@ -224,55 +493,46 @@ function generateBuildRetryScript(): string {
   add("  walk(appDir);");
   add("}");
   add("");
-  add("function removeImportsOf(modName) {");
-  add("  var srcDir = path.join(__dirname, 'src');");
-  add("  if (!fs.existsSync(srcDir)) return;");
-  add("  function walk(dir) {");
-  add("    fs.readdirSync(dir, { withFileTypes: true }).forEach(function(f) {");
-  add("      var fp = path.join(dir, f.name);");
-  add("      if (f.isDirectory()) return walk(fp);");
-  add("      if (!f.name.endsWith('.tsx') && !f.name.endsWith('.ts')) return;");
-  add("      var content = fs.readFileSync(fp, 'utf8');");
-  add("      var escaped = modName.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');");
-  add("      var re = new RegExp('import\\\\s+[^;]*from\\\\s+[\\'\"]' + escaped + '[\\'\"];?\\\\s*\\\\n?', 'g');");
-  add("      var next = content.replace(re, '');");
-  add("      if (next !== content) { fs.writeFileSync(fp, next); console.log('Removed import of ' + modName + ' from ' + fp); }");
-  add("    });");
-  add("  }");
-  add("  walk(srcDir);");
-  add("}");
-  add("");
+  // Main retry loop
   add("for (var attempt = 0; attempt < MAX_RETRIES; attempt++) {");
   add("  try {");
   add("    console.log('Build attempt ' + (attempt + 1) + '...');");
-  // KEY FIX: use stdio 'pipe' to capture BOTH stdout and stderr
-  // Next.js writes errors to stdout, not stderr
   add("    execSync('npx next build', { stdio: 'pipe', maxBuffer: 10 * 1024 * 1024 });");
   add("    console.log('Build succeeded!');");
   add("    process.exit(0);");
   add("  } catch (err) {");
-  // Combine stdout + stderr since Next.js may write errors to either
   add("    var output = ((err.stdout || '') + '\\n' + (err.stderr || '')).toString();");
-  add("    console.error('Build failed. Output (last 3000 chars):');");
+  add("    console.error('Build failed (attempt ' + (attempt + 1) + '). Output tail:');");
   add("    console.error(output.slice(-3000));");
-  add("    var info = findErrorFile(output);");
-  add("    if (!info) {");
+  add("    var errors = findErrors(output);");
+  add("    if (errors.length === 0) {");
   add("      console.error('Could not identify problematic file.');");
   add("      if (attempt >= MAX_RETRIES - 1) { console.error('All retries exhausted.'); process.exit(1); }");
   add("      continue;");
   add("    }");
-  add("    if (info.type === 'component') {");
-  add("      console.log('Removing broken component: ' + info.name);");
-  add("      var cp = path.join(__dirname, 'src', 'components', info.name + '.tsx');");
-  add("      if (fs.existsSync(cp)) fs.unlinkSync(cp);");
-  add("      removeComponentFromPages(info.name);");
-  add("    } else if (info.type === 'page') {");
-  add("      console.log('Removing broken page: ' + info.path);");
-  add("      var pp = path.join(__dirname, info.path);");
-  add("      if (fs.existsSync(pp)) fs.unlinkSync(pp);");
-  add("    } else if (info.type === 'module') {");
-  add("      console.log('Missing module: ' + info.name);");
-  add("      removeImportsOf(info.name);");
+  add("    for (var i = 0; i < errors.length; i++) {");
+  add("      var info = errors[i];");
+  add("      if (info.type === 'component') {");
+  // Stub-first on early retries, delete as last resort
+  add("        if (attempt < 3) { stubComponent(info.name); }");
+  add("        else {");
+  add("          var cp = path.join(__dirname, 'src', 'components', info.name + '.tsx');");
+  add("          if (fs.existsSync(cp)) fs.unlinkSync(cp);");
+  add("          removeComponentFromPages(info.name);");
+  add("        }");
+  add("      } else if (info.type === 'module') {");
+  add("        if (info.name.startsWith('@/') || info.name.startsWith('./')) {");
+  add("          stubModule(info.name);");
+  add("        }");
+  add("      } else if (info.type === 'missing_export') {");
+  // If a named export is missing, stub the source module
+  add("        if (info.from && (info.from.startsWith('@/') || info.from.startsWith('./'))) {");
+  add("          stubModule(info.from);");
+  add("        }");
+  add("      } else if (info.type === 'page' && attempt >= 3) {");
+  add("        var pp = path.join(__dirname, info.path);");
+  add("        if (fs.existsSync(pp)) fs.unlinkSync(pp);");
+  add("      }");
   add("    }");
   add("  }");
   add("}");
@@ -619,47 +879,17 @@ export async function publishToSubdomain(
       }
     }
 
-      // 4b-pre. Auto-fix missing clsx/cn imports in AI-generated files
-      // AI often generates code using clsx() or cn() without proper imports
+      // Ensure cn utility exists
       const cnUtility = "import { clsx, type ClassValue } from 'clsx';\nimport { twMerge } from 'tailwind-merge';\n\nexport function cn(...inputs: ClassValue[]) {\n  return twMerge(clsx(inputs));\n}\n";
       tree.addFile('src/lib/utils.ts', cnUtility, 'config');
-      for (const file of files) {
-              if (!file.file_path.endsWith('.tsx') && !file.file_path.endsWith('.ts')) continue;
-              const usesClsx = /\bclsx\s*\(/.test(file.content);
-              const usesCn = /\bcn\s*\(/.test(file.content);
-              const hasClsxImport = /import\s.*clsx/.test(file.content);
-              const hasCnImport = /import\s.*\bcn\b.*from/.test(file.content);
-              if (usesClsx && !hasClsxImport) {
-                        const clsxImport = "import clsx from 'clsx';\n";
-                        if (file.content.startsWith("'use client'") || file.content.startsWith('"use client"')) {
-                                    file.content = file.content.replace(/(['"]use client['"];?\s*\n)/, '$1' + clsxImport);
-                        } else {
-                                    file.content = clsxImport + file.content;
-                        }
-              }
-              if (usesCn && !hasCnImport) {
-                        const cnImport = "import { cn } from '@/lib/utils';\n";
-                        if (file.content.startsWith("'use client'") || file.content.startsWith('"use client"')) {
-                                    file.content = file.content.replace(/(['"]use client['"];?\s*\n)/, '$1' + cnImport);
-                        } else {
-                                    file.content = cnImport + file.content;
-                        }
-              }
-      }
-  
-                      
-  // 4b. Add files to tree, cleaning up references to missing components
+
+  // 4b. Add files to tree (validation & stub generation happens later via validateAndFixFileTree)
     for (const file of files) {
       if (truncatedFiles.has(file.file_path)) continue;
 
       let fileContent = file.content;
       // Replace PROJECT_ID placeholder with actual project ID
       fileContent = fileContent.replace(/PROJECT_ID/g, projectId);
-
-
-      if (file.file_path.endsWith('page.tsx') || file.file_path.endsWith('layout.tsx')) {
-        fileContent = cleanPageFile(fileContent, availableComponents);
-      }
 
       if (
         (file.file_path.endsWith('page.tsx') || file.file_path.endsWith('page.ts')) &&
@@ -917,6 +1147,9 @@ export async function publishToSubdomain(
     }
   }
 
+  // ─── Pre-deploy validation: stub missing files, fix imports, add 'use client' ───
+  validateAndFixFileTree(tree);
+
 // Force-override next.config.js to skip TS/ESLint errors in AI-generated code
   const NC_CONTENT = [
     "/** @type {import('next').NextConfig} */",
@@ -925,8 +1158,7 @@ export async function publishToSubdomain(
     "  eslint: { ignoreDuringBuilds: true },",
     "  images: {",
     "    remotePatterns: [",
-    "      { protocol: 'https', hostname: 'images.unsplash.com' },",
-    "      { protocol: 'https', hostname: 'via.placeholder.com' },",
+    "      { protocol: 'https', hostname: '**' },",
     "    ],",
     "  },",
     "};",
