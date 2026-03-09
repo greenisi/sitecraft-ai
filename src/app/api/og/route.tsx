@@ -4,14 +4,14 @@ import { NextRequest } from 'next/server';
 export const runtime = 'edge';
 
 export async function GET(request: NextRequest) {
-  // Fetch the logo and encode as base64
+  // Fetch the transparent logo (real PNG, dark text on transparent bg)
   let logoBase64 = '';
   try {
-    const logoUrl = new URL('/logo.png', request.url);
+    const logoUrl = new URL('/logo-transparent.png', request.url);
     const logoData = await fetch(logoUrl).then((res) => res.arrayBuffer());
     logoBase64 = `data:image/png;base64,${Buffer.from(logoData).toString('base64')}`;
   } catch {
-    // If logo fails, we'll skip it
+    // If logo fails, we'll use text fallback
   }
 
   return new ImageResponse(
@@ -42,43 +42,59 @@ export async function GET(request: NextRequest) {
           }}
         />
 
-        {/* Top bar with logo + brand */}
+        {/* Top bar with logo */}
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
-            padding: '36px 52px',
+            padding: '32px 52px',
           }}
         >
           {logoBase64 ? (
-            <img
-              src={logoBase64}
-              width={44}
-              height={44}
-              style={{ borderRadius: 10, marginRight: 14 }}
-            />
-          ) : (
             <div
               style={{
-                width: 44,
-                height: 44,
-                borderRadius: 10,
-                background: 'linear-gradient(135deg, #7c3aed, #6366f1)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: 20,
-                fontWeight: 800,
-                color: '#fff',
-                marginRight: 14,
+                background: '#ffffff',
+                borderRadius: 16,
+                padding: '10px 28px',
               }}
             >
-              IM
+              <img
+                src={logoBase64}
+                height={40}
+              />
+            </div>
+          ) : (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <div
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 10,
+                  background: 'linear-gradient(135deg, #7c3aed, #6366f1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 20,
+                  fontWeight: 800,
+                  color: '#fff',
+                  marginRight: 14,
+                }}
+              >
+                IM
+              </div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: '#ffffff', display: 'flex' }}>
+                Innovated Marketing
+              </div>
             </div>
           )}
-          <div style={{ fontSize: 22, fontWeight: 700, color: '#ffffff', display: 'flex' }}>
-            Innovated Marketing
-          </div>
         </div>
 
         {/* Main content area */}
