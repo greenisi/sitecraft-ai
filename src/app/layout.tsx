@@ -14,7 +14,30 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'Innovated Marketing | AI-Powered Website Generator',
   description:
-    'Generate high-end websites with AI. Landing pages, portfolios, e-commerce, and SaaS. Built with Next.js and Tailwind CSS.',
+    'Create production-ready websites by chatting with AI. No code, no templates, no limits.',
+  metadataBase: new URL('https://app.innovated.marketing'),
+  openGraph: {
+    title: 'Innovated Marketing',
+    description: 'Create production-ready websites by chatting with AI',
+    url: 'https://app.innovated.marketing',
+    siteName: 'Innovated Marketing',
+    images: [
+      {
+        url: '/api/og',
+        width: 1200,
+        height: 630,
+        alt: 'Innovated Marketing - AI Website Builder',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Innovated Marketing',
+    description: 'Create production-ready websites by chatting with AI',
+    images: ['/api/og'],
+  },
 };
 
 export default function RootLayout({
