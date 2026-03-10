@@ -4,12 +4,13 @@ import { getAnthropicClient, GENERATION_MODEL, withRetry } from '@/lib/ai/client
 import { buildSocialPostsPrompt } from '@/lib/ai/prompts/marketing-social';
 import { buildGoogleBusinessProfileGuide } from '@/lib/ai/prompts/marketing-gbp';
 import { buildAdCopyPrompt } from '@/lib/ai/prompts/marketing-ads';
-import { generateAndUploadAdImage } from '@/lib/ai/image-gen';
+import { generateAndUploadAdImage, buildSocialImagePrompt, buildAdImagePrompt } from '@/lib/ai/image-gen';
+import type { BrandContext } from '@/lib/ai/image-gen';
 import { calculateSeoScore } from '@/lib/marketing/seo-scorer';
 import type { MarketingAction } from '@/types/marketing';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+export const maxDuration = 120; // Imagen 4 at 2K resolution needs more time
 
 export async function POST(
   request: Request,
@@ -181,7 +182,15 @@ export async function POST(
 
     // Store generated assets
     if (type === 'social_posts' && parsed.posts) {
-      // Generate branded social media graphics with Nano Banana 2 in parallel (best-effort)
+      // Build brand context for high-quality image prompts
+      const brandCtx: BrandContext = {
+        businessName,
+        industry: business.industry,
+        brandColor: (options?.brandColor as string) || 'orange',
+        description: business.description,
+      };
+
+      // Generate branded social media graphics with Imagen 4 in parallel (best-effort)
       const socialImagePromises = parsed.posts.map(
         async (post: Record<string, unknown>, idx: number) => {
           const headline = (post.visual_headline as string) || '';
@@ -190,7 +199,7 @@ export async function POST(
           if (!headline) return null; // skip if no headline for graphic
 
           const aspectRatio = platform === 'x' ? '16:9' as const : '1:1' as const;
-          const imagePrompt = `Professional branded social media graphic for "${businessName}"${business.industry ? ` (${business.industry})` : ''}. Dark, sleek background with subtle tech/abstract textures. Bold white headline text: "${headline}". Smaller supporting text: "${subtext}". Orange accent color elements (lines, gradients, or highlights). Modern, polished, high-contrast design. The text should be clearly readable. Style: premium social media marketing post, dark mode aesthetic. No stock photo people. No cluttered elements.`;
+          const imagePrompt = buildSocialImagePrompt(brandCtx, headline, subtext, platform);
           const fileName = `social-${platform}-${idx}-${Date.now()}`;
           try {
             return await generateAndUploadAdImage(
@@ -234,7 +243,7 @@ export async function POST(
         summary:
           (parsed.summary || `Created ${parsed.posts.length} social media posts for ${businessName}.`) +
           (imagesGenerated > 0
-            ? ` Generated ${imagesGenerated} branded graphic${imagesGenerated > 1 ? 's' : ''} with Nano Banana 2.`
+            ? ` Generated ${imagesGenerated} branded graphic${imagesGenerated > 1 ? 's' : ''} with Imagen 4.`
             : ''),
         assets: inserts,
       });
@@ -259,13 +268,26 @@ export async function POST(
     }
 
     if (type === 'ad_copy' && parsed.ads) {
-      // Generate ad images with Nano Banana 2 in parallel (best-effort)
+      // Build brand context for high-quality ad image prompts
+      const adBrandCtx: BrandContext = {
+        businessName,
+        industry: business.industry,
+        brandColor: 'orange',
+        description: business.description,
+      };
+
+      // Generate ad images with Imagen 4 in parallel (best-effort)
       const imagePromises = parsed.ads.map(
         async (ad: Record<string, unknown>, idx: number) => {
           const headlines = (ad.headlines as string[]) || [];
           const platform = ad.platform as string;
           const variation = ad.variation as string;
-          const imagePrompt = `Professional ${platform === 'google_ads' ? 'search ad banner' : 'social media ad'} for "${businessName}"${business.industry ? ` (${business.industry})` : ''}. Headline: "${headlines[0] || businessName}". Style: clean, modern, commercial-quality marketing visual. No text overlays.`;
+          const imagePrompt = buildAdImagePrompt(
+            adBrandCtx,
+            headlines[0] || businessName,
+            platform,
+            variation
+          );
           const aspect = platform === 'meta_ads' ? '1:1' as const : '16:9' as const;
           const fileName = `ad-${variation || idx}-${Date.now()}`;
           try {
@@ -314,7 +336,7 @@ export async function POST(
         summary:
           (parsed.summary || `Created ${parsed.ads.length} ad variations for ${businessName}.`) +
           (imagesGenerated > 0
-            ? ` Generated ${imagesGenerated} ad visual${imagesGenerated > 1 ? 's' : ''} with Nano Banana 2.`
+            ? ` Generated ${imagesGenerated} ad visual${imagesGenerated > 1 ? 's' : ''} with Imagen 4.`
             : ''),
         budget_suggestion: parsed.budget_suggestion,
         assets: inserts,
