@@ -14,7 +14,7 @@ import {
   RefreshCw,
   Link2,
   ShoppingCart,
-  Lock,  Settings as SettingsIcon, Sparkles,
+  Lock,  Settings as SettingsIcon, Sparkles, Megaphone,
   Undo2, Redo2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -290,6 +290,17 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
                 <Sparkles className="h-3 w-3 md:mr-2" />
               )}
               <span className="hidden md:inline">{autofilling ? 'Filling...' : 'Autofill'}</span>
+            </Button>
+
+            {/* Marketing Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 px-2 md:px-3 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border-emerald-500/30 hover:from-emerald-500/20 hover:to-teal-500/20"
+              onClick={() => router.push(`/projects/${projectId}/admin/marketing`)}
+            >
+              <Megaphone className="h-3 w-3 md:mr-2" />
+              <span className="hidden md:inline">Marketing</span>
             </Button>
 
             {/* Settings Button */}

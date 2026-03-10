@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Clock, Pencil, Trash2, Sparkles, Loader2, X, Inbox , Settings} from 'lucide-react';
+import { Plus, Clock, Pencil, Trash2, Sparkles, Loader2, X, Inbox, Settings, Megaphone } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/lib/hooks/use-user';
 import { usePageTour } from '@/components/tour/use-page-tour';
@@ -536,6 +536,16 @@ export default function DashboardPage() {
                         title="View leads & orders"
                       >
                         <Inbox className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/projects/${project.id}/admin/marketing`);
+                        }}
+                        className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:text-amber-400 hover:bg-white/5 transition-colors"
+                        title="Marketing"
+                      >
+                        <Megaphone className="h-4 w-4" />
                       </button>
                       <button
                         onClick={(e) => {
