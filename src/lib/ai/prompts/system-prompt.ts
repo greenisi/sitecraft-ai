@@ -175,7 +175,8 @@ Use Tailwind utility classes that reference these tokens, e.g. \`bg-primary-500\
 - Section headings: \`text-2xl sm:text-3xl md:text-4xl\`
 - Sub-headings: \`text-xl sm:text-2xl\`
 - Body text: minimum \`text-base\` (16px) — NEVER smaller on mobile
-- All text must wrap naturally without horizontal overflow. Use \`break-words\` if needed.
+- All text must wrap naturally without horizontal overflow. Use \`break-words\` on long words and \`overflow-wrap: break-word\` on containers.
+- ALL headings MUST have \`max-w-full\` or be inside a container with proper padding — text must NEVER be clipped at viewport edges.
 
 **Container & Overflow Rules:**
 - The root layout MUST use \`overflow-x-hidden\` to prevent horizontal scroll on the page
@@ -334,6 +335,13 @@ Every component file MUST be syntactically complete and valid. This is the highe
 - TypeScript type annotations MUST use proper syntax. WRONG: \`string string\` RIGHT: \`string\`, WRONG: \`number[]\` followed by \`[]\` RIGHT: \`number[]\`
 - ALL useState initializers must be valid single expressions: \`useState([])\` not \`useState([] [])\`
 - ALWAYS double-check state initializers, default values, and object literals for accidental token duplication
+
+**Content Completeness — CRITICAL:**
+- ALL text content (headings, paragraphs, descriptions) MUST be complete sentences and phrases
+- NEVER cut off a sentence mid-word or mid-phrase. "Bringing Natural Beauty to Your" is WRONG — complete it: "Bringing Natural Beauty to Your Home"
+- NEVER concatenate words without spaces. "Prevent Costly BugsBefore" is WRONG — add spaces: "Prevent Costly Bugs Before"
+- Proofread every heading and paragraph for missing spaces, incomplete sentences, and proper punctuation
+- ALL placeholder/sample content must read naturally and feel professionally written
 
 **Keep Components Concise:**
 - Each component should be 50-150 lines max. Prefer shorter, focused components.

@@ -175,8 +175,12 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
       const res = await fetch(`/api/projects/${projectId}/autofill`, { method: 'POST' });
       const data = await res.json();
       if (res.ok) {
-        toast.success('CMS autofilled with business data!', {
-          description: data.message || 'Business info, services, and products have been populated.',
+        const filledItems = data.filled ? Object.keys(data.filled).filter(k => data.filled[k]).join(', ') : '';
+        toast.success('CMS autofilled successfully!', {
+          description: filledItems
+            ? `Updated: ${filledItems}`
+            : data.message || 'Business info, services, and products have been populated.',
+          duration: 5000,
         });
       } else {
         toast.error('Autofill failed', { description: data.error || 'Unknown error' });

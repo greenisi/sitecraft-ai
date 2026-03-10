@@ -159,6 +159,14 @@ export function PreviewFrame({ files, projectId }: PreviewFrameProps) {
               oldText: data.data.oldText,
               newText: data.data.newText,
             });
+            // Update the selected element's text in the store so the panel stays in sync (#9)
+            const currentSelected = useVisualEditorStore.getState().selectedElement;
+            if (currentSelected && currentSelected.cssPath === data.data.cssPath) {
+              useVisualEditorStore.getState().setSelectedElement({
+                ...currentSelected,
+                textContent: data.data.newText,
+              });
+            }
           }
           break;
         }

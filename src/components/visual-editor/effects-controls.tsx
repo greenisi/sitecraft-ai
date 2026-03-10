@@ -22,11 +22,11 @@ interface EffectsControlsProps {
 
 const SHADOW_PRESETS: { label: string; value: string }[] = [
   { label: 'None', value: 'none' },
-  { label: 'Small', value: '0 1px 2px 0 rgb(0 0 0 / 0.05)' },
-  { label: 'Medium', value: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' },
-  { label: 'Large', value: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)' },
-  { label: 'XL', value: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)' },
-  { label: '2XL', value: '0 25px 50px -12px rgb(0 0 0 / 0.25)' },
+  { label: 'Small', value: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)' },
+  { label: 'Medium', value: '0 4px 6px -1px rgb(0 0 0 / 0.15), 0 2px 4px -2px rgb(0 0 0 / 0.1)' },
+  { label: 'Large', value: '0 10px 15px -3px rgb(0 0 0 / 0.2), 0 4px 6px -4px rgb(0 0 0 / 0.15)' },
+  { label: 'XL', value: '0 20px 25px -5px rgb(0 0 0 / 0.25), 0 8px 10px -6px rgb(0 0 0 / 0.15)' },
+  { label: 'Glow', value: '0 0 15px 2px rgb(255 255 255 / 0.1), 0 0 30px 5px rgb(255 255 255 / 0.05)' },
 ];
 
 const DISPLAY_OPTIONS = [

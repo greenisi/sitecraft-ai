@@ -216,6 +216,91 @@ function getPromptBuilder(siteType: GenerationConfig['siteType']) {
 }
 
 /**
+ * Basic syntax sanity check for generated TSX/JSX/TS files.
+ * Returns null if OK, or an error description if issues are found.
+ */
+function checkBasicSyntax(content: string, filePath: string): string | null {
+  if (!filePath.match(/\.(tsx?|jsx?)$/)) return null;
+
+  let braces = 0, parens = 0, brackets = 0;
+  let inString: string | null = null;
+  let inTemplate = false;
+
+  for (let i = 0; i < content.length; i++) {
+    const ch = content[i];
+    const prev = i > 0 ? content[i - 1] : '';
+
+    // Skip escaped characters
+    if (prev === '\\') continue;
+
+    // String tracking
+    if (!inString && !inTemplate) {
+      if (ch === '"' || ch === "'") { inString = ch; continue; }
+      if (ch === '`') { inTemplate = true; continue; }
+    } else if (inString && ch === inString) {
+      inString = null; continue;
+    } else if (inTemplate && ch === '`' && prev !== '\\') {
+      inTemplate = false; continue;
+    }
+
+    if (inString || inTemplate) continue;
+
+    // Count delimiters
+    if (ch === '{') braces++;
+    else if (ch === '}') braces--;
+    else if (ch === '(') parens++;
+    else if (ch === ')') parens--;
+    else if (ch === '[') brackets++;
+    else if (ch === ']') brackets--;
+  }
+
+  const issues: string[] = [];
+  if (braces !== 0) issues.push(`unmatched braces (${braces > 0 ? 'missing }' : 'extra }'})`);
+  if (parens !== 0) issues.push(`unmatched parentheses (${parens > 0 ? 'missing )' : 'extra )'})`);
+  if (brackets !== 0) issues.push(`unmatched brackets (${brackets > 0 ? 'missing ]' : 'extra ]'})`);
+
+  // Check for missing export default
+  if (filePath.match(/\.(tsx|jsx)$/) && !content.includes('export default') && !content.includes('export function') && !content.includes('export const')) {
+    issues.push('missing export');
+  }
+
+  return issues.length > 0 ? issues.join(', ') : null;
+}
+
+/**
+ * Attempt basic auto-fix of common syntax issues in generated code.
+ */
+function autoFixSyntax(content: string): string {
+  let fixed = content;
+
+  // Fix duplicate tokens: [] [], '' '', {} {}
+  fixed = fixed.replace(/\[\]\s*\[\]/g, '[]');
+  fixed = fixed.replace(/''\s*''/g, "''");
+  fixed = fixed.replace(/""\s*""/g, '""');
+  fixed = fixed.replace(/\{\}\s*\{\}/g, '{}');
+
+  // Fix missing closing brace at end of file
+  let braces = 0;
+  let inStr: string | null = null;
+  for (let i = 0; i < fixed.length; i++) {
+    const ch = fixed[i];
+    if (i > 0 && fixed[i - 1] === '\\') continue;
+    if (!inStr && (ch === '"' || ch === "'")) { inStr = ch; continue; }
+    if (inStr && ch === inStr) { inStr = null; continue; }
+    if (inStr) continue;
+    if (ch === '{') braces++;
+    if (ch === '}') braces--;
+  }
+  // Add missing closing braces
+  while (braces > 0) {
+    fixed += '\n}';
+    braces--;
+  }
+
+  return fixed;
+}
+
+/**
  * Streams component generation from Claude. Yields GenerationEvents as
  * components are being streamed and completed.
  */
@@ -322,9 +407,16 @@ async function* generateComponents(
         completedCount++;
         const fileType = inferFileType(block.filePath);
 
+        // Auto-fix common syntax issues
+        let content = block.content;
+        const syntaxIssue = checkBasicSyntax(content, block.filePath);
+        if (syntaxIssue) {
+          content = autoFixSyntax(content);
+        }
+
         allFiles.push({
           path: block.filePath,
-          content: block.content,
+          content,
           type: fileType,
         });
 
@@ -333,7 +425,7 @@ async function* generateComponents(
           type: 'component-complete',
           stage: 'components',
           componentName: componentName ?? block.filePath,
-          file: { path: block.filePath, content: block.content },
+          file: { path: block.filePath, content },
           totalFiles: totalExpected,
           completedFiles: completedCount,
         };
@@ -353,9 +445,16 @@ async function* generateComponents(
       completedCount++;
       const fileType = inferFileType(block.filePath);
 
+      // Auto-fix common syntax issues
+      let content = block.content;
+      const syntaxIssue = checkBasicSyntax(content, block.filePath);
+      if (syntaxIssue) {
+        content = autoFixSyntax(content);
+      }
+
       allFiles.push({
         path: block.filePath,
-        content: block.content,
+        content,
         type: fileType,
       });
 
@@ -364,7 +463,7 @@ async function* generateComponents(
         type: 'component-complete',
         stage: 'components',
         componentName: componentName ?? block.filePath,
-        file: { path: block.filePath, content: block.content },
+        file: { path: block.filePath, content },
         totalFiles: totalExpected,
         completedFiles: completedCount,
       };

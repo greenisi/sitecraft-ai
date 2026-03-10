@@ -33,7 +33,7 @@ export function getIframeBridgeScript(): string {
     pointerEvents: 'none',
     border: '2px solid rgba(139, 92, 246, 0.8)',
     borderRadius: '2px',
-    background: 'rgba(139, 92, 246, 0.05)',
+    background: 'rgba(139, 92, 246, 0.02)',
     zIndex: '99999',
     display: 'none',
   });
@@ -317,16 +317,27 @@ export function getIframeBridgeScript(): string {
     var bottomReserve = isMobile ? 56 : 0;
     var maxBottom = window.innerHeight - bottomReserve;
 
+    // Minimum gap between toolbar and element to avoid overlap
+    var gap = 10;
+
     // Prefer above element
-    var topPos = rect.top - toolbarHeight - 8;
+    var topPos = rect.top - toolbarHeight - gap;
     if (topPos < 4) {
       // Fall back to below element
-      topPos = rect.bottom + 8;
+      topPos = rect.bottom + gap;
     }
     // Don't let toolbar go behind bottom bar on mobile
     if (topPos + toolbarHeight > maxBottom) {
-      topPos = rect.top - toolbarHeight - 8;
+      topPos = rect.top - toolbarHeight - gap;
       if (topPos < 4) topPos = 4;
+    }
+    // Final safety: if toolbar would still overlap the element, push it further
+    if (topPos + toolbarHeight > rect.top && topPos < rect.bottom) {
+      // Place firmly below element
+      topPos = rect.bottom + gap;
+      if (topPos + toolbarHeight > maxBottom) {
+        topPos = 4; // Last resort: pin to top
+      }
     }
 
     var leftPos = rect.left + (rect.width / 2) - (toolbarWidth / 2);
@@ -798,7 +809,8 @@ export function getIframeBridgeScript(): string {
     updateBreadcrumb();
 
     var styles = getElementStyles(el);
-    var textContent = el.textContent ? el.textContent.substring(0, 200) : '';
+    // Use innerText to get properly spaced text (textContent concatenates without spaces)
+    var textContent = (el.innerText || el.textContent || '').substring(0, 200);
 
     var isImage = isImageElement(el);
 

@@ -39,7 +39,52 @@ export function PropertiesPanel({ onSave }: PropertiesPanelProps) {
     isVisualEditorActive,
   } = useVisualEditorStore();
 
-  // ── Keyboard shortcuts for undo/redo ──────────────────────────────────
+  // ── Undo/Redo with iframe sync ──────────────────────────────────
+  const syncChangesToIframe = useCallback(
+    (oldChanges: typeof pendingChanges, newChanges: typeof pendingChanges) => {
+      // Build a map of current style values from newChanges
+      const newStyles = new Map<string, { property: string; value: string }>();
+      for (const c of newChanges) {
+        if (c.type === 'style' && c.property) {
+          newStyles.set(`${c.cssPath}::${c.property}`, { property: c.property, value: c.newValue || '' });
+        }
+      }
+      // Find style changes that were removed (in old but not in new) → revert to oldValue
+      for (const c of oldChanges) {
+        if (c.type === 'style' && c.property) {
+          const key = `${c.cssPath}::${c.property}`;
+          if (!newStyles.has(key)) {
+            sendToPreviewIframe({
+              type: 'sitecraft:apply-style',
+              property: c.property,
+              value: c.oldValue || '',
+            });
+          }
+        }
+      }
+      // Apply all current style changes
+      for (const [, { property, value }] of newStyles) {
+        sendToPreviewIframe({ type: 'sitecraft:apply-style', property, value });
+      }
+    },
+    []
+  );
+
+  const handleUndo = useCallback(() => {
+    const before = [...pendingChanges];
+    undo();
+    // Read the updated state after undo
+    const after = useVisualEditorStore.getState().pendingChanges;
+    syncChangesToIframe(before, after);
+  }, [pendingChanges, undo, syncChangesToIframe]);
+
+  const handleRedo = useCallback(() => {
+    const before = [...pendingChanges];
+    redo();
+    const after = useVisualEditorStore.getState().pendingChanges;
+    syncChangesToIframe(before, after);
+  }, [pendingChanges, redo, syncChangesToIframe]);
+
   useEffect(() => {
     if (!isVisualEditorActive) return;
 
@@ -50,26 +95,26 @@ export function PropertiesPanel({ onSave }: PropertiesPanelProps) {
       // Ctrl+Shift+Z or Ctrl+Y → redo
       if ((e.key === 'z' || e.key === 'Z') && e.shiftKey) {
         e.preventDefault();
-        redo();
+        handleRedo();
         return;
       }
 
       if (e.key === 'y' || e.key === 'Y') {
         e.preventDefault();
-        redo();
+        handleRedo();
         return;
       }
 
       // Ctrl+Z → undo
       if (e.key === 'z' || e.key === 'Z') {
         e.preventDefault();
-        undo();
+        handleUndo();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isVisualEditorActive, undo, redo]);
+  }, [isVisualEditorActive, handleUndo, handleRedo]);
 
   const sendToIframe = useCallback(
     (property: string, value: string) => {
@@ -193,7 +238,7 @@ export function PropertiesPanel({ onSave }: PropertiesPanelProps) {
             variant="ghost"
             size="icon"
             className="h-7 w-7"
-            onClick={undo}
+            onClick={handleUndo}
             disabled={undoStack.length === 0}
             title="Undo (Ctrl+Z)"
           >
@@ -203,7 +248,7 @@ export function PropertiesPanel({ onSave }: PropertiesPanelProps) {
             variant="ghost"
             size="icon"
             className="h-7 w-7"
-            onClick={redo}
+            onClick={handleRedo}
             disabled={redoStack.length === 0}
             title="Redo (Ctrl+Shift+Z)"
           >
