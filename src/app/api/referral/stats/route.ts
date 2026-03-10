@@ -4,10 +4,10 @@ import { createClient as createAdminClient } from '@supabase/supabase-js';
 
 export const runtime = 'nodejs';
 
-const supabaseAdmin = createAdminClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Guard: at build time env vars may not exist. Handlers never run at build time.
+const supabaseAdmin = process.env.NEXT_PUBLIC_SUPABASE_URL
+  ? createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+  : (null as unknown as ReturnType<typeof createAdminClient>);
 
 /**
  * GET /api/referral/stats

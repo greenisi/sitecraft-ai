@@ -904,7 +904,13 @@ export function useChat(projectId: string) {
         let errorMsg = rawMsg;
         if (isConnectionError(rawMsg)) {
           errorMsg =
-            'The generation timed out or the connection was lost. This can happen with complex sites. Please try again. The generation should be faster now.';
+            'The connection was lost during generation. This can happen with complex sites or slow networks. Please try again — your progress was saved.';
+        } else if (rawMsg.includes('stream ended unexpectedly')) {
+          errorMsg =
+            'The generation took longer than expected. Your site may still be building — try refreshing the page in a moment.';
+        } else if (rawMsg.includes('Pipeline failed')) {
+          errorMsg =
+            'The AI encountered an issue generating your site. Please try again with a simpler description.';
         }
 
         const errorMessage: ChatMessageLocal = {

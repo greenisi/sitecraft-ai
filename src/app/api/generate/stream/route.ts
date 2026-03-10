@@ -86,6 +86,39 @@ export async function POST(request: NextRequest) {
               );
   }
 
+  // ── Clean up any stale generations ───────────────────────────────────
+  // If a previous generation was abandoned (e.g. Vercel timeout killed
+  // the function), mark it as complete or error before starting a new one.
+  // This prevents the dashboard from showing perpetual "Building..." state.
+  const { data: staleVersions } = await supabase
+      .from('generation_versions')
+      .select('id, created_at')
+      .eq('project_id', projectId)
+      .eq('status', 'generating');
+
+  if (staleVersions && staleVersions.length > 0) {
+    for (const stale of staleVersions) {
+      const elapsed = Date.now() - new Date(stale.created_at).getTime();
+      // Clean up any version older than 2 minutes — a new generation request
+      // means the previous one is definitely abandoned
+      if (elapsed > 2 * 60 * 1000) {
+        const { count: staleFileCount } = await supabase
+          .from('generated_files')
+          .select('id', { count: 'exact', head: true })
+          .eq('version_id', stale.id);
+
+        await supabase
+          .from('generation_versions')
+          .update({
+            status: (staleFileCount ?? 0) > 0 ? 'complete' : 'error',
+            generation_time_ms: elapsed,
+            completed_at: new Date().toISOString(),
+          })
+          .eq('id', stale.id);
+      }
+    }
+  }
+
   // ── Create generation version record ──────────────────────────────────
   // Compute next version number for this project
   const { data: latestVersion } = await supabase

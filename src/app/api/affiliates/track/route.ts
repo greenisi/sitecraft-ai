@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Lazy-init to avoid crashing at build time when env vars aren't available
+let _supabaseAdmin: SupabaseClient | null = null;
+function getSupabaseAdmin(): SupabaseClient {
+  if (!_supabaseAdmin) {
+    _supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+  }
+  return _supabaseAdmin;
+}
 
 // POST /api/affiliates/track - Track a referral click
 export async function POST(request: NextRequest) {
@@ -14,6 +21,8 @@ export async function POST(request: NextRequest) {
     if (!ref_code) {
       return NextResponse.json({ error: 'Missing ref_code' }, { status: 400 });
     }
+
+    const supabaseAdmin = getSupabaseAdmin();
 
     // Find the affiliate by code
     const { data: affiliate } = await supabaseAdmin
@@ -60,6 +69,8 @@ export async function GET(request: NextRequest) {
   if (!ref) {
     return NextResponse.redirect(new URL('/signup', request.url));
   }
+
+  const supabaseAdmin = getSupabaseAdmin();
 
   // Find the affiliate
   const { data: affiliate } = await supabaseAdmin

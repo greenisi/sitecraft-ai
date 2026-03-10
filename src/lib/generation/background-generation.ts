@@ -159,12 +159,38 @@ export async function startBackgroundGeneration(
           }
       }
 
-      // Stream ended without explicit complete event
-      state.status = 'complete';
-        state.completedAt = new Date().toISOString();
-        activeGenerations.set(projectId, { ...state });
-        notifyListeners(projectId);
-        return state;
+      // Stream ended without an explicit generation-complete event.
+      // This can happen when Vercel times out and kills the function
+      // mid-generation. Don't assume success — check the server.
+      try {
+        const statusRes = await fetch(
+          `/api/generate/status?projectId=${encodeURIComponent(projectId)}`
+        );
+        if (statusRes.ok) {
+          const statusData = await statusRes.json();
+          const vs = statusData.latestVersion?.status;
+          if (vs === 'complete' || statusData.projectStatus === 'generated') {
+            state.status = 'complete';
+            state.completedAt = new Date().toISOString();
+            activeGenerations.set(projectId, { ...state });
+            notifyListeners(projectId);
+            return state;
+          }
+          if (vs === 'error' || statusData.projectStatus === 'error') {
+            throw new Error('The generation failed on the server. Please try again.');
+          }
+        }
+      } catch (checkErr) {
+        // If the status check itself fails, fall through to the error below
+        if (checkErr instanceof Error && checkErr.message.includes('generation failed')) {
+          throw checkErr;
+        }
+      }
+      // Server still shows "generating" or we couldn't confirm — treat as error
+      // so the client doesn't show a false success
+      throw new Error(
+        'The generation stream ended unexpectedly. Your site may still be building — please wait a moment and refresh.'
+      );
   } catch (error) {
         const errMsg = error instanceof Error ? error.message : 'Unknown error';
         state.status = 'error';

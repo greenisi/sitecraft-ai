@@ -3,11 +3,10 @@ import { getStripe } from '@/lib/stripe';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
-// Supabase admin client for webhook processing
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Guard: at build time env vars may not exist. Handlers never run at build time.
+const supabaseAdmin = process.env.NEXT_PUBLIC_SUPABASE_URL
+  ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+  : (null as unknown as ReturnType<typeof createClient>);
 
 // Stripe Connect webhook events to handle
 const relevantEvents = new Set([

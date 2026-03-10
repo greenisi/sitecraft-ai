@@ -70,39 +70,61 @@ export async function GET(request: NextRequest) {
   }
 
   // ── Auto-recovery for stuck generations ─────────────────────────────
-  // If a version has been "generating" for more than 6 minutes (past
-  // the 5-min Vercel timeout) and has files, auto-complete it.
-  if (latestVersion && latestVersion.status === 'generating' && fileCount > 0) {
+  // Vercel serverless functions have a 5-min timeout. If the function is
+  // killed mid-generation, the post-pipeline cleanup code never runs,
+  // leaving both generation_versions and projects stuck in "generating".
+  // Detect and fix this automatically.
+  if (latestVersion && latestVersion.status === 'generating') {
     const createdAt = new Date(latestVersion.created_at).getTime();
     const now = Date.now();
-    const sixMinutes = 6 * 60 * 1000;
+    const staleThreshold = 4 * 60 * 1000; // 4 minutes (Vercel max is 5 min)
 
-    if (now - createdAt > sixMinutes) {
-      // Auto-recover: mark version as complete
-      await supabase
-        .from('generation_versions')
-        .update({
-          status: 'complete',
-          generation_time_ms: now - createdAt,
-          completed_at: new Date().toISOString(),
-        })
-        .eq('id', latestVersion.id);
+    if (now - createdAt > staleThreshold) {
+      if (fileCount > 0) {
+        // Files were generated before timeout — mark as complete
+        await supabase
+          .from('generation_versions')
+          .update({
+            status: 'complete',
+            generation_time_ms: now - createdAt,
+            completed_at: new Date().toISOString(),
+          })
+          .eq('id', latestVersion.id);
 
-      // Update project status
-      await supabase
-        .from('projects')
-        .update({
-          status: 'generated',
-          last_generated_at: new Date().toISOString(),
-        })
-        .eq('id', projectId);
+        await supabase
+          .from('projects')
+          .update({
+            status: 'generated',
+            last_generated_at: new Date().toISOString(),
+          })
+          .eq('id', projectId);
 
-      // Update local references for the response
-      latestVersion.status = 'complete';
-      latestVersion.completed_at = new Date().toISOString();
-      latestVersion.generation_time_ms = now - createdAt;
-      project.status = 'generated';
-      project.last_generated_at = new Date().toISOString();
+        latestVersion.status = 'complete';
+        latestVersion.completed_at = new Date().toISOString();
+        latestVersion.generation_time_ms = now - createdAt;
+        project.status = 'generated';
+        project.last_generated_at = new Date().toISOString();
+      } else {
+        // No files at all — generation failed before producing anything
+        await supabase
+          .from('generation_versions')
+          .update({
+            status: 'error',
+            generation_time_ms: now - createdAt,
+            completed_at: new Date().toISOString(),
+          })
+          .eq('id', latestVersion.id);
+
+        await supabase
+          .from('projects')
+          .update({ status: 'error' })
+          .eq('id', projectId);
+
+        latestVersion.status = 'error';
+        latestVersion.completed_at = new Date().toISOString();
+        latestVersion.generation_time_ms = now - createdAt;
+        project.status = 'error';
+      }
     }
   }
 
