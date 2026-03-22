@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const { email, password, displayName } = body;
+  const { email, password, displayName, refCode } = body;
 
   if (!email || !password) {
     return NextResponse.json(
@@ -25,9 +25,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // FIX: Read referral code from cookie
-  const referralCode = request.cookies.get('referral_code')?.value;
-  console.log('[Signup] Referral code from cookie:', referralCode);
+  // Read referral code from cookie first, fall back to body param
+  const referralCode = request.cookies.get('referral_code')?.value || refCode || null;
+  console.log('[Signup] Referral code:', referralCode, '(cookie:', request.cookies.get('referral_code')?.value, ', body:', refCode, ')');
 
   try {
     const supabase = createAdminClient();

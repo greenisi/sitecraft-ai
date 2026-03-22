@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, User, Mail, Lock } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -9,6 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export default function SignupPage() {
+  const searchParams = useSearchParams();
+  const refCode = searchParams.get('ref') || '';
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -51,6 +54,7 @@ export default function SignupPage() {
           email: email.trim(),
           password,
           displayName: displayName.trim(),
+          ...(refCode && { refCode }),
         }),
       });
 

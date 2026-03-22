@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
   const response = NextResponse.redirect(redirectUrl);
 
   // Set cookie for 30 days
-  response.cookies.set('ref_code', ref, {
+  response.cookies.set('referral_code', ref, {
     maxAge: 30 * 24 * 60 * 60,
     httpOnly: true,
     secure: true,
