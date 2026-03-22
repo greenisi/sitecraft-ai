@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Copy, Check, Link2, Users, DollarSign, Gift, TrendingUp, MousePointerClick, UserPlus, CreditCard, Clock } from 'lucide-react';
+import { toast } from 'sonner';
+import { Copy, Check, Link2, Users, DollarSign, Gift, TrendingUp, MousePointerClick, UserPlus, CreditCard, Clock, Sparkles } from 'lucide-react';
 
 interface Affiliate {
   id: string;
@@ -39,6 +40,7 @@ interface Props {
 export function AffiliateClient({ affiliate, referrals, userPlan }: Props) {
   const [copied, setCopied] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [redeeming, setRedeeming] = useState(false);
 
   const copyLink = async () => {
     if (affiliate?.referral_link) {
@@ -53,6 +55,25 @@ export function AffiliateClient({ affiliate, referrals, userPlan }: Props) {
       await navigator.clipboard.writeText(affiliate.affiliate_code);
       setCopiedCode(true);
       setTimeout(() => setCopiedCode(false), 2000);
+    }
+  };
+
+  const redeemFreeMonth = async () => {
+    setRedeeming(true);
+    try {
+      const res = await fetch('/api/affiliates/redeem', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error('Redemption failed', { description: data.error });
+      } else {
+        toast.success('Free month applied!', {
+          description: 'A 100% discount has been applied to your next billing cycle.',
+        });
+      }
+    } catch {
+      toast.error('Redemption failed', { description: 'An unexpected error occurred.' });
+    } finally {
+      setRedeeming(false);
     }
   };
 
@@ -174,6 +195,14 @@ export function AffiliateClient({ affiliate, referrals, userPlan }: Props) {
           </div>
           <p className="text-2xl font-bold text-amber-400">{freeMonthsAvailable}</p>
           <p className="text-xs text-gray-600 mt-0.5">months to redeem</p>
+          <button
+            onClick={redeemFreeMonth}
+            disabled={freeMonthsAvailable <= 0 || redeeming}
+            className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 enabled:active:scale-95"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            {redeeming ? 'Applying...' : 'Redeem'}
+          </button>
         </div>
       </div>
 
