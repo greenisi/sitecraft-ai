@@ -2,7 +2,23 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Copy, Check, Link2, Users, DollarSign, Gift, TrendingUp, MousePointerClick, UserPlus, CreditCard, Clock, Sparkles } from 'lucide-react';
+import {
+  Copy,
+  Check,
+  Link2,
+  Users,
+  DollarSign,
+  Gift,
+  TrendingUp,
+  MousePointerClick,
+  UserPlus,
+  CreditCard,
+  Clock,
+  Sparkles,
+  Wallet,
+  ExternalLink,
+  ArrowDownToLine,
+} from 'lucide-react';
 
 interface Affiliate {
   id: string;
@@ -14,6 +30,9 @@ interface Affiliate {
   total_earnings: number;
   free_months_earned: number;
   free_months_used: number;
+  pending_payout: number;
+  commission_rate: number;
+  payout_method: 'free_month' | 'cash';
   status: string;
   created_at: string;
 }
@@ -35,12 +54,28 @@ interface Props {
   affiliate: Affiliate | null;
   referrals: Referral[];
   userPlan: string;
+  stripeConnectAccountId: string | null;
 }
 
-export function AffiliateClient({ affiliate, referrals, userPlan }: Props) {
+const PRO_PLAN_PRICE = 29;
+const MINIMUM_PAYOUT = 10;
+
+export function AffiliateClient({ affiliate, referrals, userPlan, stripeConnectAccountId }: Props) {
   const [copied, setCopied] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const [redeeming, setRedeeming] = useState(false);
+  const [requestingPayout, setRequestingPayout] = useState(false);
+  const [connectingStripe, setConnectingStripe] = useState(false);
+  const [payoutMethod, setPayoutMethod] = useState<'free_month' | 'cash'>(
+    affiliate?.payout_method || 'free_month'
+  );
+  const [hasConnectAccount, setHasConnectAccount] = useState(!!stripeConnectAccountId);
+  const [pendingPayout, setPendingPayout] = useState(
+    parseFloat(String(affiliate?.pending_payout || 0))
+  );
+
+  const commissionRate = parseFloat(String(affiliate?.commission_rate || 0.30));
+  const estimatedEarningPerReferral = PRO_PLAN_PRICE * commissionRate;
 
   const copyLink = async () => {
     if (affiliate?.referral_link) {
@@ -77,6 +112,67 @@ export function AffiliateClient({ affiliate, referrals, userPlan }: Props) {
     }
   };
 
+  const switchPayoutMethod = async (method: 'free_month' | 'cash') => {
+    if (method === payoutMethod) return;
+    try {
+      const res = await fetch('/api/affiliates/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ payout_method: method }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error('Failed to update payout method', { description: data.error });
+      } else {
+        setPayoutMethod(method);
+        toast.success(
+          method === 'cash'
+            ? 'Switched to cash commissions (30%)'
+            : 'Switched to free months'
+        );
+      }
+    } catch {
+      toast.error('Failed to update payout method');
+    }
+  };
+
+  const connectStripe = async () => {
+    setConnectingStripe(true);
+    try {
+      const res = await fetch('/api/affiliates/connect-stripe', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error('Failed to start Stripe Connect', { description: data.error });
+      } else if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch {
+      toast.error('Failed to connect Stripe account');
+    } finally {
+      setConnectingStripe(false);
+    }
+  };
+
+  const requestPayout = async () => {
+    setRequestingPayout(true);
+    try {
+      const res = await fetch('/api/affiliates/request-payout', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error('Payout failed', { description: data.error });
+      } else {
+        setPendingPayout(0);
+        toast.success(`$${data.amount?.toFixed(2)} payout processed!`, {
+          description: 'Funds will arrive in your Stripe account within 1–2 business days.',
+        });
+      }
+    } catch {
+      toast.error('Payout failed', { description: 'An unexpected error occurred.' });
+    } finally {
+      setRequestingPayout(false);
+    }
+  };
+
   const statusColors: Record<string, string> = {
     clicked: 'bg-gray-500/20 text-gray-400',
     signed_up: 'bg-blue-500/20 text-blue-400',
@@ -86,16 +182,162 @@ export function AffiliateClient({ affiliate, referrals, userPlan }: Props) {
   };
 
   const freeMonthsAvailable = (affiliate?.free_months_earned || 0) - (affiliate?.free_months_used || 0);
+  const canRequestPayout = pendingPayout >= MINIMUM_PAYOUT && hasConnectAccount;
 
   return (
     <div className="max-w-6xl mx-auto pt-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white">Affiliate Program</h1>
-        <p className="text-gray-400 mt-2">Earn a free month for every referral that purchases a plan. Share your link, track conversions, and grow your rewards.</p>
+        <p className="text-gray-400 mt-2">
+          Refer others and earn — choose between free months or cash commissions.
+        </p>
       </div>
 
-      {/* Reward Banner */}
+      {/* Payout Method Toggle */}
+      <div className="mb-8 bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <h2 className="text-lg font-semibold text-white mb-1">Choose Your Reward</h2>
+        <p className="text-sm text-gray-500 mb-4">Switch anytime — applies to future conversions</p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          {/* Free Months */}
+          <button
+            onClick={() => switchPayoutMethod('free_month')}
+            className={`relative flex items-start gap-4 p-4 rounded-xl border text-left transition-all ${
+              payoutMethod === 'free_month'
+                ? 'border-emerald-500/50 bg-emerald-500/10'
+                : 'border-gray-700 bg-gray-800/40 hover:border-gray-600'
+            }`}
+          >
+            <div className={`mt-0.5 p-2 rounded-lg ${payoutMethod === 'free_month' ? 'bg-emerald-500/20' : 'bg-gray-700'}`}>
+              <Gift className={`h-5 w-5 ${payoutMethod === 'free_month' ? 'text-emerald-400' : 'text-gray-400'}`} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={`font-semibold ${payoutMethod === 'free_month' ? 'text-white' : 'text-gray-300'}`}>
+                Earn Free Months
+              </p>
+              <p className="text-sm text-gray-400 mt-0.5">1 free month per paid referral</p>
+              <p className="text-xs text-gray-600 mt-1">Applied to your subscription</p>
+            </div>
+            {payoutMethod === 'free_month' && (
+              <span className="absolute top-3 right-3 w-2 h-2 rounded-full bg-emerald-400" />
+            )}
+          </button>
+
+          {/* Cash */}
+          <button
+            onClick={() => switchPayoutMethod('cash')}
+            className={`relative flex items-start gap-4 p-4 rounded-xl border text-left transition-all ${
+              payoutMethod === 'cash'
+                ? 'border-violet-500/50 bg-violet-500/10'
+                : 'border-gray-700 bg-gray-800/40 hover:border-gray-600'
+            }`}
+          >
+            <div className={`mt-0.5 p-2 rounded-lg ${payoutMethod === 'cash' ? 'bg-violet-500/20' : 'bg-gray-700'}`}>
+              <DollarSign className={`h-5 w-5 ${payoutMethod === 'cash' ? 'text-violet-400' : 'text-gray-400'}`} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={`font-semibold ${payoutMethod === 'cash' ? 'text-white' : 'text-gray-300'}`}>
+                Earn Cash (30% Commission)
+              </p>
+              <p className="text-sm text-gray-400 mt-0.5">
+                ~${estimatedEarningPerReferral.toFixed(0)} per Pro referral
+              </p>
+              <p className="text-xs text-gray-600 mt-1">
+                Via Stripe · ${MINIMUM_PAYOUT} minimum payout
+              </p>
+            </div>
+            {payoutMethod === 'cash' && (
+              <span className="absolute top-3 right-3 w-2 h-2 rounded-full bg-violet-400" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Cash Payout Panel — shown when cash mode is active */}
+      {payoutMethod === 'cash' && (
+        <div className="mb-8 bg-gray-900 border border-gray-800 rounded-2xl p-6">
+          <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <Wallet className="h-5 w-5 text-violet-400" />
+            Cash Balance & Payouts
+          </h2>
+
+          <div className="grid sm:grid-cols-3 gap-4 mb-5">
+            <div className="bg-gray-800/60 rounded-xl p-4">
+              <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Pending Balance</p>
+              <p className="text-2xl font-bold text-violet-400">${pendingPayout.toFixed(2)}</p>
+              <p className="text-xs text-gray-600 mt-0.5">Awaiting payout</p>
+            </div>
+            <div className="bg-gray-800/60 rounded-xl p-4">
+              <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Commission Rate</p>
+              <p className="text-2xl font-bold text-white">{(commissionRate * 100).toFixed(0)}%</p>
+              <p className="text-xs text-gray-600 mt-0.5">Of payment amount</p>
+            </div>
+            <div className="bg-gray-800/60 rounded-xl p-4">
+              <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Est. Per Referral</p>
+              <p className="text-2xl font-bold text-emerald-400">${estimatedEarningPerReferral.toFixed(2)}</p>
+              <p className="text-xs text-gray-600 mt-0.5">Pro plan (${PRO_PLAN_PRICE}/mo)</p>
+            </div>
+          </div>
+
+          {/* Stripe Connect */}
+          {!hasConnectAccount ? (
+            <div className="flex items-start gap-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+              <CreditCard className="h-5 w-5 text-amber-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-white">Connect your Stripe account to receive payouts</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Stripe Connect lets us send cash directly to your bank. Takes ~2 minutes.
+                </p>
+              </div>
+              <button
+                onClick={connectStripe}
+                disabled={connectingStripe}
+                className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-amber-500 hover:bg-amber-400 text-black transition-all disabled:opacity-60"
+              >
+                <ExternalLink className="h-4 w-4" />
+                {connectingStripe ? 'Redirecting...' : 'Connect Stripe'}
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-2 text-sm text-gray-400">
+                <Check className="h-4 w-4 text-emerald-400" />
+                Stripe account connected
+                <button
+                  onClick={connectStripe}
+                  disabled={connectingStripe}
+                  className="text-xs text-gray-600 hover:text-gray-400 underline ml-1 transition-colors"
+                >
+                  {connectingStripe ? 'Opening...' : 'Update'}
+                </button>
+              </div>
+              <button
+                onClick={requestPayout}
+                disabled={!canRequestPayout || requestingPayout}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed bg-violet-600 hover:bg-violet-500 text-white enabled:active:scale-95"
+                title={
+                  pendingPayout < MINIMUM_PAYOUT
+                    ? `Minimum $${MINIMUM_PAYOUT} required (you have $${pendingPayout.toFixed(2)})`
+                    : undefined
+                }
+              >
+                <ArrowDownToLine className="h-4 w-4" />
+                {requestingPayout
+                  ? 'Processing...'
+                  : `Request Payout${pendingPayout > 0 ? ` ($${pendingPayout.toFixed(2)})` : ''}`}
+              </button>
+            </div>
+          )}
+
+          {pendingPayout > 0 && pendingPayout < MINIMUM_PAYOUT && (
+            <p className="mt-3 text-xs text-gray-500">
+              Minimum payout is ${MINIMUM_PAYOUT}. Earn ${(MINIMUM_PAYOUT - pendingPayout).toFixed(2)} more to request a payout.
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* How It Works Banner */}
       <div className="mb-8 rounded-2xl p-6 border border-emerald-500/20" style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(59,130,246,0.08) 100%)' }}>
         <div className="flex items-start gap-4">
           <div className="p-3 rounded-xl bg-emerald-500/15">
@@ -106,15 +348,23 @@ export function AffiliateClient({ affiliate, referrals, userPlan }: Props) {
             <div className="grid md:grid-cols-3 gap-4 mt-3">
               <div className="flex items-start gap-2">
                 <span className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 text-xs flex items-center justify-center font-bold">1</span>
-                <p className="text-sm text-gray-300">Share your unique referral link with friends and on social media</p>
+                <p className="text-sm text-gray-300">Share your unique referral link with anyone — no website needed</p>
               </div>
               <div className="flex items-start gap-2">
                 <span className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 text-xs flex items-center justify-center font-bold">2</span>
-                <p className="text-sm text-gray-300">When someone signs up and purchases any paid plan using your link</p>
+                <p className="text-sm text-gray-300">When they sign up and purchase any paid plan using your link</p>
               </div>
               <div className="flex items-start gap-2">
                 <span className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 text-xs flex items-center justify-center font-bold">3</span>
-                <p className="text-sm text-gray-300">You earn a <span className="text-emerald-400 font-semibold">free month</span> of your current plan automatically!</p>
+                <p className="text-sm text-gray-300">
+                  You earn{' '}
+                  {payoutMethod === 'cash' ? (
+                    <span className="text-violet-400 font-semibold">${estimatedEarningPerReferral.toFixed(0)} cash</span>
+                  ) : (
+                    <span className="text-emerald-400 font-semibold">a free month</span>
+                  )}{' '}
+                  automatically!
+                </p>
               </div>
             </div>
           </div>
@@ -181,29 +431,54 @@ export function AffiliateClient({ affiliate, referrals, userPlan }: Props) {
             {affiliate?.total_clicks ? ((affiliate.total_conversions / affiliate.total_clicks) * 100).toFixed(1) : '0.0'}%
           </p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Gift className="h-4 w-4 text-emerald-400" />
-            <span className="text-xs text-gray-500 uppercase tracking-wide">Free Months</span>
-          </div>
-          <p className="text-2xl font-bold text-emerald-400">{affiliate?.free_months_earned || 0}</p>
-        </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 border-emerald-500/30">
-          <div className="flex items-center gap-2 mb-2">
-            <Clock className="h-4 w-4 text-amber-400" />
-            <span className="text-xs text-gray-500 uppercase tracking-wide">Available</span>
-          </div>
-          <p className="text-2xl font-bold text-amber-400">{freeMonthsAvailable}</p>
-          <p className="text-xs text-gray-600 mt-0.5">months to redeem</p>
-          <button
-            onClick={redeemFreeMonth}
-            disabled={freeMonthsAvailable <= 0 || redeeming}
-            className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 enabled:active:scale-95"
-          >
-            <Sparkles className="h-3.5 w-3.5" />
-            {redeeming ? 'Applying...' : 'Redeem'}
-          </button>
-        </div>
+
+        {payoutMethod === 'cash' ? (
+          <>
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <DollarSign className="h-4 w-4 text-emerald-400" />
+                <span className="text-xs text-gray-500 uppercase tracking-wide">Total Earned</span>
+              </div>
+              <p className="text-2xl font-bold text-emerald-400">
+                ${((affiliate?.total_earnings || 0) * commissionRate).toFixed(2)}
+              </p>
+            </div>
+            <div className="bg-gray-900 border border-violet-500/30 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Wallet className="h-4 w-4 text-violet-400" />
+                <span className="text-xs text-gray-500 uppercase tracking-wide">Pending</span>
+              </div>
+              <p className="text-2xl font-bold text-violet-400">${pendingPayout.toFixed(2)}</p>
+              <p className="text-xs text-gray-600 mt-0.5">awaiting payout</p>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Gift className="h-4 w-4 text-emerald-400" />
+                <span className="text-xs text-gray-500 uppercase tracking-wide">Free Months</span>
+              </div>
+              <p className="text-2xl font-bold text-emerald-400">{affiliate?.free_months_earned || 0}</p>
+            </div>
+            <div className="bg-gray-900 border border-emerald-500/30 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="h-4 w-4 text-amber-400" />
+                <span className="text-xs text-gray-500 uppercase tracking-wide">Available</span>
+              </div>
+              <p className="text-2xl font-bold text-amber-400">{freeMonthsAvailable}</p>
+              <p className="text-xs text-gray-600 mt-0.5">months to redeem</p>
+              <button
+                onClick={redeemFreeMonth}
+                disabled={freeMonthsAvailable <= 0 || redeeming}
+                className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 enabled:active:scale-95"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                {redeeming ? 'Applying...' : 'Redeem'}
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Referral History */}
@@ -219,7 +494,10 @@ export function AffiliateClient({ affiliate, referrals, userPlan }: Props) {
           <div className="p-12 text-center">
             <Users className="h-10 w-10 text-gray-700 mx-auto mb-3" />
             <p className="text-gray-500 mb-1">No referrals yet</p>
-            <p className="text-sm text-gray-600">Share your referral link to start earning free months!</p>
+            <p className="text-sm text-gray-600">
+              Share your referral link to start earning{' '}
+              {payoutMethod === 'cash' ? 'cash commissions' : 'free months'}!
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -250,7 +528,11 @@ export function AffiliateClient({ affiliate, referrals, userPlan }: Props) {
                     <td className="px-6 py-3 text-gray-400 capitalize">{r.plan_purchased || '-'}</td>
                     <td className="px-6 py-3">
                       {r.status === 'rewarded' ? (
-                        <span className="text-emerald-400 font-medium">+1 free month</span>
+                        r.reward_type === 'cash' ? (
+                          <span className="text-violet-400 font-medium">+${Number(r.reward_value || 0).toFixed(2)}</span>
+                        ) : (
+                          <span className="text-emerald-400 font-medium">+1 free month</span>
+                        )
                       ) : r.status === 'converted' ? (
                         <span className="text-amber-400 text-xs">Pending reward</span>
                       ) : (

@@ -38,10 +38,10 @@ export default async function AffiliatePage() {
     .order('created_at', { ascending: false })
     .limit(100);
 
-  // Get user profile for plan info
+  // Get user profile for plan info and Stripe Connect status
   const { data: profile } = await supabase
     .from('profiles')
-    .select('plan, generation_credits')
+    .select('plan, generation_credits, stripe_connect_account_id')
     .eq('id', user.id)
     .single();
 
@@ -50,6 +50,7 @@ export default async function AffiliatePage() {
       affiliate={affiliate}
       referrals={referrals || []}
       userPlan={profile?.plan || 'free'}
+      stripeConnectAccountId={profile?.stripe_connect_account_id || null}
     />
   );
 }

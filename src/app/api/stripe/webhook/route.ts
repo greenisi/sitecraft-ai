@@ -204,7 +204,7 @@ async function trackReferralConversion(userId: string, amountInCents: number) {
     // Find the affiliate record by ID (referred_by stores affiliate.id)
     const { data: affiliate } = await supabaseAdmin
       .from('affiliates')
-      .select('id, user_id, total_conversions, total_earnings, free_months_earned')
+      .select('id, user_id, total_conversions, total_earnings, free_months_earned, payout_method, commission_rate, pending_payout')
       .eq('id', affiliateId)
       .single();
 
@@ -214,6 +214,9 @@ async function trackReferralConversion(userId: string, amountInCents: number) {
     }
 
     const referrerId = affiliate.user_id;
+    const payoutMethod = affiliate.payout_method || 'free_month';
+    const commissionRate = parseFloat(String(affiliate.commission_rate)) || 0.30;
+    const cashEarned = amountInDollars * commissionRate;
 
     // Update the referral entry to 'converted'
     const { data: referral } = await supabaseAdmin
@@ -232,19 +235,31 @@ async function trackReferralConversion(userId: string, amountInCents: number) {
           status: 'converted',
           converted_at: new Date().toISOString(),
           plan_purchased: 'credits',
+          reward_type: payoutMethod,
+          reward_value: payoutMethod === 'cash' ? cashEarned : 1,
         })
         .eq('id', referral.id);
     }
 
-    // Update affiliate conversion count and earnings
+    // Update affiliate conversion count and earnings based on payout_method
+    const affiliateUpdates: Record<string, unknown> = {
+      total_conversions: (affiliate.total_conversions || 0) + 1,
+      total_earnings: (parseFloat(String(affiliate.total_earnings)) || 0) + (payoutMethod === 'cash' ? cashEarned : amountInDollars),
+      updated_at: new Date().toISOString(),
+    };
+
+    if (payoutMethod === 'cash') {
+      // Accumulate cash commission into pending_payout
+      affiliateUpdates.pending_payout =
+        (parseFloat(String(affiliate.pending_payout)) || 0) + cashEarned;
+    } else {
+      // Free month reward
+      affiliateUpdates.free_months_earned = (affiliate.free_months_earned || 0) + 1;
+    }
+
     await supabaseAdmin
       .from('affiliates')
-      .update({
-        total_conversions: (affiliate.total_conversions || 0) + 1,
-        total_earnings: (parseFloat(String(affiliate.total_earnings)) || 0) + amountInDollars,
-        free_months_earned: (affiliate.free_months_earned || 0) + 1,
-        updated_at: new Date().toISOString(),
-      })
+      .update(affiliateUpdates)
       .eq('id', affiliate.id);
 
     console.log('[Webhook] Tracked referral conversion', {
@@ -252,6 +267,8 @@ async function trackReferralConversion(userId: string, amountInCents: number) {
       referrerId,
       referredUserId: userId,
       amount: amountInDollars,
+      payoutMethod,
+      cashEarned: payoutMethod === 'cash' ? cashEarned : 0,
     });
   } catch (err) {
     console.error('[Webhook] Error tracking referral conversion:', err);
