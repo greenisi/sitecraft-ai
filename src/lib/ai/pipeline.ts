@@ -279,23 +279,94 @@ function autoFixSyntax(content: string): string {
   fixed = fixed.replace(/""\s*""/g, '""');
   fixed = fixed.replace(/\{\}\s*\{\}/g, '{}');
 
-  // Fix missing closing brace at end of file
-  let braces = 0;
-  let inStr: string | null = null;
+  // Fix truncated/incomplete function bodies at end of file
+  // If file ends with incomplete code after last complete component, trim it
+  const lastExportMatch = fixed.lastIndexOf('export default');
+  if (lastExportMatch === -1) {
+    // No default export — check if there's a named export we can use
+    const namedExport = fixed.match(/export\s+(const|function)\s+(\w+)/);
+    if (namedExport && !fixed.includes('export default')) {
+      fixed += `\nexport default ${namedExport[2]};`;
+    }
+  }
+
+  // Fix missing semicolons after import statements
+  fixed = fixed.replace(/^(import\s+.+from\s+['"][^'"]+['"])\s*$/gm, '$1;');
+
+  // Fix JSX: missing commas between props on same line
+  // e.g., className="foo" onClick={bar} → className="foo" onClick={bar} (already valid JSX, no comma needed)
+
+  // Fix duplicate 'use client' declarations
+  const useClientCount = (fixed.match(/'use client';/g) || []).length;
+  if (useClientCount > 1) {
+    let found = false;
+    fixed = fixed.replace(/'use client';\n?/g, (match) => {
+      if (!found) { found = true; return match; }
+      return '';
+    });
+  }
+
+  // Fix missing closing parentheses for JSX returns
+  let parens = 0;
+  let inString: string | null = null;
+  let inTemplate = false;
   for (let i = 0; i < fixed.length; i++) {
     const ch = fixed[i];
     if (i > 0 && fixed[i - 1] === '\\') continue;
-    if (!inStr && (ch === '"' || ch === "'")) { inStr = ch; continue; }
-    if (inStr && ch === inStr) { inStr = null; continue; }
-    if (inStr) continue;
+    if (!inString && ch === '`') { inTemplate = !inTemplate; continue; }
+    if (inTemplate) continue;
+    if (!inString && (ch === '"' || ch === "'")) { inString = ch; continue; }
+    if (inString && ch === inString) { inString = null; continue; }
+    if (inString) continue;
+    if (ch === '(') parens++;
+    if (ch === ')') parens--;
+  }
+  while (parens > 0) {
+    fixed += '\n)';
+    parens--;
+  }
+
+  // Fix missing closing braces
+  let braces = 0;
+  inString = null;
+  inTemplate = false;
+  for (let i = 0; i < fixed.length; i++) {
+    const ch = fixed[i];
+    if (i > 0 && fixed[i - 1] === '\\') continue;
+    if (!inString && ch === '`') { inTemplate = !inTemplate; continue; }
+    if (inTemplate) continue;
+    if (!inString && (ch === '"' || ch === "'")) { inString = ch; continue; }
+    if (inString && ch === inString) { inString = null; continue; }
+    if (inString) continue;
     if (ch === '{') braces++;
     if (ch === '}') braces--;
   }
-  // Add missing closing braces
   while (braces > 0) {
     fixed += '\n}';
     braces--;
   }
+
+  // Fix trailing content after the component's closing — sometimes the AI 
+  // generates extra incomplete code after the main component export.
+  // Look for the pattern: } followed by 'use client' (start of duplicate component)
+  const duplicateStart = fixed.indexOf("\n'use client'", fixed.indexOf("'use client'") + 1);
+  if (duplicateStart > 0) {
+    // Check if the code before this point has balanced braces
+    const beforeDuplicate = fixed.substring(0, duplicateStart);
+    let b = 0;
+    for (const ch of beforeDuplicate) {
+      if (ch === '{') b++;
+      if (ch === '}') b--;
+    }
+    if (b <= 0) {
+      // Braces are balanced before the duplicate — safe to trim
+      fixed = beforeDuplicate;
+      console.log('[autoFixSyntax] Trimmed duplicate component code');
+    }
+  }
+
+  // Remove any trailing whitespace/newlines then ensure single newline at end
+  fixed = fixed.trimEnd() + '\n';
 
   return fixed;
 }
