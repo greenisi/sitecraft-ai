@@ -14,6 +14,42 @@ function sleep(ms: number) {
 }
 
 /**
+ * Attempt to repair bracket/paren imbalances at the end of a file.
+ * Only fixes small imbalances (≤3 missing closers) to avoid masking truncation.
+ * Skips repairing if there are excess closers (negative balance).
+ */
+function repairBracketBalance(content: string): string {
+  let braces = 0;
+  let parens = 0;
+  let inStr = false;
+  let strChar = '';
+  let escaped = false;
+
+  for (let i = 0; i < content.length; i++) {
+    const ch = content[i];
+    if (escaped) { escaped = false; continue; }
+    if (ch === '\\' && inStr) { escaped = true; continue; }
+    if (inStr) {
+      if (ch === strChar) inStr = false;
+      continue;
+    }
+    if (ch === '"' || ch === "'" || ch === '`') { inStr = true; strChar = ch; continue; }
+    if (ch === '{') braces++;
+    else if (ch === '}') braces--;
+    else if (ch === '(') parens++;
+    else if (ch === ')') parens--;
+  }
+
+  const missingBraces = Math.max(0, braces);
+  const missingParens = Math.max(0, parens);
+  if (missingBraces === 0 && missingParens === 0) return content;
+  // Don't try to fix large imbalances — the file is likely severely truncated
+  if (missingBraces > 3 || missingParens > 3) return content;
+
+  return content.trimEnd() + '\n' + ')'.repeat(missingParens) + '}'.repeat(missingBraces) + '\n';
+}
+
+/**
  * Check if a TSX/TS file appears to be truncated or incomplete.
  */
 function isFileTruncated(content: string): boolean {
@@ -277,23 +313,43 @@ function validateAndFixFileTree(tree: VirtualFileTree): void {
     }
   }
 
-  // PASS 5: Fix common AI syntax errors (duplicate literals, trailing commas in bad spots)
+  // PASS 5: Fix common AI syntax errors
   for (const [path, file] of tree.entries()) {
     if (!path.endsWith('.tsx') && !path.endsWith('.ts')) continue;
     let content = file.content;
-    let modified = false;
-
-    // Fix duplicate array/object literals: `[] []` → `[]`, `{} {}` → `{}`
     const before = content;
+
+    // Fix 1: Duplicate array/object literals: `[] []` → `[]`, `{} {}` → `{}`
     content = content.replace(/\[\]\s*\[\]/g, '[]');
     content = content.replace(/\{\}\s*\{\}/g, '{}');
-    // Fix `= = ` double assignment
-    content = content.replace(/=\s+=\s+/g, '= ');
-    if (content !== before) {
-      modified = true;
-    }
 
-    if (modified) {
+    // Fix 2: Double assignment operator `= =`
+    content = content.replace(/=\s+=\s+/g, '= ');
+
+    // Fix 3: Double semicolons
+    content = content.replace(/;;+/g, ';');
+
+    // Fix 4: Trailing comma immediately before a JSX self-close `/>` — invalid in JSX
+    // e.g. `<Comp prop={val}, />` → `<Comp prop={val} />`
+    // Only targets `/>` (JSX self-close), not `>` (could be inside a generic type).
+    content = content.replace(/,(\s*)\/>/g, '$1/>');
+
+    // Fix 5: Missing commas in named import blocks that have no commas at all.
+    // e.g. `import { A B C } from '...'` → `import { A, B, C } from '...'`
+    // Only applied when the inner clause has zero commas (all-or-nothing heuristic).
+    content = content.replace(/import\s*\{([^}]+)\}\s*from/g, (match, inner) => {
+      if (inner.includes(',')) return match; // already has commas
+      const names = inner.trim().split(/\s+/).filter(Boolean);
+      if (names.length <= 1) return match;  // single name — no change needed
+      // Guard against `as` aliases being mis-split (e.g. `Foo as Bar`)
+      if (inner.includes(' as ')) return match;
+      return `import { ${names.join(', ')} } from`;
+    });
+
+    // Fix 6: Balance braces and parentheses — append missing closers at end of file.
+    content = repairBracketBalance(content);
+
+    if (content !== before) {
       tree.addFile(path, content, file.type);
       fixed.push(path + ' (syntax)');
     }
@@ -318,6 +374,39 @@ function validateAndFixFileTree(tree: VirtualFileTree): void {
       tree.addFile(path, content, file.type);
       fixed.push(path + ' (images)');
     }
+  }
+
+  // PASS 7: Validation logging — flag files that still look syntactically suspect after all fixes.
+  // This does NOT modify any files; it only emits warnings to aid debugging.
+  const syntaxWarnings: string[] = [];
+  for (const [path, file] of tree.entries()) {
+    if (!path.endsWith('.tsx') && !path.endsWith('.ts')) continue;
+    const content = file.content;
+    const issues: string[] = [];
+
+    // Brace/paren balance check (simple pass — good enough for a diagnostic warning)
+    let braces = 0, parens = 0;
+    for (const ch of content) {
+      if (ch === '{') braces++;
+      else if (ch === '}') braces--;
+      else if (ch === '(') parens++;
+      else if (ch === ')') parens--;
+    }
+    if (braces !== 0) issues.push(`brace imbalance (${braces > 0 ? '+' : ''}${braces})`);
+    if (parens !== 0) issues.push(`paren imbalance (${parens > 0 ? '+' : ''}${parens})`);
+
+    // Odd number of unescaped backticks → likely unclosed template literal
+    const backticks = (content.match(/(?<!\\)`/g) || []).length;
+    if (backticks % 2 !== 0) issues.push('unclosed template literal (odd backtick count)');
+
+    if (issues.length > 0) {
+      syntaxWarnings.push(`  ${path}: ${issues.join(', ')}`);
+    }
+  }
+  if (syntaxWarnings.length > 0) {
+    console.warn(
+      `[validateAndFixFileTree] Unfixable syntax issues detected — these files may cause build errors:\n${syntaxWarnings.join('\n')}`
+    );
   }
 
   console.log(
