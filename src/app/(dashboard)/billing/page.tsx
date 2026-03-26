@@ -191,7 +191,7 @@ export default function PricingPage() {
             Exclusive early adopter pricing, locked forever
           </p>
           <div className="mb-6">
-            <span className="text-4xl font-bold text-white">$49</span>
+            <span className="text-4xl font-bold text-white">$25</span>
             <span className="text-gray-400 text-sm">/month</span>
           </div>
           <ul className="space-y-3 mb-8">
