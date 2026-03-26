@@ -157,7 +157,7 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
             <button
               onClick={() => setMobileView('chat')}
               className={cn(
-                'flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium transition-all',
+                'flex flex-1 flex-col items-center gap-1 py-3.5 text-sm font-medium transition-all min-h-[60px]',
                 mobileView === 'chat'
                   ? 'text-violet-600 dark:text-violet-400'
                   : 'text-muted-foreground'
@@ -165,18 +165,18 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
             >
               <div
                 className={cn(
-                  'flex h-8 w-8 items-center justify-center rounded-xl transition-all',
+                  'flex h-10 w-10 items-center justify-center rounded-xl transition-all',
                   mobileView === 'chat' && 'bg-violet-500/10'
                 )}
               >
-                <MessageSquare className="h-4.5 w-4.5" />
+                <MessageSquare className="h-5 w-5" />
               </div>
               Chat
             </button>
             <button
               onClick={() => setMobileView('preview')}
               className={cn(
-                'flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium transition-all',
+                'flex flex-1 flex-col items-center gap-1 py-3.5 text-sm font-medium transition-all min-h-[60px]',
                 mobileView === 'preview'
                   ? 'text-violet-600 dark:text-violet-400'
                   : 'text-muted-foreground'
@@ -184,11 +184,11 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
             >
               <div
                 className={cn(
-                  'flex h-8 w-8 items-center justify-center rounded-xl transition-all',
+                  'flex h-10 w-10 items-center justify-center rounded-xl transition-all',
                   mobileView === 'preview' && 'bg-violet-500/10'
                 )}
               >
-                <Eye className="h-4.5 w-4.5" />
+                <Eye className="h-5 w-5" />
               </div>
               Preview
             </button>

@@ -129,7 +129,7 @@ export function ChatInput({
         <Button
           size="icon"
           variant="ghost"
-          className={`h-10 w-10 rounded-xl flex-shrink-0 ${
+          className={`h-12 w-12 md:h-10 md:w-10 rounded-xl flex-shrink-0 ${
             isLocked
               ? 'text-gray-500 opacity-50 cursor-not-allowed'
               : 'text-muted-foreground hover:text-foreground'
@@ -145,9 +145,9 @@ export function ChatInput({
           title={isLocked ? 'Upgrade to Pro to upload images' : 'Add images or logo'}
         >
           {isLocked ? (
-            <Lock className="h-4 w-4" />
+            <Lock className="h-5 w-5 md:h-4 md:w-4" />
           ) : (
-            <ImagePlus className="h-4 w-4" />
+            <ImagePlus className="h-5 w-5 md:h-4 md:w-4" />
           )}
         </Button>
 
@@ -160,9 +160,10 @@ export function ChatInput({
             placeholder={placeholder || 'Describe what you want to build...'}
             disabled={isDisabled}
             rows={1}
-            className={`w-full resize-none rounded-xl border bg-background px-3 py-2.5 md:px-4 md:py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 placeholder:text-muted-foreground ${
+            className={`w-full resize-none rounded-xl border bg-background px-4 py-3.5 md:px-4 md:py-3 pr-12 text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 placeholder:text-muted-foreground ${
               isLocked ? 'opacity-60' : ''
             }`}
+            style={{ minHeight: '52px' }}
             onClick={isLocked ? () => onUpgradeClick?.() : undefined}
             readOnly={isLocked}
           />
@@ -172,15 +173,15 @@ export function ChatInput({
           <Button
             size="icon"
             variant="destructive"
-            className="h-10 w-10 rounded-xl flex-shrink-0"
+            className="h-12 w-12 md:h-10 md:w-10 rounded-xl flex-shrink-0"
             onClick={onStop}
           >
-            <Square className="h-4 w-4" />
+            <Square className="h-5 w-5 md:h-4 md:w-4" />
           </Button>
         ) : (
           <Button
             size="icon"
-            className={`h-10 w-10 rounded-xl flex-shrink-0 ${
+            className={`h-12 w-12 md:h-10 md:w-10 rounded-xl flex-shrink-0 ${
               isLocked
                 ? 'bg-gray-600 hover:bg-gray-500'
                 : ''
@@ -192,9 +193,9 @@ export function ChatInput({
             }
           >
             {isLocked ? (
-              <Lock className="h-4 w-4" />
+              <Lock className="h-5 w-5 md:h-4 md:w-4" />
             ) : (
-              <Send className="h-4 w-4" />
+              <Send className="h-5 w-5 md:h-4 md:w-4" />
             )}
           </Button>
         )}

@@ -89,7 +89,7 @@ export function Sidebar() {
       {/* Navigation */}
       <ScrollArea className="flex-1 px-3 py-3">
         <div className="space-y-1">
-          <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">
+          <p className="px-3 mb-2 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">
             Menu
           </p>
           {navigation.map((item) => {
@@ -101,7 +101,7 @@ export function Sidebar() {
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  'group flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-150',
+                  'group flex items-center gap-3 rounded-lg px-3 py-3 md:py-2.5 text-[15px] md:text-[13px] font-medium transition-all duration-150 min-h-[48px] md:min-h-0',
                   isActive
                     ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-sm'
                     : 'text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
@@ -109,7 +109,7 @@ export function Sidebar() {
               >
                 <item.icon
                   className={cn(
-                    'h-4 w-4 transition-colors',
+                    'h-5 w-5 md:h-4 md:w-4 transition-colors flex-shrink-0',
                     isActive
                       ? 'text-violet-400'
                       : 'text-sidebar-foreground/40 group-hover:text-sidebar-foreground/60'
@@ -117,12 +117,12 @@ export function Sidebar() {
                 />
                 <span className="flex-1">{item.name}</span>
                 {badge && (
-                  <span className="text-[9px] font-bold bg-violet-500 text-white px-1.5 py-0.5 rounded-full">
+                  <span className="text-[10px] font-bold bg-violet-500 text-white px-1.5 py-0.5 rounded-full">
                     {badge}
                   </span>
                 )}
                 {isActive && (
-                  <ChevronRight className="h-3 w-3 text-sidebar-foreground/30" />
+                  <ChevronRight className="h-4 w-4 md:h-3 md:w-3 text-sidebar-foreground/30" />
                 )}
               </Link>
             );
@@ -133,18 +133,18 @@ export function Sidebar() {
       {/* Bottom actions */}
       <div className="border-t border-sidebar-border/50 p-3 space-y-0.5">
         <button
-          className="relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium text-sidebar-foreground/50 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+          className="relative flex w-full items-center gap-3 rounded-lg px-3 py-3 md:py-2 text-[15px] md:text-[13px] font-medium text-sidebar-foreground/50 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground min-h-[48px] md:min-h-0"
           onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
         >
-          <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <Sun className="h-5 w-5 md:h-4 md:w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute h-5 w-5 md:h-4 md:w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           <span>Toggle theme</span>
         </button>
         <button
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium text-sidebar-foreground/50 transition-colors hover:bg-red-500/10 hover:text-red-400"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-3 md:py-2 text-[15px] md:text-[13px] font-medium text-sidebar-foreground/50 transition-colors hover:bg-red-500/10 hover:text-red-400 min-h-[48px] md:min-h-0"
           onClick={handleSignOut}
         >
-          <LogOut className="h-4 w-4" />
+          <LogOut className="h-5 w-5 md:h-4 md:w-4" />
           Sign out
         </button>
       </div>
@@ -155,11 +155,11 @@ export function Sidebar() {
     <>
       {/* Mobile hamburger */}
       <button
-        className="fixed top-3 left-3 z-50 flex h-10 w-10 items-center justify-center rounded-xl border bg-background shadow-lg md:hidden"
+        className="fixed top-3 left-3 z-50 flex h-12 w-12 items-center justify-center rounded-xl border bg-background shadow-lg md:hidden"
         onClick={() => setMobileOpen(true)}
         aria-label="Open menu"
       >
-        <Menu className="h-5 w-5" />
+        <Menu className="h-6 w-6" />
       </button>
 
       {/* Mobile overlay */}

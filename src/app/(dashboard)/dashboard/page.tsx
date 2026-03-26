@@ -407,10 +407,10 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white">
+          <h1 className="text-3xl md:text-3xl font-bold text-white">
             My Projects
           </h1>
-          <p className="text-sm text-gray-400 mt-1">
+          <p className="text-base text-gray-400 mt-1">
             Create and manage your AI-generated websites
           </p>
         </div>
@@ -439,12 +439,12 @@ export default function DashboardPage() {
           )}
           <button
             onClick={openNewProjectModal}
-            className="flex items-center justify-center gap-2 rounded-xl px-5 py-3 md:px-4 md:py-2 text-sm font-semibold text-white transition-all w-full sm:w-auto min-h-[44px] md:min-h-0"
+            className="flex items-center justify-center gap-2 rounded-xl px-6 py-4 md:px-4 md:py-2.5 text-base md:text-sm font-semibold text-white transition-all w-full sm:w-auto min-h-[52px] md:min-h-[44px]"
             style={{
               background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
             }}
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-5 w-5 md:h-4 md:w-4" />
             New Project
           </button>
         </div>
@@ -492,39 +492,39 @@ export default function DashboardPage() {
                   <ProjectPreview project={project} isGenerating={isProjectGenerating} />
                 </div>
 
-                <div className="p-4">
+                <div className="p-4 sm:p-4">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-white text-sm truncate flex-1">
+                    <h3 className="font-semibold text-white text-base truncate flex-1">
                       {project.name}
                     </h3>
                     {isProjectGenerating && (
-                      <span className="flex h-2 w-2 flex-shrink-0">
-                        <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-violet-400 opacity-75" />
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-500" />
+                      <span className="flex h-2.5 w-2.5 flex-shrink-0">
+                        <span className="animate-ping absolute inline-flex h-2.5 w-2.5 rounded-full bg-violet-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-violet-500" />
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 mt-0.5 truncate">
+                  <p className="text-sm text-gray-500 mt-1 truncate">
                     {isProjectGenerating
                       ? 'Building your website...'
                       : project.description || project.site_type || 'No description'}
                   </p>
 
                   <div className="flex items-center justify-between mt-3">
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                      <Clock className="h-3 w-3" />
+                    <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                      <Clock className="h-3.5 w-3.5" />
                       {formatDate(project.updated_at || project.created_at)}
                     </div>
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => setConfirmDeleteId(project.id)}
                         disabled={deletingId === project.id || isProjectGenerating}
-                        className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:text-red-400 hover:bg-white/5 transition-colors disabled:opacity-50"
+                        className="flex items-center justify-center w-11 h-11 rounded-lg text-gray-500 hover:text-red-400 hover:bg-white/5 transition-colors disabled:opacity-50"
                       >
                         {deletingId === project.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <Loader2 className="h-5 w-5 animate-spin" />
                         ) : (
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-5 w-5" />
                         )}
                       </button>
                       <button
@@ -532,38 +532,38 @@ export default function DashboardPage() {
                           e.stopPropagation();
                           router.push(`/projects/${project.id}/leads`);
                         }}
-                        className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:text-emerald-400 hover:bg-white/5 transition-colors"
+                        className="flex items-center justify-center w-11 h-11 rounded-lg text-gray-500 hover:text-emerald-400 hover:bg-white/5 transition-colors"
                         title="View leads & orders"
                       >
-                        <Inbox className="h-4 w-4" />
+                        <Inbox className="h-5 w-5" />
                       </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           router.push(`/projects/${project.id}/admin/marketing`);
                         }}
-                        className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:text-amber-400 hover:bg-white/5 transition-colors"
+                        className="hidden sm:flex items-center justify-center w-11 h-11 rounded-lg text-gray-500 hover:text-amber-400 hover:bg-white/5 transition-colors"
                         title="Marketing"
                       >
-                        <Megaphone className="h-4 w-4" />
+                        <Megaphone className="h-5 w-5" />
                       </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           router.push(`/projects/${project.id}/admin`);
                         }}
-                        className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:text-violet-400 hover:bg-white/5 transition-colors"
+                        className="hidden sm:flex items-center justify-center w-11 h-11 rounded-lg text-gray-500 hover:text-violet-400 hover:bg-white/5 transition-colors"
                         title="Settings"
                       >
-                        <Settings className="h-4 w-4" />
+                        <Settings className="h-5 w-5" />
                       </button>
                       <button
                         onClick={() =>
                           router.push(`/projects/${project.id}`)
                         }
-                        className="flex items-center justify-center gap-1.5 h-10 px-3 rounded-lg text-sm text-violet-400 hover:text-violet-300 hover:bg-white/5 font-medium transition-colors"
+                        className="flex items-center justify-center gap-1.5 h-11 px-4 rounded-lg text-base text-violet-400 hover:text-violet-300 hover:bg-white/5 font-medium transition-colors"
                       >
-                        <Pencil className="h-3.5 w-3.5" />
+                        <Pencil className="h-4 w-4" />
                         {isProjectGenerating ? 'View' : 'Edit'}
                       </button>
                     </div>
@@ -611,7 +611,7 @@ export default function DashboardPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setConfirmDeleteId(null)}
-                className="flex-1 py-2.5 rounded-xl text-sm font-medium text-gray-400 transition-colors hover:text-white"
+                className="flex-1 py-4 rounded-xl text-base font-medium text-gray-400 transition-colors hover:text-white"
                 style={{
                   background: 'rgba(255,255,255,0.05)',
                   border: '1px solid rgba(255,255,255,0.1)',
@@ -625,17 +625,17 @@ export default function DashboardPage() {
                   setConfirmDeleteId(null);
                 }}
                 disabled={deletingId === confirmDeleteId}
-                className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 py-4 rounded-xl text-base font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
                 style={{ background: 'linear-gradient(135deg, #dc2626, #ef4444)' }}
               >
                 {deletingId === confirmDeleteId ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-5 w-5 animate-spin" />
                     Deleting...
                   </>
                 ) : (
                   <>
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-5 w-5" />
                     Delete Project
                   </>
                 )}
@@ -683,7 +683,7 @@ export default function DashboardPage() {
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                <label className="block text-base font-medium text-gray-300 mb-2">
                   Project Name *
                 </label>
                 <input
@@ -691,10 +691,11 @@ export default function DashboardPage() {
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
                   placeholder="e.g. My Coffee Shop Website"
-                  className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 outline-none focus:ring-2 focus:ring-violet-500/50"
+                  className="w-full rounded-xl px-4 text-base text-white placeholder-gray-500 outline-none focus:ring-2 focus:ring-violet-500/50"
                   style={{
                     background: 'rgba(15,23,42,0.8)',
                     border: '1px solid rgba(71,85,105,0.4)',
+                    minHeight: '56px',
                   }}
                   autoFocus
                   onKeyDown={(e) => {
@@ -704,7 +705,7 @@ export default function DashboardPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                <label className="block text-base font-medium text-gray-300 mb-2">
                   Description
                 </label>
                 <textarea
@@ -712,10 +713,11 @@ export default function DashboardPage() {
                   onChange={(e) => setProjectDescription(e.target.value)}
                   placeholder="Briefly describe what your business does and what you want the website to include..."
                   rows={3}
-                  className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 outline-none focus:ring-2 focus:ring-violet-500/50 resize-none"
+                  className="w-full rounded-xl px-4 py-4 text-base text-white placeholder-gray-500 outline-none focus:ring-2 focus:ring-violet-500/50 resize-none"
                   style={{
                     background: 'rgba(15,23,42,0.8)',
                     border: '1px solid rgba(71,85,105,0.4)',
+                    minHeight: '100px',
                   }}
                 />
               </div>
@@ -723,7 +725,7 @@ export default function DashboardPage() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setShowModal(false)}
-                className="flex-1 py-2.5 rounded-xl text-sm font-medium text-gray-400 transition-colors hover:text-white"
+                className="flex-1 py-4 rounded-xl text-base font-medium text-gray-400 transition-colors hover:text-white"
                 style={{
                   background: 'rgba(255,255,255,0.05)',
                   border: '1px solid rgba(255,255,255,0.1)',
@@ -734,18 +736,18 @@ export default function DashboardPage() {
               <button
                 onClick={handleCreateProject}
                 disabled={creating || !projectName.trim()}
-                className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 py-4 rounded-xl text-base font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
                 style={{
                   background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
                 }}
               >
                 {creating ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" /> Creating...
+                    <Loader2 className="h-5 w-5 animate-spin" /> Creating...
                   </>
                 ) : (
                   <>
-                    <Sparkles className="h-4 w-4" /> Create Project
+                    <Sparkles className="h-5 w-5" /> Create Project
                   </>
                 )}
               </button>

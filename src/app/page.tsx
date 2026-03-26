@@ -361,13 +361,13 @@ export default function HomePage() {
                     <button
                       key={type.key}
                       onClick={() => setSiteType(type.key)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all duration-300 ${
+                      className={`flex items-center gap-1.5 px-4 py-3 sm:px-3 sm:py-1.5 rounded-lg text-sm sm:text-xs font-medium whitespace-nowrap transition-all duration-300 min-h-[44px] sm:min-h-0 ${
                         siteType === type.key
                           ? 'bg-violet-500/15 text-violet-300 shadow-sm shadow-violet-500/10'
                           : 'text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]'
                       }`}
                     >
-                      <type.icon className="h-3.5 w-3.5" />
+                      <type.icon className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
                       {type.label}
                     </button>
                   ))}
@@ -387,8 +387,8 @@ export default function HomePage() {
                     onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && promptText.trim()) { e.preventDefault(); handlePromptSubmit(); } }}
                     placeholder={placeholderText || 'Describe your dream website...'}
                     rows={3}
-                    className="w-full bg-transparent text-white text-base sm:text-lg placeholder-gray-600 py-3 sm:py-4 outline-none resize-none leading-relaxed"
-                    style={{ minHeight: '80px' }}
+                    className="w-full bg-transparent text-white text-lg sm:text-lg md:text-xl placeholder-gray-600 py-4 sm:py-4 outline-none resize-none leading-relaxed"
+                    style={{ minHeight: '100px', fontSize: 'clamp(18px, 2.5vw, 20px)' }}
                   />
                 </div>
 
@@ -405,11 +405,11 @@ export default function HomePage() {
                     <button
                       onClick={handlePromptSubmit}
                       disabled={!promptText.trim()}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed hover:scale-[1.03] active:scale-[0.97] hover:shadow-lg hover:shadow-violet-500/25"
+                      className="flex items-center gap-2 px-6 py-3.5 sm:px-5 sm:py-2.5 rounded-xl text-base sm:text-sm font-semibold text-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed hover:scale-[1.03] active:scale-[0.97] hover:shadow-lg hover:shadow-violet-500/25 min-h-[48px] sm:min-h-0"
                       style={{ background: promptText.trim() ? 'linear-gradient(135deg, #7c3aed, #6d28d9)' : 'rgba(255,255,255,0.06)' }}
                     >
-                      <span className="hidden sm:inline">Build</span>
-                      <ArrowRight className="h-4 w-4" />
+                      <span>Build</span>
+                      <ArrowRight className="h-5 w-5 sm:h-4 sm:w-4" />
                     </button>
                   </div>
                 </div>

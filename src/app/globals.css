@@ -537,6 +537,25 @@ html, body {
     }
 }
 
+/* ===== MOBILE ACCESSIBILITY ENHANCEMENTS ===== */
+
+@media (max-width: 767px) {
+  /* Increase base body line-height for readability */
+  body {
+    line-height: 1.65;
+  }
+
+  /* Ensure minimum 48px tap targets on buttons and links */
+  button, [role="button"] {
+    min-height: 44px;
+  }
+
+  /* Larger paragraph and body text on mobile */
+  p, li, span:not([class*="text-["]):not([class*="text-xs"]):not([class*="text-[1"]) {
+    line-height: 1.65;
+  }
+}
+
 /* ===== REDUCED MOTION ===== */
 @media (prefers-reduced-motion: reduce) {
     .orb, .orb-1, .orb-2, .orb-3,

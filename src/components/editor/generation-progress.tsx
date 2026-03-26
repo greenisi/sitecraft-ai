@@ -96,7 +96,7 @@ function StageChecklist() {
       <div className="flex items-center gap-2.5 px-4 pt-4 pb-3">
         <div
           className={cn(
-            'flex h-7 w-7 items-center justify-center rounded-lg',
+            'flex h-8 w-8 items-center justify-center rounded-lg flex-shrink-0',
             isComplete
               ? 'bg-green-500/10'
               : isError
@@ -105,19 +105,19 @@ function StageChecklist() {
           )}
         >
           {isComplete ? (
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
+            <CheckCircle2 className="h-5 w-5 text-green-500" />
           ) : isError ? (
-            <AlertCircle className="h-4 w-4 text-destructive" />
+            <AlertCircle className="h-5 w-5 text-destructive" />
           ) : (
             <Sparkles
-              className="h-4 w-4 text-primary"
+              className="h-5 w-5 text-primary"
               style={{ animation: 'subtlePulse 2s ease-in-out infinite' }}
             />
           )}
         </div>
         <span
           className={cn(
-            'text-sm font-semibold',
+            'text-base font-semibold',
             isComplete
               ? 'text-green-500'
               : isError
@@ -140,7 +140,7 @@ function StageChecklist() {
             {/* Stage row */}
             <div
               className={cn(
-                'flex items-center gap-3 rounded-lg px-2 py-2 transition-all duration-300',
+                'flex items-center gap-3 rounded-lg px-2 py-2.5 transition-all duration-300',
                 step.status === 'active' && 'bg-primary/5'
               )}
               style={{
@@ -150,23 +150,23 @@ function StageChecklist() {
               }}
             >
               {/* Icon */}
-              <div className="flex h-5 w-5 items-center justify-center flex-shrink-0">
+              <div className="flex h-6 w-6 items-center justify-center flex-shrink-0">
                 {step.status === 'complete' ? (
                   <CheckCircle2
-                    className="h-[18px] w-[18px] text-green-500"
+                    className="h-5 w-5 text-green-500"
                     style={{ animation: 'checkIn 0.35s ease both' }}
                   />
                 ) : step.status === 'active' ? (
-                  <Loader2 className="h-[18px] w-[18px] animate-spin text-primary" />
+                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
                 ) : (
-                  <Circle className="h-[18px] w-[18px] text-muted-foreground/25" />
+                  <Circle className="h-5 w-5 text-muted-foreground/25" />
                 )}
               </div>
 
               {/* Label */}
               <span
                 className={cn(
-                  'text-sm transition-all duration-300',
+                  'text-base transition-all duration-300',
                   step.status === 'active'
                     ? 'text-foreground font-medium'
                     : step.status === 'complete'
@@ -178,7 +178,7 @@ function StageChecklist() {
                 {step.id === 'components' &&
                   step.status === 'active' &&
                   progress.total > 0 && (
-                    <span className="text-primary/70 ml-1.5 text-xs font-normal">
+                    <span className="text-primary/70 ml-1.5 text-sm font-normal">
                       ({progress.completed}/{progress.total})
                     </span>
                   )}
@@ -190,10 +190,10 @@ function StageChecklist() {
               <div className="ml-5 pl-4 border-l border-border/30 mb-1">
                 {hiddenCount > 0 && (
                   <div
-                    className="flex items-center gap-2 py-1 px-2"
+                    className="flex items-center gap-2 py-1.5 px-2"
                     style={{ animation: 'slideIn 0.25s ease both' }}
                   >
-                    <span className="text-xs text-muted-foreground/40 font-mono">
+                    <span className="text-sm text-muted-foreground/40 font-mono">
                       ... {hiddenCount} more file
                       {hiddenCount > 1 ? 's' : ''} built
                     </span>
@@ -206,14 +206,14 @@ function StageChecklist() {
                   return (
                     <div
                       key={comp.name}
-                      className="flex items-center gap-2 py-1 px-2"
+                      className="flex items-center gap-2 py-1.5 px-2"
                       style={{ animation: 'slideIn 0.25s ease both' }}
                     >
                       <CheckCircle2
-                        className="h-3.5 w-3.5 text-green-500/70 flex-shrink-0"
+                        className="h-4 w-4 text-green-500/70 flex-shrink-0"
                         style={{ animation: 'checkIn 0.3s ease both' }}
                       />
-                      <span className="text-xs font-mono text-muted-foreground/60 truncate">
+                      <span className="text-sm font-mono text-muted-foreground/60 truncate">
                         {fileName}
                       </span>
                     </div>
@@ -221,11 +221,11 @@ function StageChecklist() {
                 })}
                 {activeComponent && (
                   <div
-                    className="flex items-center gap-2 py-1 px-2 rounded-md bg-primary/5"
+                    className="flex items-center gap-2 py-1.5 px-2 rounded-md bg-primary/5"
                     style={{ animation: 'slideIn 0.25s ease both' }}
                   >
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-primary flex-shrink-0" />
-                    <span className="text-xs font-mono text-foreground/80 truncate">
+                    <Loader2 className="h-4 w-4 animate-spin text-primary flex-shrink-0" />
+                    <span className="text-sm font-mono text-foreground/80 truncate">
                       {activeComponent.filePath
                         ? activeComponent.filePath.split('/').pop() ||
                           activeComponent.name
