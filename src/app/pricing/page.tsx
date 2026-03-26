@@ -150,14 +150,14 @@ export default function PublicPricingPage() {
             {/* Price with strikethrough */}
             <div className="mb-2">
               <span className="text-2xl text-gray-600 line-through mr-3">$99</span>
-              <span className="text-4xl font-bold text-white">$49</span>
+              <span className="text-4xl font-bold text-white">$25</span>
               <span className="text-gray-400 text-sm ml-1">/month</span>
             </div>
 
             {/* Savings badge */}
             <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold mb-6" style={{ background: 'rgba(34,197,94,0.12)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.2)' }}>
               <Zap className="h-3 w-3" />
-              Save 50% during beta
+              Save 75% during beta
             </div>
 
             <ul className="space-y-3 mb-8">
