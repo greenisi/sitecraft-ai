@@ -47,11 +47,48 @@ export function getAnthropicClient(): Anthropic {
 }
 
 /**
- * The model identifier used for all generation calls.
+ * Default model identifier (used when no tier is specified).
  * Using claude-sonnet-4 for fast, reliable generations that complete
  * well within Vercel function timeout limits.
  */
 export const GENERATION_MODEL = 'claude-sonnet-4-20250514';
+
+/**
+ * Makes a chat completion request to OpenRouter (for free-tier models).
+ */
+export async function callOpenRouter(
+  modelId: string,
+  messages: Array<{ role: string; content: string }>,
+  maxTokens: number = 64000,
+): Promise<string> {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) {
+    throw new Error('OPENROUTER_API_KEY environment variable is not set.');
+  }
+
+  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': 'https://app.innovated.marketing',
+      'X-Title': 'SiteCraft AI',
+    },
+    body: JSON.stringify({
+      model: modelId,
+      messages,
+      max_tokens: maxTokens,
+    }),
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`OpenRouter API error (${response.status}): ${err}`);
+  }
+
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content ?? '';
+}
 
 /** Token limits for different generation stages. */
 export const TOKEN_LIMITS = {

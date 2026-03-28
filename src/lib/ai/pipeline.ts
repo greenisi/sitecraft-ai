@@ -2,6 +2,17 @@ import type { GenerationConfig, DesignSystem, PageBlueprint } from '@/types/proj
 import type { GenerationEvent, VirtualFile } from '@/types/generation';
 import { VirtualFileTree } from '@/types/generation';
 import { getAnthropicClient, GENERATION_MODEL, TOKEN_LIMITS, withRetry } from './client';
+import { type ModelTier, getModelConfig, DEFAULT_FREE_TIER } from './models';
+
+// Resolve which Anthropic model ID to use based on tier (or fallback to default)
+function resolveModel(tier?: ModelTier): string {
+  if (!tier) return GENERATION_MODEL;
+  const config = getModelConfig(tier);
+  // For OpenRouter models, we still use Anthropic default in the pipeline
+  // (OpenRouter integration happens at the API route level)
+  if (config.provider === 'openrouter') return GENERATION_MODEL;
+  return config.modelId;
+}
 import { buildSystemPrompt } from './prompts/system-prompt';
 import { buildLandingPagePrompt } from './prompts/landing-page';
 import { buildBusinessPortfolioPrompt } from './prompts/business-portfolio';
