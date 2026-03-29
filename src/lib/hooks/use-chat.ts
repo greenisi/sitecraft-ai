@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
+import { type ModelTier } from '@/lib/ai/models';
 import { useChatStore, type ChatMessageLocal } from '@/stores/chat-store';
 import { useGenerationStore } from '@/stores/generation-store';
 import {
@@ -521,7 +522,7 @@ export function useChat(projectId: string) {
   }, [projectId, addMessage, runGeneration]);
 
   const sendMessage = useCallback(
-    async (content: string, attachments?: File[]) => {
+    async (content: string, attachments?: File[], tier?: ModelTier) => {
       if (
         (!content.trim() && (!attachments || attachments.length === 0)) ||
         isProcessing
@@ -679,7 +680,7 @@ export function useChat(projectId: string) {
 
           // Use the edit endpoint instead of full generation
           await runGeneration(
-            { _editMode: true, editInstructions, targetFiles } as unknown as Record<string, unknown>,
+            { _editMode: true, editInstructions, targetFiles, modelTier: tier } as unknown as Record<string, unknown>,
             planDescription
           );
           return;
@@ -858,6 +859,7 @@ export function useChat(projectId: string) {
 
         followUpSuggestionsRef.current = followUpSuggestions || [];
 
+        if (tier) config.modelTier = tier;
         await runGeneration(config, planDescription);
       } catch (error) {
         setProcessing(false, 'error');

@@ -1,4 +1,5 @@
 import type { SiteType, ProjectStatus, StyleOption, SectionType, NavbarStyle, NavbarPosition, FooterStyle, SocialPlatform } from '@/lib/utils/constants';
+import type { ModelTier } from '@/lib/ai/models';
 
 export interface Project {
   id: string;
@@ -72,6 +73,7 @@ export interface GenerationConfig {
     hasDashboard: boolean;
   };
   aiPrompt: string;
+  modelTier?: ModelTier;
   referenceUrls?: string[];
   navigation?: {
     navbarStyle?: NavbarStyle;

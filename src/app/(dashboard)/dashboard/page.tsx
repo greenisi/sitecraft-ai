@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Plus, Clock, Pencil, Trash2, Sparkles, Loader2, X, Inbox, Settings, Megaphone } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/lib/hooks/use-user';
+import { ModelSelector } from '@/components/editor/ModelSelector';
+import { DEFAULT_FREE_TIER, DEFAULT_PRO_TIER, type ModelTier } from '@/lib/ai/models';
 import { usePageTour } from '@/components/tour/use-page-tour';
 import {
   subscribeGlobal,
@@ -160,6 +162,7 @@ export default function DashboardPage() {
   const [showModal, setShowModal] = useState(false);
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
+  const [selectedTier, setSelectedTier] = useState<ModelTier>(DEFAULT_FREE_TIER);
 
   // Helper to refresh project list from Supabase
   const refreshProjects = useCallback(async () => {
@@ -326,6 +329,7 @@ export default function DashboardPage() {
   const openNewProjectModal = () => {
     setProjectName('');
     setProjectDescription('');
+    setSelectedTier(plan !== 'free' ? DEFAULT_PRO_TIER : DEFAULT_FREE_TIER);
     setShowModal(true);
   };
 
@@ -364,8 +368,8 @@ export default function DashboardPage() {
         const params = new URLSearchParams();
         if (projectDescription.trim())
           params.set('desc', projectDescription.trim());
-        const qs = params.toString();
-        router.push(`/projects/${data.id}${qs ? '?' + qs : ''}`);
+        params.set('tier', selectedTier);
+        router.push(`/projects/${data.id}?${params.toString()}`);
       }
     } catch (err) {
       toast.error('Failed to create project');
@@ -719,6 +723,16 @@ export default function DashboardPage() {
                     border: '1px solid rgba(71,85,105,0.4)',
                     minHeight: '100px',
                   }}
+                />
+              </div>
+              <div>
+                <label className="block text-base font-medium text-gray-300 mb-2">
+                  Build Mode
+                </label>
+                <ModelSelector
+                  selected={selectedTier}
+                  onSelect={setSelectedTier}
+                  isPaid={plan !== 'free'}
                 />
               </div>
             </div>

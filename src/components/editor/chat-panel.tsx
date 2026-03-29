@@ -12,6 +12,8 @@ import { GenerationProgress } from './generation-progress';
 import { useUpgradeGate, LockBadge } from './upgrade-gate';
 import { Sparkles, Lock, RefreshCw } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { ModelSelector } from './ModelSelector';
+import { DEFAULT_FREE_TIER, DEFAULT_PRO_TIER, MODEL_TIERS, type ModelTier } from '@/lib/ai/models';
 
 interface ChatPanelProps {
   projectId: string;
@@ -31,6 +33,17 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
   const [projectDescription, setProjectDescription] = useState<string>('');
   const [projectStatus, setProjectStatus] = useState<string>('draft');
   const [inputPrefill, setInputPrefill] = useState<string>('');
+
+  // Model tier selection — initialise from URL param, then update when plan loads
+  const urlTier = searchParams.get('tier') as ModelTier | null;
+  const [selectedTier, setSelectedTier] = useState<ModelTier>(
+    urlTier && MODEL_TIERS[urlTier] ? urlTier : DEFAULT_FREE_TIER
+  );
+  useEffect(() => {
+    if (!planLoading && !urlTier) {
+      setSelectedTier(isPaid ? DEFAULT_PRO_TIER : DEFAULT_FREE_TIER);
+    }
+  }, [isPaid, planLoading, urlTier]);
 
   // Only show generation UI if it belongs to THIS project
   const isGeneratingThisProject = isGenerating && genProjectId === projectId;
@@ -72,7 +85,7 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
   };
 
   const handleSend = (content: string, attachments?: File[]) => {
-    handleGatedAction(() => sendMessage(content, attachments));
+    handleGatedAction(() => sendMessage(content, attachments, selectedTier));
   };
 
   return (
@@ -188,22 +201,33 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
         )}
       </div>
 
-      {/* Input Area */}
-      <ChatInput
-        onSend={handleSend}
-        isDisabled={isProcessing}
-        isPaid={isPaid}
-        onUpgradeClick={showUpgrade}
-        prefillValue={inputPrefill}
-        onPrefillConsumed={() => setInputPrefill('')}
-        placeholder={
-          !isPaid && !planLoading
-            ? 'Upgrade to Pro to use AI generation...'
-            : messages.length === 0
-            ? 'Describe the website you want to build...'
-            : "Describe changes you'd like to make..."
-        }
-      />
+      {/* Model Tier Selector + Input Area */}
+      <div className="flex flex-col border-t bg-background flex-shrink-0">
+        <div className="px-3 pt-2.5 md:px-4">
+          <ModelSelector
+            selected={selectedTier}
+            onSelect={setSelectedTier}
+            isPaid={isPaid}
+            compact
+          />
+        </div>
+        <ChatInput
+          onSend={handleSend}
+          isDisabled={isProcessing}
+          isPaid={isPaid}
+          onUpgradeClick={showUpgrade}
+          prefillValue={inputPrefill}
+          onPrefillConsumed={() => setInputPrefill('')}
+          noBorderTop
+          placeholder={
+            !isPaid && !planLoading
+              ? 'Upgrade to Pro to use AI generation...'
+              : messages.length === 0
+              ? 'Describe the website you want to build...'
+              : "Describe changes you'd like to make..."
+          }
+        />
+      </div>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient as createClient } from '@/lib/supabase/server';
 import { runGenerationPipeline } from '@/lib/ai/pipeline';
 import { createSSEStream } from '@/lib/ai/stream-handler';
+import { getModelConfig } from '@/lib/ai/models';
 import type { GenerationConfig } from '@/types/project';
 import type { GenerationEvent, VirtualFile } from '@/types/generation';
 
@@ -138,7 +139,7 @@ export async function POST(request: NextRequest) {
               version_number: nextVersionNumber,
               status: 'generating',
               trigger_type: project.status === 'draft' ? 'initial' : 'full-regenerate',
-              model_used: 'claude-sonnet-4-20250514',
+              model_used: config.modelTier ? getModelConfig(config.modelTier).modelId : 'claude-sonnet-4-20250514',
               total_tokens_used: 0,
       })
       .select('id, version_number')

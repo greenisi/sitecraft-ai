@@ -13,6 +13,7 @@ interface ChatInputProps {
   onPrefillConsumed?: () => void;
   isPaid?: boolean;
   onUpgradeClick?: () => void;
+  noBorderTop?: boolean;
 }
 
 export function ChatInput({
@@ -24,6 +25,7 @@ export function ChatInput({
   onPrefillConsumed,
   isPaid = true,
   onUpgradeClick,
+  noBorderTop = false,
 }: ChatInputProps) {
   const [value, setValue] = useState('');
   const [attachments, setAttachments] = useState<File[]>([]);
@@ -93,7 +95,7 @@ export function ChatInput({
   const isLocked = !isPaid;
 
   return (
-    <div className="flex flex-col border-t bg-background flex-shrink-0">
+    <div className={`flex flex-col bg-background flex-shrink-0${noBorderTop ? '' : ' border-t'}`}>
       {attachments.length > 0 && (
         <div className="flex gap-2 px-3 pt-3 md:px-4 flex-wrap">
           {attachments.map((file, i) => (
