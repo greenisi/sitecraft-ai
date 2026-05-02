@@ -738,6 +738,70 @@ const INDUSTRY_KEYWORDS: Record<string, string[]> = {
   finance: ['finance', 'accounting', 'bank', 'investment', 'insurance', 'tax', 'wealth', 'financial', 'consulting'],
 };
 
+export function matchIndustryFromInputs(industry: string, description: string): string {
+  return matchIndustry(industry, description);
+}
+
+/**
+ * Per-industry palette character descriptions — concrete color language the
+ * design system generator can lock onto. Without this, the model tends to
+ * default to generic dark navy + neutral palettes regardless of industry,
+ * producing a "competent template" feel instead of a vertical-specific one.
+ */
+const INDUSTRY_PALETTE_CHARACTER: Record<string, string> = {
+  landscaping:
+    'Deep verdant greens (forest, sage, moss), warm earth tones (terracotta, ivory, weathered stone), and ONE warm accent (amber, ochre, or burnt sienna). The palette must immediately read as a horticultural studio — NOT a tech startup or a corporate firm. NEVER produce a navy-and-gold or blue-dominant palette for a landscaping business.',
+  restaurant:
+    'Warm appetizing tones — burnt orange, deep cream, charcoal — paired with a single signal accent (oxblood, mustard, or olive). NEVER cold blue or grayscale palettes (kills appetite). Inspired by editorial food photography.',
+  technology:
+    'Confident contemporary palette: deep ink/charcoal as primary, off-white or warm bone as background, ONE saturated signal color (electric indigo, viridian, or coral) used sparingly on CTAs. Avoid stock SaaS blue.',
+  healthcare:
+    'Calm restorative palette: soft sage or warm cream backgrounds, deep navy or forest as primary text/dark sections, ONE warm accent (terracotta, dusty rose, or warm gold). Avoid bright clinical blue and red.',
+  realestate:
+    'Editorial luxury palette: ivory and warm white backgrounds, deep black or oxblood for headlines, brushed gold or champagne accent. Avoid Zillow-blue and corporate slate.',
+  fitness:
+    'High-contrast editorial: black and bone as base, ONE bold accent (signal red, electric chartreuse, or oxidized copper). Avoid neon gradients and pastel pinks.',
+  education:
+    'Warm scholarly palette: deep navy or aubergine paired with cream, ONE warm accent (mustard, rust, or sage). Avoid stock-corporate blue-and-orange.',
+  ecommerce:
+    'Quiet sophisticated palette that lets product photography carry the page: warm white background, near-black text, ONE brand-color accent. Avoid SALE-yellow and bright red.',
+  legal:
+    'Quiet authority palette: ivory and rich black, ONE deep accent (oxblood, forest, or navy). Restrained, never bright. Avoid royal blue and gold-everywhere stereotypes.',
+  creative:
+    'Bold expressive palette — pick ONE saturated hero color (cobalt, magenta, viridian, vermilion) against bone/black. Color should feel curated, not random.',
+  construction:
+    'Industrial editorial: charcoal, concrete, weathered steel, ONE warm accent (oxidized copper, safety-cone orange used sparingly, or terracotta). Avoid red-white-blue patriotism.',
+  finance:
+    'Calm intelligent palette: warm cream or bone background, deep navy or charcoal text, ONE quiet signal accent (forest green, mustard, or burgundy). Avoid generic Wall Street green-and-blue.',
+  default:
+    'A restrained, considered palette with one dominant primary, one supporting neutral, and one accent used sparingly. Aim for editorial coherence over decorative variety.',
+};
+
+/**
+ * Returns concrete palette guidance for the design system generator,
+ * derived from the matched industry. The generator uses this to bias toward
+ * the right vertical character even when the user provided weak/default
+ * branding inputs.
+ */
+export function getIndustryPaletteGuidance(industry: string, description: string): {
+  matchedIndustry: string;
+  paletteGroup: string;
+  paletteCharacter: string;
+  examplePalette: ColorPalette;
+} {
+  const matched = matchIndustry(industry, description);
+  const profile = INDUSTRY_PROFILES[matched] || DEFAULT_PROFILE;
+  const group = PALETTES[profile.paletteGroup] || PALETTES.cool;
+  const examplePalette = group[0];
+  const paletteCharacter = INDUSTRY_PALETTE_CHARACTER[matched] || INDUSTRY_PALETTE_CHARACTER.default;
+  return {
+    matchedIndustry: matched,
+    paletteGroup: profile.paletteGroup,
+    paletteCharacter,
+    examplePalette,
+  };
+}
+
 function matchIndustry(industry: string, description: string): string {
   const searchText = `${industry} ${description}`.toLowerCase();
 

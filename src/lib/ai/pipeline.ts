@@ -25,7 +25,12 @@ import { generateTailwindConfig } from '@/lib/templates/base/tailwind-config';
 import { generatePackageJson } from '@/lib/templates/base/package-json';
 import { generateNextConfig } from '@/lib/templates/base/next-config';
 import { generateTsConfig } from '@/lib/templates/base/tsconfig';
-import { getDesignVariety, buildVarietyInstructions, overrideVarietyWithUserChoices } from './design-variety';
+import {
+  getDesignVariety,
+  buildVarietyInstructions,
+  overrideVarietyWithUserChoices,
+  getIndustryPaletteGuidance,
+} from './design-variety';
 
 // --------------------------------------------------------------------------
 // Stage 1: Assemble Config
@@ -106,17 +111,48 @@ TEXT CONTRAST — NON-NEGOTIABLE:
 - The 50 shade should be almost white with just a hint of color. The 100 shade should be very pale.
 - This ensures WCAG AA contrast (4.5:1 minimum) when pairing light backgrounds with dark text and dark backgrounds with light text.`;
 
+  // Derive industry-specific palette guidance so the design system locks
+  // onto the vertical's color character (e.g. landscaping → greens + earth
+  // tones) instead of defaulting to generic dark navy + neutral grays.
+  const guidance = getIndustryPaletteGuidance(
+    config.business.industry,
+    config.business.description
+  );
+
   const userPrompt = `Generate a UNIQUE, distinctive design system for:
 Business: "${config.business.name}" (${config.business.industry})
+Description: ${config.business.description}
 Style: ${config.branding.style}
-Primary color: ${config.branding.primaryColor}
-Secondary color: ${config.branding.secondaryColor}
-Accent color: ${config.branding.accentColor}
-${config.branding.surfaceColor ? `Surface/background color: ${config.branding.surfaceColor}` : ''}
 Heading font: ${config.branding.fontHeading}
 Body font: ${config.branding.fontBody}
 
-Make the colors rich and distinctive for this specific business type. The palette should evoke the right mood for a ${config.business.industry} business.`;
+=== INDUSTRY-DRIVEN PALETTE — THIS DOMINATES COLOR DECISIONS ===
+Matched industry: ${guidance.matchedIndustry}
+Palette character: ${guidance.paletteCharacter}
+
+Anchor reference (a known-good palette for this industry — your output should
+share its CHARACTER, not copy these hex codes exactly):
+- Primary anchor:   ${guidance.examplePalette.primary} (${guidance.examplePalette.name}, mood: ${guidance.examplePalette.mood})
+- Secondary anchor: ${guidance.examplePalette.secondary}
+- Accent anchor:    ${guidance.examplePalette.accent}
+
+User-supplied branding inputs (treat as SOFT preferences — only honor them if
+they are clearly intentional and don't fight the industry character):
+- Primary:   ${config.branding.primaryColor}
+- Secondary: ${config.branding.secondaryColor}
+- Accent:    ${config.branding.accentColor}
+${config.branding.surfaceColor ? `- Surface:   ${config.branding.surfaceColor}` : ''}
+
+CRITICAL — read this twice:
+- The palette MUST evoke the matched industry's character described above.
+- If the user-supplied colors clash with the industry character (e.g. user
+  picked navy for a landscaping site), OVERRIDE them with industry-appropriate
+  colors. The user's description tells you what kind of business this is —
+  that ALWAYS wins over generic form defaults.
+- The 500 shade of primary should be the dominant brand color and should
+  embody the industry character — not the user's input verbatim if it conflicts.
+- Make the colors rich and distinctive. NO generic Tailwind blue. NO default
+  slate. The palette should feel deliberately chosen for THIS vertical.`;
 
   const response = await withRetry(() => client.messages.create({
     model: GENERATION_MODEL,
@@ -232,6 +268,41 @@ function getPromptBuilder(siteType: GenerationConfig['siteType']) {
  * This is the authoritative syntax check — `checkBasicSyntax` only counts
  * delimiters and misses many real errors.
  */
+/**
+ * Scans a TSX file for unambiguous contrast violations on the same element.
+ * Returns a list of human-readable problems; an empty list means no obvious
+ * bugs were found (does not catch nested-element cases — for those we still
+ * rely on the system prompt rules and AI repair).
+ *
+ * The check looks at each className string and flags:
+ *   - text-white / text-gray-{50..200} on bg-white / bg-gray-{50..200} / bg-*-50/100
+ *   - text-black / text-gray-{800..950} / text-*-900/950 on bg-gray-{800..950} / bg-*-800/900/950
+ */
+export function findContrastBugs(content: string): string[] {
+  if (!/className\s*=/.test(content)) return [];
+
+  const bugs: string[] = [];
+  const classMatches = content.matchAll(/className\s*=\s*["'`]([^"'`]+)["'`]/g);
+
+  const LIGHT_BG = /\bbg-(?:white|gray-(?:50|100|200)|slate-(?:50|100|200)|neutral-(?:50|100|200)|stone-(?:50|100|200)|zinc-(?:50|100|200)|\w+-(?:50|100))\b/;
+  const LIGHT_TEXT = /\btext-(?:white|gray-(?:50|100|200|300)|slate-(?:50|100|200|300)|neutral-(?:50|100|200|300)|\w+-(?:50|100|200))\b/;
+  const DARK_BG = /\bbg-(?:black|gray-(?:800|900|950)|slate-(?:800|900|950)|neutral-(?:800|900|950)|stone-(?:800|900|950)|zinc-(?:800|900|950)|\w+-(?:900|950))\b/;
+  const DARK_TEXT = /\btext-(?:black|gray-(?:700|800|900|950)|slate-(?:700|800|900|950)|neutral-(?:700|800|900|950)|\w+-(?:800|900|950))\b/;
+
+  for (const match of classMatches) {
+    const cls = match[1];
+
+    if (LIGHT_BG.test(cls) && LIGHT_TEXT.test(cls)) {
+      bugs.push(`light text on light background — classes: "${cls.slice(0, 140)}"`);
+    }
+    if (DARK_BG.test(cls) && DARK_TEXT.test(cls)) {
+      bugs.push(`dark text on dark background — classes: "${cls.slice(0, 140)}"`);
+    }
+  }
+
+  return bugs;
+}
+
 export function isParseable(content: string, filePath: string): boolean {
   if (!filePath.match(/\.(tsx?|jsx?)$/)) return true;
   try {
@@ -277,6 +348,59 @@ export async function repairWithAI(content: string, filePath: string): Promise<s
     const repaired = match ? match[1].trimEnd() : null;
     if (!repaired) return null;
     return isParseable(repaired, filePath) ? repaired : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Asks the AI to fix contrast bugs (light text on light bg, dark text on
+ * dark bg) on the same element. Returns the repaired content if it now
+ * passes both isParseable and findContrastBugs, otherwise null. Caller
+ * should keep the original on null and let the prompt-level rules be the
+ * remaining safety net.
+ */
+export async function repairContrastWithAI(
+  content: string,
+  filePath: string,
+  bugs: string[]
+): Promise<string | null> {
+  if (bugs.length === 0) return content;
+  try {
+    const client = getAnthropicClient();
+    const response = await client.messages.create({
+      model: GENERATION_MODEL,
+      max_tokens: 8000,
+      system:
+        'You fix Tailwind contrast bugs in React/TSX files. Return ONLY a single ' +
+        'fenced code block containing the fixed file content. No prose, no ' +
+        'explanation, no extra code blocks.',
+      messages: [
+        {
+          role: 'user',
+          content:
+            `The file \`${filePath}\` has contrast bugs — text colors that are unreadable ` +
+            'against their background. Fix ONLY the affected className values.\n\n' +
+            'Rules:\n' +
+            '- On light backgrounds (bg-white, bg-*-50, bg-*-100, bg-gray-50, bg-gray-100, bg-gray-200): ' +
+            'text MUST be dark (text-gray-900, text-gray-800, text-gray-700, text-primary-900, text-neutral-900). ' +
+            'NEVER text-white or text-gray-200 or text-*-100.\n' +
+            '- On dark backgrounds (bg-black, bg-*-900, bg-*-950, bg-gray-800/900/950): ' +
+            'text MUST be light (text-white, text-gray-100, text-gray-200, text-*-50, text-*-100). ' +
+            'NEVER text-gray-900 or text-black.\n' +
+            '- Preserve all other styling, JSX, layout, and logic exactly.\n\n' +
+            'Detected violations:\n' + bugs.map((b) => `- ${b}`).join('\n') + '\n\n' +
+            'File:\n```tsx\n' + content + '\n```',
+        },
+      ],
+    });
+    const textBlock = response.content.find((b) => b.type === 'text');
+    if (!textBlock || textBlock.type !== 'text') return null;
+    const match = textBlock.text.match(/```(?:tsx?|jsx?)?\s*\n([\s\S]*?)```/);
+    const repaired = match ? match[1].trimEnd() : null;
+    if (!repaired) return null;
+    if (!isParseable(repaired, filePath)) return null;
+    return findContrastBugs(repaired).length === 0 ? repaired : null;
   } catch {
     return null;
   }
@@ -565,6 +689,16 @@ async function* generateComponents(
           }
         }
 
+        // Contrast guard: scan for light-on-light / dark-on-dark and ask the
+        // AI to fix any matches. If repair fails, ship the original — the
+        // prompt-level rules already discourage these patterns and a broken
+        // section is better than a missing section.
+        const contrastBugs = findContrastBugs(content);
+        if (contrastBugs.length > 0) {
+          const fixed = await repairContrastWithAI(content, block.filePath, contrastBugs);
+          if (fixed) content = fixed;
+        }
+
         allFiles.push({
           path: block.filePath,
           content,
@@ -610,6 +744,12 @@ async function* generateComponents(
           completedCount--;
           continue;
         }
+      }
+
+      const contrastBugs = findContrastBugs(content);
+      if (contrastBugs.length > 0) {
+        const fixed = await repairContrastWithAI(content, block.filePath, contrastBugs);
+        if (fixed) content = fixed;
       }
 
       allFiles.push({

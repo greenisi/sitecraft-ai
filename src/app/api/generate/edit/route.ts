@@ -4,7 +4,7 @@ import { getAnthropicClient, GENERATION_MODEL } from '@/lib/ai/client';
 import { buildSystemPrompt } from '@/lib/ai/prompts/system-prompt';
 import { parseDesignSystem } from '@/lib/ai/parsers';
 import { extractCompletedBlocks } from '@/lib/ai/parsers';
-import { isParseable, repairWithAI } from '@/lib/ai/pipeline';
+import { isParseable, repairWithAI, findContrastBugs, repairContrastWithAI } from '@/lib/ai/pipeline';
 import { createSSEStream } from '@/lib/ai/stream-handler';
 import type { GenerationEvent, VirtualFile } from '@/types/generation';
 import type { DesignSystem } from '@/types/project';
@@ -295,6 +295,12 @@ export async function POST(request: NextRequest) {
                             }
                         }
 
+                        const contrastBugs = findContrastBugs(safeContent);
+                        if (contrastBugs.length > 0) {
+                            const fixed = await repairContrastWithAI(safeContent, block.filePath, contrastBugs);
+                            if (fixed) safeContent = fixed;
+                        }
+
                         const fileType = inferFileType(block.filePath);
                         editedFiles.push({
                             path: block.filePath,
@@ -333,6 +339,12 @@ export async function POST(request: NextRequest) {
                             completedCount--;
                             continue;
                         }
+                    }
+
+                    const contrastBugs = findContrastBugs(safeContent);
+                    if (contrastBugs.length > 0) {
+                        const fixed = await repairContrastWithAI(safeContent, block.filePath, contrastBugs);
+                        if (fixed) safeContent = fixed;
                     }
 
                     const fileType = inferFileType(block.filePath);
