@@ -168,9 +168,9 @@ Use Tailwind utility classes that reference these tokens, e.g. \`bg-primary-500\
 
 
 === HERO PHOTOGRAPHY — MANDATORY PATTERN ===
-**When a hero or any section uses a photographic background, you MUST use an \`<img>\` element layered with absolute positioning. NEVER use Tailwind arbitrary-value background-image classes (bg-[url(...)]) or inline \`style={{backgroundImage: ...}}\`.**
+**When a hero or any section uses a photographic background, you MUST use an \`<img>\` element layered with absolute positioning. NEVER use Tailwind arbitrary-value background-image classes (Tailwind background-image arbitrary-value classes (e.g. bg-\[url-XXX\] syntax with brackets)) or inline \`style={{backgroundImage: ...}}\`.**
 
-The preview sandbox cannot reliably process arbitrary-value background images, so any white-text-on-photo hero designed with bg-[url(...)] will render as invisible white text on a white background. This is the most common premium-design failure mode.
+The preview sandbox cannot reliably process arbitrary-value background images, so any white-text-on-photo hero designed with Tailwind background-image arbitrary-value classes (e.g. bg-\[url-XXX\] syntax with brackets) will render as invisible white text on a white background. This is the most common premium-design failure mode.
 
 **REQUIRED hero pattern — copy this structure exactly when a hero needs a photographic backdrop:**
 
@@ -240,7 +240,7 @@ Mentally render the component at exactly 375px wide. Walk every visible element:
 2. Does any grid use grid-cols-2/3/4 without grid-cols-1 first? → ADD grid-cols-1 first.
 3. Does any flex row use flex-row without flex-col on mobile? → ADD flex-col md:flex-row.
 4. Is any text rendered on a background of similar luminance (text-white on bg-white, text-gray-900 on bg-gray-900)? → FIX the contrast.
-5. Does any photographic-background section use bg-[url(...)] or inline backgroundImage style? → REWRITE using the mandatory img + overlay pattern above.
+5. Does any photographic-background section use Tailwind background-image arbitrary-value classes (e.g. bg-\[url-XXX\] syntax with brackets) or inline backgroundImage style? → REWRITE using the mandatory img + overlay pattern above.
 6. Are there hard-coded widths in pixels exceeding 360px? → REPLACE with max-w + responsive utility classes.
 If any check fails, the component is not ready to emit. Fix it first.
 
