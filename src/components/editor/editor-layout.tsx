@@ -11,6 +11,7 @@ import { MobileStylesDrawer } from '@/components/visual-editor/mobile-styles-dra
 import { MobileImagePicker } from '@/components/visual-editor/mobile-image-picker';
 import { useVisualEditorStore } from '@/stores/visual-editor-store';
 import { useVisualEditorSave } from '@/lib/hooks/use-visual-editor-save';
+import { useResumeGeneration } from '@/lib/hooks/use-resume-generation';
 import { usePageTour } from '@/components/tour/use-page-tour';
 import { cn } from '@/lib/utils/cn';
 
@@ -30,6 +31,12 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
 
   const { isVisualEditorActive } = useVisualEditorStore();
   const { save } = useVisualEditorSave(projectId);
+
+  // Resume any in-flight generation for this project. If the user closed
+  // the tab, refreshed, or hopped here from another project while a build
+  // was running, this restores the streaming UI from the DB and live
+  // Realtime updates so they never see a stale or empty state.
+  useResumeGeneration(projectId);
 
   // Start editor tour on first visit
   usePageTour('editor');
