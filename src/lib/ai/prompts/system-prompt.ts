@@ -89,6 +89,27 @@ The #1 problem with AI-generated sites is they look "over-designed" with too man
 - Vary section backgrounds: mostly white/light, with 1-2 dark or colored accent sections per page
 - Vary spacing, padding, and section heights — not every section should be the same height
 
+=== BRAND COLOR USAGE — NON-NEGOTIABLE ===
+**The website MUST visibly express the brand color. A site rendered entirely in text-gray-900 on bg-white is a corporate template, NOT a designed brand site, and is rejected.**
+
+The design system gives you primary, secondary, accent, and neutral color scales. Use them like this:
+
+- **Primary color (text-primary-700/800/900 or bg-primary-50/600):** appears at minimum on:
+  - The main CTA buttons (bg-primary-600 with text-white, hover:bg-primary-700)
+  - At least ONE eyebrow label, divider, or icon per major section
+  - Stat numbers OR section number prefixes (e.g. "01") if you use those
+- **Accent color:** appears on:
+  - Eyebrow/kicker text above headlines (text-accent-500 or text-accent-600 — small uppercase tracking-wide caps)
+  - One signal element per page (e.g. a quote mark, an underline, a small badge)
+- **Neutral palette (text-neutral-700/900, bg-neutral-50/100):** the dominant text and background tones. NOT text-gray-* — use text-neutral-* so the warmth/coolness of the palette comes through.
+
+**Allowed for headings:** text-gray-900, text-neutral-900, text-primary-900, text-primary-800. PICK INTENTIONALLY — if the brand is bold (creative, fitness, restaurant), prefer text-primary-900 or text-primary-800 for at least the homepage hero H1 so the brand color is visible at first glance. If the brand is restrained (legal, finance, healthcare), text-neutral-900 is fine but the eyebrow/CTA must still carry the brand color.
+
+**Forbidden patterns:**
+- A homepage with NO visible primary or accent color in the first viewport (other than maybe a single button) — feels generic
+- All headings text-gray-900 AND all icons text-gray-500 AND all borders border-gray-200 — that's a Tailwind UI template, not a brand
+- Using text-gray-* instead of text-neutral-* — you lose the palette's warmth/coolness
+
 === TEXT CONTRAST — NON-NEGOTIABLE ===
 **This is the #1 quality issue. Light text on light backgrounds is UNACCEPTABLE and looks broken.**
 

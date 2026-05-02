@@ -99,6 +99,35 @@ export async function GET(request: NextRequest) {
     });
   }
 
+  // Fallback design system: if the assembly stage didn't persist
+  // src/lib/design-system.json (e.g. function timed out before scaffold
+  // yields), synthesize one from the project's stored branding so the
+  // preview's Tailwind CDN still gets the right primary/accent colors.
+  // Without this, classes like text-primary-600 silently resolve to nothing
+  // and the site renders grayscale.
+  const hasDesignSystem = files.some((f) => f.file_path === 'src/lib/design-system.json');
+  if (!hasDesignSystem) {
+    const { data: project } = await supabase
+      .from('projects')
+      .select('generation_config')
+      .eq('id', projectId)
+      .single();
+    const branding = (project?.generation_config as Record<string, unknown> | null)?.branding as
+      | { primaryColor?: string; secondaryColor?: string; accentColor?: string }
+      | undefined;
+    if (branding?.primaryColor || branding?.secondaryColor || branding?.accentColor) {
+      const fallback = synthesizeDesignSystemFromBranding(
+        branding.primaryColor ?? '#15803d',
+        branding.secondaryColor ?? '#78716c',
+        branding.accentColor ?? '#eab308'
+      );
+      files.push({
+        file_path: 'src/lib/design-system.json',
+        content: JSON.stringify(fallback),
+      });
+    }
+  }
+
   // Derive available pages from file structure
   const availablePages = deriveAvailablePages(files);
 
@@ -116,6 +145,93 @@ export async function GET(request: NextRequest) {
 interface FileRecord {
   file_path: string;
   content: string;
+}
+
+/**
+ * Convert a hex color to HSL (h: 0-360, s/l: 0-100).
+ */
+function hexToHsl(hex: string): { h: number; s: number; l: number } {
+  const cleaned = hex.replace('#', '');
+  const r = parseInt(cleaned.slice(0, 2), 16) / 255;
+  const g = parseInt(cleaned.slice(2, 4), 16) / 255;
+  const b = parseInt(cleaned.slice(4, 6), 16) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  let h = 0;
+  let s = 0;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) * 60; break;
+      case g: h = ((b - r) / d + 2) * 60; break;
+      case b: h = ((r - g) / d + 4) * 60; break;
+    }
+  }
+  return { h, s: s * 100, l: l * 100 };
+}
+
+function hslToHex(h: number, s: number, l: number): string {
+  const sNorm = s / 100;
+  const lNorm = l / 100;
+  const c = (1 - Math.abs(2 * lNorm - 1)) * sNorm;
+  const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+  const m = lNorm - c / 2;
+  let r = 0, g = 0, b = 0;
+  if (h < 60) { r = c; g = x; }
+  else if (h < 120) { r = x; g = c; }
+  else if (h < 180) { g = c; b = x; }
+  else if (h < 240) { g = x; b = c; }
+  else if (h < 300) { r = x; b = c; }
+  else { r = c; b = x; }
+  const toHex = (v: number) => Math.round((v + m) * 255).toString(16).padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+/**
+ * Generate a 50-950 Tailwind-style scale from a base hex color.
+ * The base color anchors to shade 500; lighter shades increase L, darker shades decrease L.
+ */
+function generateScale(baseHex: string): Record<string, string> {
+  const { h, s } = hexToHsl(baseHex);
+  // Lightness targets per shade — matches Tailwind's typical color ramps.
+  const shadeLightness: Record<string, number> = {
+    '50': 96, '100': 92, '200': 84, '300': 74, '400': 60,
+    '500': 48, '600': 40, '700': 32, '800': 24, '900': 16, '950': 10,
+  };
+  const scale: Record<string, string> = {};
+  for (const [shade, l] of Object.entries(shadeLightness)) {
+    // Reduce saturation slightly at the extremes for a more natural ramp.
+    const adjustedS = parseInt(shade) <= 100 || parseInt(shade) >= 900
+      ? Math.max(15, s * 0.6)
+      : s;
+    scale[shade] = hslToHex(h, adjustedS, l);
+  }
+  return scale;
+}
+
+/**
+ * Build a minimal design-system JSON from the three brand hex colors.
+ * Used as a fallback when the assembly stage didn't persist the real one.
+ */
+function synthesizeDesignSystemFromBranding(
+  primaryHex: string,
+  secondaryHex: string,
+  accentHex: string
+): Record<string, unknown> {
+  return {
+    colors: {
+      primary: generateScale(primaryHex),
+      secondary: generateScale(secondaryHex),
+      accent: generateScale(accentHex),
+      neutral: generateScale('#78716c'),
+    },
+    typography: {
+      headingFont: 'Inter',
+      bodyFont: 'Inter',
+    },
+  };
 }
 
 /**
