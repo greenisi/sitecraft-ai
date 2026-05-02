@@ -47,23 +47,34 @@ export function createSSEStream(
 
   return new ReadableStream<Uint8Array>({
     async start(controller) {
-      // Set up a keepalive interval that sends a comment every 10 s.
-      // This prevents iOS Safari, Cloudflare, and other intermediaries
-      // from closing the connection due to inactivity.
-      const keepAlive = setInterval(() => {
+      // Tracks whether the client is still listening. When the consumer
+      // disconnects (tab close, refresh, route change), we stop sending
+      // bytes but KEEP iterating the events generator so the pipeline
+      // continues to completion server-side and files keep persisting.
+      let clientGone = false;
+
+      const safeEnqueue = (chunk: Uint8Array) => {
+        if (clientGone) return;
         try {
-          controller.enqueue(encoder.encode(encodeSSEKeepAlive()));
+          controller.enqueue(chunk);
         } catch {
-          // Controller may already be closed — ignore
-          clearInterval(keepAlive);
+          clientGone = true;
         }
+      };
+
+      const keepAlive = setInterval(() => {
+        if (clientGone) {
+          clearInterval(keepAlive);
+          return;
+        }
+        safeEnqueue(encoder.encode(encodeSSEKeepAlive()));
       }, 10_000);
 
       try {
         for await (const event of events) {
-          controller.enqueue(encoder.encode(encodeSSE(event)));
+          safeEnqueue(encoder.encode(encodeSSE(event)));
         }
-        controller.enqueue(encoder.encode(encodeSSEDone()));
+        safeEnqueue(encoder.encode(encodeSSEDone()));
       } catch (err) {
         const errorEvent: GenerationEvent = {
           type: 'error',
@@ -71,12 +82,21 @@ export function createSSEStream(
           error:
             err instanceof Error ? err.message : 'Unknown stream error',
         };
-        controller.enqueue(encoder.encode(encodeSSE(errorEvent)));
-        controller.enqueue(encoder.encode(encodeSSEDone()));
+        safeEnqueue(encoder.encode(encodeSSE(errorEvent)));
+        safeEnqueue(encoder.encode(encodeSSEDone()));
       } finally {
         clearInterval(keepAlive);
-        controller.close();
+        if (!clientGone) {
+          try { controller.close(); } catch { /* already closed */ }
+        }
       }
+    },
+
+    // No-op cancel: when the consumer disconnects (tab close, refresh) we
+    // still want the pipeline to drive to completion so DB persistence
+    // finishes. The `start` async work continues iterating events.
+    cancel() {
+      // intentionally empty — generation continues server-side
     },
   });
 }
