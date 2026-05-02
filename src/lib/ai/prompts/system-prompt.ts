@@ -167,6 +167,38 @@ Use Tailwind utility classes that reference these tokens, e.g. \`bg-primary-500\
 
 
 
+=== HERO PHOTOGRAPHY — MANDATORY PATTERN ===
+**When a hero or any section uses a photographic background, you MUST use an \`<img>\` element layered with absolute positioning. NEVER use Tailwind arbitrary-value background-image classes (bg-[url(...)]) or inline \`style={{backgroundImage: ...}}\`.**
+
+The preview sandbox cannot reliably process arbitrary-value background images, so any white-text-on-photo hero designed with bg-[url(...)] will render as invisible white text on a white background. This is the most common premium-design failure mode.
+
+**REQUIRED hero pattern — copy this structure exactly when a hero needs a photographic backdrop:**
+
+\`\`\`tsx
+<section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+  <img
+    src="https://images.unsplash.com/photo-..."
+    alt="…"
+    className="absolute inset-0 w-full h-full object-cover"
+  />
+  {/* Dark overlay so white headline text is readable on top of any photo */}
+  <div className="absolute inset-0 bg-black/40" />
+  <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
+    <p className="text-sm tracking-widest uppercase mb-6 opacity-90">Eyebrow</p>
+    <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
+      Headline
+    </h1>
+    <p className="mt-6 text-lg md:text-xl max-w-2xl mx-auto opacity-90">
+      Supporting copy.
+    </p>
+  </div>
+</section>
+\`\`\`
+
+The dark overlay div is non-negotiable — without it, white headline text becomes unreadable when the photo has bright areas. If the hero design calls for dark text on a light photo, invert: skip the overlay, use text-gray-900 headlines.
+
+This same pattern applies to any section with a photographic background (CTA banners, About hero, etc).
+
 === MOBILE RESPONSIVENESS — CRITICAL (NO CONTENT CUTOFF) ===
 **EVERY component MUST render perfectly on a 375px-wide viewport. No horizontal overflow. No text clipping. No features cut off.**
 
@@ -201,6 +233,16 @@ Use Tailwind utility classes that reference these tokens, e.g. \`bg-primary-500\
 - NEVER: \`w-[800px]\` or any fixed width > 100% without responsive fallback
 - NEVER: \`px-0\` on sections — always have at least px-4 for mobile padding
 - NEVER: absolute elements at \`-right-40\` or \`-left-40\` without parent \`overflow-hidden\`
+
+**Self-verification — MANDATORY before emitting any component file:**
+Mentally render the component at exactly 375px wide. Walk every visible element:
+1. Does any heading have a single fixed text-size (text-4xl+) with no smaller mobile variant? → ADD smaller variant.
+2. Does any grid use grid-cols-2/3/4 without grid-cols-1 first? → ADD grid-cols-1 first.
+3. Does any flex row use flex-row without flex-col on mobile? → ADD flex-col md:flex-row.
+4. Is any text rendered on a background of similar luminance (text-white on bg-white, text-gray-900 on bg-gray-900)? → FIX the contrast.
+5. Does any photographic-background section use bg-[url(...)] or inline backgroundImage style? → REWRITE using the mandatory img + overlay pattern above.
+6. Are there hard-coded widths in pixels exceeding 360px? → REPLACE with max-w + responsive utility classes.
+If any check fails, the component is not ready to emit. Fix it first.
 
 === NAVBAR COMPONENT — CRITICAL ===
 The Navbar component MUST follow these rules:
