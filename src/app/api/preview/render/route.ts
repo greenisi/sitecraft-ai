@@ -1,8 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { parse as babelParse } from '@babel/parser';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { LUCIDE_ICON_PATHS } from '@/lib/preview/lucide-icons';
 
 export const runtime = 'nodejs';
+
+/**
+ * Validates that a chunk of cleaned component code parses as valid TS+JSX.
+ * The cleaned code is wrapped in an IIFE in the final output, so we test it
+ * the same way to catch the exact failure mode Babel.transform would hit.
+ */
+function isParseable(cleanedCode: string): boolean {
+  try {
+    babelParse(`(function(){${cleanedCode}})();`, {
+      sourceType: 'script',
+      plugins: ['typescript', 'jsx'],
+      errorRecovery: false,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Builds an inline placeholder component. Used when a generated component
+ * has a syntax error so the rest of the preview can still render.
+ */
+function buildStubComponent(name: string): string {
+  return `
+// --- ${name} (stub: original had a syntax error) ---
+const ${name} = function ${name}() {
+  return React.createElement('div', {
+    className: 'p-4 m-2 bg-amber-50 border border-amber-200 rounded text-amber-800 text-sm font-mono'
+  }, '${name}: this section had a generation error and was skipped. Try regenerating it.');
+};
+`;
+}
 
 /**
  * GET /api/preview/render?projectId=xxx&page=/about
@@ -186,19 +220,26 @@ function buildPreviewHTML(
     }).filter(Boolean)
   );
 
-  // Process component source code
+  // Process component source code. Validate each component's cleaned output
+  // independently — if one component has a syntax error, stub it so the rest
+  // of the preview still renders instead of breaking the whole page.
+  const brokenComponents: string[] = [];
   const componentScripts = validComponents
     .map((f) => {
       const name = f.file_path.match(/\/([^/]+)\.tsx$/)?.[1];
       if (!name) return '';
 
-      let code = f.content;
-      code = cleanComponentCode(code);
+      const cleaned = cleanComponentCode(f.content);
+
+      if (!isParseable(cleaned)) {
+        brokenComponents.push(name);
+        return buildStubComponent(name);
+      }
 
       return `
 // --- ${name} ---
 const ${name}_module = (function() {
-  ${code}
+  ${cleaned}
 })();
 const ${name} = ${name}_module;
 `;
@@ -207,11 +248,20 @@ const ${name} = ${name}_module;
 
   // Process page.tsx â build the Page component
   let pageCode = processPageCode(pageContent, availableNames, truncatedNames);
+  if (!isParseable(pageCode)) {
+    brokenComponents.push('page.tsx');
+    pageCode = `function Page() { return React.createElement('div', { className: 'p-6 text-center text-gray-500 text-sm' }, 'Page had a generation error.'); }`;
+  }
 
   // Process layout.tsx â if it exists, build a Layout wrapper
   let layoutCode = '';
   if (layoutContent) {
-    layoutCode = processLayoutCode(layoutContent, availableNames, truncatedNames);
+    const candidate = processLayoutCode(layoutContent, availableNames, truncatedNames);
+    if (isParseable(candidate)) {
+      layoutCode = candidate;
+    } else {
+      brokenComponents.push('layout.tsx');
+    }
   }
 
   // Fallback: if no layout.tsx was generated but Navbar and/or Footer components
@@ -644,6 +694,13 @@ ${[...allIconNames].map((name) => `    const ${name} = createIcon('${name}');`).
     window.parent.postMessage({
       type: 'sitecraft:pages',
       pages: ${JSON.stringify(availablePages)}
+    }, '*');
+
+    // Notify parent of any components that failed parsing so the chat UI
+    // can offer a regenerate button instead of a cryptic preview error.
+    window.parent.postMessage({
+      type: 'sitecraft:broken-components',
+      components: ${JSON.stringify(brokenComponents)}
     }, '*');
   <\/script>
 </body>
