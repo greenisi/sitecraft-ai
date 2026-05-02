@@ -24,17 +24,16 @@ function isParseable(cleanedCode: string): boolean {
 }
 
 /**
- * Builds an inline placeholder component. Used when a generated component
- * has a syntax error so the rest of the preview can still render.
+ * Builds an invisible stub component. Used when a generated component has a
+ * syntax error so the rest of the preview can still render — without showing
+ * any visible error to the end user. The chat UI is notified separately via
+ * the sitecraft:broken-components postMessage so it can offer a regenerate
+ * button.
  */
 function buildStubComponent(name: string): string {
   return `
-// --- ${name} (stub: original had a syntax error) ---
-const ${name} = function ${name}() {
-  return React.createElement('div', {
-    className: 'p-4 m-2 bg-amber-50 border border-amber-200 rounded text-amber-800 text-sm font-mono'
-  }, '${name}: this section had a generation error and was skipped. Try regenerating it.');
-};
+// --- ${name} (silent stub: original had a syntax error) ---
+const ${name} = function ${name}() { return null; };
 `;
 }
 
@@ -250,7 +249,9 @@ const ${name} = ${name}_module;
   let pageCode = processPageCode(pageContent, availableNames, truncatedNames);
   if (!isParseable(pageCode)) {
     brokenComponents.push('page.tsx');
-    pageCode = `function Page() { return React.createElement('div', { className: 'p-6 text-center text-gray-500 text-sm' }, 'Page had a generation error.'); }`;
+    // Silent fallback — render an empty page rather than showing an error to
+    // the end user. The chat UI is notified separately via postMessage.
+    pageCode = `function Page() { return null; }`;
   }
 
   // Process layout.tsx â if it exists, build a Layout wrapper

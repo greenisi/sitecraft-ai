@@ -1,6 +1,7 @@
 import type { GenerationConfig, DesignSystem, PageBlueprint } from '@/types/project';
 import type { GenerationEvent, VirtualFile } from '@/types/generation';
 import { VirtualFileTree } from '@/types/generation';
+import { parse as babelParse } from '@babel/parser';
 import { getAnthropicClient, GENERATION_MODEL, TOKEN_LIMITS, withRetry } from './client';
 import { type ModelTier, getModelConfig, DEFAULT_FREE_TIER } from './models';
 
@@ -223,6 +224,61 @@ function getPromptBuilder(siteType: GenerationConfig['siteType']) {
       const _exhaustive: never = siteType;
       throw new Error(`Unknown site type: ${_exhaustive}`);
     }
+  }
+}
+
+/**
+ * Returns true if the given TSX/TS source parses cleanly with @babel/parser.
+ * This is the authoritative syntax check — `checkBasicSyntax` only counts
+ * delimiters and misses many real errors.
+ */
+export function isParseable(content: string, filePath: string): boolean {
+  if (!filePath.match(/\.(tsx?|jsx?)$/)) return true;
+  try {
+    babelParse(content, {
+      sourceType: 'module',
+      plugins: ['typescript', 'jsx'],
+      errorRecovery: false,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Asks the AI to repair broken TSX. Returns the repaired content if it
+ * parses cleanly, otherwise null. One-shot — no retry loops here, since the
+ * caller (generateComponents) drops unrepairable files entirely.
+ */
+export async function repairWithAI(content: string, filePath: string): Promise<string | null> {
+  try {
+    const client = getAnthropicClient();
+    const response = await client.messages.create({
+      model: GENERATION_MODEL,
+      max_tokens: 8000,
+      system:
+        'You repair broken React/TSX files. Return ONLY a single fenced code block ' +
+        'containing the fixed file content. No prose, no explanation, no extra blocks.',
+      messages: [
+        {
+          role: 'user',
+          content:
+            `The file \`${filePath}\` below has a syntax error. Return the corrected ` +
+            'TSX so it parses cleanly. Preserve all working logic, JSX, props, and ' +
+            'styling. Only fix the syntax. Use a fenced code block:\n\n' +
+            '```tsx\n' + content + '\n```',
+        },
+      ],
+    });
+    const textBlock = response.content.find((b) => b.type === 'text');
+    if (!textBlock || textBlock.type !== 'text') return null;
+    const match = textBlock.text.match(/```(?:tsx?|jsx?)?\s*\n([\s\S]*?)```/);
+    const repaired = match ? match[1].trimEnd() : null;
+    if (!repaired) return null;
+    return isParseable(repaired, filePath) ? repaired : null;
+  } catch {
+    return null;
   }
 }
 
@@ -489,11 +545,24 @@ async function* generateComponents(
         completedCount++;
         const fileType = inferFileType(block.filePath);
 
-        // Auto-fix common syntax issues
+        // Auto-fix common syntax issues, then validate with the real parser.
+        // If still broken, ask the AI to repair. If even that fails, drop the
+        // file so the preview never has to render broken code.
         let content = block.content;
         const syntaxIssue = checkBasicSyntax(content, block.filePath);
         if (syntaxIssue) {
           content = autoFixSyntax(content);
+        }
+        if (!isParseable(content, block.filePath)) {
+          const repaired = await repairWithAI(content, block.filePath);
+          if (repaired) {
+            content = repaired;
+          } else {
+            // Unrepairable — skip this file entirely.
+            completedCount--;
+            currentComponent = null;
+            continue;
+          }
         }
 
         allFiles.push({
@@ -527,11 +596,20 @@ async function* generateComponents(
       completedCount++;
       const fileType = inferFileType(block.filePath);
 
-      // Auto-fix common syntax issues
+      // Auto-fix, validate, repair, or drop — same flow as the streaming path.
       let content = block.content;
       const syntaxIssue = checkBasicSyntax(content, block.filePath);
       if (syntaxIssue) {
         content = autoFixSyntax(content);
+      }
+      if (!isParseable(content, block.filePath)) {
+        const repaired = await repairWithAI(content, block.filePath);
+        if (repaired) {
+          content = repaired;
+        } else {
+          completedCount--;
+          continue;
+        }
       }
 
       allFiles.push({

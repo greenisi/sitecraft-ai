@@ -4,6 +4,7 @@ import { getAnthropicClient, GENERATION_MODEL } from '@/lib/ai/client';
 import { buildSystemPrompt } from '@/lib/ai/prompts/system-prompt';
 import { parseDesignSystem } from '@/lib/ai/parsers';
 import { extractCompletedBlocks } from '@/lib/ai/parsers';
+import { isParseable, repairWithAI } from '@/lib/ai/pipeline';
 import { createSSEStream } from '@/lib/ai/stream-handler';
 import type { GenerationEvent, VirtualFile } from '@/types/generation';
 import type { DesignSystem } from '@/types/project';
@@ -282,10 +283,22 @@ export async function POST(request: NextRequest) {
                         seenFiles.add(block.filePath);
                         completedCount++;
 
+                        let safeContent = block.content;
+                        if (!isParseable(safeContent, block.filePath)) {
+                            const repaired = await repairWithAI(safeContent, block.filePath);
+                            if (repaired) {
+                                safeContent = repaired;
+                            } else {
+                                completedCount--;
+                                currentComponent = null;
+                                continue;
+                            }
+                        }
+
                         const fileType = inferFileType(block.filePath);
                         editedFiles.push({
                             path: block.filePath,
-                            content: block.content,
+                            content: safeContent,
                             type: fileType,
                         });
 
@@ -294,7 +307,7 @@ export async function POST(request: NextRequest) {
                             type: 'component-complete',
                             stage: 'components',
                             componentName: cName,
-                            file: { path: block.filePath, content: block.content },
+                            file: { path: block.filePath, content: safeContent },
                             totalFiles: totalFiles,
                             completedFiles: completedCount,
                         };
@@ -310,10 +323,22 @@ export async function POST(request: NextRequest) {
                     if (seenFiles.has(block.filePath)) continue;
                     seenFiles.add(block.filePath);
                     completedCount++;
+
+                    let safeContent = block.content;
+                    if (!isParseable(safeContent, block.filePath)) {
+                        const repaired = await repairWithAI(safeContent, block.filePath);
+                        if (repaired) {
+                            safeContent = repaired;
+                        } else {
+                            completedCount--;
+                            continue;
+                        }
+                    }
+
                     const fileType = inferFileType(block.filePath);
                     editedFiles.push({
                         path: block.filePath,
-                        content: block.content,
+                        content: safeContent,
                         type: fileType,
                     });
                     const cName = block.filePath.split('/').pop()?.replace(/\.[^.]+$/, '') || block.filePath;
@@ -321,7 +346,7 @@ export async function POST(request: NextRequest) {
                         type: 'component-complete',
                         stage: 'components',
                         componentName: cName,
-                        file: { path: block.filePath, content: block.content },
+                        file: { path: block.filePath, content: safeContent },
                         totalFiles: totalFiles,
                         completedFiles: completedCount,
                     };
