@@ -419,6 +419,278 @@ const INDUSTRY_PROFILES: Record<string, IndustryProfile> = {
   },
 };
 
+// ─── Industry Reference Styles ──────────────────────────────────────────────
+// Real-world brands known for premium, distinctive web design in each
+// vertical. The AI is instructed to model these — capture the FEEL (typography
+// confidence, photographic style, layout discipline, color restraint) without
+// copying. This is how human designers work too: every great vertical has a
+// design canon, and channeling that canon is what separates a $50K build from
+// generic AI output.
+
+interface ReferenceStyle {
+  /** Real-world brands the model should channel — chosen for design quality, not popularity. */
+  references: string[];
+  /** The shared design moves across these references that produce the premium feel. */
+  designMoves: string[];
+  /** Vertical-specific anti-patterns that make a site read as cheap or AI-generated. */
+  antiPatterns: string[];
+}
+
+const REFERENCE_STYLES: Record<string, ReferenceStyle> = {
+  landscaping: {
+    references: [
+      'Studio Mead (studiomead.com) — earthy, editorial photography',
+      'Yardzen (yardzen.com) — clean modern with confident type',
+      'James Doyle Design Associates — magazine-style portfolio',
+    ],
+    designMoves: [
+      'Full-bleed nature photography as the primary visual — hero is a single beautiful image, not a gradient',
+      'Generous whitespace with editorial-feeling captions ("Designed in 2024" style supporting copy)',
+      'Restrained palette: deep greens, warm earth tones, ivory; one accent color used sparingly',
+      'Heading-heavy layout: massive serif or sans display type (text-6xl–text-8xl) carries the page',
+      'Project/portfolio cards with hover scale + subtle vignette, not stock card grids',
+      'Sections often start with a single oversized number or short label ("01 — Landscape Design")',
+    ],
+    antiPatterns: [
+      'Gradient backgrounds — landscaping needs real photography',
+      'Three-up icon-text feature cards (the AI default)',
+      'Dark hero with neon accent lines — feels tech, not horticultural',
+    ],
+  },
+  restaurant: {
+    references: [
+      'Eleven Madison Park (elevenmadisonpark.com) — minimalist editorial',
+      'Mission Chinese — playful but disciplined typography',
+      'Blue Hill at Stone Barns — large-format food photography',
+      'Local boutique restaurants on Squarespace (Brine, Estela, Misi)',
+    ],
+    designMoves: [
+      'Hero is one full-bleed plated-food or interior photograph, no overlays except a small wordmark',
+      'Serif display headlines (Playfair, Cormorant) paired with one clean sans body',
+      'Menu sections rendered as elegant typography lists, not card grids — like a printed menu',
+      'Reservations CTA is small, confident, never neon',
+      'Story/about section uses a pull-quote layout with a single chef portrait',
+    ],
+    antiPatterns: [
+      'Card grids of "menu items" with prices and Add-to-cart buttons (looks ecommerce, not restaurant)',
+      'Dark gradient hero (kills appetite — food sites need light, airy, photographic)',
+      'Stock chef icon illustrations',
+    ],
+  },
+  technology: {
+    references: [
+      'Linear (linear.app) — geometric clarity, bento-grid feature explainers',
+      'Vercel (vercel.com) — confident type, dark hero, gradient mesh used once',
+      'Stripe (stripe.com) — gradient hero done right + crisp data visuals',
+      'Arc Browser — playful but premium',
+    ],
+    designMoves: [
+      'Bento-grid feature section with screenshots/diagrams in each cell, not just icons',
+      'Code or product UI screenshots embedded in hero or features — credibility through visuals',
+      'One signature gradient mesh OR aurora effect, used once (hero), never repeated per section',
+      'Geometric sans (Inter, Geist, Söhne-style) at very large sizes — type does the talking',
+      'Customer logo bar uses real recognizable logos in monochrome, properly aligned',
+    ],
+    antiPatterns: [
+      'Multiple rainbow gradients on every section',
+      'Floating 3D blob shapes',
+      'Generic "Why Choose Us" three-icon section',
+    ],
+  },
+  healthcare: {
+    references: [
+      'One Medical (onemedical.com) — calm, photographic, human',
+      'Hims & Hers — clean editorial with confident product photography',
+      'Modern dental practices on Squarespace (Tend, Dntl Bar)',
+    ],
+    designMoves: [
+      'Real human photography (not stock smiles) — diverse, candid, well-lit',
+      'Soft pastel or warm-neutral palette — sage, cream, warm white, one calm accent',
+      'Hero is photograph + short reassuring headline, no medical jargon',
+      'Service sections use icon + photo combinations, not just icons',
+      'Trust signals (insurance logos, certifications) shown as a quiet logo bar, not a hero element',
+    ],
+    antiPatterns: [
+      'Bright red/blue Bootstrap-era medical theme',
+      'Stock photos of doctors holding stethoscopes pointing at the camera',
+      'Cluttered insurance/intake form on the homepage',
+    ],
+  },
+  realestate: {
+    references: [
+      'Compass (compass.com) — full-bleed property photography, serif type',
+      'The Agency (theagencyre.com) — black/white editorial luxury',
+      'Curbed/Architectural Digest property features',
+      'Boutique brokerage sites (Modlin Group, Nest Seekers premium pages)',
+    ],
+    designMoves: [
+      'Property listings displayed as large editorial cards with full-bleed photography, not table rows',
+      'Serif display headlines paired with all-caps eyebrow labels',
+      'Generous whitespace; black and ivory dominate; one warm accent (gold, oxblood)',
+      'Agent profile sections use single portrait + pull quote, not bio paragraphs',
+      'Neighborhood guides use map + photo grid combinations',
+    ],
+    antiPatterns: [
+      'Three-column property grids with prices and Add-to-favorites hearts (looks Zillow, not luxury)',
+      'Generic stock home photography (use lifestyle/architectural photography style instead)',
+    ],
+  },
+  fitness: {
+    references: [
+      'Equinox (equinox.com) — black-and-white editorial, athletic typography',
+      'Tracksmith (tracksmith.com) — heritage-meets-modern',
+      'Barry\'s Bootcamp — bold red accent on dark editorial',
+      'Boutique studios on Squarespace (Y7, SLT)',
+    ],
+    designMoves: [
+      'Black and white photography of real movement, large-scale',
+      'Heavy display sans (Druk, Akzidenz) for headlines, sometimes oversized to crop edges',
+      'One bold accent color (red, electric blue) used sparingly on CTAs',
+      'Class schedule rendered as a clean grid, like a printed timetable',
+      'Trainer profiles use single portrait + short bio, magazine style',
+    ],
+    antiPatterns: [
+      'Neon gradient hero with "Get Fit Now!" — reads as cheap',
+      'Stock photos of generic gym equipment',
+      'Excessive glowing borders or pulsing CTA buttons',
+    ],
+  },
+  education: {
+    references: [
+      'Brilliant (brilliant.org) — playful but rigorous',
+      'MasterClass (masterclass.com) — cinematic photography of instructors',
+      'On Deck (beondeck.com) — clean editorial layout',
+      'Y Combinator startup school',
+    ],
+    designMoves: [
+      'Instructor or student photography as the primary visual',
+      'Hero often features a single confident headline + short paragraph + one CTA',
+      'Curriculum displayed as numbered chapter lists, not card grids',
+      'Soft confident palette — navy, cream, one signal accent',
+    ],
+    antiPatterns: [
+      'Stock photos of laptops with code on screen',
+      'Generic "graduation cap" iconography',
+    ],
+  },
+  ecommerce: {
+    references: [
+      'Aesop (aesop.com) — restraint, single-product hero, editorial type',
+      'Glossier (glossier.com) — clean photography, signature pink used once',
+      'Hims (hims.com) — confident product photography on solid backgrounds',
+      'Allbirds, Outdoor Voices, Norse Store',
+    ],
+    designMoves: [
+      'Product hero is a single oversized product photograph on solid or subtle gradient background',
+      'Editorial copy treatments — short, confident, no exclamation marks',
+      'Product grid uses generous whitespace, large product photos, minimal labels',
+      'Featured product sections use full-bleed lifestyle photography + small product callouts',
+      'Brand-color accent used once (the buy button), not everywhere',
+    ],
+    antiPatterns: [
+      'Carousel of stock product images',
+      'Star-rating burst graphics on every product',
+      'Yellow "SALE!" badges with neon glow',
+    ],
+  },
+  legal: {
+    references: [
+      'Sullivan & Cromwell-style classic firm sites',
+      'Modern boutique firms (Wilkinson Walsh, Susman Godfrey)',
+      'Loeb & Loeb',
+    ],
+    designMoves: [
+      'Quiet authority — black/navy/ivory palette, minimal accent',
+      'Serif display type for headlines, sans for body',
+      'Practice areas as a numbered editorial list, not card grid',
+      'Attorney profiles as single portrait + name + concise bio',
+      'No imagery of gavels or scales — use architectural or office photography instead',
+    ],
+    antiPatterns: [
+      'Royal blue gradient hero with stock photo of a handshake',
+      'Generic "Law" iconography (gavels, scales of justice, columns)',
+      'Card grids of "Why Choose Us" reasons',
+    ],
+  },
+  creative: {
+    references: [
+      'Pentagram (pentagram.com) — case-study-driven editorial layout',
+      'Studio Dumbar (studiodumbar.com) — bold typographic personality',
+      'Awwwards SOTM winners',
+      'Read Receipts portfolio sites (Lotta Nieminen, Aaron Lowell Denton)',
+    ],
+    designMoves: [
+      'Asymmetric editorial layouts — projects shown as full-width hero + offset captions',
+      'Massive display type, often custom or bespoke font',
+      'Bold one-color hero (single saturated color or black) with confident type',
+      'Project case studies use scroll-driven storytelling — image, then context, then image',
+      'Microinteractions: cursor follow, hover image previews, smooth scroll reveals',
+    ],
+    antiPatterns: [
+      'Standard portfolio card grid of square thumbnails',
+      'Multiple decorative gradients',
+      'Generic "Selected Work" section title — use the brand voice',
+    ],
+  },
+  construction: {
+    references: [
+      'Turner Construction (turnerconstruction.com) — large-scale project photography',
+      'Skanska (skanska.com) — confident corporate editorial',
+      'Boutique design-build firms (Bone Structure, Plant Prefab)',
+    ],
+    designMoves: [
+      'Hero is a single dramatic project photograph — finished work, not workers in hardhats',
+      'Project portfolio shown as full-bleed hero images with year + location captions',
+      'Strong typography: industrial sans (Druk, Founders Grotesk) at large sizes',
+      'Restrained palette: charcoal, concrete, one warm accent (steel blue, terracotta)',
+      'Process explainer uses numbered editorial layout, not icon-card grid',
+    ],
+    antiPatterns: [
+      'Cartoonish illustrations of houses or wrenches',
+      'Three-up icon section with hammers, paint rollers, blueprints',
+    ],
+  },
+  finance: {
+    references: [
+      'Wealthfront (wealthfront.com) — editorial, photographic, calm',
+      'Ramp (ramp.com) — clean type, geometric data visuals',
+      'Mercury (mercury.com) — premium SaaS feel for finance',
+    ],
+    designMoves: [
+      'Calm photographic hero — daylight interior, quiet portrait — not stock graphs',
+      'Confident geometric sans, large sizes, generous line height',
+      'Data shown as elegant minimalist charts inline with copy — not screenshots',
+      'Restrained palette — navy, ivory, one signal accent',
+      'Compliance/credentials shown as a quiet footer logo bar',
+    ],
+    antiPatterns: [
+      'Stock photos of stacks of coins or hands shaking over a desk',
+      'Bull/bear iconography',
+      'Bright green growth-arrow accents on every section',
+    ],
+  },
+};
+
+const DEFAULT_REFERENCE_STYLE: ReferenceStyle = {
+  references: [
+    'Awwwards Site of the Month winners in adjacent industries',
+    'High-end Squarespace and Webflow showcase templates',
+    'Boutique studio portfolio sites',
+  ],
+  designMoves: [
+    'Full-bleed photography or single confident illustration as the hero',
+    'Generous whitespace with editorial-feeling supporting copy',
+    'Display sans or serif at very large sizes carrying the page',
+    'One accent color used sparingly on CTAs',
+    'Subtle, slow microinteractions — not bouncing animations',
+  ],
+  antiPatterns: [
+    'Three-up icon-text feature card grid',
+    'Centered hero with two side-by-side CTA buttons',
+    'Multiple rainbow gradient sections',
+  ],
+};
+
 // Catch-all for industries not explicitly listed
 const DEFAULT_PROFILE: IndustryProfile = {
   paletteGroup: 'cool',
@@ -497,6 +769,7 @@ export interface DesignVariety {
   navbarVariant: NavbarVariant;
   industryProfile: IndustryProfile;
   matchedIndustry: string;
+  referenceStyle: ReferenceStyle;
 }
 
 /**
@@ -548,6 +821,8 @@ export function getDesignVariety(
     ? pickFromArray(matchingNavbars, hash, 5)
     : pickFromArray(NAVBAR_VARIANTS, hash, 5);
 
+  const referenceStyle = REFERENCE_STYLES[matchedIndustry] || DEFAULT_REFERENCE_STYLE;
+
   return {
     palette,
     fonts,
@@ -557,6 +832,7 @@ export function getDesignVariety(
     navbarVariant,
     industryProfile: profile,
     matchedIndustry,
+    referenceStyle,
   };
 }
 
@@ -593,6 +869,18 @@ IMPORTANT: Use this testimonial layout instead of the default card grid.
 
 **VISUAL NOTES**: ${variety.industryProfile.visualNotes}
 
+=== INDUSTRY REFERENCE STYLES — CHANNEL THESE WORLD-CLASS BRANDS ===
+This site must feel like it could sit alongside the following real-world references in its category. Do NOT copy them, but model their FEEL — typography confidence, photographic style, layout discipline, color restraint, microinteraction subtlety.
+
+**Reference brands to channel:**
+${variety.referenceStyle.references.map((r) => `- ${r}`).join('\n')}
+
+**Specific design moves these references share — DO ALL OF THESE:**
+${variety.referenceStyle.designMoves.map((m) => `- ${m}`).join('\n')}
+
+**Anti-patterns specific to this industry — NEVER DO ANY OF THESE:**
+${variety.referenceStyle.antiPatterns.map((a) => `- ${a}`).join('\n')}
+
 CRITICAL — READ THIS CAREFULLY:
 This website must look COMPLETELY DIFFERENT from every other website you have ever generated.
 - The hero MUST use the "${variety.heroVariant.name}" style described above — NOT a generic gradient hero
@@ -610,7 +898,7 @@ DESIGN QUALITY RULES:
 - NO floating decorative elements (stars, sparkles, emoji shapes) — these look AI-generated
 - NO neon glow effects on borders or buttons — use clean, solid colors
 - Subtle shadows (shadow-sm, shadow-md) — NOT shadow-2xl with colored glow
-- This must look like a custom \$10,000+ WordPress build — clean, confident, professional.
+- This must look like a custom \$50,000–\$100,000 bespoke build from a top-10 design studio — clean, confident, world-class. Aim higher than "premium WordPress." Aim for the design language of an Awwwards Site of the Day winner.
 
 TEXT CONTRAST — MANDATORY CHECK BEFORE EVERY COMPONENT:
 - On light backgrounds (bg-white, bg-gray-50, bg-*-50, bg-*-100): headings MUST be text-gray-900 or text-primary-900, body text MUST be text-gray-700 or text-gray-600. NEVER use light text colors.
