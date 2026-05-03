@@ -308,6 +308,14 @@ interface IndustryProfile {
   visualNotes: string;
 }
 
+interface IndustryVisualDNA {
+  paletteDirection: string;
+  imageryDirection: string;
+  layoutDirection: string;
+  contentDirection: string;
+  avoid: string;
+}
+
 const INDUSTRY_PROFILES: Record<string, IndustryProfile> = {
   landscaping: {
     paletteGroup: 'nature',
@@ -416,6 +424,79 @@ const INDUSTRY_PROFILES: Record<string, IndustryProfile> = {
     testimonialStyles: ['large-quote', 'cards-row'],
     navbarStyles: ['solid-white', 'glassmorphism'],
     visualNotes: 'Professional, trustworthy. Data-driven visuals.',
+  },
+};
+
+const INDUSTRY_VISUAL_DNA: Record<string, IndustryVisualDNA> = {
+  landscaping: {
+    paletteDirection: 'Lead with layered greens, moss, sage, deep forest, warm stone, and sunlit earth accents. Green should be the unmistakable first read, but pair it with natural neutrals so it feels premium instead of cartoonish.',
+    imageryDirection: 'Use lush yards, native planting, stonework, outdoor-living photography, irrigation details, before/after transformations, and close-up texture shots of leaves, gravel, timber, and water.',
+    layoutDirection: 'Use sweeping full-width outdoor photography, before/after galleries, service-area maps, seasonal care sections, project showcases, and image-led alternating rows.',
+    contentDirection: 'Emphasize curb appeal, outdoor living, low-maintenance beauty, native planting, drainage, maintenance plans, and local climate expertise.',
+    avoid: 'Avoid generic office/team imagery, tech gradients, neon colors, construction-only yellow/black palettes, and icon-card grids without landscape photography.',
+  },
+  restaurant: {
+    paletteDirection: 'Use warm hospitality colors: cream, charcoal, wine, tomato, olive, brass, espresso, or smoke. The palette should feel edible, tactile, and atmospheric.',
+    imageryDirection: 'Use plated dishes, dining room atmosphere, chef/fire/steam details, wine pours, ingredient close-ups, table settings, and full-bleed food photography.',
+    layoutDirection: 'Use editorial restaurant pacing: full-bleed hero, menu/reservation flow, menu highlights, reservation CTA, chef story, press/reviews, atmospheric image breaks, and no generic service-card grids.',
+    contentDirection: 'Emphasize cuisine, neighborhood, reservation flow, seasonal menus, chef point of view, wine/beverage program, hours, and dining experience.',
+    avoid: 'Avoid contractor trust badges, emergency banners, BBB-style claims, generic "services" language, and 3-up icon-card grids.',
+  },
+  construction: {
+    paletteDirection: 'Use construction-grade confidence: safety yellow, equipment amber, concrete/steel neutrals, black, rust, navy, and white. Accent colors should feel industrial and durable.',
+    imageryDirection: 'Use job-site photography, framing, cranes, concrete, tools, crews at work, finished remodels, blueprints, materials, and strong project photography.',
+    layoutDirection: 'Use bold geometric sections, project case studies, capabilities grids with photos, process timelines, certification/safety bars, and before/after builds.',
+    contentDirection: 'Emphasize licensed crews, timelines, craftsmanship, safety, project management, warranties, permits, remodel/build specialties, and local proof.',
+    avoid: 'Avoid soft spa palettes, floral/nature cues unless landscaping-related, delicate serif luxury treatment, and abstract SaaS-style dashboards.',
+  },
+  technology: {
+    paletteDirection: 'Use precise tech palettes: electric blue, indigo, cyan, graphite, cool white, or controlled green. Keep it sleek and product-led.',
+    imageryDirection: 'Use product UI, dashboards, abstract data surfaces, teams collaborating, device mockups, cloud/security/data visuals, and interface screenshots when relevant.',
+    layoutDirection: 'Use bento grids, feature deep-dives, product screenshots, comparison tables, integration strips, pricing, social proof logos, and tight information hierarchy.',
+    contentDirection: 'Emphasize outcomes, speed, automation, security, integrations, ROI, onboarding, and clear product differentiation.',
+    avoid: 'Avoid generic stock business people, unrelated nature imagery, overly playful gradients, and local-service emergency/phone-first patterns.',
+  },
+  healthcare: {
+    paletteDirection: 'Use calming clinical trust: white, soft blue, teal, healing green, lavender, and gentle neutrals. Contrast must feel clean and accessible.',
+    imageryDirection: 'Use welcoming care environments, practitioners, patient interactions, treatment rooms, wellness details, and calm human photography.',
+    layoutDirection: 'Use clear appointment CTAs, provider/service sections, insurance/credential trust blocks, patient testimonials, FAQ, and accessible spacing.',
+    contentDirection: 'Emphasize care quality, credentials, comfort, outcomes, appointment booking, insurance/financing, and patient reassurance.',
+    avoid: 'Avoid harsh black/yellow palettes, aggressive sales copy, nightlife/restaurant mood, and vague medical claims.',
+  },
+  realestate: {
+    paletteDirection: 'Use luxury property colors: ivory, charcoal, deep navy, warm taupe, brass, emerald, and clean white. The palette should feel high-value and calm.',
+    imageryDirection: 'Use exterior/interior property photography, neighborhood scenes, agents, architectural details, kitchens, views, and lifestyle images.',
+    layoutDirection: 'Use large image-led hero sections, featured listings, neighborhood guides, valuation CTA, agent story, testimonial proof, and elegant property cards.',
+    contentDirection: 'Emphasize market expertise, buyer/seller outcomes, luxury service, local neighborhoods, valuation, and trust.',
+    avoid: 'Avoid playful neon colors, generic SaaS illustrations, contractor emergency badges, and dense text without property imagery.',
+  },
+  fitness: {
+    paletteDirection: 'Use energetic performance colors: black, white, red, orange, cobalt, lime, or steel. The palette should feel active and motivating.',
+    imageryDirection: 'Use movement, classes, coaching, equipment, transformation, community, training floor, and high-energy photography.',
+    layoutDirection: 'Use bold hero imagery, class/program cards, schedule/pricing sections, trainer profiles, transformation stats, and strong CTA bands.',
+    contentDirection: 'Emphasize energy, results, coaching, accountability, community, program fit, and trial offers.',
+    avoid: 'Avoid sleepy corporate layouts, delicate luxury restaurant typography, and generic "services" copy.',
+  },
+  ecommerce: {
+    paletteDirection: 'Use product-led colors that complement the merchandise. Keep backgrounds clean so product photography sells the site.',
+    imageryDirection: 'Use product photography, lifestyle shots, close-ups, collections, category imagery, packaging, and editorial commerce images.',
+    layoutDirection: 'Use collection grids, featured products, editorial lookbook sections, reviews, guarantees, shipping/returns trust, and strong product detail blocks.',
+    contentDirection: 'Emphasize product benefits, materials, collections, social proof, shipping, returns, and buying confidence.',
+    avoid: 'Avoid service-business phone-first CTAs, unrelated stock people, and "Add to cart" unless full cart/checkout exists.',
+  },
+  creative: {
+    paletteDirection: 'Use expressive but controlled creative palettes: black/white with one punch color, gallery neutrals, or refined editorial color. Let portfolio work drive the palette.',
+    imageryDirection: 'Use portfolio work, studio process, brand boards, mockups, editorial imagery, behind-the-scenes, and case-study visuals.',
+    layoutDirection: 'Use asymmetry, bento case studies, oversized typography, portfolio grids, process sections, client proof, and studio story.',
+    contentDirection: 'Emphasize point of view, selected work, process, outcomes, client fit, and creative credibility.',
+    avoid: 'Avoid generic corporate service grids, random icons, and stock photos that do not show creative output.',
+  },
+  default: {
+    paletteDirection: 'Choose colors that clearly match the business category and emotional promise. Make the industry recognizable from the first viewport.',
+    imageryDirection: 'Use photography and visual details that belong to the actual business type, not generic office or abstract filler imagery.',
+    layoutDirection: 'Choose section patterns that match how customers evaluate this business: proof, work samples, products, services, booking, menu, listings, or portfolio as appropriate.',
+    contentDirection: 'Write industry-specific copy with concrete proof, realistic services/products, local context, and conversion paths that fit the business.',
+    avoid: 'Avoid one-size-fits-all SaaS, contractor, or agency layouts when the industry calls for a different pattern.',
   },
 };
 
@@ -906,6 +987,8 @@ export function getDesignVariety(
  * visual approach to use for THIS specific website.
  */
 export function buildVarietyInstructions(variety: DesignVariety): string {
+  const dna = INDUSTRY_VISUAL_DNA[variety.matchedIndustry] || INDUSTRY_VISUAL_DNA.default;
+
   // Editorial verticals — for these, the system-prompt's editorial templates
   // OVERRIDE the variety system's hero/section variants. The variety system's
   // hero variants (spotlight, floating-cards, etc.) produce SaaS-template
@@ -977,6 +1060,22 @@ ${variety.testimonialLayout.description}
 IMPORTANT: Use this testimonial layout instead of the default card grid.
 
 **VISUAL NOTES**: ${variety.industryProfile.visualNotes}
+
+=== INDUSTRY VISUAL DNA — MAKE THE INDUSTRY OBVIOUS ===
+Matched industry: ${variety.matchedIndustry}
+
+**Palette direction:** ${dna.paletteDirection}
+**Imagery direction:** ${dna.imageryDirection}
+**Layout direction:** ${dna.layoutDirection}
+**Content direction:** ${dna.contentDirection}
+**Avoid:** ${dna.avoid}
+
+CRITICAL: The visitor should know the industry within 3 seconds without reading
+the business description. Use the industry's colors, imagery, page sections,
+proof points, CTAs, and copy patterns. Do not rely on generic icons or generic
+"professional service" sections when the business needs landscaping, restaurant,
+construction, real estate, healthcare, ecommerce, fitness, technology, or creative
+signals.
 
 === INDUSTRY REFERENCE STYLES — CHANNEL THESE WORLD-CLASS BRANDS ===
 This site must feel like it could sit alongside the following real-world references in its category. Do NOT copy them, but model their FEEL — typography confidence, photographic style, layout discipline, color restraint, microinteraction subtlety.

@@ -125,6 +125,7 @@ Description: ${config.business.description}
 Style: ${config.branding.style}
 Heading font: ${config.branding.fontHeading}
 Body font: ${config.branding.fontBody}
+${config.aiPrompt ? `User creative direction: ${config.aiPrompt}` : ''}
 
 === INDUSTRY-DRIVEN PALETTE — THIS DOMINATES COLOR DECISIONS ===
 Matched industry: ${guidance.matchedIndustry}
@@ -206,7 +207,9 @@ Rules:
 - Include all shared components (Navbar, Footer, etc.) in sharedComponents.
 - The props object can include content hints for the AI component generator.
 - For e-commerce sites, include dataRequirements for product data.
-- For SaaS sites, include dataRequirements for pricing/features data.`;
+- For SaaS sites, include dataRequirements for pricing/features data.
+- Blueprint sections must match the actual industry. For example: landscaping should include project/gallery/before-after/service-area sections; construction should include project/capabilities/process/safety sections; restaurants should include menu/reservations/chef/press sections; real estate should include listings/neighborhoods/valuation sections.
+- Do not use generic local-trade pages or emergency-call sections for restaurants, creative studios, real estate, healthcare, or other non-emergency industries unless the user's prompt asks for them.`;
 
   const sectionsSummary = config.sections
     .map((s) => `${s.type} (order: ${s.order})`)
@@ -219,6 +222,7 @@ Requested sections: ${sectionsSummary}
 Design style: ${config.branding.style}
 Heading font: ${designSystem.typography.headingFont}
 Body font: ${designSystem.typography.bodyFont}
+${config.aiPrompt ? `User creative direction: ${config.aiPrompt}` : ''}
 ${config.ecommerce ? `E-commerce: ${config.ecommerce.products.length} products, cart ${config.ecommerce.cartEnabled ? 'enabled' : 'disabled'}` : ''}
 ${config.saas ? `SaaS: ${config.saas.features.length} features, ${config.saas.pricingTiers.length} pricing tiers, auth ${config.saas.hasAuth ? 'yes' : 'no'}, dashboard ${config.saas.hasDashboard ? 'yes' : 'no'}` : ''}`;
 
@@ -666,7 +670,7 @@ async function* generateComponents(
   const systemPrompt = buildSystemPrompt(designSystem);
   // Inject variety instructions into the user prompt so each site gets unique layouts
   const baseUserPrompt = promptBuilder(config);
-  const userPrompt = `${baseUserPrompt}\n${varietyInstructions}`;
+  const userPrompt = `${baseUserPrompt}\n${varietyInstructions}\n${buildCreativeDirectionOverride(config)}`;
 
   // Track expected components from blueprint
   const expectedComponents = new Set<string>();
@@ -913,6 +917,31 @@ async function* assembleProject(
   for (const file of generatedFiles) {
     tree.addFile(file.path, file.content, file.type);
   }
+}
+
+function buildCreativeDirectionOverride(config: GenerationConfig): string {
+  if (!config.aiPrompt?.trim()) return '';
+
+  return `
+=== USER CREATIVE DIRECTION — HIGHEST PRIORITY ===
+The user's own prompt is the strongest design brief. If any generated default,
+industry template, or design-variety instruction conflicts with it, follow the
+user's prompt.
+
+User prompt:
+${config.aiPrompt}
+
+Before writing code, silently extract hard constraints from the user prompt:
+- required pages and navigation labels
+- requested mood, color, typography, and layout references
+- explicit negative constraints such as "no icon grids" or "no cards"
+- imagery requirements such as full-bleed photography, product photos, food photos, or portraits
+
+Honor those constraints literally in the generated code. Do not let the default
+site-type template add unrelated sections, generic service cards, emergency
+banners, or local-trade trust badges unless they fit the business and the user
+asked for them.
+`;
 }
 
 // --------------------------------------------------------------------------

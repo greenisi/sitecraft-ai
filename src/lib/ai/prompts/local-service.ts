@@ -1,10 +1,10 @@
 import type { GenerationConfig } from '@/types/project';
 
 /**
- * Builds the user prompt for generating a multi-page local service business website.
- * Pages: Home (/), Services (/services), About (/about), Contact (/contact).
- * Covers businesses like plumbers, electricians, landscapers, cleaners,
- * HVAC technicians, roofers, and similar local trades/services.
+ * Builds the user prompt for generating a multi-page local business website.
+ * Pages are adapted to the actual industry. Trade/service companies usually use
+ * Home, Services, About, Contact, while restaurants, studios, clinics, venues,
+ * and other local businesses may need Menu, Reservations, Work, Booking, etc.
  */
 export function buildLocalServicePrompt(config: GenerationConfig): string {
   const { business, branding, sections, aiPrompt } = config;
@@ -33,11 +33,15 @@ export function buildLocalServicePrompt(config: GenerationConfig): string {
     })
     .join('\n');
 
-  return `Generate a complete, production-ready MULTI-PAGE local service business website.
-This is a 4-page site for a local trade or service company (plumber, electrician,
-landscaper, cleaner, HVAC, roofer, etc.) that serves customers in a specific
-geographic area. The site must inspire trust, make it extremely easy to contact
-the business, and convert visitors into leads or phone calls.
+  return `Generate a complete, production-ready MULTI-PAGE local business website.
+This is a location-based business that serves customers in a specific geographic
+area. It might be a trade/service company, restaurant, studio, clinic, fitness
+business, salon, venue, or other local brand. The site must feel tailored to the
+exact industry, inspire trust, and make the correct conversion path obvious:
+call, book, reserve, request a quote, visit, order, or inquire.
+
+CRITICAL: Do not force every local business into a contractor/trade template.
+Adapt the pages, CTAs, proof points, imagery, and copy to the actual industry.
 
 === BUSINESS CONTEXT ===
 Business name: "${business.name}"
@@ -66,11 +70,11 @@ ${sectionList}
    - \`'use client'\` component with useState for mobile menu toggle
    - Use the navbar style from DESIGN VARIETY instructions (glassmorphism, dark, transparent, solid, or colored)
    - Logo/business name with primary brand color
-   - Desktop nav links: Home, Services, About, Contact using \`next/link\`
-   - Prominently-styled "Call Now" phone number link on desktop (with Phone icon)
+   - Desktop nav links must match the industry and generated pages using \`next/link\`
+   - Use industry-appropriate CTA: Call Now for trades, Reserve for restaurants, Book for appointments, View Work for studios, Request Quote for construction/landscaping
    - Mobile hamburger menu with Menu/X icons from lucide-react
    - Full-screen mobile overlay with smooth opacity transition
-   - Optional top banner for emergency/24-7 availability (colored accent strip)
+   - Optional top banner only when it fits the industry
    - \`aria-expanded\` and \`aria-label\` for accessibility
 
 2. \`src/components/Footer.tsx\` -- Professional 4-column dark footer:
@@ -89,23 +93,26 @@ ${sectionList}
 **Home Page (/)**
 
 4. \`src/components/Hero.tsx\` -- Bold hero section (follow DESIGN VARIETY hero style):
-   - Strong headline emphasizing core service and locality (e.g., "Trusted ${business.industry} in [City]")
+   - Strong industry-specific headline emphasizing the business, experience, product, craft, or locality
    - Use the hero layout from DESIGN VARIETY instructions (gradient, split, dark, full-bleed image, etc.)
-   - Prominent "Call Now" CTA button with Phone icon (\`tel:\` link, hover:scale-105)
-   - Secondary "Get a Free Quote" CTA button
-   - Trust statement strip: "Licensed & Insured | 15+ Years | 5-Star Rated"
-   - Decorative elements appropriate to the hero style
+   - Use the correct CTA pair for the industry: Reserve/View Menu, Book Appointment, Request Quote/View Projects, Shop Collection, Contact Studio, etc.
+   - Trust/credibility strip should fit the industry: reviews, press, years, certifications, awards, featured projects, chef/menu notes, service areas, or client logos
+   - Visual elements must fit the industry style
    - Subtle animation on hero elements
 
 5. \`src/components/TrustBadges.tsx\` -- Horizontal trust indicators strip:
-   - "Licensed & Insured", "BBB Accredited", "X+ Years Experience",
-     "100% Satisfaction Guarantee", "Free Estimates"
-   - Use lucide-react icons (Shield, Award, Clock, CheckCircle, Star)
+   - Use industry-appropriate proof points. Examples:
+     landscaping: "Native Plant Experts", "Licensed & Insured", "Seasonal Care Plans"
+     construction: "Licensed GC", "Permit Coordination", "Safety-First Crews"
+     restaurant: "Seasonal Menu", "Biodynamic Wines", "Reservations Open"
+     clinic: "Board-Certified Team", "Insurance Friendly", "Same-Week Appointments"
+   - Use lucide-react icons only when they strengthen the concept
    - Scroll-triggered fade-in animation
    - Cards with hover effects
 
 6. \`src/components/ServicesPreview.tsx\` -- Preview grid of 3-4 top services:
-   - Responsive grid with lucide-react icons, titles, short descriptions
+   - Rename/adapt this component's content to the industry: Services, Menu Highlights, Capabilities, Treatments, Programs, Collections, or Selected Work
+   - Use photography where possible; avoid generic icon-only cards
    - "View All Services" link to /services page
    - Card hover: \`hover:-translate-y-1 hover:shadow-xl transition-all duration-300\`
    - Scroll-triggered staggered animation
@@ -117,12 +124,10 @@ ${sectionList}
    - Hover:rotate-1 micro-interaction
    - Scroll-triggered animation
 
-8. \`src/components/EmergencyCallout.tsx\` -- Full-width emergency banner:
+8. \`src/components/EmergencyCallout.tsx\` -- Full-width urgency/CTA banner:
    - Accent/contrasting color background with gradient
-   - "24/7 Emergency Service Available" headline
-   - Large click-to-call phone number with Phone icon
-   - Urgency-driven copy
-   - Only include if relevant to the industry
+   - Only use emergency language for industries that truly offer emergency service
+   - Otherwise use the correct conversion moment: reservation banner, booking banner, quote banner, consultation banner, or visit-us banner
 
 9. \`src/components/CallToAction.tsx\` -- Bottom CTA section:
    - Gradient background with decorative elements
@@ -135,16 +140,19 @@ ${sectionList}
 
 **Services Page (/services)**
 
-11. \`src/components/ServicesGrid.tsx\` -- Full services grid:
+11. \`src/components/ServicesGrid.tsx\` -- Full industry offering grid:
     - 'use client' for scroll-triggered animations
-    - 6-8 detailed service cards with icons, titles, descriptions, feature bullets
+    - 6-8 detailed offerings with titles, descriptions, feature bullets, and industry-specific imagery
     - Responsive: 1 col mobile, 2 tablet, 3 desktop
     - Card hover effects with shadow and translate
     - Staggered fade-in animation
     - Generate realistic services for "${business.industry}"
 
-12. \`src/components/BeforeAfterGallery.tsx\` -- Before/After project gallery:
-    - 3-4 before/after pairs with placeholder images
+12. \`src/components/BeforeAfterGallery.tsx\` -- Gallery, work, or proof section:
+    - For landscaping/construction/home services: 3-4 before/after or project pairs
+    - For restaurants: food/dining gallery and menu highlights
+    - For studios/creative: selected work/case studies
+    - For clinics/fitness: spaces, team, treatment/program visuals
     - Labels "Before" / "After" and short project description
     - Responsive grid layout
     - Hover effects on image containers
@@ -156,6 +164,12 @@ ${sectionList}
 
 14. \`src/app/services/page.tsx\` -- Services page composing: ServicesGrid,
     BeforeAfterGallery, ServiceAreas. Add \`pt-16\` for fixed navbar.
+
+If the user's requested pages are more industry-specific than Services, generate
+those pages instead and make navigation match them exactly. For restaurants,
+prefer Menu and Reservations pages. For construction, prefer Services/Projects.
+For landscaping, prefer Services/Portfolio or Gallery. For creative studios,
+prefer Work/Services. Do not include nav links for pages you do not generate.
 
 **About Page (/about)**
 
@@ -215,6 +229,7 @@ ${config.navigation.socialLinks?.length ? `Social links: ${config.navigation.soc
 ` : ''}
 ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 === QUALITY REQUIREMENTS ===
+- The site must look unique AND industry-specific. Use the DESIGN VARIETY and INDUSTRY VISUAL DNA instructions as hard creative direction.
 - Every section MUST have scroll-triggered fade-in animations using IntersectionObserver
 - All buttons MUST have hover:scale-105 and transition effects
 - Cards MUST have hover:-translate-y-1 hover:shadow-xl effects
@@ -224,9 +239,9 @@ ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 - Mobile hamburger menu MUST work with useState toggle
 - Phone numbers MUST use \`tel:\` links for click-to-call on mobile
 - Use realistic, industry-appropriate content — NEVER lorem ipsum
-- All nav links must use \`next/link\` with correct paths (/, /services, /about, /contact)
+- All nav links must use \`next/link\` with correct paths matching the pages actually generated
 - The tone should be trustworthy, professional, and locally-focused
-- Emphasize ease of contact: phone and CTA visible on every page
+- Emphasize the right conversion action for the industry on every page
 - CRITICAL: Follow the DESIGN VARIETY instructions at the end of this prompt for hero, navbar, features layout, and testimonial style. Each website MUST look unique.
 - Generate ALL files listed above in a single response
 `;

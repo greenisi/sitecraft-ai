@@ -448,8 +448,8 @@ tailwind.config = {
     extend: {
       colors: ${JSON.stringify(ds.colors || {})},
       fontFamily: {
-        heading: [${JSON.stringify(ds.typography?.fontHeading || 'Space Grotesk')}, 'sans-serif'],
-        body: [${JSON.stringify(ds.typography?.fontBody || 'Inter')}, 'sans-serif'],
+        heading: [${JSON.stringify(ds.typography?.headingFont || 'Space Grotesk')}, 'sans-serif'],
+        body: [${JSON.stringify(ds.typography?.bodyFont || 'Inter')}, 'sans-serif'],
       },
       keyframes: {
         fadeIn: {
