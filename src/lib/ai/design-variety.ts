@@ -906,6 +906,55 @@ export function getDesignVariety(
  * visual approach to use for THIS specific website.
  */
 export function buildVarietyInstructions(variety: DesignVariety): string {
+  // Editorial verticals — for these, the system-prompt's editorial templates
+  // OVERRIDE the variety system's hero/section variants. The variety system's
+  // hero variants (spotlight, floating-cards, etc.) produce SaaS-template
+  // patterns that are wrong for landscaping, restaurant, real estate, legal,
+  // creative, etc. Tell the model to ignore the variety hero and use the
+  // editorial templates from the system prompt.
+  const EDITORIAL_INDUSTRIES = new Set([
+    'landscaping',
+    'restaurant',
+    'realestate',
+    'legal',
+    'creative',
+    'finance',
+    'healthcare',
+  ]);
+  const isEditorial = EDITORIAL_INDUSTRIES.has(variety.matchedIndustry);
+
+  const heroBlock = isEditorial
+    ? `**HERO — USE EDITORIAL TEMPLATES (override):**
+This is a ${variety.matchedIndustry} business — an EDITORIAL vertical. The
+system prompt's "EDITORIAL DESIGN MANDATES" section gives you Pattern A
+(full-bleed photographic hero) and Pattern B (asymmetric 12-column grid
+hero). Pick ONE of those patterns and adapt it. Do NOT use the variety
+system's hero variant suggestion — those variants (spotlight, floating-
+cards, gradient-bold, angled-bg, etc.) produce SaaS-template patterns that
+are wrong for editorial brands. The reference style guide above (Aesop,
+Pentagram, Compass, Eleven Madison Park, etc.) describes what the hero
+should FEEL like; the editorial Pattern A/B templates show the TSX
+structure to copy.
+
+If the brand calls for photography (most editorial verticals), use
+Pattern A with a real \`<img>\` element from Unsplash for the hero
+backdrop. NEVER omit the photography because it's "decorative" — for
+restaurants, landscapers, real estate, fitness, the photo IS the design.`
+    : `**HERO STYLE: "${variety.heroVariant.name}"**
+${variety.heroVariant.description}
+IMPORTANT: Follow this hero layout EXACTLY. Do NOT default to the standard gradient hero every time.`;
+
+  const sectionLayoutBlock = isEditorial
+    ? `**SERVICES / FEATURES SECTION — USE EDITORIAL NUMBERED LIST (override):**
+For this editorial vertical, do NOT use the variety system's section
+layout. Use the EDITORIAL NUMBERED LIST template from the system prompt:
+alternating full-bleed photography per service item with oversized
+serif numbers (01, 02, 03...) and pull-quote-style descriptions. NEVER
+generate 3-up icon-text card grids — that's the AI-template look.`
+    : `**FEATURES/SERVICES LAYOUT: "${variety.sectionLayout.name}"**
+${variety.sectionLayout.description}
+IMPORTANT: Use this layout pattern for the main features/services section.`;
+
   return `
 === DESIGN VARIETY — UNIQUE VISUAL IDENTITY FOR THIS SITE ===
 
@@ -915,17 +964,13 @@ Primary: ${variety.palette.primary} | Secondary: ${variety.palette.secondary} | 
 **Typography Pairing: "${variety.fonts.name}"** (Vibe: ${variety.fonts.vibe})
 Headings: ${variety.fonts.heading} | Body: ${variety.fonts.body}
 
-**HERO STYLE: "${variety.heroVariant.name}"**
-${variety.heroVariant.description}
-IMPORTANT: Follow this hero layout EXACTLY. Do NOT default to the standard gradient hero every time.
+${heroBlock}
 
 **NAVBAR STYLE: "${variety.navbarVariant.id}"**
 ${variety.navbarVariant.description}
 IMPORTANT: Use this specific navbar style, not the default glassmorphism.
 
-**FEATURES/SERVICES LAYOUT: "${variety.sectionLayout.name}"**
-${variety.sectionLayout.description}
-IMPORTANT: Use this layout pattern for the main features/services section.
+${sectionLayoutBlock}
 
 **TESTIMONIALS LAYOUT: "${variety.testimonialLayout.name}"**
 ${variety.testimonialLayout.description}
