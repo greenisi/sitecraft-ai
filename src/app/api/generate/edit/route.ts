@@ -4,7 +4,7 @@ import { getAnthropicClient, GENERATION_MODEL } from '@/lib/ai/client';
 import { buildSystemPrompt } from '@/lib/ai/prompts/system-prompt';
 import { parseDesignSystem } from '@/lib/ai/parsers';
 import { extractCompletedBlocks } from '@/lib/ai/parsers';
-import { isParseable, repairWithAI, findContrastBugs, repairContrastWithAI } from '@/lib/ai/pipeline';
+import { isParseable, repairWithAI, findContrastBugs, repairContrastWithAI, findShadelessBrandColors, repairShadelessColors } from '@/lib/ai/pipeline';
 import { createSSEStream } from '@/lib/ai/stream-handler';
 import type { GenerationEvent, VirtualFile } from '@/types/generation';
 import type { DesignSystem } from '@/types/project';
@@ -293,6 +293,12 @@ export async function POST(request: NextRequest) {
                                 currentComponent = null;
                                 continue;
                             }
+                        }
+
+                        const shadelessBugs = findShadelessBrandColors(safeContent);
+                        if (shadelessBugs.length > 0) {
+                            const fixed = await repairShadelessColors(safeContent, block.filePath, shadelessBugs);
+                            if (fixed) safeContent = fixed;
                         }
 
                         const contrastBugs = findContrastBugs(safeContent);

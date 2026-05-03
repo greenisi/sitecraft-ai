@@ -269,6 +269,32 @@ function getPromptBuilder(siteType: GenerationConfig['siteType']) {
  * delimiters and misses many real errors.
  */
 /**
+ * Scans for shadeless brand-color Tailwind classes (e.g. `text-primary`,
+ * `bg-primary`, `from-primary`). These are INVALID — Tailwind requires a
+ * shade number on custom theme colors, so `text-primary` resolves to nothing
+ * and breaks gradients, text, backgrounds. Returns the list of offending
+ * class strings. The model frequently emits these, especially in gradient
+ * declarations like `bg-gradient-to-br from-primary via-primary to-primary-600`.
+ */
+export function findShadelessBrandColors(content: string): string[] {
+  if (!/\b(?:text|bg|from|via|to|border|ring|fill|stroke|divide|outline|shadow|accent)-(?:primary|secondary|accent|neutral)\b(?!-)/.test(content)) {
+    return [];
+  }
+  const bugs: string[] = [];
+  const seen = new Set<string>();
+  const re = /\b(text|bg|from|via|to|border|ring|fill|stroke|divide|outline|shadow|accent)-(primary|secondary|accent|neutral)\b(?!-)/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(content)) !== null) {
+    const key = `${m[1]}-${m[2]}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      bugs.push(`shadeless brand color: \`${m[0]}\` should be \`${m[0]}-500\` or similar with a shade number`);
+    }
+  }
+  return bugs;
+}
+
+/**
  * Scans a TSX file for unambiguous contrast violations on the same element.
  * Returns a list of human-readable problems; an empty list means no obvious
  * bugs were found (does not catch nested-element cases — for those we still
@@ -348,6 +374,59 @@ export async function repairWithAI(content: string, filePath: string): Promise<s
     const repaired = match ? match[1].trimEnd() : null;
     if (!repaired) return null;
     return isParseable(repaired, filePath) ? repaired : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Asks the AI to fix shadeless brand-color classes (e.g. `from-primary`)
+ * by adding the missing shade number. Returns the repaired content if it
+ * now passes both isParseable and findShadelessBrandColors, otherwise null.
+ */
+export async function repairShadelessColors(
+  content: string,
+  filePath: string,
+  bugs: string[]
+): Promise<string | null> {
+  if (bugs.length === 0) return content;
+  try {
+    const client = getAnthropicClient();
+    const response = await client.messages.create({
+      model: GENERATION_MODEL,
+      max_tokens: 8000,
+      system:
+        'You fix Tailwind shadeless-color bugs in React/TSX files. Return ONLY a single ' +
+        'fenced code block containing the fixed file content. No prose, no explanation, ' +
+        'no extra blocks.',
+      messages: [
+        {
+          role: 'user',
+          content:
+            `The file \`${filePath}\` uses Tailwind brand-color classes WITHOUT shade numbers. ` +
+            'These are invalid — Tailwind requires a shade like -500 or -700. The result ' +
+            'is invisible text, blank gradients, or missing backgrounds.\n\n' +
+            'Rules for the fix:\n' +
+            '- text-primary → text-primary-700 (or 800/900 for headings)\n' +
+            '- bg-primary → bg-primary-600\n' +
+            '- from-primary / via-primary / to-primary → add -500 or -600 shades for visible gradients\n' +
+            '- border-primary → border-primary-600\n' +
+            '- Same pattern for secondary, accent, neutral.\n' +
+            '- Pick shades that produce visible contrast: dark shades (700-900) for text on light bg, ' +
+            'light shades (50-200) for backgrounds, mid shades (500-600) for buttons/accents.\n' +
+            '- Preserve all other styling, JSX, layout, and logic exactly.\n\n' +
+            'Detected violations:\n' + bugs.map((b) => `- ${b}`).join('\n') + '\n\n' +
+            'File:\n```tsx\n' + content + '\n```',
+        },
+      ],
+    });
+    const textBlock = response.content.find((b) => b.type === 'text');
+    if (!textBlock || textBlock.type !== 'text') return null;
+    const match = textBlock.text.match(/```(?:tsx?|jsx?)?\s*\n([\s\S]*?)```/);
+    const repaired = match ? match[1].trimEnd() : null;
+    if (!repaired) return null;
+    if (!isParseable(repaired, filePath)) return null;
+    return findShadelessBrandColors(repaired).length === 0 ? repaired : null;
   } catch {
     return null;
   }
@@ -693,6 +772,11 @@ async function* generateComponents(
         // AI to fix any matches. If repair fails, ship the original — the
         // prompt-level rules already discourage these patterns and a broken
         // section is better than a missing section.
+        const shadelessBugs = findShadelessBrandColors(content);
+        if (shadelessBugs.length > 0) {
+          const fixed = await repairShadelessColors(content, block.filePath, shadelessBugs);
+          if (fixed) content = fixed;
+        }
         const contrastBugs = findContrastBugs(content);
         if (contrastBugs.length > 0) {
           const fixed = await repairContrastWithAI(content, block.filePath, contrastBugs);

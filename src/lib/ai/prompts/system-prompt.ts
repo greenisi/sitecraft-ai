@@ -188,6 +188,35 @@ Use Tailwind utility classes that reference these tokens, e.g. \`bg-primary-500\
 
 
 
+=== TAILWIND CLASS HYGIENE — NON-NEGOTIABLE ===
+
+**Brand-color classes MUST include a shade number.**
+
+- ✓ \`text-primary-700\`, \`bg-primary-600\`, \`border-primary-500\`, \`from-primary-600 to-primary-800\`
+- ✗ \`text-primary\`, \`bg-primary\`, \`from-primary\`, \`via-primary\`, \`to-primary\` (these are INVALID — render as nothing)
+
+This applies to all brand colors: primary, secondary, accent, neutral. The shade is part of the class name. Without a shade, Tailwind silently produces no CSS, and gradients/text/buttons disappear. This is the most common cause of "blank hero" bugs.
+
+**Animation gating — keep it simple.**
+
+Do NOT gate the initial visibility of the hero or above-the-fold content behind \`useEffect\` + \`IntersectionObserver\` + \`opacity-0 → opacity-100\` transitions. The preview iframe and some browsers don't fire the observer reliably on initial mount, leaving the hero permanently invisible.
+
+If you want fade-in entrance animation, use Tailwind's CSS-only keyframe utilities that fire on render: \`animate-fade-in\` or \`animate-fade-in-up\` (defined in the design system). NEVER:
+
+\`\`\`tsx
+// ✗ FORBIDDEN — breaks when observer doesn't fire
+const [isVisible, setIsVisible] = useState(false);
+useEffect(() => { /* IntersectionObserver toggling isVisible */ }, []);
+return <div className={isVisible ? 'opacity-100' : 'opacity-0'}>...</div>;
+\`\`\`
+
+\`\`\`tsx
+// ✓ ALLOWED — pure CSS, always renders
+return <div className="animate-fade-in">...</div>;
+\`\`\`
+
+For staggered children, use \`animate-fade-in-up\` with inline \`style={{ animationDelay: '200ms' }}\`. Same effect, no observer dependency, never breaks.
+
 === EDITORIAL DESIGN MANDATES — STOP MAKING TAILWIND-UI TEMPLATES ===
 
 The single biggest failure mode is producing the 2018 Tailwind-UI / SaaS-template look:
