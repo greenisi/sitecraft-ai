@@ -188,6 +188,124 @@ Use Tailwind utility classes that reference these tokens, e.g. \`bg-primary-500\
 
 
 
+=== EDITORIAL DESIGN MANDATES — STOP MAKING TAILWIND-UI TEMPLATES ===
+
+The single biggest failure mode is producing the 2018 Tailwind-UI / SaaS-template look:
+- Centered hero with a paragraph and two side-by-side buttons
+- 50/50 split hero with stats inline + decorative gradient tile behind a rounded image
+- Three-up service card grid with icon + title + description + bullet list + "Learn More →"
+- Stats as three numbers in a row with labels
+- Dark navy CTA banner with rounded button at the end
+
+These are REJECTION CRITERIA. If you generate any of these patterns, you have failed and the output will be discarded. Premium studio sites NEVER look like this.
+
+**FORBIDDEN IMPORTS:**
+- NEVER \`import Image from 'next/image'\`. The preview sandbox cannot render Next.js's Image component, so heros render as blank boxes. ALWAYS use the plain HTML \`<img>\` element with \`src\`, \`alt\`, \`className\`.
+- NEVER \`import { motion } from 'framer-motion'\` or any animation library beyond Tailwind utilities. Use Tailwind's animate-fade-in / animate-fade-in-up classes only.
+
+**EDITORIAL TYPOGRAPHY MANDATE:**
+For verticals that benefit from editorial gravitas — landscaping, restaurant, real estate, legal, finance, creative, healthcare-luxury — the heading font MUST be a serif. Use one of: Playfair Display, Cormorant Garamond, DM Serif Display, Lora, Crimson Pro. The system's design tokens may suggest a sans heading; OVERRIDE this with \`font-serif\` on H1/H2 if the brand benefits from editorial weight. Body text stays sans (Inter, Manrope, DM Sans).
+
+**PICK ONE EDITORIAL HERO PATTERN — copy the TSX verbatim and adapt copy/colors:**
+
+PATTERN A — FULL-BLEED PHOTOGRAPHIC HERO (default for landscaping, restaurant, real estate, fitness):
+\`\`\`tsx
+<section className="relative min-h-[90vh] flex items-end overflow-hidden">
+  <img src="https://images.unsplash.com/photo-..." alt="..." className="absolute inset-0 w-full h-full object-cover" />
+  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+  <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 lg:pb-24 w-full">
+    <p className="text-xs sm:text-sm tracking-[0.3em] uppercase text-white/80 mb-6">— Eyebrow Phrase</p>
+    <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-white leading-[0.95] tracking-tight max-w-5xl">
+      A confident<br/>multi-line<br/><em className="text-accent-300 not-italic">brand statement</em>.
+    </h1>
+    <div className="mt-10 flex items-center gap-6">
+      <a href="/portfolio" className="text-white border-b border-white/60 pb-1 text-base font-medium hover:border-white">Selected Work →</a>
+      <a href="/contact" className="text-white/70 text-base hover:text-white transition">Inquire</a>
+    </div>
+  </div>
+</section>
+\`\`\`
+
+PATTERN B — EDITORIAL ASYMMETRIC HERO (default for creative, luxury services, boutique):
+\`\`\`tsx
+<section className="min-h-screen bg-neutral-50 flex flex-col justify-end pb-16 lg:pb-24 overflow-hidden">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+    <div className="grid grid-cols-12 gap-6 items-end">
+      <div className="col-span-12 lg:col-span-7 lg:col-start-1">
+        <p className="text-xs tracking-[0.3em] uppercase text-primary-700 mb-8">No. 01 / Studio</p>
+        <h1 className="font-serif text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-neutral-900 leading-[0.92] tracking-tight">
+          Long-form<br/><em className="not-italic text-primary-700">editorial</em><br/>headline.
+        </h1>
+      </div>
+      <div className="col-span-12 lg:col-span-4 lg:col-start-9">
+        <p className="text-base text-neutral-700 leading-relaxed mb-6">A short paragraph that reads like a magazine standfirst — confident, specific, no marketing speak.</p>
+        <a href="/about" className="text-primary-700 border-b border-primary-700 pb-1 font-medium">Read about the practice →</a>
+      </div>
+    </div>
+    <img src="https://images.unsplash.com/photo-..." alt="..." className="mt-16 w-full h-[60vh] object-cover" />
+  </div>
+</section>
+\`\`\`
+
+The hero MUST follow Pattern A or Pattern B verbatim (with copy/color adapted), or another equally distinctive editorial layout. The 50/50 split with stats + buttons + decorative tile is REJECTED.
+
+**SERVICES MUST NOT BE A 3-UP CARD GRID:**
+
+REJECTED PATTERN (do not produce):
+\`\`\`tsx
+{services.map(s => <div className="border rounded-lg p-8"><Icon/><h3>{s.title}</h3><p>{s.desc}</p><ul>...</ul><a>Learn More →</a></div>)}
+\`\`\`
+
+REQUIRED PATTERN — EDITORIAL NUMBERED LIST with full-bleed photography per item:
+\`\`\`tsx
+<section className="py-24 lg:py-32 bg-white">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="mb-16 lg:mb-24 max-w-3xl">
+      <p className="text-xs tracking-[0.3em] uppercase text-primary-700 mb-6">— What We Do</p>
+      <h2 className="font-serif text-4xl sm:text-5xl md:text-6xl text-neutral-900 leading-tight">A short editorial heading about the practice.</h2>
+    </div>
+    <div className="space-y-32">
+      {services.map((s, i) => (
+        <div key={s.title} className="grid grid-cols-12 gap-6 items-center">
+          <div className={\`col-span-12 lg:col-span-7 \${i % 2 === 0 ? 'lg:col-start-1' : 'lg:col-start-6'}\`}>
+            <img src={s.image} alt={s.title} className="w-full aspect-[4/3] object-cover" />
+          </div>
+          <div className={\`col-span-12 lg:col-span-4 \${i % 2 === 0 ? 'lg:col-start-9' : 'lg:col-start-1 lg:row-start-1'}\`}>
+            <p className="font-serif text-7xl text-neutral-300 mb-4 leading-none">0{i + 1}</p>
+            <h3 className="font-serif text-3xl md:text-4xl text-neutral-900 mb-6 leading-tight">{s.title}</h3>
+            <p className="text-base text-neutral-700 leading-relaxed">{s.description}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+\`\`\`
+
+**STATS MUST NOT BE THREE NUMBERS IN A ROW:**
+
+REJECTED:
+\`\`\`tsx
+<div className="grid grid-cols-3"><div><h3>150+</h3><p>Projects</p></div>...</div>
+\`\`\`
+
+REQUIRED — EDITORIAL OVERSIZED NUMBER with inline supporting copy:
+\`\`\`tsx
+<section className="py-32 bg-neutral-900 text-white overflow-hidden">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-12 gap-6 items-end">
+    <div className="col-span-12 lg:col-span-7">
+      <p className="font-serif text-[14rem] md:text-[20rem] leading-[0.85] tracking-tighter text-white">150<span className="text-accent-400">+</span></p>
+      <p className="text-sm tracking-[0.3em] uppercase text-white/60 mt-4">Properties Designed Since 2009</p>
+    </div>
+    <div className="col-span-12 lg:col-span-4 lg:col-start-9">
+      <p className="text-lg text-white/80 leading-relaxed">A short magazine-standfirst paragraph that adds context to the number — what it means, why it matters, what kind of clients we work with.</p>
+    </div>
+  </div>
+</section>
+\`\`\`
+
+These templates are not suggestions; they are the BASELINE for editorial verticals. Use them, adapt the copy and colors, but DO NOT regress to card grids or centered-with-two-buttons heroes.
+
 === HERO PHOTOGRAPHY — MANDATORY PATTERN ===
 **When a hero or any section uses a photographic background, you MUST use an \`<img>\` element layered with absolute positioning. NEVER use Tailwind arbitrary-value background-image classes (Tailwind background-image arbitrary-value classes (e.g. bg-\[url-XXX\] syntax with brackets)) or inline \`style={{backgroundImage: ...}}\`.**
 
