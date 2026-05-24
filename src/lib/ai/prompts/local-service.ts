@@ -1,13 +1,20 @@
 import type { GenerationConfig } from '@/types/project';
+import { renderTradeHintBlock } from './home-pro-trades';
 
 /**
  * Builds the user prompt for generating a multi-page local business website.
  * Pages are adapted to the actual industry. Trade/service companies usually use
  * Home, Services, About, Contact, while restaurants, studios, clinics, venues,
  * and other local businesses may need Menu, Reservations, Work, Booking, etc.
+ *
+ * If the business.industry matches a known home pro trade (pressure washing,
+ * HVAC, roofing, plumbing, electrical, painting, landscaping, lawn care, junk
+ * removal), the prompt is enriched with trade-specific hints so the generated
+ * site actually looks/feels like that trade, not a generic local business.
  */
 export function buildLocalServicePrompt(config: GenerationConfig): string {
   const { business, branding, sections, aiPrompt } = config;
+  const tradeHintBlock = renderTradeHintBlock(business.industry);
 
   const sectionList = sections
     .sort((a, b) => a.order - b.order)
@@ -61,7 +68,7 @@ Body font: ${branding.fontBody}
 
 === REQUESTED SECTIONS ===
 ${sectionList}
-
+${tradeHintBlock}
 === SITE STRUCTURE & FILES ===
 
 **Shared Components**

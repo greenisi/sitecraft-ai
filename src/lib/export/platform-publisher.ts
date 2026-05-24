@@ -2,6 +2,8 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { deployToVercel } from '@/lib/export/vercel-deployer';
 import { buildScaffoldingTree } from '@/lib/export/file-tree';
 import { addDomainToProject, getVercelProject, waitForDeploymentReady } from '@/lib/export/vercel-domains';
+import { GenerationError, NotFoundError, ValidationError } from '@/lib/utils/errors';
+import type { PublishResult } from '@/types/api';
 import type { DesignSystem } from '@/types/project';
 import { VirtualFileTree } from '@/types/generation';
 
@@ -272,6 +274,8 @@ function validateAndFixFileTree(tree: VirtualFileTree): void {
   // PASS 3: Fix missing utility imports (cn, clsx)
   for (const [path, file] of tree.entries()) {
     if (!path.endsWith('.tsx') && !path.endsWith('.ts')) continue;
+    // Skip the utils file itself to prevent circular self-imports
+    if (path === 'src/lib/utils.ts' || path === 'src/lib/utils.tsx') continue;
     let content = file.content;
     let modified = false;
 
@@ -653,19 +657,13 @@ function generateBuildRetryScript(): string {
   return L.join('\n');
 }
 
-export interface PublishResult {
-  url: string;
-  domain: string;
-  deploymentId: string;
-  vercelProjectName: string;
-}
-
 /**
  * Publish a project to a temporary subdomain: <slug>.innovated.site
  */
 export async function publishToSubdomain(
   projectId: string,
-  userId: string
+  userId: string,
+  opts: { versionId?: string } = {}
 ): Promise<PublishResult> {
   const admin = createAdminClient();
 
@@ -677,21 +675,39 @@ export async function publishToSubdomain(
     .single();
 
   if (projectError || !project) {
-    throw new Error('Project not found');
+    throw new NotFoundError('Project');
   }
 
-  // 2. Get latest completed generation version
-  const { data: version } = await admin
-    .from('generation_versions')
-    .select('id')
-    .eq('project_id', projectId)
-    .eq('status', 'complete')
-    .order('version_number', { ascending: false })
-    .limit(1)
-    .single();
+  // 2. Resolve the generation_version to publish.
+  //    If opts.versionId is provided (rollback path) use it; otherwise pick
+  //    the latest 'complete' version.
+  let version: { id: string } | null = null;
+  if (opts.versionId) {
+    const { data: pinned } = await admin
+      .from('generation_versions')
+      .select('id')
+      .eq('id', opts.versionId)
+      .eq('project_id', projectId)
+      .eq('status', 'complete')
+      .maybeSingle();
+    if (!pinned) {
+      throw new NotFoundError('Generation version (must be complete and belong to this project)');
+    }
+    version = pinned;
+  } else {
+    const { data: latest } = await admin
+      .from('generation_versions')
+      .select('id')
+      .eq('project_id', projectId)
+      .eq('status', 'complete')
+      .order('version_number', { ascending: false })
+      .limit(1)
+      .single();
+    version = latest;
+  }
 
   if (!version) {
-    throw new Error('No completed generation found. Generate a website first.');
+    throw new ValidationError('Generate a website before publishing.');
   }
 
   // 3. Get generated files
@@ -701,7 +717,7 @@ export async function publishToSubdomain(
     .eq('version_id', version.id);
 
   if (!files || files.length === 0) {
-    throw new Error('No generated files found');
+    throw new ValidationError('Generate a website before publishing.');
   }
 
   // 4. Build file tree
@@ -736,7 +752,23 @@ export async function publishToSubdomain(
       }
     }
 
-    
+
+  // 4a-i.5. Inject the platform-provided BeforeAfterSlider whenever the AI's
+  // output mentions it. The trade-tuned prompt tells the model to import this
+  // component instead of re-implementing it (which it does badly + truncates),
+  // so we ship a known-good copy here.
+  const referencesSlider = files.some((f: any) =>
+    typeof f.content === 'string' && /BeforeAfterSlider/.test(f.content));
+  if (referencesSlider) {
+    const sliderPath = 'src/components/BeforeAfterSlider.tsx';
+    const existingSlider = files.find((f: any) => f.file_path === sliderPath);
+    if (!existingSlider) {
+      const { BEFORE_AFTER_SLIDER_TSX } = await import('@/lib/templates/components/before-after-slider');
+      files.push({ file_path: sliderPath, content: BEFORE_AFTER_SLIDER_TSX, file_type: 'component' });
+      availableComponents.add('BeforeAfterSlider');
+    }
+  }
+
   // 4a-ii. Ensure critical components (Navbar & Footer) always exist
   const criticalComponents = ['Navbar', 'Footer'];
   for (const comp of criticalComponents) {
@@ -1374,6 +1406,10 @@ export async function publishToSubdomain(
 
   if (!domainAdded) {
     console.error(`Failed to add domain alias ${subdomain} to project ${vercelProjectName}`);
+    // Don't mark as published if domain wasn't added — the URL won't work
+    throw new GenerationError(
+      'Publishing failed while connecting the site domain. Please try again.'
+    );
   }
 
     // 9b. Wait for Vercel build to complete (up to 120s)
@@ -1408,20 +1444,49 @@ export async function publishToSubdomain(
         })
         .eq('id', projectId);
 
-      throw new Error(
-        `Website build failed on Vercel (state: ${deploymentState}). ` +
-        'This usually means the AI-generated code has an issue. ' +
-        'Try regenerating the website or editing the code in the editor.'
+      console.error(
+        `Website build failed on Vercel for project ${projectId} (state: ${deploymentState})`
+      );
+      throw new GenerationError(
+        'Website build failed during publish. Try regenerating the site or editing the code, then publish again.'
       );
     }
 
-  // 10. Update project in DB
+    // If the deployment timed out (still building), mark as 'deployed' not 'published'
+    // so the URL isn't shown to the user until the build actually succeeds
+    if (deploymentState === 'TIMEOUT') {
+      await admin
+        .from('projects')
+        .update({
+          status: 'deployed', // intermediate state — not yet ready for users
+          vercel_project_name: vercelProjectName,
+          vercel_project_id: vercelProjectId,
+          vercel_deployment_url: deployment.url,
+        })
+        .eq('id', projectId);
+
+      console.warn(
+        `Deployment ${deployment.deploymentId} timed out — marked as 'deployed' instead of 'published'. ` +
+        'The site may become available once the build completes.'
+      );
+
+      return {
+        domain: subdomain,
+        deploymentId: deployment.deploymentId,
+        vercelProjectName,
+        status: 'deploying' as const,
+      };
+    }
+
+  // 10. Update project in DB. published_version_id pins what's live so we can
+  //     roll back deterministically without depending on "latest complete".
   await admin
     .from('projects')
     .update({
       status: 'published',
       published_url: `https://${subdomain}`,
       published_at: new Date().toISOString(),
+      published_version_id: version.id,
       vercel_project_name: vercelProjectName,
       vercel_project_id: vercelProjectId,
       vercel_deployment_url: deployment.url,
@@ -1446,6 +1511,7 @@ export async function publishToSubdomain(
   });
 
   return {
+    status: 'published' as const,
     url: `https://${subdomain}`,
     domain: subdomain,
     deploymentId: deployment.deploymentId,

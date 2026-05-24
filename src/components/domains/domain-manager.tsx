@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DomainSearch } from './domain-search';
 import { DomainConnect } from './domain-connect';
+import { WhoisContactForm } from './whois-contact-form';
 import type { Project } from '@/types/project';
 
 interface DomainManagerProps {
@@ -20,21 +21,25 @@ export function DomainManager({ project, defaultTab, defaultAction }: DomainMana
 
   const platformDomain = 'innovated.site';
   const tempDomain = project.slug ? `${project.slug}.${platformDomain}` : null;
+  const hasPublishedSite = project.status === 'published' && project.published_url;
 
   return (
     <div className="space-y-6">
+      {/* Auto-opens when /api/domains/checkout returns 412 WHOIS_REQUIRED */}
+      <WhoisContactForm />
+
       {/* Current domains overview */}
       <div className="space-y-3">
         <h3 className="text-sm font-medium">Current Domains</h3>
 
         {/* Temporary domain */}
-        {project.published_url && (
+        {hasPublishedSite && (
           <div className="flex items-center justify-between p-3 rounded-lg border">
             <div className="flex items-center gap-3 min-w-0">
               <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
               <div className="min-w-0">
                 <p className="text-sm font-medium truncate">
-                  {tempDomain || project.published_url.replace('https://', '')}
+                  {tempDomain || project.published_url!.replace('https://', '')}
                 </p>
                 <p className="text-xs text-muted-foreground">Temporary subdomain</p>
               </div>
@@ -42,7 +47,7 @@ export function DomainManager({ project, defaultTab, defaultAction }: DomainMana
             <div className="flex items-center gap-2">
               <Badge variant="success" className="text-[10px]">Active</Badge>
               <a
-                href={project.published_url}
+                href={project.published_url!}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-foreground transition-colors"
@@ -65,19 +70,21 @@ export function DomainManager({ project, defaultTab, defaultAction }: DomainMana
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="default" className="text-[10px]">Custom</Badge>
-              <a
-                href={`https://${project.custom_domain}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ExternalLink className="h-4 w-4" />
-              </a>
+              {project.status === 'published' && (
+                <a
+                  href={`https://${project.custom_domain}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              )}
             </div>
           </div>
         )}
 
-        {!project.published_url && !project.custom_domain && (
+        {!hasPublishedSite && !project.custom_domain && (
           <div className="text-center py-6 text-sm text-muted-foreground border rounded-lg">
             <Globe className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
             <p>No domains configured yet.</p>
@@ -87,7 +94,7 @@ export function DomainManager({ project, defaultTab, defaultAction }: DomainMana
       </div>
 
       {/* Domain actions */}
-      {project.published_url && (
+      {hasPublishedSite && (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="search" className="text-xs">

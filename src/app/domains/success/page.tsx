@@ -4,71 +4,69 @@ import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CheckCircle, Loader2, AlertCircle, Globe, ArrowRight } from 'lucide-react';
 
+/**
+ * After Stripe checkout, the user lands here. The Stripe WEBHOOK is what
+ * actually registers the domain — this page just polls until the DB row
+ * exists, then shows success. Never makes its own purchase call.
+ */
 function DomainSuccessPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [status, setStatus] = useState<'loading' | 'fulfilling' | 'success' | 'error'>('loading');
-  const [message, setMessage] = useState('Verifying your payment...');
-  const [domain, setDomain] = useState('');
+  const [status, setStatus] = useState<'fulfilling' | 'success' | 'error'>('fulfilling');
+  const [message, setMessage] = useState('Payment confirmed. Registering your domain…');
+  const domain = searchParams.get('domain') || '';
 
   useEffect(() => {
-    const sessionId = searchParams.get('session_id');
-    const domainParam = searchParams.get('domain');
-
-    if (domainParam) setDomain(domainParam);
-
-    if (!sessionId) {
+    if (!domain) {
       setStatus('error');
-      setMessage('Invalid checkout session. Please try again.');
+      setMessage('Missing domain in checkout URL.');
       return;
     }
+    let cancelled = false;
+    let elapsed = 0;
+    const POLL = 2000;
+    const TIMEOUT = 45_000;
 
-    fulfillPurchase(sessionId);
-  }, [searchParams]);
-
-  async function fulfillPurchase(sessionId: string) {
-    try {
-      setStatus('fulfilling');
-      setMessage('Payment confirmed! Registering your domain...');
-
-      const res = await fetch('/api/domains/fulfill', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setStatus('success');
-        setDomain(data.data?.domain || domain);
-        setMessage('Domain registered successfully!');
-      } else {
-        // If domain was already fulfilled (by webhook), still show success
-        if (data.error?.code === 'ALREADY_FULFILLED') {
+    async function tick() {
+      if (cancelled) return;
+      try {
+        const r = await fetch('/api/domains');
+        const j = await r.json();
+        const found = (j.domains || []).find((d: { domain: string }) => d.domain === domain);
+        if (found) {
           setStatus('success');
-          setMessage('Domain is already registered!');
-        } else {
-          setStatus('error');
-          setMessage(data.error?.message || 'Failed to complete domain registration.');
+          setMessage('Domain registered. DNS may take 5–30 minutes to propagate worldwide.');
+          return;
         }
+      } catch {
+        // network blip — keep polling
       }
-    } catch {
-      setStatus('error');
-      setMessage('Network error. Your payment was received. The domain will be registered shortly.');
+      elapsed += POLL;
+      if (elapsed >= TIMEOUT) {
+        // Webhook should fire within seconds — anything longer is a real issue.
+        setStatus('error');
+        setMessage(
+          'Your payment was received but registration is taking longer than usual. ' +
+          'Refresh in a minute, or contact support if it persists.'
+        );
+        return;
+      }
+      setTimeout(tick, POLL);
     }
-  }
+    tick();
+    return () => { cancelled = true; };
+  }, [domain]);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
       <div className="max-w-md w-full mx-auto px-6">
         <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 text-center">
-          {status === 'loading' || status === 'fulfilling' ? (
+          {status === 'fulfilling' ? (
             <>
               <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
               </div>
-              <h1 className="text-2xl font-bold mb-3">Processing Your Domain</h1>
+              <h1 className="text-2xl font-bold mb-3">Processing your domain</h1>
               <p className="text-gray-400">{message}</p>
               {domain && (
                 <div className="mt-4 px-4 py-2 bg-gray-800 rounded-lg inline-block">
@@ -81,7 +79,7 @@ function DomainSuccessPageContent() {
               <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <CheckCircle className="w-8 h-8 text-green-400" />
               </div>
-              <h1 className="text-2xl font-bold mb-3">Domain Purchased!</h1>
+              <h1 className="text-2xl font-bold mb-3">Domain purchased</h1>
               <p className="text-gray-400 mb-4">{message}</p>
               {domain && (
                 <div className="mb-6 px-4 py-3 bg-gray-800 rounded-lg">
@@ -89,14 +87,13 @@ function DomainSuccessPageContent() {
                     <Globe className="w-5 h-5 text-green-400" />
                     <span className="text-lg font-mono text-green-400">{domain}</span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">DNS propagation typically takes 5-30 minutes</p>
                 </div>
               )}
               <button
                 onClick={() => router.push('/domains')}
                 className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
               >
-                Go to My Domains
+                Go to my domains
                 <ArrowRight className="w-4 h-4" />
               </button>
             </>
@@ -105,22 +102,14 @@ function DomainSuccessPageContent() {
               <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <AlertCircle className="w-8 h-8 text-red-400" />
               </div>
-              <h1 className="text-2xl font-bold mb-3">Something Went Wrong</h1>
+              <h1 className="text-2xl font-bold mb-3">Still processing</h1>
               <p className="text-gray-400 mb-6">{message}</p>
-              <div className="space-y-3">
-                <button
-                  onClick={() => router.push('/domains')}
-                  className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition-colors"
-                >
-                  Return to Domains
-                </button>
-                <button
-                  onClick={() => router.push('/issues')}
-                  className="w-full px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium transition-colors text-gray-300"
-                >
-                  Report an Issue
-                </button>
-              </div>
+              <button
+                onClick={() => router.push('/domains')}
+                className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition-colors"
+              >
+                Go to my domains
+              </button>
             </>
           )}
         </div>
@@ -128,7 +117,6 @@ function DomainSuccessPageContent() {
     </div>
   );
 }
-
 
 export default function DomainSuccessPage() {
   return (

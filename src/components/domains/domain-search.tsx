@@ -69,7 +69,9 @@ export function DomainSearch({ projectId, onPurchased }: DomainSearchProps) {
   const handlePurchase = async (domain: string) => {
     setPurchasing(domain);
     try {
-      const response = await fetch('/api/domains/purchase', {
+      // Always route through Stripe checkout. The /api/domains/checkout route
+      // server-validates the price against Name.com — never trust client price.
+      const response = await fetch('/api/domains/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ domain, projectId }),
@@ -77,16 +79,26 @@ export function DomainSearch({ projectId, onPurchased }: DomainSearchProps) {
 
       if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.error?.message || 'Purchase failed');
+        const code = err.error?.code;
+        if (code === 'WHOIS_REQUIRED') {
+          toast.error('One-time setup needed', {
+            description: 'Add your contact info before your first purchase.',
+          });
+          // Caller can route the user to the WHOIS form via this event.
+          window.dispatchEvent(new CustomEvent('whois-required'));
+          return;
+        }
+        throw new Error(err.error?.message || 'Checkout failed');
       }
 
-      setPurchasedDomain(domain);
-      toast.success('Domain purchased!', {
-        description: 'DNS propagation may take 5-30 minutes.',
-      });
-      onPurchased?.(domain);
+      const { data } = await response.json();
+      if (data?.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+        return;
+      }
+      throw new Error('No checkout URL returned');
     } catch (error) {
-      toast.error('Purchase failed', {
+      toast.error('Checkout failed', {
         description: error instanceof Error ? error.message : 'Unknown error',
       });
     } finally {

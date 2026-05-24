@@ -13,12 +13,21 @@ export const maxDuration = 300;
  * Header: x-admin-secret: <ADMIN_SECRET or CRON_SECRET>
  */
 export async function POST(request: Request) {
-    const adminSecret = request.headers.get('x-admin-secret');
-    const validSecret =
-          process.env.ADMIN_SECRET || process.env.CRON_SECRET || 'republish-all-2026';
+  // Fail closed: no env secret = no access. The previous literal fallback
+  // 'republish-all-2026' was a footgun — anyone with the URL could mass-rebuild
+  // every published site, which means propagating any current publish-code bug
+  // to every customer in one call.
+  const validSecret = process.env.ADMIN_SECRET || process.env.CRON_SECRET;
+  if (!validSecret) {
+    return NextResponse.json(
+      { error: 'Admin secret not configured on server' },
+      { status: 503 }
+    );
+  }
 
+  const adminSecret = request.headers.get('x-admin-secret');
   if (adminSecret !== validSecret) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const admin = createAdminClient();
@@ -38,32 +47,47 @@ export async function POST(request: Request) {
         return NextResponse.json({ message: 'No published projects found', count: 0 });
   }
 
-  const results: Array<{ id: string; name: string; success: boolean; url?: string; error?: string }> = [];
+  const results: Array<{
+    id: string;
+    name: string;
+    status: 'published' | 'deploying' | 'failed';
+    url?: string;
+    error?: string;
+  }> = [];
 
   for (const project of projects) {
         try {
                 const result = await publishToSubdomain(project.id, project.user_id);
-                results.push({
-                          id: project.id,
-                          name: project.name,
-                          success: true,
-                          url: result.url,
-                });
+                if (result.status === 'published') {
+                          results.push({
+                                    id: project.id,
+                                    name: project.name,
+                                    status: 'published',
+                                    url: result.url,
+                          });
+                } else {
+                          results.push({
+                                    id: project.id,
+                                    name: project.name,
+                                    status: 'deploying',
+                          });
+                }
         } catch (err) {
                 results.push({
                           id: project.id,
                           name: project.name,
-                          success: false,
+                          status: 'failed',
                           error: (err as Error).message,
                 });
         }
   }
 
-  const succeeded = results.filter((r) => r.success).length;
-    const failed = results.filter((r) => !r.success).length;
+  const succeeded = results.filter((r) => r.status === 'published').length;
+    const deploying = results.filter((r) => r.status === 'deploying').length;
+    const failed = results.filter((r) => r.status === 'failed').length;
 
   return NextResponse.json({
-        message: `Re-published ${succeeded}/${projects.length} projects (${failed} failed)`,
+        message: `Re-published ${succeeded}/${projects.length} projects (${deploying} still deploying, ${failed} failed)`,
         results,
   });
 }

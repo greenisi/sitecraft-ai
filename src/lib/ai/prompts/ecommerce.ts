@@ -1,12 +1,24 @@
 import type { GenerationConfig } from '@/types/project';
 
 /**
- * Builds the user prompt for generating an e-commerce site.
- * Includes product grid, product detail, cart, and checkout components.
- * All product data is static (no real backend).
+ * Builds the user prompt for generating an e-commerce site that uses
+ * SiteCraft's real backend for products and checkout. The generated site:
+ *   - Fetches products from {PLATFORM_API}/api/projects/{PROJECT_ID}/products
+ *   - On checkout, POSTs the cart to {PLATFORM_API}/api/projects/{PROJECT_ID}/checkout
+ *     and redirects the customer to the Stripe-hosted page
+ *   - On success, shows a real "thank you" page (Stripe redirect target)
+ *
+ * Merchant funds flow through Stripe Connect to the merchant's own account —
+ * SiteCraft is not in the money path.
  */
 export function buildEcommercePrompt(config: GenerationConfig): string {
   const { business, branding, sections, ecommerce, aiPrompt } = config;
+  // The route handler appends `projectId: "<uuid>"` to aiPrompt before calling
+  // the pipeline. Extract it here so generated stores can call back to SiteCraft
+  // with the right ID.
+  const projectIdMatch = (aiPrompt || '').match(/projectId:\s*"([^"]+)"/);
+  const PROJECT_ID = projectIdMatch?.[1] ?? '__PROJECT_ID__';
+  const PLATFORM_API = process.env.NEXT_PUBLIC_APP_URL || 'https://app.innovated.marketing';
 
   const sectionList = sections
     .sort((a, b) => a.order - b.order)
@@ -74,16 +86,39 @@ ${productsInfo}
 
 === FILES TO GENERATE ===
 
-**Data Layer**
+**Data Layer (uses SiteCraft backend — NOT a static array)**
 
-1. \`src/data/products.ts\` -- Static product array with TypeScript interface:
-   \`Product { id, name, description, price, imageUrl, category, inStock, featured }\`.
-   Include ${ecommerce?.products?.length ? ecommerce.products.length : '6-8'} products.
+1. \`src/lib/config.ts\` -- Exports \`PLATFORM_API\` and \`PROJECT_ID\` constants.
+   \`\`\`ts
+   export const PLATFORM_API = '${PLATFORM_API}';
+   export const PROJECT_ID = '${PROJECT_ID}';
+   \`\`\`
 
-2. \`src/lib/cart-store.ts\` -- Zustand store for cart state (\`'use client'\`):
-   - \`items: CartItem[]\` (product + quantity)
-   - \`addItem\`, \`removeItem\`, \`updateQuantity\`, \`clearCart\`
-   - \`totalItems\`, \`totalPrice\` computed getters
+2. \`src/lib/products.ts\` -- Functions that fetch from the SiteCraft API:
+   \`\`\`ts
+   export type Product = {
+     id: string; name: string; description: string | null;
+     price: number; // dollars as number
+     image_url: string | null; images: string[]; category: string | null;
+     featured?: boolean;
+   };
+   export async function fetchProducts(): Promise<Product[]> {
+     const res = await fetch(\`\${PLATFORM_API}/api/storefront/\${PROJECT_ID}/products\`, { next: { revalidate: 60 } });
+     if (!res.ok) return [];
+     const j = await res.json();
+     return j.products ?? [];
+   }
+   export async function fetchProduct(id: string): Promise<Product | null> {
+     const all = await fetchProducts();
+     return all.find(p => p.id === id) ?? null;
+   }
+   \`\`\`
+   No static product list. Products are managed by the merchant in SiteCraft.
+
+3. \`src/lib/cart-store.ts\` -- Zustand store for cart state (\`'use client'\`):
+   - \`items: { productId: string; quantity: number }[]\` (just IDs + qty — NEVER store prices client-side, server is source of truth)
+   - \`addItem(productId)\`, \`removeItem(productId)\`, \`updateQuantity(productId, qty)\`, \`clearCart()\`
+   - \`totalItems\` computed getter
    Use \`zustand\` with \`persist\` middleware for localStorage.
 
 **Shared Components**
@@ -150,13 +185,31 @@ ${
 
 16. \`src/app/cart/page.tsx\` -- Full cart page with CartItem list and order summary.
 
-17. \`src/components/CheckoutForm.tsx\` -- ${
-        checkoutType === 'multi-step'
-          ? 'Multi-step checkout: shipping info, payment (placeholder), confirmation.'
-          : 'Simple checkout form: name, email, shipping address, and a "Place Order" button.'
-      } \`'use client'\`. On submit show a success message (no real payment).
+17. \`src/components/CheckoutButton.tsx\` (\`'use client'\`) -- "Proceed to Checkout"
+    button. On click:
+    \`\`\`ts
+    const items = useCart(s => s.items);
+    async function checkout() {
+      const res = await fetch(\`\${PLATFORM_API}/api/storefront/\${PROJECT_ID}/checkout\`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: items.map(i => ({ productId: i.productId, qty: i.quantity })),
+          successUrl: window.location.origin + '/checkout/success?session_id={CHECKOUT_SESSION_ID}',
+          cancelUrl: window.location.origin + '/cart',
+        }),
+      });
+      const j = await res.json();
+      if (j.url) window.location.href = j.url; else alert(j.error || 'Checkout failed');
+    }
+    \`\`\`
+    DO NOT generate a custom card-input form. Stripe handles payment on
+    Stripe's hosted page — that's the entire point of this architecture.
 
-18. \`src/app/checkout/page.tsx\` -- Checkout page with CheckoutForm and order summary sidebar.`
+18. \`src/app/checkout/success/page.tsx\` -- "Thank you" page rendered when the
+    customer returns from Stripe's hosted checkout. Reads \`?session_id=\` from
+    the URL, shows a confirmation message + their order summary text. Triggers
+    \`useCart().clearCart()\` once on mount so the cart resets.`
     : `14. (Cart disabled -- skip cart and checkout files)`
 }
 
@@ -182,10 +235,17 @@ ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 - Footer MUST be 4-column dark themed with newsletter signup
 - Mobile hamburger menu MUST work with useState toggle
 - Add \`pt-16\` to page content for fixed navbar
-- All product data is static (no API calls). Products come from the data file.
+- **Product data comes from the SiteCraft API** (\`fetchProducts()\` from \`@/lib/products\`).
+  NEVER hardcode a product array. Pages that show products MUST be async server
+  components calling \`fetchProducts()\` server-side, or use \`useEffect\` + \`useState\`
+  on client components.
+- **Checkout uses the platform API** (\`POST /api/storefront/\${PROJECT_ID}/checkout\`).
+  Customer is redirected to Stripe-hosted checkout. NEVER render your own card form.
 - Price formatting: use \`Intl.NumberFormat\` with locale and currency "${currency}".
-- Use realistic product names, descriptions, and placeholder images for "${business.industry}".
+  Product prices come back as dollars (number), e.g. 29.99 — pass directly to formatter.
 - The cart store must use Zustand; import from 'zustand' and 'zustand/middleware'.
+- The cart store stores ONLY { productId, quantity } — never store prices client-side.
+  Always look up the current price from the latest \`fetchProducts()\` call when rendering.
 - CRITICAL: Follow the DESIGN VARIETY instructions at the end of this prompt for hero, navbar, features layout, and testimonial style. Each website MUST look unique.
 - Generate ALL files listed above in a single response
 `;
