@@ -282,10 +282,13 @@ const ALIASES: Record<string, string> = {
  */
 export function matchTradeHint(industry: string | undefined | null): TradeHint | null {
   if (!industry) return null;
-  const norm = industry.toLowerCase().trim();
-  // exact alias match first
+  // Normalize: lowercase + replace hyphens/underscores with spaces. This lets
+  // the canonical URL slugs ("pressure-washing", "lawn-care") match the same
+  // aliases as the freeform forms ("pressure washing", "lawn care").
+  const norm = industry.toLowerCase().trim().replace(/[-_]+/g, ' ');
+  // Direct slug match — "pressure-washing" → "pressure washing"
   if (ALIASES[norm]) return TRADE_HINTS[ALIASES[norm]] ?? null;
-  // substring fallback — "pressure washing services" still matches
+  // Substring fallback — "pressure washing services" still matches
   for (const [alias, canonical] of Object.entries(ALIASES)) {
     if (norm.includes(alias)) return TRADE_HINTS[canonical] ?? null;
   }
