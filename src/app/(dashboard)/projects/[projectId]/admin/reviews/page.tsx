@@ -1,6 +1,7 @@
 'use client';
 import { useParams } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
+import { GoogleReviewsPanel } from '@/components/reviews/GoogleReviewsPanel';
 
 interface Review {
   id: string;
@@ -46,6 +47,8 @@ export default function ReviewsPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-white">Reviews</h1>
+
+      <GoogleReviewsPanel projectId={projectId} onChanged={loadReviews} />
 
       <div className="space-y-4">
         {reviews.map((review) => (
