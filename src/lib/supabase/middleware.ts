@@ -66,7 +66,14 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith('/api/stripe/connect/webhook') &&
     !request.nextUrl.pathname.startsWith('/api/sites/') &&
     !request.nextUrl.pathname.startsWith('/api/affiliates/track') &&
-    !request.nextUrl.pathname.startsWith('/api/og');
+    !request.nextUrl.pathname.startsWith('/api/og') &&
+    // Public marketing-funnel + storefront APIs (each does its own validation):
+    // - /api/marketing/signup       — public lead capture from /for/[vertical]
+    // - /api/storefront/[id]/...    — generated stores call back here from their own origin
+    // - /api/cron/...               — authed via CRON_SECRET bearer, not Supabase session
+    !request.nextUrl.pathname.startsWith('/api/marketing/') &&
+    !request.nextUrl.pathname.startsWith('/api/storefront/') &&
+    !request.nextUrl.pathname.startsWith('/api/cron/');
 
   if ((isProtectedRoute || isProtectedApiRoute) && !user) {
     // For API routes, return 401 instead of redirect
