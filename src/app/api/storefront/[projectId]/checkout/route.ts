@@ -51,7 +51,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ project
   const productIds = body.items.map(i => i.productId);
   const { data: products } = await admin
     .from('products')
-    .select('id, name, description, price, image_url, images, stripe_product_id, stripe_price_id, is_active')
+    .select('id, name, description, price, images, stripe_product_id, stripe_price_id, is_active')
     .eq('project_id', projectId)
     .in('id', productIds);
 
@@ -80,9 +80,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ project
     let stripeProductId = p.stripe_product_id as string | null;
     let stripePriceId = p.stripe_price_id as string | null;
 
-    // image_url is the canonical single image; images is the gallery array.
-    const firstImage = p.image_url ||
-      (Array.isArray(p.images) && p.images[0] ? String(p.images[0]) : null);
+    // `images` is a JSONB array of URLs; use the first as Stripe Product's image.
+    const firstImage = Array.isArray(p.images) && p.images[0]
+      ? String(p.images[0])
+      : null;
 
     if (!stripeProductId) {
       const created = await stripe.products.create(

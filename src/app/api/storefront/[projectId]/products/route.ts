@@ -17,7 +17,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ project
   const admin = createAdminClient();
   const { data, error } = await admin
     .from('products')
-    .select('id, name, description, price, compare_at_price, image_url, images, category, sku, inventory_count, variants, sort_order')
+    .select('id, name, description, price, compare_at_price, images, category, sku, inventory_count, variants, sort_order')
     .eq('project_id', projectId)
     .eq('is_active', true)
     .order('sort_order', { ascending: true });

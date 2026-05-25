@@ -99,7 +99,8 @@ ${productsInfo}
    export type Product = {
      id: string; name: string; description: string | null;
      price: number; // dollars as number
-     image_url: string | null; images: string[]; category: string | null;
+     images: string[]; // first item is the canonical product image
+     category: string | null;
      featured?: boolean;
    };
    export async function fetchProducts(): Promise<Product[]> {
