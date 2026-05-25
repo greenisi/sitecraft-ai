@@ -29,9 +29,18 @@ export function useCreateProject() {
     mutationFn: async ({
       name,
       siteType,
+      prefill,
     }: {
       name: string;
       siteType: SiteType;
+      // Optional prefill from the /for/[vertical] → /start funnel.
+      // When set, the new project lands ready-to-generate for the right trade.
+      prefill?: {
+        industry?: string;        // e.g. 'pressure-washing' — the local-service prompt
+                                   // detects this and injects trade-tuned hints
+        businessName?: string;    // mirrored into generation_config.business.name
+        verticalLabel?: string;   // friendly label used in the AI prompt seed
+      };
     }) => {
       const supabase = createClient();
       const {
@@ -44,6 +53,18 @@ export function useCreateProject() {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-|-$/g, '')}-${Date.now().toString(36).slice(-4)}`;
 
+      const seededBusiness = {
+        name:           prefill?.businessName || '',
+        description:    '',
+        industry:       prefill?.industry || '',
+        targetAudience: '',
+      };
+      const seededAiPrompt = prefill?.verticalLabel
+        ? `Generate a ${prefill.verticalLabel} business website` +
+          (prefill.businessName ? ` for "${prefill.businessName}"` : '') +
+          '.'
+        : '';
+
       const { data, error } = await supabase
         .from('projects')
         .insert({
@@ -53,7 +74,7 @@ export function useCreateProject() {
           site_type: siteType,
           generation_config: {
             siteType,
-            business: { name: '', description: '', industry: '', targetAudience: '' },
+            business: seededBusiness,
             branding: {
               primaryColor: '#0f172a',
               secondaryColor: '#64748b',
@@ -63,7 +84,7 @@ export function useCreateProject() {
               style: 'minimal',
             },
             sections: [],
-            aiPrompt: '',
+            aiPrompt: seededAiPrompt,
           },
         })
         .select()
