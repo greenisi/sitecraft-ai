@@ -427,6 +427,31 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* Journey ad — vertical phone-shape autoplay reel */}
+          <div className="anim-up-4 mt-12 sm:mt-16 w-full max-w-md mx-auto relative">
+            <div
+              className="absolute -inset-6 sm:-inset-10 rounded-[48px] opacity-60 blur-2xl sm:blur-3xl"
+              style={{ background: 'radial-gradient(circle at 50% 50%, rgba(139,92,246,0.45), rgba(59,130,246,0.18) 60%, transparent 80%)' }}
+            />
+            <div
+              className="relative rounded-[44px] overflow-hidden border border-white/10 shadow-2xl shadow-violet-500/20"
+              style={{ aspectRatio: '9 / 16', background: '#050810' }}
+            >
+              <video
+                src="/journey.mp4"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="auto"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="mt-4 text-center text-xs sm:text-sm text-gray-500 tracking-wide uppercase font-medium">
+              Watch it build a site in 24 seconds
+            </div>
+          </div>
+
           {/* Mock browser — premium animated preview */}
           <div className="anim-up-4 mt-10 sm:mt-16 w-full max-w-5xl mx-auto relative">
             <div className="absolute -inset-4 sm:-inset-6 rounded-3xl opacity-50 blur-2xl sm:blur-3xl" style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.35), rgba(59,130,246,0.25), rgba(236,72,153,0.2), rgba(139,92,246,0.3))' }} />
