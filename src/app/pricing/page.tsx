@@ -182,6 +182,45 @@ export default function PublicPricingPage() {
         </div>
       </section>
 
+      {/* CUSTOM BUILD BANNER */}
+      <section className="relative z-10 max-w-3xl mx-auto px-4 pb-16">
+        <div
+          className="relative overflow-hidden rounded-2xl p-8 sm:p-10 border"
+          style={{
+            background: 'linear-gradient(135deg, rgba(139,92,246,0.12), rgba(236,72,153,0.06))',
+            borderColor: 'rgba(139,92,246,0.30)',
+          }}
+        >
+          <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full opacity-30 blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, #ec4899, transparent 70%)' }} />
+          <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full opacity-30 blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, #8b5cf6, transparent 70%)' }} />
+
+          <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-6">
+            <div className="flex-1">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-3" style={{ background: 'rgba(236,72,153,0.12)', color: '#f9a8d4', border: '1px solid rgba(236,72,153,0.25)' }}>
+                <Sparkles className="h-3 w-3" />
+                Beyond self-serve
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+                Need something custom?
+              </h3>
+              <p className="text-gray-400 max-w-lg">
+                Multi-site, integrations, automations, or a full custom build? Tell us about your project and we&apos;ll scope it with you.
+              </p>
+            </div>
+            <Link
+              href="https://helm.innovated.marketing/start?source=pricing"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold text-white transition-all hover:scale-105 whitespace-nowrap"
+              style={{ background: 'linear-gradient(135deg, #8b5cf6, #ec4899)', boxShadow: '0 14px 40px rgba(139,92,246,0.40)' }}
+            >
+              Start a custom project
+              <Sparkles className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* CREDIT STORE */}
       <section className="relative z-10 max-w-3xl mx-auto px-4 pb-24">
         <div className="text-center mb-10">

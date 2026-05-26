@@ -778,6 +778,105 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* CUSTOM BUILD — for prospects beyond $25/mo self-serve */}
+      <section className="relative z-10 py-20 px-4">
+        <div className="max-w-5xl mx-auto">
+          <div
+            className="relative rounded-3xl p-10 md:p-14 overflow-hidden border"
+            style={{
+              background: 'linear-gradient(135deg, rgba(124,58,237,0.10), rgba(15,23,42,0.85) 40%, rgba(236,72,153,0.08))',
+              borderColor: 'rgba(139,92,246,0.30)',
+            }}
+          >
+            {/* ambient glow */}
+            <div
+              className="absolute -top-32 -right-32 w-[480px] h-[480px] rounded-full opacity-30 blur-3xl pointer-events-none"
+              style={{ background: 'radial-gradient(circle, #c084fc, transparent 65%)' }}
+            />
+            <div
+              className="absolute -bottom-32 -left-32 w-[420px] h-[420px] rounded-full opacity-30 blur-3xl pointer-events-none"
+              style={{ background: 'radial-gradient(circle, #3b82f6, transparent 65%)' }}
+            />
+
+            <div className="relative grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-10 items-center">
+              <div>
+                <div
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border mb-5"
+                  style={{ background: 'rgba(139,92,246,0.12)', borderColor: 'rgba(139,92,246,0.30)' }}
+                >
+                  <Sparkles className="h-3.5 w-3.5 text-violet-300" />
+                  <span className="text-xs font-semibold tracking-wide text-violet-200 uppercase">Custom build</span>
+                </div>
+
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight">
+                  Bigger vision?
+                  <br />
+                  <span className="bg-clip-text text-transparent animate-gradient-x" style={{ backgroundImage: 'linear-gradient(135deg, #a78bfa, #818cf8, #c084fc, #a78bfa)' }}>
+                    We build it for you.
+                  </span>
+                </h2>
+
+                <p className="mt-5 text-base sm:text-lg text-gray-400 max-w-xl leading-relaxed">
+                  For projects that need more than the $25/mo self-serve plan — custom integrations,
+                  multi-tenant platforms, e-commerce at scale, or anything we haven&apos;t built yet.
+                  Tell us the vision, we&apos;ll come back with a plan.
+                </p>
+
+                <ul className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5 max-w-xl">
+                  {[
+                    'Dedicated build team',
+                    'Custom integrations',
+                    'Priority support',
+                    'Your domain, your brand',
+                  ].map((f) => (
+                    <li key={f} className="flex items-center gap-2.5 text-sm text-gray-300">
+                      <Check className="h-4 w-4 flex-shrink-0" style={{ color: '#a78bfa' }} />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="mt-8 flex flex-col sm:flex-row items-start gap-3">
+                  <Link
+                    href="https://helm.innovated.marketing/start?source=homepage"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm font-semibold text-white transition-all hover:scale-105"
+                    style={{ background: 'linear-gradient(135deg, #7c3aed, #6d28d9)', boxShadow: '0 14px 40px rgba(139,92,246,0.35)' }}
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    Start a custom project
+                    <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                  <span className="text-xs text-gray-500 self-center">5-minute intake · No commitment · Reply within 24h</span>
+                </div>
+              </div>
+
+              {/* Right column: trust / signal */}
+              <div className="hidden md:block">
+                <div className="rounded-2xl p-6 border" style={{ background: 'rgba(0,0,0,0.30)', borderColor: 'rgba(255,255,255,0.08)' }}>
+                  <div className="text-xs font-bold tracking-widest text-violet-300 uppercase mb-3">What you&apos;ll get</div>
+                  <ol className="space-y-3 text-sm text-gray-300">
+                    <li className="flex gap-3">
+                      <span className="text-violet-400 font-bold tabular-nums">01</span>
+                      <span>Quick intake — pages of fun, no commitment</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="text-violet-400 font-bold tabular-nums">02</span>
+                      <span>Free scope + quote in your inbox within 24h</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="text-violet-400 font-bold tabular-nums">03</span>
+                      <span>Build kicks off the day you approve</span>
+                    </li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* FINAL CTA */}
       <section ref={cta.ref} className="relative z-10 py-24 px-4">
         {cta.inView && (
@@ -813,12 +912,37 @@ export default function HomePage() {
           <Image src="/logo.png" alt="Innovated Marketing" width={844} height={563} className="brightness-0 invert w-auto" style={{ height: '36px' }} />
           <div className="flex items-center gap-4 text-sm text-gray-600">
             <Link href="/pricing" className="hover:text-gray-400 transition-colors py-2 px-1 min-h-[44px] flex items-center">Pricing</Link>
+            <Link
+              href="https://helm.innovated.marketing/start?source=footer"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-violet-300 transition-colors py-2 px-1 min-h-[44px] flex items-center text-violet-400"
+            >
+              Custom builds
+            </Link>
             <Link href="/login" className="hover:text-gray-400 transition-colors py-2 px-1 min-h-[44px] flex items-center">Log In</Link>
             <Link href="/signup" className="hover:text-gray-400 transition-colors py-2 px-1 min-h-[44px] flex items-center">Sign Up</Link>
           </div>
           <p className="text-xs text-gray-700">&copy; 2026 Innovated Marketing. All rights reserved.</p>
         </div>
       </footer>
+
+      {/* FLOATING CUSTOM-BUILD CHIP */}
+      <Link
+        href="https://helm.innovated.marketing/start?source=floating"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-5 right-5 z-50 group inline-flex items-center gap-2 px-4 py-3 rounded-full text-sm font-semibold text-white shadow-2xl transition-all hover:scale-105 hidden sm:inline-flex"
+        style={{
+          background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+          boxShadow: '0 14px 40px rgba(139,92,246,0.40)',
+        }}
+        aria-label="Start a custom project"
+      >
+        <Sparkles className="h-4 w-4" />
+        <span>Have a bigger project?</span>
+        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+      </Link>
 
       {/* SIGNUP MODAL */}
       {showSignupModal && (
