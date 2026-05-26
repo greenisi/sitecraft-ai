@@ -97,36 +97,8 @@ export default function PublicPricingPage() {
       </section>
 
       {/* PLANS */}
-      <section className="relative z-10 max-w-4xl mx-auto px-4 pb-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-
-          {/* Free Plan */}
-          <div
-            className="rounded-2xl p-8 border transition-all duration-300 hover:border-white/15"
-            style={{ background: 'rgba(15,23,42,0.6)', borderColor: 'rgba(255,255,255,0.08)' }}
-          >
-            <h3 className="text-xl font-bold text-white mb-1">Free</h3>
-            <p className="text-gray-500 text-sm mb-6">Perfect for trying it out</p>
-            <div className="mb-6">
-              <span className="text-4xl font-bold text-white">$0</span>
-              <span className="text-gray-500 text-sm ml-1">/forever</span>
-            </div>
-            <ul className="space-y-3 mb-8">
-              {['1 project', 'Basic AI generation', 'Single page sites', 'Community support'].map((f) => (
-                <li key={f} className="flex items-center gap-2.5 text-sm text-gray-300">
-                  <Check className="h-4 w-4 flex-shrink-0" style={{ color: '#22c55e' }} />
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <Link
-              href="/signup"
-              className="block w-full py-3 rounded-xl text-center text-sm font-medium text-gray-300 border transition-all hover:bg-white/5 hover:text-white"
-              style={{ borderColor: 'rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.03)' }}
-            >
-              Get Started Free
-            </Link>
-          </div>
+      <section className="relative z-10 max-w-md mx-auto px-4 pb-20">
+        <div className="grid grid-cols-1 gap-6">
 
           {/* Beta Pro Plan */}
           <div
@@ -296,7 +268,7 @@ export default function PublicPricingPage() {
             { q: 'What happens when beta pricing ends?', a: 'Your price stays the same forever. Only new users will see higher prices after launch.' },
             { q: 'What are credits used for?', a: 'Each AI website generation uses 1 credit. Pro members get 100 credits per month included, plus you can buy more anytime.' },
             { q: 'Can I cancel anytime?', a: 'Absolutely. No contracts, no commitments. Cancel anytime from your billing page.' },
-            { q: 'Do I need a credit card to start?', a: 'No! The Free plan requires no payment. Just sign up and start building.' },
+            { q: 'Do I have to pay before I see my site?', a: 'No. You can describe your business and watch the site generate before billing. You only pay when you\'re ready to publish.' },
           ].map((item) => (
             <div
               key={item.q}
@@ -323,7 +295,7 @@ export default function PublicPricingPage() {
             Ready to build your website?
           </h3>
           <p className="text-gray-400 mb-6 max-w-lg mx-auto">
-            Join now and lock in exclusive beta pricing before rates go up. No credit card required to start.
+            Join now and lock in exclusive beta pricing before rates go up. $25/month — cancel anytime.
           </p>
           <Link
             href="/signup"
@@ -331,7 +303,7 @@ export default function PublicPricingPage() {
             style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}
           >
             <Sparkles className="h-4 w-4" />
-            Get Started for Free
+            Start building
           </Link>
         </div>
       </section>
