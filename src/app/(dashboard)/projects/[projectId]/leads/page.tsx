@@ -88,6 +88,7 @@ export default async function LeadsPage({ params }: { params: Promise<{ projectI
     new: 'bg-blue-500/20 text-blue-400',
     read: 'bg-gray-500/20 text-gray-400',
     replied: 'bg-green-500/20 text-green-400',
+    responded: 'bg-green-500/20 text-green-400',
     archived: 'bg-yellow-500/20 text-yellow-400',
     pending: 'bg-yellow-500/20 text-yellow-400',
     confirmed: 'bg-blue-500/20 text-blue-400',

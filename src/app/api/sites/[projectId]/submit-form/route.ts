@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { randomBytes } from 'crypto';
+import { sendLeadAlert, sendLeadAcknowledgment } from '@/lib/email/send';
+import { draftLeadReply } from '@/lib/ai/lead-reply';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -54,7 +58,7 @@ export async function POST(
     // Verify project exists and get owner info
     const { data: project } = await supabase
       .from('projects')
-      .select('id, user_id')
+      .select('id, user_id, name')
       .eq('id', projectId)
       .single();
 
@@ -172,36 +176,125 @@ export async function POST(
       return NextResponse.json({ error: 'Failed to submit form' }, { status: 500, headers: CORS_HEADERS });
     }
 
-    // Create notification for project owner
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', project.user_id)
-        .single();
+    // Everything after the insert happens post-response via after() so the
+    // visitor's form submit stays fast: AI reply draft, instant visitor
+    // acknowledgment, and the owner alert (with cron sweep as retry backstop).
+    const submissionId = submission.id as string;
+    const capturedFormData = formDataJson;
+    after(async () => {
+      try {
+        const projectName = (project as { name?: string }).name || 'your website';
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.innovated.marketing';
 
-      if (profile) {
+        // Owner email lives in auth.users — profiles has no reliable email column.
+        const { data: ownerUser } = await supabase.auth.admin.getUserById(project.user_id);
+        const ownerEmail = ownerUser?.user?.email || '';
+
+        // Business context for the acknowledgment + AI draft.
+        const [{ data: businessInfo }, { data: services }] = await Promise.all([
+          supabase.from('business_info').select('phone, email, hours').eq('project_id', projectId).maybeSingle(),
+          supabase.from('services').select('name, description, price').eq('project_id', projectId).eq('is_active', true).limit(10),
+        ]);
+
+        // 1) Instant acknowledgment to the visitor.
+        if (email) {
+          const ackResult = await sendLeadAcknowledgment({
+            to: email,
+            businessName: projectName,
+            visitorName: name,
+            formType: form_type,
+            phone: (businessInfo as { phone?: string } | null)?.phone || null,
+            serviceNeeded: service_needed,
+            preferredDate: preferred_date,
+            ownerEmail: ownerEmail || null,
+          });
+          if (!ackResult.ok) {
+            console.error('Visitor acknowledgment failed:', ackResult.error);
+          }
+        }
+
+        // 2) AI-drafted reply, stored on the submission with a single-use
+        // send token for the one-click link in the owner's alert.
+        let aiDraft: string | null = null;
+        let replySendUrl: string | null = null;
+        if (email) {
+          aiDraft = await draftLeadReply({
+            businessName: projectName,
+            phone: (businessInfo as { phone?: string } | null)?.phone || null,
+            email: (businessInfo as { email?: string } | null)?.email || null,
+            services: (services as Array<{ name: string; description?: string | null; price?: number | null }>) || [],
+            lead: {
+              name,
+              message,
+              serviceNeeded: service_needed,
+              preferredDate: preferred_date,
+              formType: form_type,
+            },
+          });
+          if (aiDraft) {
+            const replyToken = randomBytes(24).toString('hex');
+            await supabase
+              .from('form_submissions')
+              .update({ form_data: { ...capturedFormData, ai_draft: aiDraft, reply_token: replyToken } })
+              .eq('id', submissionId);
+            replySendUrl = `${appUrl}/api/leads/reply?sid=${submissionId}&token=${replyToken}`;
+          }
+        }
+
+        // 3) Owner alert — queue a notification row, then deliver inline.
+        // The /api/cron/notifications sweep retries anything left 'pending'.
         const submitterName = name || email || 'Someone';
         const hasImages = uploadedImageUrls.length > 0;
-        await supabase.from('notifications').insert({
-          project_id: projectId,
-          type: 'new_lead',
-          recipient_email: email || '',
-          subject: `New ${form_type} submission from ${submitterName}${hasImages ? ` (${uploadedImageUrls.length} image${uploadedImageUrls.length > 1 ? 's' : ''})` : ''}`,
-          body: [
-            name && `Name: ${name}`,
-            email && `Email: ${email}`,
-            phone && `Phone: ${phone}`,
-            message && `Message: ${message}`,
-            service_needed && `Service: ${service_needed}`,
-            hasImages && `Images: ${uploadedImageUrls.length} attached`,
-          ].filter(Boolean).join('\n'),
-          status: 'pending',
-        });
+        const { data: notification } = await supabase
+          .from('notifications')
+          .insert({
+            project_id: projectId,
+            type: 'new_lead',
+            recipient_email: ownerEmail,
+            subject: `New ${form_type} submission from ${submitterName}${hasImages ? ` (${uploadedImageUrls.length} image${uploadedImageUrls.length > 1 ? 's' : ''})` : ''}`,
+            body: [
+              name && `Name: ${name}`,
+              email && `Email: ${email}`,
+              phone && `Phone: ${phone}`,
+              message && `Message: ${message}`,
+              service_needed && `Service: ${service_needed}`,
+              hasImages && `Images: ${uploadedImageUrls.length} attached`,
+            ].filter(Boolean).join('\n'),
+            status: 'pending',
+          })
+          .select('id')
+          .single();
+
+        if (ownerEmail) {
+          const result = await sendLeadAlert({
+            to: ownerEmail,
+            projectName,
+            formType: form_type,
+            name,
+            email,
+            phone,
+            message,
+            serviceNeeded: service_needed,
+            preferredDate: preferred_date,
+            sourcePage: source_page,
+            imageCount: uploadedImageUrls.length,
+            leadsUrl: `${appUrl}/projects/${projectId}/leads`,
+            aiDraft,
+            replySendUrl,
+          });
+          if (result.ok && notification) {
+            await supabase
+              .from('notifications')
+              .update({ status: 'sent', sent_at: new Date().toISOString() })
+              .eq('id', notification.id);
+          } else if (!result.ok) {
+            console.error('Lead alert email failed (left pending for cron retry):', result.error);
+          }
+        }
+      } catch (notifErr) {
+        console.error('Post-submission processing error:', notifErr);
       }
-    } catch (notifErr) {
-      console.error('Notification creation error:', notifErr);
-    }
+    });
 
     return NextResponse.json(
       {
