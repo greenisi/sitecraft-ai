@@ -52,6 +52,20 @@ Body font: ${branding.fontBody}
 === REQUESTED SECTIONS ===
 ${sectionList}
 
+=== READ THE OWNER'S MIND — SILENT INFERENCE FIRST ===
+Before writing any code, silently infer from "${business.industry}" and the description:
+(1) WHO the client/customer is and how they found this site (referral? search? proposal link?),
+(2) what they FEAR when choosing this kind of firm (amateur work, overbilling, poor communication,
+wrong fit), (3) what builds INSTANT TRUST here — for portfolio-led businesses it is the WORK itself
+plus named clients and credentials; for service firms it is process, people, and proof, (4) the
+PRICE-POINT FEEL (a boutique consultancy must feel quieter and more confident than a volume shop),
+and (5) the ONE action: request a consultation, view the work, or get a proposal.
+Then make every page serve those inferences: lead with the strongest proof this industry's buyers
+check, put the ONE action in the hero, navbar, and a dedicated section, and write copy in the firm's
+own voice — a design studio sounds nothing like an accounting firm. Headlines must make a claim a
+competitor could not claim verbatim (name the niche, the method, the results, the city). BANNED:
+"Welcome to our website", "We are committed to excellence", "Your trusted partner", lorem ipsum.
+
 === SITE STRUCTURE & FILES ===
 
 **Shared Components**
@@ -172,6 +186,7 @@ ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 - Footer MUST be 4-column with newsletter signup
 - Mobile hamburger menu MUST work with useState toggle
 - Use realistic, industry-appropriate content — NEVER lorem ipsum
+- Include ONE signature layout moment that fits the business: an asymmetric editorial hero, an oversized stat or claim at huge type scale, or a full-bleed image interlude between sections — not the same hero-services-stats-CTA rhythm as every other business site
 - All navigation links must use \`next/link\` with correct paths (/, /about, /services, /contact)
 - Pages must feel cohesive: consistent colors, typography, spacing
 - EVERY button must link to a real page using next/link: "Learn More" → /about, "View Services" → /services, "Contact Us" → /contact, "See Reviews" → /testimonials

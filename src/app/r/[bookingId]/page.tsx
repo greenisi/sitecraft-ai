@@ -38,7 +38,7 @@ export default async function ReviewPage({
 
   return (
     <main className="min-h-screen bg-gray-950 flex items-center justify-center p-6">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md pk-fade-up">
         <h1 className="text-2xl font-bold text-white mb-2">
           How was your experience with {project.name}?
         </h1>

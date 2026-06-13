@@ -53,6 +53,20 @@ Body font: ${branding.fontBody}
 === REQUESTED SECTIONS ===
 ${sectionList}
 
+=== READ THE OWNER'S MIND — SILENT INFERENCE FIRST ===
+A landing site lives or dies on ONE conversion. Before writing any code, silently infer
+from "${business.industry}" and the description: (1) WHO lands here and from where (ad click?
+search? word of mouth?), (2) what OBJECTION stops them from converting (price, trust, "will this
+work for me?"), (3) what proof melts that objection fastest in this industry, (4) the PRICE-POINT
+FEEL (budget/mid/premium — it governs tone, density, and restraint), and (5) the ONE action this
+page exists to drive.
+Then build the page as a single persuasive argument toward that action: hero states the sharpest
+claim, the next section answers the biggest objection, every section after removes one more reason
+to say no, and the CTA repeats the SAME one action throughout (not three competing CTAs). Headlines
+must pass the opposite test — if a competitor could not claim the exact opposite, the headline says
+nothing; rewrite with a number, mechanism, or guarantee. BANNED copy: "Welcome to our website",
+"We are committed to excellence", "Take the first step", "Your trusted partner", lorem ipsum.
+
 === SITE STRUCTURE & FILES ===
 
 **Shared Components**
@@ -193,6 +207,7 @@ ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 - The footer MUST be 4-column with newsletter signup
 - Mobile hamburger menu MUST work with useState toggle
 - Use realistic, industry-appropriate content — NEVER lorem ipsum
+- Include ONE signature layout moment that fits the industry (asymmetric split hero, oversized typography claim, full-bleed image interlude, or bento feature grid) — not the same hero-features-testimonials-CTA rhythm as every other landing page
 - All navigation links must use \`next/link\` with correct paths (/, /about, /pricing, /contact)
 - Pages must feel cohesive: consistent colors, typography, spacing
 - CRITICAL: Follow the DESIGN VARIETY instructions at the end of this prompt for hero, navbar, features layout, and testimonial style. Each website MUST look unique.

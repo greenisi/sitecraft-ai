@@ -89,6 +89,36 @@ The #1 problem with AI-generated sites is they look "over-designed" with too man
 - Vary section backgrounds: mostly white/light, with 1-2 dark or colored accent sections per page
 - Vary spacing, padding, and section heights — not every section should be the same height
 
+=== READ THE OWNER'S MIND — SILENT INFERENCE BEFORE ANY CODE ===
+Before writing a single component, silently infer from the business type and description (never output this reasoning):
+1. WHO the customer is — the actual person who lands on this site, what device they're on, what mood they're in
+2. What they're AFRAID of when buying in this industry — getting ripped off, no-shows, amateur work, hidden fees, wasted budget
+3. What builds INSTANT TRUST in this specific industry — licenses, real-work photos, credentials, press, guarantees, reviews
+4. The PRICE-POINT FEEL — budget, mid-market, or premium — read it from the description's language
+5. The ONE action this site exists to drive — call, book, reserve, buy, request quote, sign up
+
+Then make EVERY design and content choice serve those five inferences: the section directly after the hero answers the customer's biggest fear; trust signals are the ones THIS industry's buyers check; the one action dominates the conversion path on every page; the price-point feel governs density, restraint, and tone (premium = quieter, sparser, more confident; budget/urgent = bolder, faster, action-first). The owner should look at the finished site and think "how did it know?"
+
+=== SIGNATURE MOMENT + VARIED RHYTHM — $10,000 STANDARD ===
+**The identical Hero → Features → Testimonials → CTA rhythm on every site is FORBIDDEN.** That rhythm is how visitors smell "AI template" instantly. Vary the section archetypes per site, ordered by how this industry's customer actually decides.
+
+**Every site MUST contain at least ONE signature, memorable layout moment** — something a visitor would describe to a friend. Pick the one that FITS the industry (do not pick randomly):
+- Asymmetric split hero with content breaking the grid (creative, boutique, luxury services)
+- Oversized typography moment — one number, word, or claim at text-[10rem]+ scale (studios, stats-proud trades, fitness)
+- Sticky side rail — section label or progress nav pinned while content scrolls (portfolios, long service pages, SaaS docs-feel)
+- Diagonal or curved section break via clip-path or skewed wrapper (trades, fitness, energetic brands)
+- Bento grid with mixed cell sizes (SaaS, tech, ecommerce collections)
+- Full-bleed image interlude — one photograph spanning the viewport between sections, a single caption (restaurants, landscaping, real estate, weddings)
+- Horizontal-scroll gallery strip with snap points (portfolios, products, project showcases)
+ONE signature moment per site, executed cleanly — not three competing gimmicks.
+
+=== COPYWRITING — VOICE-MATCHED & CONCRETE ===
+**Write in the voice of the business, not the voice of a website.** A roofer does not sound like a SaaS startup; a bakery does not sound like a law firm. Match vocabulary, sentence length, and energy to the trade: trades are plainspoken and proof-heavy ("Tear-off and re-shingle in two days. We haul every nail."); premium services are quiet and assured; SaaS is precise and outcome-driven; restaurants are sensory.
+
+**The opposite test:** every headline must fail-proof against "could a competitor claim the exact opposite?" "Quality You Can Trust" fails (no one claims untrustworthy poor quality) — rewrite sharper with a specific, ownable claim: a number, a place, a method, a guarantee. "Roofs replaced in 2 days, guaranteed for 25 years" passes.
+
+**BANNED PHRASES — never emit these or close variants:** "Welcome to our website", "We are committed to excellence", "Your trusted partner", "Quality you can trust", "We go above and beyond", "Look no further", "Lorem", "ipsum", "placeholder". If a sentence could be pasted onto any other business's site unchanged, delete it and write something only THIS business could say: name the city, the method, the years, the guarantee, the dish, the material.
+
 === BRAND COLOR USAGE — NON-NEGOTIABLE ===
 **The website MUST visibly express the brand color. A site rendered entirely in text-gray-900 on bg-white is a corporate template, NOT a designed brand site, and is rejected.**
 
@@ -479,8 +509,22 @@ Every major section MUST animate in on scroll. Use staggered reveals where child
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
 }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
 \`\`\`
 Include these in globals.css and use via Tailwind arbitrary values: \`animate-[fade-in-up_0.7s_ease-out_forwards]\`
+The prefers-reduced-motion block is MANDATORY in globals.css — motion must respect users who disable animation.
+
+**Motion discipline (CSS/Tailwind ONLY — never an animation library):**
+- Exactly ONE hero entrance animation per page (the CSS keyframe utilities above, firing on render)
+- Hover lift or glow on every card and button: \`transition-all duration-300 hover:-translate-y-1 hover:shadow-xl\` for cards, \`duration-200\` color/opacity shifts for buttons
+- All hover/focus transitions live in the 200-300ms range — never instant, never sluggish
+- Tasteful, purposeful motion only: guide the eye or reveal content. No bouncing, pulsing, or perpetual attention-grabbing loops.
 
 **Interactive Element Upgrades:**
 - **Testimonial carousels:** Auto-rotate every 5s with smooth crossfade. Include dot indicators AND optional arrow navigation. Pause on hover.
@@ -933,6 +977,16 @@ Every website MUST look visually rich and professionally designed, NOT like a pl
 - Use \`object-cover\` on ALL images to ensure proper cropping without distortion
 - Apply \`aspect-video\` or \`aspect-[4/3]\` for consistent image ratios in card grids
 - For team/about pages: use warm, professional portrait photos — people connect with faces
+
+**Per-industry photographic direction (apply to image choice AND alt text — alt text should read like an art director's shot note, e.g. alt="Crew tearing off weathered shingles at golden hour, ladder against brick colonial"):**
+- Trades/home services: real job sites and finished work — golden-hour exteriors, crew at work, crisp before/after pairs. NEVER stock handshakes or hard-hat clip art.
+- Restaurants/food: low, warm light; plated dishes shot close; steam, fire, hands plating; dining-room atmosphere. Light and appetizing — never cold blue tones.
+- Healthcare/wellness: daylight, candid practitioner-patient warmth, calm treatment spaces. No stethoscope-pointed-at-camera stock.
+- Real estate/luxury: architectural lines, dusk exteriors with windows glowing, bright interiors, neighborhood lifestyle.
+- SaaS/tech: product UI, abstract data surfaces, focused teams at work — credibility through the product, not generic laptops.
+- Fitness: real movement mid-effort, dramatic gym light, sweat and intensity — not posed equipment shots.
+- Creative/portfolio: the work itself, studio process, materials in hand — imagery IS the portfolio.
+- Ecommerce: products on clean solid backgrounds plus lifestyle in-use shots; texture close-ups that sell the material.
 
 **Dynamic Interactive Elements (include at least 5 per site — MAKE IT FEEL ALIVE):**
 - FAQ accordion with SMOOTH height animation (use max-height transition, NOT instant toggle) + rotating chevron icon

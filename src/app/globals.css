@@ -650,3 +650,79 @@ html, body {
   from { transform: translateY(0); }
   to { transform: translateY(-2000px); }
 }
+
+/* ── Power kit: shared motion utilities ─────────────────────────────────
+   Entrance, hover, and emphasis animations for app surfaces. Everything
+   respects prefers-reduced-motion via the master switch at the bottom. */
+
+@keyframes pk-fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pk-scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes pk-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes pk-glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(147, 51, 234, 0.35); }
+  50% { box-shadow: 0 0 24px 4px rgba(147, 51, 234, 0.25); }
+}
+@keyframes pk-gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.pk-fade-up { animation: pk-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.pk-scale-in { animation: pk-scale-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.pk-stagger-1 { animation-delay: 0.05s; }
+.pk-stagger-2 { animation-delay: 0.1s; }
+.pk-stagger-3 { animation-delay: 0.15s; }
+.pk-stagger-4 { animation-delay: 0.2s; }
+.pk-stagger-5 { animation-delay: 0.25s; }
+.pk-stagger-6 { animation-delay: 0.3s; }
+
+/* Cards that respond: lift + purple edge glow on hover */
+.pk-card {
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.pk-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(147, 51, 234, 0.45);
+  box-shadow: 0 8px 30px -8px rgba(147, 51, 234, 0.25);
+}
+
+/* Animated gradient CTA with hover glow */
+.pk-btn {
+  background-image: linear-gradient(115deg, #7c3aed, #9333ea, #6d28d9, #9333ea);
+  background-size: 250% 100%;
+  animation: pk-gradient-x 6s ease infinite;
+  transition: transform 0.2s ease, box-shadow 0.25s ease;
+}
+.pk-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px -4px rgba(147, 51, 234, 0.55);
+}
+.pk-btn:active:not(:disabled) { transform: translateY(0); }
+
+/* Shimmering text for in-progress states */
+.pk-working {
+  background: linear-gradient(90deg, #a78bfa 25%, #f5f3ff 50%, #a78bfa 75%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: pk-shimmer 1.8s linear infinite;
+}
+
+/* Pulsing glow ring for active generation surfaces */
+.pk-glow { animation: pk-glow-pulse 2.4s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pk-fade-up, .pk-scale-in, .pk-btn, .pk-working, .pk-glow { animation: none; }
+  .pk-fade-up, .pk-scale-in { opacity: 1; transform: none; }
+  .pk-card, .pk-card:hover, .pk-btn:hover:not(:disabled) { transform: none; transition: none; }
+}

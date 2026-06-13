@@ -69,6 +69,21 @@ Body font: ${branding.fontBody}
 === REQUESTED SECTIONS ===
 ${sectionList}
 ${tradeHintBlock}
+=== READ THE OWNER'S MIND — SILENT INFERENCE FIRST ===
+Before writing any code, silently infer from "${business.industry}" and the description:
+(1) WHO the customer is, (2) what they FEAR when hiring a local business like this (no-shows,
+overcharging, amateur work, bad food, awkward experience), (3) what builds INSTANT TRUST in
+this exact industry, (4) the PRICE-POINT FEEL (budget/mid/premium), and (5) the ONE action
+the site exists to drive (call, book, reserve, request quote, visit, order).
+Then: the section right after the hero must answer the customer's biggest fear; trust signals
+must be the ones THIS industry's buyers actually check; the ONE action must appear in the
+hero, the navbar CTA, and a dedicated conversion section. Industry-distinct decision flows:
+- Restaurants: menu and atmosphere first; hours, location, and reservations visible without scrolling far
+- Trades/home services: proof of work (before/after, real jobs) and licensing first; quote/call always reachable
+- Clinics/salons/studios: practitioner credibility and the booking flow first; calm reassurance over hype
+- Venues/fitness: the space and the experience first; schedule/booking second
+The owner should look at the finished site and think "how did it know exactly what my customers need?"
+
 === SITE STRUCTURE & FILES ===
 
 **Shared Components**
@@ -246,6 +261,8 @@ ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 - Mobile hamburger menu MUST work with useState toggle
 - Phone numbers MUST use \`tel:\` links for click-to-call on mobile
 - Use realistic, industry-appropriate content — NEVER lorem ipsum
+- Copy must be voice-matched to the trade/industry: plainspoken and proof-heavy for trades, sensory for restaurants, calm and credentialed for clinics. BANNED: "Welcome to our website", "We are committed to excellence", "Your trusted partner", "Quality you can trust". Every headline must make a claim a competitor could NOT claim verbatim — name the place, the method, the years, the guarantee.
+- Include ONE signature layout moment that fits the industry (full-bleed photo interlude for restaurants/landscaping, oversized stat or before/after centerpiece for trades, asymmetric editorial hero for studios) — not the same hero-features-testimonials-CTA rhythm as every other site
 - All nav links must use \`next/link\` with correct paths matching the pages actually generated
 - The tone should be trustworthy, professional, and locally-focused
 - Emphasize the right conversion action for the industry on every page

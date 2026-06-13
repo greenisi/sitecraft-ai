@@ -79,6 +79,21 @@ ${pricingTiers}
 Auth pages: ${hasAuth ? 'Yes' : 'No'}
 Dashboard shell: ${hasDashboard ? 'Yes' : 'No'}
 
+=== READ THE OWNER'S MIND — SILENT INFERENCE FIRST ===
+Before writing any code, silently infer from the product description:
+(1) WHO the buyer is — solo dev, ops manager, CFO, agency owner — and who has to approve the purchase,
+(2) what they FEAR (vendor lock-in, painful migration, data security, another tool nobody uses, hidden pricing),
+(3) what builds INSTANT TRUST for this buyer (recognizable customer logos, security/compliance badges,
+concrete metrics, transparent pricing, real product UI), (4) the PRICE-POINT FEEL — a $9/mo indie tool
+should feel friendly and fast; a $2k/mo enterprise platform should feel calm, dense with proof, and
+security-forward, and (5) the ONE action: start free trial, book a demo, or join waitlist — pick the one
+that matches the price point (high-touch = demo, self-serve = trial) and drive it everywhere.
+Then: the section after the hero answers the buyer's biggest fear; every feature is framed as the
+OUTCOME it buys ("Close the books 4 days faster" not "Powerful automation"); headlines must fail the
+"could a competitor claim the exact opposite?" test — if no competitor would claim the opposite, the
+headline is empty, rewrite it with a number, a mechanism, or a named workflow. BANNED copy: "Welcome to",
+"We are committed to excellence", "Supercharge your workflow", "Take your business to the next level", lorem ipsum.
+
 === FILES TO GENERATE ===
 
 **Marketing -- Shared Components**
@@ -206,7 +221,8 @@ ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 - Marketing pages must feel polished, modern, and conversion-optimized
 - Dashboard is a static shell with placeholder data — no real API calls
 - Auth forms are stubs: handle submit on the client with a success message, no backend
-- Use realistic SaaS copy appropriate for "${business.industry}"
+- Use realistic SaaS copy appropriate for "${business.industry}" — precise, outcome-driven, zero filler
+- Include ONE signature layout moment that fits the product: a bento feature grid with product UI in mixed-size cells, an oversized metric moment (one number at huge scale with context copy), or a sticky side rail walking through the workflow — not the same hero-features-pricing-CTA rhythm as every other SaaS site
 - Pricing toggle should switch between monthly and yearly prices (yearly = monthly * 10)
 - Organize files into route groups: (marketing), (auth), (dashboard)
 - CRITICAL: Follow the DESIGN VARIETY instructions at the end of this prompt for hero, navbar, features layout, and testimonial style. Each website MUST look unique.

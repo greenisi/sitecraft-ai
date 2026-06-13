@@ -38,7 +38,7 @@ export function ReviewForm({ bookingId, token }: { bookingId: string; token: str
   }
 
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900/60 p-6 space-y-5">
+    <div className="rounded-xl border border-gray-800 bg-gray-900/60 p-6 space-y-5 pk-scale-in">
       <div className="flex justify-center gap-2">
         {[1, 2, 3, 4, 5].map((star) => (
           <button

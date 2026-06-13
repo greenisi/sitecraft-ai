@@ -122,7 +122,7 @@ export default function MediaStudioPage() {
 
   return (
     <div className="max-w-5xl space-y-8">
-      <div>
+      <div className="pk-fade-up">
         <h1 className="text-2xl font-bold text-white">Media Studio</h1>
         <p className="text-sm text-gray-400 mt-1">
           Generate images and videos for your website with AI. Everything you create is saved to this
@@ -130,7 +130,7 @@ export default function MediaStudioPage() {
         </p>
       </div>
 
-      <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-5 space-y-4">
+      <div className={`rounded-xl border border-gray-800 bg-gray-900/50 p-5 space-y-4 pk-fade-up pk-stagger-1 ${generating ? 'pk-glow border-purple-700/60' : ''}`}>
         <div className="flex gap-2">
           {(['image', 'video'] as Mode[]).map((m) => (
             <button
@@ -175,14 +175,14 @@ export default function MediaStudioPage() {
           <button
             onClick={generate}
             disabled={generating || !prompt.trim()}
-            className="px-5 py-2.5 rounded-lg bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors"
+            className="px-5 py-2.5 rounded-lg pk-btn disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold"
           >
             {generating ? 'Generating…' : mode === 'image' ? 'Generate Image' : 'Generate Video'}
           </button>
           {statusText && (
-            <span className="text-sm text-purple-300 flex items-center gap-2">
+            <span className="text-sm flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
-              {statusText}
+              <span className="pk-working">{statusText}</span>
             </span>
           )}
           {errorText && <span className="text-sm text-red-400">{errorText}</span>}
@@ -199,10 +199,10 @@ export default function MediaStudioPage() {
           </p>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {assets.map((asset) => (
+            {assets.map((asset, i) => (
               <div
                 key={asset.id}
-                className="rounded-lg border border-gray-800 bg-gray-900/50 overflow-hidden group"
+                className={`rounded-lg border border-gray-800 bg-gray-900/50 overflow-hidden group pk-card pk-scale-in pk-stagger-${Math.min(i + 1, 6)}`}
               >
                 {asset.file_type === 'ai_video' ? (
                   <video

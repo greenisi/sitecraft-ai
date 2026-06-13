@@ -84,6 +84,21 @@ Checkout: ${checkoutType}
 Products:
 ${productsInfo}
 
+=== READ THE OWNER'S MIND — SILENT INFERENCE FIRST ===
+Before writing any code, silently infer from the products and description:
+(1) WHO the shopper is and what occasion they're buying for, (2) what they FEAR (cheap quality,
+slow shipping, hard returns, scam store), (3) what builds INSTANT TRUST for this product category
+(materials, guarantees, reviews, press, secure-checkout cues), (4) the PRICE-POINT FEEL — a $200
+candle store and a $12 phone-case store must NOT look alike (premium = sparse, editorial, restrained
+type, products breathing on whitespace; value = denser grids, bolder prices, urgency cues), and
+(5) the ONE action: add-to-cart on a hero product or browse-the-collection first.
+Then merchandise accordingly: lead with the hero product or bestselling collection, put trust
+signals (shipping/returns/guarantee) where the fear arises (near prices and the cart), and write
+product copy that sells the material/benefit, not adjectives. Headlines must make claims a
+competitor could not copy verbatim ("Hand-poured in Asheville. Burns 80 hours." — never "Quality
+products you'll love"). BANNED copy: "Welcome to our store", "We are committed to excellence",
+"Look no further", lorem ipsum.
+
 === FILES TO GENERATE ===
 
 **Data Layer (uses SiteCraft backend — NOT a static array)**
@@ -247,6 +262,8 @@ ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 - The cart store must use Zustand; import from 'zustand' and 'zustand/middleware'.
 - The cart store stores ONLY { productId, quantity } — never store prices client-side.
   Always look up the current price from the latest \`fetchProducts()\` call when rendering.
+- Include ONE signature layout moment that fits the merchandise: an oversized single-product hero, a bento collection grid with mixed cell sizes, or a full-bleed lifestyle interlude between product sections — not the same hero-grid-CTA rhythm as every other store
+- Product imagery direction: products on clean solid backgrounds for grids, lifestyle in-use shots for features, texture close-ups that sell the material; alt text reads like an art director's shot note
 - CRITICAL: Follow the DESIGN VARIETY instructions at the end of this prompt for hero, navbar, features layout, and testimonial style. Each website MUST look unique.
 - Generate ALL files listed above in a single response
 `;

@@ -21,6 +21,7 @@ export type TradeHint = {
   industryLanguage: string[];         // jargon the customer expects to see
   pricingPattern: string;             // how to talk about pricing
   seasonalNote?: string;              // call out if seasonal
+  designLanguage?: string;            // distinctive visual character: color/type/layout + signature moment
 };
 
 export const TRADE_HINTS: Record<string, TradeHint> = {
@@ -43,6 +44,8 @@ export const TRADE_HINTS: Record<string, TradeHint> = {
     industryLanguage: ['soft wash', 'power wash', 'surface cleaning', 'curb appeal', 'free estimate'],
     pricingPattern: 'Show ballpark per-square-foot or per-job ranges. Most customers expect "starts at $X" not exact pricing.',
     seasonalNote: 'Spring/summer is peak — homepage may mention "now booking spring cleanings".',
+    designLanguage:
+      'Visual character: crisp clean-water blues and fresh whites with one high-energy accent — the site itself should feel freshly washed. Bold condensed sans headlines. Signature moment: a full-width before/after slider as the FIRST section after the hero — the transformation IS the pitch. Photography: sun-lit driveways, siding mid-clean with visible contrast line, satisfying symmetrical after-shots.',
   },
 
   'lawn-care': {
@@ -64,6 +67,8 @@ export const TRADE_HINTS: Record<string, TradeHint> = {
     industryLanguage: ['weekly cuts', 'recurring service', 'route', 'edging', 'curb appeal'],
     pricingPattern: 'Show per-cut range based on lawn size. "Lawns under 5,000 sq ft from $35, 5-10k from $45, etc."',
     seasonalNote: 'March–November is peak in most regions. Winter copy should pivot to leaf removal / snow.',
+    designLanguage:
+      'Visual character: healthy lawn greens with warm sun accents — friendly and neighborly, not corporate. Rounded, approachable sans type. Signature moment: the recurring-plan tier cards (Weekly/Bi-weekly/Monthly) styled as the visual centerpiece of the homepage with the middle tier elevated. Photography: striped fresh-mown lawns, edged walkways, family backyards in use.',
   },
 
   'junk-removal': {
@@ -84,6 +89,8 @@ export const TRADE_HINTS: Record<string, TradeHint> = {
     trustSignals: ['Eco/recycled percentage, "X tons donated", same-day promise badge'],
     industryLanguage: ['hauling', 'cleanout', 'pickup', 'load', 'truck size'],
     pricingPattern: 'Show truck-size pricing visually. "¼ truck $99 / ½ truck $199 / full truck $499". Final price after photos.',
+    designLanguage:
+      'Visual character: high-energy and friendly — bold accent color, big buttons, zero pretension; this is an impulse, get-it-gone purchase. Heavy sans display type. Signature moment: the visual truck-load pricing calculator (¼/½/¾/full illustrated) as an interactive centerpiece. Photography: cleared garages, crews loading trucks, satisfying empty-room afters.',
   },
 
   'painting': {
@@ -104,6 +111,8 @@ export const TRADE_HINTS: Record<string, TradeHint> = {
     trustSignals: ['Years in business, # rooms painted, brand affiliations, lead-safe certification'],
     industryLanguage: ['cut-in', 'two coats', 'low-VOC', 'finish (matte/eggshell/satin)', 'walkthrough'],
     pricingPattern: 'Per-room or per-square-foot ranges. "Interior bedrooms from $300, exterior siding from $X/sq ft."',
+    designLanguage:
+      'Visual character: color-literate and refined — painters sell taste, so the palette must look deliberately curated (soft neutrals + one sophisticated accent), with more whitespace than other trades. Elegant sans or light serif headlines. Signature moment: a color-swatch strip or palette-explorer section that shows the company understands color. Photography: crisp cut-in lines, rooms mid-transformation, finished interiors in beautiful light.',
   },
 
   'hvac': {
@@ -126,6 +135,8 @@ export const TRADE_HINTS: Record<string, TradeHint> = {
     industryLanguage: ['tonnage', 'SEER rating', 'condenser', 'air handler', 'mini-split', 'tune-up'],
     pricingPattern: 'Show "diagnostic fee from $X, applied to repair if you book". Plans: "Maintenance plan $19/mo".',
     seasonalNote: 'Summer (AC) and winter (heat) are emergency seasons — homepage messaging can rotate.',
+    designLanguage:
+      'Visual character: dependable and immediate — strong navy/steel base with a hot accent reserved exclusively for the 24/7 call CTA so it is the brightest thing on every screen. Sturdy grotesque sans. Signature moment: a sticky emergency call bar (mobile) and a temperature-themed hero treatment (warm/cool gradient split). Photography: techs at the unit, clean uniforms, vans with branding, comfortable families indoors.',
   },
 
   'roofing': {
@@ -149,6 +160,8 @@ export const TRADE_HINTS: Record<string, TradeHint> = {
     industryLanguage: ['shingle', 'underlayment', 'flashing', 'ridge vent', 'square (100 sq ft)', 'tear-off'],
     pricingPattern: 'Per-square ranges or total project ranges. "Asphalt re-roof starts at $X for typical home".',
     seasonalNote: 'Spring + after storms = peak demand. Storm-mode callout should be prominent.',
+    designLanguage:
+      'Visual character: solid and weatherproof — charcoal, slate, and shingle-tone neutrals with one storm-warning accent; this buyer was possibly just hit by a storm and fears being scammed, so the design must read established and local, never flashy. Strong condensed sans headlines. Signature moment: a dramatic full-bleed drone shot of a finished roof as a section interlude with a single proof caption ("212 roofs replaced after the April hail"). Photography: drone rooflines, crews on pitch, tear-off action, dimensional shingle close-ups.',
   },
 
   'plumbing': {
@@ -170,6 +183,8 @@ export const TRADE_HINTS: Record<string, TradeHint> = {
     trustSignals: ['Master plumber license #, insurance, BBB, Google Local Services badge'],
     industryLanguage: ['rooter', 'snake', 'hydro jet', 'P-trap', 'PEX', 'tankless'],
     pricingPattern: 'Diagnostic fee + service ranges. "Clogs from $99, water heater install from $X".',
+    designLanguage:
+      'Visual character: calm-in-a-crisis — deep trustworthy blue base, generous white space, and one emergency-red/orange accent used ONLY on the phone CTA; the visitor may have water on the floor right now, so clarity beats decoration everywhere. Big legible type, oversized tap targets. Signature moment: a giant click-to-call phone number as the hero headline itself, not a button. Photography: licensed plumbers at work under sinks, clean copper/PEX details, branded vans at the curb.',
   },
 
   'electrical': {
@@ -192,6 +207,8 @@ export const TRADE_HINTS: Record<string, TradeHint> = {
     trustSignals: ['Master electrician license #, EV manufacturer certifications, BBB, Google Guaranteed'],
     industryLanguage: ['service panel', 'amperage', 'GFCI', 'AFCI', 'three-phase', 'transfer switch'],
     pricingPattern: 'Per-job ranges. "Outlet install from $X, panel upgrade from $X-$Y, EV charger from $X".',
+    designLanguage:
+      'Visual character: precise and modern — near-black/graphite base with one electric accent (amp yellow or volt blue) that literally evokes current; cleaner and more technical-feeling than other trades, befitting EV-era work. Geometric sans type. Signature moment: an EV-charger showcase section with a dark, product-style treatment (the one trade where a dark section feels native). Photography: tidy panel work, EV chargers on modern garages, well-organized wiring — competence shown through order.',
   },
 
   'landscaping': {
@@ -215,6 +232,8 @@ export const TRADE_HINTS: Record<string, TradeHint> = {
     industryLanguage: ['hardscape', 'softscape', 'paver', 'retaining wall', 'plantings', 'irrigation'],
     pricingPattern: 'Maintenance: monthly recurring. Design/install: project ranges. "Patios from $X/sq ft, retaining walls from $Y/linear ft".',
     seasonalNote: 'March–November is peak. Winter pivots to snow removal contracts.',
+    designLanguage:
+      'Visual character: editorial and organic — layered greens with warm stone/earth neutrals and serif or serif-paired headlines; this is the most design-forward trade, closer to an architecture studio than a service company. Signature moment: a full-bleed garden photograph as a section interlude with a single caption ("Private terrace, Maplewood — 2024"), magazine-style. Photography: lush plantings, paver textures, outdoor rooms at dusk, before/after transformations.',
   },
 };
 
@@ -332,6 +351,7 @@ ${hint.industryLanguage.map((l) => `  • "${l}"`).join('\n')}
 How to talk about pricing:
 ${hint.pricingPattern}
 ${hint.seasonalNote ? `\nSeasonal note: ${hint.seasonalNote}` : ''}
+${hint.designLanguage ? `\nDesign language for this trade (color/typography character, signature layout moment,\nand photography direction — follow this so the site is visually unmistakable for\nthis trade, not interchangeable with other trades):\n${hint.designLanguage}` : ''}
 
 CRITICAL: A home pro buyer in this trade should look at the generated site and feel
 "this was made for ${hint.trade} specifically" — not "this is a generic small

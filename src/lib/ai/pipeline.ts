@@ -62,7 +62,7 @@ function assembleConfig(config: GenerationConfig): GenerationConfig {
 // Stage 2: Generate Design System
 // --------------------------------------------------------------------------
 
-async function generateDesignSystem(config: GenerationConfig): Promise<DesignSystem> {
+export async function generateDesignSystem(config: GenerationConfig): Promise<DesignSystem> {
   const client = getAnthropicClient();
 
   const systemPrompt = `You are a design system expert who creates UNIQUE, visually distinctive color systems for each project. Given a business description and branding preferences, generate a comprehensive Tailwind CSS design system as a JSON object.
@@ -95,6 +95,15 @@ The JSON must match this exact structure:
   "borderRadius": { "none": "0", "sm": "0.125rem", "md": "0.375rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px" },
   "shadows": { "sm": "...", "md": "...", "lg": "...", "xl": "..." }
 }
+
+READ THE OWNER'S MIND — DO THIS SILENTLY BEFORE GENERATING (do not output this reasoning):
+From the business type and description alone, infer:
+1. WHO the customer is (homeowner in a hurry? CFO comparing vendors? bride planning a date? foodie browsing on a phone?)
+2. What that customer is AFRAID of when hiring/buying in this industry (getting ripped off, no-shows, hidden fees, amateur work, wasted money)
+3. What builds INSTANT TRUST in this specific industry (licenses, photos of real work, credentials, press, reviews, guarantees)
+4. The PRICE-POINT FEEL: budget, mid-market, or premium — read it from the description's language and offerings
+5. The ONE action this site exists to drive (call, book, reserve, buy, request quote, sign up)
+Then make every color decision serve those five inferences. A premium med-spa and a budget junk-removal crew must NOT receive interchangeable palettes: price-point feel changes saturation and contrast (premium = deeper, quieter, more restrained; budget/urgent = brighter, higher-energy, action-forward), and the customer's fears change how "safe" vs "bold" the palette must read. The owner should look at the palette and think "how did it know exactly what my business feels like?"
 
 CRITICAL RULES:
 - Generate color scales that harmonize with the provided brand colors. Each scale needs shades from 50 (lightest) through 950 (darkest).
@@ -209,7 +218,15 @@ Rules:
 - For e-commerce sites, include dataRequirements for product data.
 - For SaaS sites, include dataRequirements for pricing/features data.
 - Blueprint sections must match the actual industry. For example: landscaping should include project/gallery/before-after/service-area sections; construction should include project/capabilities/process/safety sections; restaurants should include menu/reservations/chef/press sections; real estate should include listings/neighborhoods/valuation sections.
-- Do not use generic local-trade pages or emergency-call sections for restaurants, creative studios, real estate, healthcare, or other non-emergency industries unless the user's prompt asks for them.`;
+- Do not use generic local-trade pages or emergency-call sections for restaurants, creative studios, real estate, healthcare, or other non-emergency industries unless the user's prompt asks for them.
+
+READ THE OWNER'S MIND — DO THIS SILENTLY BEFORE GENERATING (do not output this reasoning):
+From the business type and description, infer: (1) WHO the customer is, (2) what they're AFRAID of when buying in this industry, (3) what builds INSTANT TRUST here, (4) the PRICE-POINT FEEL (budget/mid/premium), and (5) the ONE action the site exists to drive. Then:
+- The very first section after the hero must answer the customer's biggest fear (proof of work, credentials, reviews, guarantees — whatever this industry's customers check first).
+- The ONE primary action must have a dedicated section AND appear in the hero — name it concretely in componentName/props ("BookingCTA", "ReservationBar", "QuoteRequest", "EmergencyCall"), not a generic "CTA".
+- Section ORDER must mirror how this industry's customer actually decides: restaurants lead with menu/atmosphere and put hours/location prominently; trades lead with proof (before/after, service area) and licensing; premium services lead with portfolio and story; emergency services lead with the phone number.
+- Vary the section rhythm per industry — do NOT emit the same Hero→Features→Testimonials→CTA skeleton for every site. Choose at least one industry-signature section a competitor template would not have (e.g. FinancingOptions for roofers, ChefStory for restaurants, NeighborhoodGuides for realtors, SecurityCompliance for B2B SaaS) and include it in props as a content hint.
+- Use the props object to pass these inferences as content hints (e.g. { "audience": "...", "trustAngle": "...", "primaryAction": "..." }) so the component generator can act on them.`;
 
   const sectionsSummary = config.sections
     .map((s) => `${s.type} (order: ${s.order})`)
