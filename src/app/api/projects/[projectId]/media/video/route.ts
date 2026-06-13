@@ -48,10 +48,7 @@ export async function POST(
     });
 
     const admin = createAdminClient();
-    await admin
-      .from('profiles')
-      .update({ generation_credits: Math.max(0, profile.generation_credits - VIDEO_CREDIT_COST) })
-      .eq('id', user!.id);
+    await admin.rpc('deduct_generation_credits', { p_user_id: user!.id, p_amount: VIDEO_CREDIT_COST });
 
     return NextResponse.json({ operationName }, { status: 202 });
   } catch (err) {

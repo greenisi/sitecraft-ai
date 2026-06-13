@@ -78,10 +78,7 @@ export async function POST(
       return NextResponse.json({ error: insertError.message }, { status: 500 });
     }
 
-    await admin
-      .from('profiles')
-      .update({ generation_credits: Math.max(0, profile.generation_credits - IMAGE_CREDIT_COST) })
-      .eq('id', user!.id);
+    await admin.rpc('deduct_generation_credits', { p_user_id: user!.id, p_amount: IMAGE_CREDIT_COST });
 
     return NextResponse.json({ asset }, { status: 201 });
   } catch (err) {

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { after } from 'next/server';
 import { requireProjectOwner } from '@/lib/project-auth';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { sendBookingDecision } from '@/lib/email/send';
+import { sendBookingDecision, sendReviewRequest } from '@/lib/email/send';
 
 export async function PUT(
   request: NextRequest,
@@ -26,6 +26,31 @@ export async function PUT(
 
     if (updateError) {
       return NextResponse.json({ error: updateError.message }, { status: 500 });
+    }
+
+    // Completing a booking triggers the review request — the flywheel moment.
+    if (status === 'completed' && booking?.customer_email && booking?.manage_token) {
+      after(async () => {
+        try {
+          const admin = createAdminClient();
+          const { data: proj } = await admin.from('projects').select('name, user_id').eq('id', projectId).single();
+          const { data: ownerUser } = proj?.user_id
+            ? await admin.auth.admin.getUserById(proj.user_id)
+            : { data: null };
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.innovated.marketing';
+          const result = await sendReviewRequest({
+            to: booking.customer_email,
+            businessName: proj?.name || 'the business',
+            customerName: booking.customer_name,
+            serviceType: booking.service_type,
+            reviewUrl: `${appUrl}/r/${bookingId}?token=${booking.manage_token}`,
+            ownerEmail: ownerUser?.user?.email || null,
+          });
+          if (!result.ok) console.error('Review request email failed:', result.error);
+        } catch (err) {
+          console.error('Review request error:', err);
+        }
+      });
     }
 
     // Confirming or cancelling from the dashboard emails the customer too,

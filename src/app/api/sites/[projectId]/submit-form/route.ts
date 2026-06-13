@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { randomBytes } from 'crypto';
 import { sendLeadAlert, sendLeadAcknowledgment } from '@/lib/email/send';
 import { draftLeadReply } from '@/lib/ai/lead-reply';
+import { isHoneypotTripped, checkSubmissionRate } from '@/lib/spam-guard';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -136,6 +137,27 @@ export async function POST(
       );
     }
 
+    // Honeypot: bots fill the hidden field humans never see. Pretend success.
+    if (isHoneypotTripped(extraFields)) {
+      return NextResponse.json(
+        { success: true, message: 'Form submitted successfully' },
+        { status: 201, headers: CORS_HEADERS }
+      );
+    }
+    // Strip honeypot fields so they never land in form_data.
+    delete extraFields.website_url;
+    delete extraFields._gotcha;
+    delete extraFields.honeypot;
+
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rate = await checkSubmissionRate(supabase, 'form_submissions', projectId, clientIp);
+    if (!rate.allowed) {
+      return NextResponse.json(
+        { error: 'Too many submissions. Please try again later.' },
+        { status: 429, headers: CORS_HEADERS }
+      );
+    }
+
     // Upload images if any
     const uploadedImageUrls: string[] = [];
     for (const file of imageFiles) {
@@ -181,6 +203,7 @@ export async function POST(
     // acknowledgment, and the owner alert (with cron sweep as retry backstop).
     const submissionId = submission.id as string;
     const capturedFormData = formDataJson;
+    const degraded = rate.degraded;
     after(async () => {
       try {
         const projectName = (project as { name?: string }).name || 'your website';
@@ -189,6 +212,22 @@ export async function POST(
         // Owner email lives in auth.users — profiles has no reliable email column.
         const { data: ownerUser } = await supabase.auth.admin.getUserById(project.user_id);
         const ownerEmail = ownerUser?.user?.email || '';
+
+        // Past the daily cap (likely a spam wave): store + queue only.
+        // The cron sweep still delivers a digest-style pending notification;
+        // no AI drafting or inline emails on the platform's dime.
+        if (degraded) {
+          await supabase.from('notifications').insert({
+            project_id: projectId,
+            type: 'new_lead',
+            recipient_email: ownerEmail,
+            subject: `New ${form_type} submission from ${name || email || 'Someone'}`,
+            body: [name && `Name: ${name}`, email && `Email: ${email}`, phone && `Phone: ${phone}`, message && `Message: ${message}`]
+              .filter(Boolean).join('\n'),
+            status: 'pending',
+          });
+          return;
+        }
 
         // Business context for the acknowledgment + AI draft.
         const [{ data: businessInfo }, { data: services }] = await Promise.all([

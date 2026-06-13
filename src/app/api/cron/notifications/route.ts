@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { sendQueuedNotification } from '@/lib/email/send';
 
+export const maxDuration = 120;
+
 /**
  * Notification delivery sweep. Wired in vercel.json:
  *   { "path": "/api/cron/notifications", "schedule": "*\/10 * * * *" }
@@ -103,6 +105,69 @@ export async function GET(request: Request) {
     }
   }
 
+  // ── Unanswered-lead nudges ─────────────────────────────────────────────
+  // Leads still 'new' after 4 hours get one reminder to the owner — speed
+  // wins deals, and inboxes bury things. One nudge per lead, ever.
+  const fourHoursAgo = new Date(Date.now() - 4 * 3600 * 1000).toISOString();
+  const twoDaysAgo = new Date(Date.now() - 48 * 3600 * 1000).toISOString();
+  const { data: staleLeads } = await sb
+    .from('form_submissions')
+    .select('id, project_id, name, email, phone, message, form_type, form_data, created_at')
+    .eq('status', 'new')
+    .lt('created_at', fourHoursAgo)
+    .gte('created_at', twoDaysAgo)
+    .order('created_at', { ascending: true })
+    .limit(20);
+
+  let nudged = 0;
+  for (const lead of staleLeads ?? []) {
+    const formData = (lead.form_data || {}) as Record<string, unknown>;
+    if (formData.nudge_sent) continue;
+    try {
+      const { data: project } = await sb
+        .from('projects')
+        .select('user_id, name')
+        .eq('id', lead.project_id)
+        .single();
+      if (!project?.user_id) continue;
+      if (!ownerEmailCache.has(project.user_id)) {
+        const { data: ownerUser } = await sb.auth.admin.getUserById(project.user_id);
+        ownerEmailCache.set(project.user_id, ownerUser?.user?.email ?? null);
+      }
+      const ownerEmail = ownerEmailCache.get(project.user_id);
+      if (!ownerEmail) continue;
+
+      const who = lead.name || lead.email || lead.phone || 'A lead';
+      const hoursAgo = Math.round((Date.now() - new Date(lead.created_at).getTime()) / 3600000);
+      const draft = formData.ai_draft as string | undefined;
+      const replyToken = formData.reply_token as string | undefined;
+      const replyLine = draft && replyToken
+        ? `\n\nYour drafted reply is ready — send it with one click:\n${appUrl}/api/leads/reply?sid=${lead.id}&token=${replyToken}\n\n--- Draft ---\n${draft}\n---`
+        : '';
+
+      const result = await sendQueuedNotification({
+        to: ownerEmail,
+        subject: `${who} is still waiting (${hoursAgo}h) — ${project.name}`,
+        body:
+          `This ${lead.form_type || 'lead'} came in ${hoursAgo} hours ago and hasn't been answered yet. ` +
+          `Leads contacted fast are far more likely to close.\n\n` +
+          [lead.name && `Name: ${lead.name}`, lead.email && `Email: ${lead.email}`, lead.phone && `Phone: ${lead.phone}`, lead.message && `Message: ${lead.message}`]
+            .filter(Boolean).join('\n') +
+          replyLine,
+        leadsUrl: `${appUrl}/projects/${lead.project_id}/leads`,
+      });
+
+      // Mark nudged even on send failure — one attempt, no nag loops.
+      await sb
+        .from('form_submissions')
+        .update({ form_data: { ...formData, nudge_sent: true } })
+        .eq('id', lead.id);
+      if (result.ok) nudged++;
+    } catch (err) {
+      console.error('[Nudge] Failed for lead', lead.id, err);
+    }
+  }
+
   const sent = results.filter((r) => r.ok).length;
-  return NextResponse.json({ processed: results.length, sent, results });
+  return NextResponse.json({ processed: results.length, sent, nudged, results });
 }

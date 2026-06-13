@@ -3,6 +3,7 @@ import { after } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { randomBytes } from 'crypto';
 import { sendLeadAcknowledgment, sendLeadAlert } from '@/lib/email/send';
+import { isHoneypotTripped, checkSubmissionRate } from '@/lib/spam-guard';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -80,8 +81,24 @@ export async function POST(
     const notes = (body.notes || body.message || '').trim() || null;
     const sourcePage = body.source_page || null;
 
+    if (isHoneypotTripped(body)) {
+      return NextResponse.json(
+        { success: true, message: 'Booking request received' },
+        { status: 201, headers: CORS_HEADERS }
+      );
+    }
+
     if (!customerName || !customerEmail) {
       return NextResponse.json({ error: 'Name and email are required' }, { status: 400, headers: CORS_HEADERS });
+    }
+
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rate = await checkSubmissionRate(supabase, 'bookings', projectId, clientIp);
+    if (!rate.allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429, headers: CORS_HEADERS }
+      );
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(bookingDate) || isNaN(new Date(bookingDate + 'T00:00:00').getTime())) {
       return NextResponse.json({ error: 'A valid date (YYYY-MM-DD) is required' }, { status: 400, headers: CORS_HEADERS });
@@ -119,6 +136,7 @@ export async function POST(
         notes,
         status: 'pending',
         manage_token: manageToken,
+        ip_address: clientIp,
       })
       .select('id, created_at')
       .single();

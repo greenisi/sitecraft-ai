@@ -4,6 +4,7 @@ import { leadAlertEmail, plainNotificationEmail } from './templates/lead-alert';
 import { leadAcknowledgmentEmail } from './templates/lead-acknowledgment';
 import { bookingDecisionEmail } from './templates/booking-decision';
 import { weeklyReportEmail } from './templates/weekly-report';
+import { reviewRequestEmail } from './templates/review-request';
 import type { WeeklyTotals, WeeklyProjectStats } from '@/lib/ai/weekly-report';
 
 export type SendResult =
@@ -108,6 +109,24 @@ export function sendBookingDecision(p: {
     ...t,
     replyTo: p.ownerEmail || undefined,
     tags: [{ name: 'kind', value: `booking_${p.decision}` }],
+  });
+}
+
+// "How did we do?" review request after a completed booking.
+export function sendReviewRequest(p: {
+  to: string;
+  businessName: string;
+  customerName?: string | null;
+  serviceType?: string | null;
+  reviewUrl: string;
+  ownerEmail?: string | null;
+}) {
+  const t = reviewRequestEmail(p);
+  return send({
+    to: p.to,
+    ...t,
+    replyTo: p.ownerEmail || undefined,
+    tags: [{ name: 'kind', value: 'review_request' }],
   });
 }
 
