@@ -913,8 +913,12 @@ ${[...allIconNames].map((name) => `    const ${name} = createIcon('${name}');`).
       var code = sourceEl ? sourceEl.textContent : '';
 
       try {
+        // runtime classic forces React.createElement (a global here) instead of
+        // the automatic JSX runtime, which injects an import statement that
+        // new Function rejects. The unpinned babel/standalone CDN started
+        // defaulting to automatic, which silently broke every preview.
         var result = Babel.transform(code, {
-          presets: ['react', 'typescript'],
+          presets: [['react', { runtime: 'classic' }], 'typescript'],
           filename: 'app.tsx',
         });
 
