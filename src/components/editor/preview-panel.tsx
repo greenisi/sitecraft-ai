@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useGeneratedFiles } from '@/lib/hooks/use-preview';
 import { useGenerationStore } from '@/stores/generation-store';
 import { PreviewFrame } from '@/components/preview/preview-frame';
+import { LiveBuildPreview } from '@/components/preview/live-build-preview';
 import { Monitor, FileCode2, ChevronRight, Loader2, Terminal } from 'lucide-react';
 import { colorize } from '@/lib/utils/colorize';
 
@@ -217,6 +218,10 @@ export function PreviewPanel({ projectId }: PreviewPanelProps) {
     (isGenerating || (currentStage === 'complete' && !showPreview && hasRealtimeFiles)) &&
     !showPreview;
 
+  // During generation, default to the live visual "watch it build" view
+  // (dopamine + right for non-technical owners); devs can flip to the code stream.
+  const [buildView, setBuildView] = useState<'preview' | 'code'>('preview');
+
   // ---- LOADING STATE (fetching files from DB after refresh) ----
   if (filesLoading && !hasFiles && !isGenerating) {
     return (
@@ -257,8 +262,41 @@ export function PreviewPanel({ projectId }: PreviewPanelProps) {
       ? STAGE_LABELS[currentStage] || 'Building...'
       : 'Starting...';
 
+    // Floating Preview/Code toggle shown in both views during generation.
+    const buildToggle = (
+      <div className="absolute right-3 top-3 z-30 flex items-center gap-0.5 rounded-lg border border-gray-700/80 bg-gray-900/90 p-0.5 text-xs shadow-lg backdrop-blur">
+        <button
+          onClick={() => setBuildView('preview')}
+          className={`rounded px-2.5 py-1 font-medium transition-colors ${
+            buildView === 'preview' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-gray-200'
+          }`}
+        >
+          Preview
+        </button>
+        <button
+          onClick={() => setBuildView('code')}
+          className={`rounded px-2.5 py-1 font-medium transition-colors ${
+            buildView === 'code' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'
+          }`}
+        >
+          Code
+        </button>
+      </div>
+    );
+
+    // Default: watch the site build itself, live and visual.
+    if (buildView === 'preview') {
+      return (
+        <div className="relative h-full">
+          {buildToggle}
+          <LiveBuildPreview projectId={projectId} />
+        </div>
+      );
+    }
+
     return (
-      <div className="flex h-full flex-col bg-[#0d1117]">
+      <div className="relative flex h-full flex-col bg-[#0d1117]">
+        {buildToggle}
         {/* ── File Tab Bar ── */}
         <div
           className="flex items-center bg-[#161b22] border-b border-[#21262d] flex-shrink-0 overflow-x-auto"

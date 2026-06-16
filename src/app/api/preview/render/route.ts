@@ -172,6 +172,103 @@ export async function GET(request: NextRequest) {
   });
 }
 
+/**
+ * POST /api/preview/render
+ *
+ * Renders IN-FLIGHT files straight from the client generation store, so we can
+ * show the site building itself live (section by section) DURING generation —
+ * before any version is marked complete in the DB. Body:
+ *   { projectId, files: Record<path, content>, page? }
+ *
+ * Reuses the same buildPreviewHTML compiler as GET. Two extra niceties so a
+ * half-built site still renders nicely:
+ *   - design-system fallback from project branding (colors before assembly persists them)
+ *   - a synthesized page that stacks whatever section components exist, in case
+ *     the real page.tsx (which composes them) hasn't streamed yet.
+ */
+export async function POST(request: NextRequest) {
+  let body: { projectId?: string; files?: Record<string, string>; page?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+
+  const projectId = body.projectId;
+  const page = body.page || '/';
+  const filesObj = body.files || {};
+  if (!projectId) {
+    return NextResponse.json({ error: 'Missing projectId' }, { status: 400 });
+  }
+
+  const files: FileRecord[] = Object.entries(filesObj)
+    .filter(([, content]) => typeof content === 'string' && content.length > 0)
+    .map(([file_path, content]) => ({ file_path, content }));
+
+  if (files.length === 0) {
+    return new Response('<!doctype html><html><body style="margin:0;background:#0a0a0f"></body></html>', {
+      headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' },
+    });
+  }
+
+  // Design-system fallback so brand colors render before the assembly stage
+  // persists src/lib/design-system.json (same logic as GET).
+  if (!files.some((f) => f.file_path === 'src/lib/design-system.json')) {
+    const supabase = createAdminClient();
+    const { data: project } = await supabase
+      .from('projects')
+      .select('generation_config')
+      .eq('id', projectId)
+      .single();
+    const branding = (project?.generation_config as Record<string, unknown> | null)?.branding as
+      | { primaryColor?: string; secondaryColor?: string; accentColor?: string }
+      | undefined;
+    if (branding?.primaryColor || branding?.secondaryColor || branding?.accentColor) {
+      files.push({
+        file_path: 'src/lib/design-system.json',
+        content: JSON.stringify(
+          synthesizeDesignSystemFromBranding(
+            branding.primaryColor ?? '#15803d',
+            branding.secondaryColor ?? '#78716c',
+            branding.accentColor ?? '#eab308'
+          )
+        ),
+      });
+    }
+  }
+
+  // Synthesize a page if the real one hasn't streamed yet — stack the section
+  // components that exist so far (in arrival order) so the site renders live.
+  const pageFilePath = resolvePageFilePath(page);
+  const hasPage = files.some(
+    (f) => f.file_path === pageFilePath || f.file_path === 'src/app/page.tsx'
+  );
+  if (!hasPage) {
+    const sectionNames = files
+      .filter((f) => f.file_path.startsWith('src/components/') && f.file_path.endsWith('.tsx'))
+      .map((f) => f.file_path.match(/\/([^/]+)\.tsx$/)?.[1])
+      .filter((n): n is string => Boolean(n));
+    if (sectionNames.length > 0) {
+      const composed = sectionNames.map((n) => `      <${n} />`).join('\n');
+      files.push({
+        file_path: 'src/app/page.tsx',
+        content: `export default function Page() {\n  return (\n    <main>\n${composed}\n    </main>\n  );\n}\n`,
+      });
+    }
+  }
+
+  const availablePages = deriveAvailablePages(files);
+  const html = buildPreviewHTML(files, page, availablePages, {
+    reviews: [],
+    googlePlaces: null,
+    businessInfo: null,
+  });
+
+  return new Response(html, {
+    headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' },
+  });
+}
+
 interface FileRecord {
   file_path: string;
   content: string;
