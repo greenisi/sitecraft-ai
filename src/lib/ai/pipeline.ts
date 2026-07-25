@@ -5,14 +5,10 @@ import { parse as babelParse } from '@babel/parser';
 import { getAnthropicClient, GENERATION_MODEL, TOKEN_LIMITS, withRetry } from './client';
 import { type ModelTier, getModelConfig, DEFAULT_FREE_TIER } from './models';
 
-// Resolve which Anthropic model ID to use based on tier (or fallback to default)
+// Resolve the global OpenRouter model ID for every SiteCraft generation tier.
 function resolveModel(tier?: ModelTier): string {
   if (!tier) return GENERATION_MODEL;
-  const config = getModelConfig(tier);
-  // For OpenRouter models, we still use Anthropic default in the pipeline
-  // (OpenRouter integration happens at the API route level)
-  if (config.provider === 'openrouter') return GENERATION_MODEL;
-  return config.modelId;
+  return getModelConfig(tier).modelId;
 }
 import { buildSystemPrompt } from './prompts/system-prompt';
 import { buildLandingPagePrompt } from './prompts/landing-page';

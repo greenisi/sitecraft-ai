@@ -11,7 +11,7 @@ export interface ModelConfig {
   description: string;
   badge: string;
   requiresPro: boolean;
-  provider: 'anthropic' | 'openrouter';
+  provider: 'openrouter';
   modelId: string;
   maxTokens: number;
 }
@@ -24,7 +24,7 @@ export const MODEL_TIERS: Record<ModelTier, ModelConfig> = {
     badge: '⚡',
     requiresPro: false,
     provider: 'openrouter',
-    modelId: 'qwen/qwen3-coder',
+    modelId: 'moonshotai/kimi-k3',
     maxTokens: 64000,
   },
   'pro-build': {
@@ -33,8 +33,8 @@ export const MODEL_TIERS: Record<ModelTier, ModelConfig> = {
     description: 'Fast and smart — perfect balance of speed and quality',
     badge: '🚀',
     requiresPro: true,
-    provider: 'anthropic',
-    modelId: 'claude-sonnet-4-20250514',
+    provider: 'openrouter',
+    modelId: 'moonshotai/kimi-k3',
     maxTokens: 64000,
   },
   'architect': {
@@ -43,8 +43,8 @@ export const MODEL_TIERS: Record<ModelTier, ModelConfig> = {
     description: 'Highest quality — most detailed and polished results',
     badge: '🏗️',
     requiresPro: true,
-    provider: 'anthropic',
-    modelId: 'claude-opus-4-6',
+    provider: 'openrouter',
+    modelId: 'moonshotai/kimi-k3',
     maxTokens: 64000,
   },
   'lightning': {
@@ -53,8 +53,8 @@ export const MODEL_TIERS: Record<ModelTier, ModelConfig> = {
     description: 'Fastest generation — great for quick iterations',
     badge: '⚡',
     requiresPro: true,
-    provider: 'anthropic',
-    modelId: 'claude-haiku-4-5-20251001',
+    provider: 'openrouter',
+    modelId: 'moonshotai/kimi-k3',
     maxTokens: 64000,
   },
 };

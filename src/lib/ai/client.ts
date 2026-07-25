@@ -3,8 +3,8 @@ import Anthropic from '@anthropic-ai/sdk';
 let client: Anthropic | null = null;
 
 /**
- * Returns a singleton Anthropic SDK client.
- * Only usable on the server side -- will throw if ANTHROPIC_API_KEY is missing.
+ * Returns a singleton client for OpenRouter's Anthropic-compatible Messages API.
+ * Only usable on the server side -- will throw if OPENROUTER_API_KEY is missing.
  */
 export function getAnthropicClient(): Anthropic {
   if (typeof window !== 'undefined') {
@@ -15,7 +15,7 @@ export function getAnthropicClient(): Anthropic {
   }
 
   if (!client) {
-    let apiKey = process.env.ANTHROPIC_API_KEY;
+    let apiKey = process.env.OPENROUTER_API_KEY;
 
     // If the system env has an empty string, try loading from .env.local directly
     if (!apiKey) {
@@ -24,7 +24,7 @@ export function getAnthropicClient(): Anthropic {
         const path = require('path');
         const envPath = path.resolve(process.cwd(), '.env.local');
         const envContent = fs.readFileSync(envPath, 'utf8');
-        const match = envContent.match(/^ANTHROPIC_API_KEY=(.+)$/m);
+        const match = envContent.match(/^OPENROUTER_API_KEY=(.+)$/m);
         if (match) {
           apiKey = match[1].trim();
         }
@@ -35,12 +35,19 @@ export function getAnthropicClient(): Anthropic {
 
     if (!apiKey) {
       throw new Error(
-        'ANTHROPIC_API_KEY environment variable is not set. ' +
+        'OPENROUTER_API_KEY environment variable is not set. ' +
         'Please add it to your .env.local file.'
       );
     }
 
-    client = new Anthropic({ apiKey });
+    client = new Anthropic({
+      apiKey,
+      baseURL: 'https://openrouter.ai/api',
+      defaultHeaders: {
+        'HTTP-Referer': 'https://app.innovated.marketing',
+        'X-Title': 'SiteCraft AI',
+      },
+    });
   }
 
   return client;
@@ -48,10 +55,9 @@ export function getAnthropicClient(): Anthropic {
 
 /**
  * Default model identifier (used when no tier is specified).
- * Using claude-sonnet-4 for fast, reliable generations that complete
- * well within Vercel function timeout limits.
+ * All SiteCraft generations use Kimi K3 through OpenRouter.
  */
-export const GENERATION_MODEL = 'claude-sonnet-4-20250514';
+export const GENERATION_MODEL = 'moonshotai/kimi-k3';
 
 /**
  * Makes a chat completion request to OpenRouter (for free-tier models).
