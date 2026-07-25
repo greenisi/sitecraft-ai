@@ -178,6 +178,9 @@ ${config.navigation.socialLinks?.length ? `Social links: ${config.navigation.soc
 ` : ''}
 ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 === QUALITY REQUIREMENTS ===
+- Preserve the exact business name everywhere: navigation, hero, page titles, and footer. Never replace it with a generic category name.
+- Use only facts provided in the business context. Never fabricate reviews, ratings, years in business, customer counts, staff, contact details, hours, addresses, newsletter signups, or guarantees.
+- Omit a testimonials, stats, team, newsletter, or emergency section when no real details were provided. A focused site is better than a padded template.
 - Every section MUST have scroll-triggered fade-in animations using IntersectionObserver
 - All buttons MUST have hover:scale-105 and transition effects
 - Cards MUST have hover:-translate-y-1 hover:shadow-xl effects

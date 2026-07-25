@@ -12,6 +12,12 @@ interface RequestBody {
     chatHistory?: Array<{ role: string; content: string }>;
 }
 
+function extractExplicitBusinessName(prompt: string): string | null {
+    const match = prompt.match(/\b(?:called|named)\s+["“]?([^"”.,!?]+)["”]?/i);
+    const name = match?.[1]?.trim();
+    return name && name.length <= 80 ? name : null;
+}
+
 const SYSTEM_PROMPT = `You are a friendly, expert website design consultant and configuration AI for Innovated Marketing \u2014 an AI-powered website builder. You help business owners create professional websites through conversation.
 
 YOUR PERSONALITY:
@@ -184,6 +190,11 @@ For EDIT mode examples:
 - "Make the text bigger"
 - "Change background to dark"
 - "Update the contact info"
+
+IDENTITY AND TRUTHFULNESS — NON-NEGOTIABLE:
+- Preserve an explicitly supplied business name exactly. If the user says "called Maple & Main", never shorten it to a generic category such as "Coffee".
+- Build from facts the user supplied. Do not invent awards, review counts, years in business, customer counts, addresses, phone numbers, staff names, testimonials, operating hours, or guarantees.
+- Do not add testimonials, statistics, team pages, newsletter signups, emergency messaging, or extra service pages unless the user supplied the relevant facts or explicitly asked for them.
 
 CRITICAL COLOR RULES:
 - NEVER default to generic blue (#3b82f6) or dark slate (#0f172a)
@@ -424,18 +435,10 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Enforce minimum sections for GENERATE mode
-        if (config.sections && config.sections.length < 5) {
-            const existingTypes = new Set(config.sections.map((s: SectionConfig) => s.type));
-            const additionalSections = ['testimonials', 'stats', 'faq', 'cta', 'about', 'gallery', 'team'];
-            let order = config.sections.length;
-            for (const sType of additionalSections) {
-                if (config.sections.length >= 5) break;
-                if (!existingTypes.has(sType)) {
-                    config.sections.push({ id: 'section-' + order, type: sType, order: order });
-                    order++;
-                }
-            }
+        const explicitBusinessName = extractExplicitBusinessName(prompt);
+        if (explicitBusinessName && config?.business) {
+            config.business.name = explicitBusinessName;
+            parsed.projectName = explicitBusinessName;
         }
 
         if (config.sections) {
