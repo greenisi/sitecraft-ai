@@ -31,23 +31,39 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       .catch(() => setBusinessType(''));
   }, [projectId]);
 
-  const allItems = [
-    { label: 'Dashboard', href: basePath },
-    { label: 'Setup', href: `${basePath}/setup` },
-    { label: 'Services', href: `${basePath}/services` },
-    { label: 'Products', href: `${basePath}/products` },
-    { label: 'Properties', href: `${basePath}/properties` },
-    { label: 'Orders', href: `${basePath}/orders` },
-    { label: 'Bookings', href: `${basePath}/bookings` },
-    { label: 'Blog', href: `${basePath}/blog` },
-    { label: 'Gallery', href: `${basePath}/gallery` },
-    { label: 'Media Studio', href: `${basePath}/media` },
-    { label: 'Reviews', href: `${basePath}/reviews` },
-    { label: 'Leads', href: `${basePath}/leads` },
-    { label: 'Marketing', href: `${basePath}/marketing` },
-    { label: 'Business Info', href: `${basePath}/business-info` },
-    { label: 'Notifications', href: `${basePath}/notifications` },
+  const groups = [
+    {
+      label: 'Site setup',
+      items: [
+        { label: 'Overview', href: basePath },
+        { label: 'Setup', href: `${basePath}/setup` },
+        { label: 'Business Info', href: `${basePath}/business-info` },
+        { label: 'Bookings', href: `${basePath}/bookings` },
+      ],
+    },
+    {
+      label: 'Content',
+      items: [
+        { label: 'Services', href: `${basePath}/services` },
+        { label: 'Products', href: `${basePath}/products` },
+        { label: 'Properties', href: `${basePath}/properties` },
+        { label: 'Blog', href: `${basePath}/blog` },
+        { label: 'Gallery', href: `${basePath}/gallery` },
+        { label: 'Media Studio', href: `${basePath}/media` },
+      ],
+    },
+    {
+      label: 'Grow',
+      items: [
+        { label: 'Orders', href: `${basePath}/orders` },
+        { label: 'Reviews', href: `${basePath}/reviews` },
+        { label: 'Leads', href: `${basePath}/leads` },
+        { label: 'Marketing', href: `${basePath}/marketing` },
+        { label: 'Notifications', href: `${basePath}/notifications` },
+      ],
+    },
   ];
+  const allItems = groups.flatMap(group => group.items);
 
   const normalizeType = (t: string): string => {
     const lower = t.toLowerCase().replace(/[^a-z]/g, '');
@@ -64,8 +80,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-gray-800">
-        <div className="flex items-center gap-2">
+      <div className="rounded-xl border border-gray-800 bg-gray-950/40 p-2">
+        <div className="flex items-center gap-2 border-b border-gray-800 px-2 pb-2">
           <Link
             href={`/projects/${projectId}`}
             className="flex items-center gap-1.5 px-4 py-3 md:px-3 md:py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors whitespace-nowrap min-h-[44px] md:min-h-0"
@@ -73,28 +89,36 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             Editor
           </Link>
-          <div className="w-px h-5 bg-gray-800" />
-          <nav className="flex gap-1 overflow-x-auto flex-1">
-            {navItems.map((item) => {
-              const isActive =
-                pathname === item.href ||
-                (item.href !== basePath && pathname.startsWith(item.href));
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`px-4 py-3 md:px-3 md:py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors min-h-[44px] md:min-h-0 ${
-                    isActive
-                      ? 'border-purple-500 text-purple-400'
-                      : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600'
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
         </div>
+        <nav className="grid gap-3 px-2 py-3 sm:grid-cols-2 lg:grid-cols-3">
+          {groups.map((group) => {
+            const visibleItems = group.items.filter(item => navItems.some(navItem => navItem.href === item.href));
+            if (visibleItems.length === 0) return null;
+            return (
+              <section key={group.label}>
+                <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500">{group.label}</p>
+                <div className="flex flex-wrap gap-1">
+                  {visibleItems.map((item) => {
+                    const isActive = pathname === item.href || (item.href !== basePath && pathname.startsWith(item.href));
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`rounded-md px-3 py-2 text-sm font-medium transition-colors min-h-[40px] ${
+                          isActive
+                            ? 'bg-purple-500/15 text-purple-300 ring-1 ring-purple-500/30'
+                            : 'text-gray-400 hover:bg-gray-800 hover:text-gray-100'
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </section>
+            );
+          })}
+        </nav>
       </div>
       {children}
     </div>
