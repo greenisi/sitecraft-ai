@@ -35,3 +35,13 @@ CREATE INDEX IF NOT EXISTS projects_user_data_group_idx
 
 COMMENT ON COLUMN projects.data_group_id IS
   'Projects sharing this id pool their customer data (leads, bookings, orders). Defaults to the project''s own id, i.e. not shared.';
+
+-- Applied alongside: capability acceptance, follow-up answers, and the two
+-- business_info fields the post-build questions needed a home for.
+ALTER TABLE projects
+  ADD COLUMN IF NOT EXISTS accepted_capabilities text[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS follow_up_answers jsonb NOT NULL DEFAULT '{}'::jsonb;
+
+ALTER TABLE business_info
+  ADD COLUMN IF NOT EXISTS logo_url text,
+  ADD COLUMN IF NOT EXISTS service_area text;
