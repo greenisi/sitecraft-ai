@@ -4,6 +4,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import type { Project } from '@/types/project';
 import type { SiteType } from '@/lib/utils/constants';
+import {
+  buildWebsiteBrief,
+  modelTierForJourney,
+  siteTypeForJourney,
+  type WebsiteJourneyAnswers,
+} from '@/lib/intake/website-journey';
 import { toast } from 'sonner';
 
 export function useProjects() {
@@ -30,9 +36,17 @@ export function useCreateProject() {
       name,
       siteType,
       prefill,
+      journey,
+      shareDataWithProjectId,
     }: {
       name: string;
       siteType: SiteType;
+      /**
+       * Pool this project's customer data (leads, bookings, orders) with an
+       * existing project of the same owner. Omitted means its own island,
+       * which is the default and what every existing project does.
+       */
+      shareDataWithProjectId?: string;
       // Optional prefill from the /for/[vertical] → /start funnel.
       // When set, the new project lands ready-to-generate for the right trade.
       prefill?: {
@@ -41,6 +55,7 @@ export function useCreateProject() {
         businessName?: string;    // mirrored into generation_config.business.name
         verticalLabel?: string;   // friendly label used in the AI prompt seed
       };
+      journey?: WebsiteJourneyAnswers;
     }) => {
       const supabase = createClient();
       const {
@@ -53,17 +68,34 @@ export function useCreateProject() {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-|-$/g, '')}-${Date.now().toString(36).slice(-4)}`;
 
+      const resolvedSiteType = journey ? siteTypeForJourney(journey.businessModel) : siteType;
       const seededBusiness = {
-        name:           prefill?.businessName || '',
-        description:    '',
-        industry:       prefill?.industry || '',
-        targetAudience: '',
+        name: journey?.businessName || prefill?.businessName || '',
+        description: journey?.offer || '',
+        industry: journey?.industry || prefill?.industry || '',
+        targetAudience: journey?.idealCustomer || '',
       };
-      const seededAiPrompt = prefill?.verticalLabel
-        ? `Generate a ${prefill.verticalLabel} business website` +
-          (prefill.businessName ? ` for "${prefill.businessName}"` : '') +
-          '.'
-        : '';
+      const seededAiPrompt = journey
+        ? buildWebsiteBrief(journey)
+        : prefill?.verticalLabel
+          ? `Generate a ${prefill.verticalLabel} business website` +
+            (prefill.businessName ? ` for "${prefill.businessName}"` : '') +
+            '.'
+          : '';
+
+      // Resolve the group to join BEFORE inserting. The lookup is scoped to
+      // this user so a stale or tampered id can never pool a stranger's
+      // customers into the new project.
+      let dataGroupId: string | undefined;
+      if (shareDataWithProjectId) {
+        const { data: sibling } = await supabase
+          .from('projects')
+          .select('data_group_id')
+          .eq('id', shareDataWithProjectId)
+          .eq('user_id', user.id)
+          .maybeSingle();
+        dataGroupId = (sibling as { data_group_id?: string } | null)?.data_group_id;
+      }
 
       const { data, error } = await supabase
         .from('projects')
@@ -71,9 +103,10 @@ export function useCreateProject() {
           user_id: user.id,
           name,
           slug,
-          site_type: siteType,
+          site_type: resolvedSiteType,
+          ...(dataGroupId ? { data_group_id: dataGroupId } : {}),
           generation_config: {
-            siteType,
+            siteType: resolvedSiteType,
             business: seededBusiness,
             branding: {
               primaryColor: '#0f172a',
@@ -85,6 +118,16 @@ export function useCreateProject() {
             },
             sections: [],
             aiPrompt: seededAiPrompt,
+            ...(journey ? { modelTier: modelTierForJourney(journey) } : {}),
+            ...(journey
+              ? {
+                  intake: {
+                    version: 1,
+                    completedAt: new Date().toISOString(),
+                    answers: journey,
+                  },
+                }
+              : {}),
           },
         })
         .select()

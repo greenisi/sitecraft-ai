@@ -5,6 +5,7 @@ import { randomBytes } from 'crypto';
 import { sendLeadAlert, sendLeadAcknowledgment } from '@/lib/email/send';
 import { draftLeadReply } from '@/lib/ai/lead-reply';
 import { isHoneypotTripped, checkSubmissionRate } from '@/lib/spam-guard';
+import { resolveLeadRecipient } from '@/lib/email/lead-recipient';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -209,9 +210,13 @@ export async function POST(
         const projectName = (project as { name?: string }).name || 'your website';
         const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.innovated.marketing';
 
-        // Owner email lives in auth.users — profiles has no reliable email column.
-        const { data: ownerUser } = await supabase.auth.admin.getUserById(project.user_id);
-        const ownerEmail = ownerUser?.user?.email || '';
+        // Prefer the address the owner told us to use for this business;
+        // falls back to the account email when they never said.
+        const { email: ownerEmail } = await resolveLeadRecipient(
+          supabase,
+          projectId,
+          project.user_id
+        );
 
         // Past the daily cap (likely a spam wave): store + queue only.
         // The cron sweep still delivers a digest-style pending notification;
