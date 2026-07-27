@@ -100,11 +100,11 @@ headline is empty, rewrite it with a number, a mechanism, or a named workflow. B
 
 1. \`src/components/marketing/Navbar.tsx\` -- Fixed navigation bar (follow DESIGN VARIETY navbar style):
    - \`'use client'\` component with useState for mobile menu toggle
-   - Use the navbar style from DESIGN VARIETY instructions (glassmorphism, dark, transparent, solid, or colored)
+   - Use the navbar style from DESIGN VARIETY instructions (solid white, solid dark, brand-colored, or bg-white/90 backdrop-blur — always a solid, always-visible background; never transparent)
    - Logo with gradient or primary brand color
    - Links: Features, Pricing, ${hasAuth ? 'Sign In' : 'Contact'}
    - Primary CTA button: "Get Started" / "Start Free Trial" with hover:scale-105
-   - Mobile hamburger with Menu/X icons, full-screen overlay
+   - Mobile hamburger with Menu/X icons, full-screen overlay — the menu panel is ALWAYS solid bg-white with text-gray-900
    - \`aria-expanded\` and \`aria-label\` for accessibility
 
 2. \`src/components/marketing/Footer.tsx\` -- Professional 4-column dark footer:
@@ -123,11 +123,13 @@ headline is empty, rewrite it with a number, a mechanism, or a named workflow. B
    - Large headline with impactful typography
    - Sub-headline with supporting copy
    - Email capture or CTA button with hover:scale-105 and glow effect
-   - Product screenshot/mockup placeholder with subtle floating animation
+   - Product screenshot/mockup placeholder with subtle floating animation (use the named animate-float utility, never an arbitrary animate-[...] value)
    - Trust indicators: "No credit card required", "Free 14-day trial"
 
-4. \`src/components/marketing/FeatureGrid.tsx\` -- Features section with icon cards.
-   Responsive grid layout. Use lucide-react icons.
+4. \`src/components/marketing/FeatureGrid.tsx\` -- Features section as a bento grid with
+   mixed-size cells (some wide, some tall — product UI shots, an oversized metric moment,
+   feature callouts), NOT a uniform grid of icon cards with titles + descriptions.
+   Responsive grid layout. Use lucide-react icons sparingly as accents.
 
 5. \`src/components/marketing/FeatureShowcase.tsx\` -- Alternating left-right feature
    sections with image on one side and text on the other. Highlight 2-3 key features
@@ -210,11 +212,11 @@ ${config.navigation.socialLinks?.length ? `Social links: ${config.navigation.soc
 ` : ''}
 ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 === QUALITY REQUIREMENTS ===
-- Every section MUST have scroll-triggered fade-in animations using IntersectionObserver
+- Above-the-fold content animates with CSS-only utilities (animate-fade-in-up, animate-rise-in, animate-blur-in — they fire on render and can never leave content hidden). Below-the-fold sections use the fail-open useReveal hook from the system prompt (starts visible, opts into the reveal only once the observer is confirmed working, 2.5s failsafe). NEVER initialize any element as opacity-0/hidden by default.
 - All buttons MUST have hover:scale-105 and transition effects
 - Cards MUST have hover:-translate-y-1 hover:shadow-xl effects
 - The hero style should follow the DESIGN VARIETY instructions (gradient, split, dark, minimal, etc.)
-- The navbar style should follow the DESIGN VARIETY instructions (glassmorphism, dark, transparent, etc.)
+- The navbar style should follow the DESIGN VARIETY instructions (solid white, solid dark, brand-colored, or bg-white/90 backdrop-blur — always a solid, always-visible background; never transparent)
 - Footer MUST be 4-column dark themed with newsletter signup
 - Mobile hamburger menu MUST work with useState toggle
 - Add \`pt-16\` to page content for fixed navbar

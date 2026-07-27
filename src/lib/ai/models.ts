@@ -14,6 +14,7 @@ export interface ModelConfig {
   provider: 'anthropic' | 'openrouter';
   modelId: string;
   maxTokens: number;
+  reasoningEffort?: 'max' | 'xhigh' | 'high' | 'medium' | 'low' | 'minimal' | 'none';
 }
 
 export const MODEL_TIERS: Record<ModelTier, ModelConfig> = {
@@ -29,23 +30,24 @@ export const MODEL_TIERS: Record<ModelTier, ModelConfig> = {
   },
   'pro-build': {
     tier: 'pro-build',
-    displayName: 'Pro Build',
-    description: 'Fast and smart — perfect balance of speed and quality',
-    badge: '🚀',
+    displayName: 'Standard',
+    description: 'Smart, fast generation for most websites',
+    badge: '✦',
     requiresPro: true,
     provider: 'anthropic',
-    modelId: 'claude-sonnet-4-20250514',
-    maxTokens: 64000,
+    modelId: 'claude-sonnet-5',
+    maxTokens: 128000,
   },
   'architect': {
     tier: 'architect',
-    displayName: 'Architect Mode',
-    description: 'Highest quality — most detailed and polished results',
-    badge: '🏗️',
+    displayName: 'Power Mode',
+    description: 'More reasoning power for complex, high-detail builds',
+    badge: '⚡',
     requiresPro: true,
     provider: 'anthropic',
-    modelId: 'claude-opus-4-6',
-    maxTokens: 64000,
+    modelId: 'claude-opus-5',
+    maxTokens: 128000,
+    reasoningEffort: 'max',
   },
   'lightning': {
     tier: 'lightning',

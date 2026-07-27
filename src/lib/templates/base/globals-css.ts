@@ -40,5 +40,27 @@ export function generateGlobalsCss(designSystem: DesignSystem): string {
     text-wrap: balance;
   }
 }
+
+
+/* Scroll-reveal states. The DEFAULT is visible; the hidden state applies only
+   under html[data-motion], which DynamicsRuntime sets after confirming it can
+   also remove it. No script, no reduced motion -> nothing is ever hidden. */
+html[data-motion] [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 26px, 0);
+  transition: opacity .75s cubic-bezier(.16,1,.3,1), transform .75s cubic-bezier(.16,1,.3,1);
+}
+html[data-motion] [data-reveal="right"] { transform: translate3d(34px, 0, 0); }
+html[data-motion] [data-reveal="left"] { transform: translate3d(-34px, 0, 0); }
+html[data-motion] [data-reveal="scale"] { transform: scale(.94); }
+html[data-motion] [data-reveal].is-in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-motion] [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
 `;
 }
