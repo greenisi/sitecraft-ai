@@ -9,6 +9,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { useGenerationStore } from '@/stores/generation-store';
+import { useGenerationEta } from '@/lib/hooks/use-generation-eta';
 import { cn } from '@/lib/utils/cn';
 import type { GenerationStage } from '@/types/generation';
 
@@ -20,11 +21,11 @@ interface StepItem {
 
 function getSteps(currentStage: GenerationStage | null): StepItem[] {
   const stages: { id: GenerationStage; label: string }[] = [
-    { id: 'config-assembly', label: 'Preparing configuration' },
-    { id: 'design-system', label: 'Creating design system' },
-    { id: 'blueprint', label: 'Planning page structure' },
-    { id: 'components', label: 'Building components' },
-    { id: 'assembly', label: 'Final assembly' },
+    { id: 'config-assembly', label: 'Reading your brief' },
+    { id: 'design-system', label: 'Curating visual direction' },
+    { id: 'blueprint', label: 'Composing a tailored journey' },
+    { id: 'components', label: 'Crafting tailored sections' },
+    { id: 'assembly', label: 'Checking the finished experience' },
   ];
   const ORDER: Record<string, number> = {
     'config-assembly': 0,
@@ -50,6 +51,7 @@ const MAX_VISIBLE_COMPONENTS = 8;
 function StageChecklist() {
   const { currentStage, progress, components, error, isGenerating } =
     useGenerationStore();
+  const { label: etaLabel } = useGenerationEta();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -131,6 +133,11 @@ function StageChecklist() {
             ? 'Generation failed'
             : 'Building your website...'}
         </span>
+        {etaLabel && (
+          <span className="ml-auto text-xs text-muted-foreground/60 whitespace-nowrap flex-shrink-0">
+            {etaLabel}
+          </span>
+        )}
       </div>
 
       {/* Stage list */}

@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient as createClient } from '@/lib/supabase/server';
 import { runGenerationPipeline } from '@/lib/ai/pipeline';
 import { createSSEStream } from '@/lib/ai/stream-handler';
-import { getModelConfig } from '@/lib/ai/models';
+import { DEFAULT_PRO_TIER, getModelConfig } from '@/lib/ai/models';
 import type { GenerationConfig } from '@/types/project';
 import type { GenerationEvent, VirtualFile } from '@/types/generation';
 
 export const runtime = 'nodejs';
-export const maxDuration = 300; // 5 minutes — Vercel Pro tier limit
+// Pro projects on Fluid Compute support up to 800 seconds. Power Mode
+// intentionally performs several model passes and streams/persists a complex
+// multi-page site, so the old five-minute cap could terminate a healthy Opus
+// build after planning but before any files were delivered.
+export const maxDuration = 800;
 
 interface RequestBody {
     projectId: string;
@@ -139,7 +143,7 @@ export async function POST(request: NextRequest) {
               version_number: nextVersionNumber,
               status: 'generating',
               trigger_type: project.status === 'draft' ? 'initial' : 'full-regenerate',
-              model_used: config.modelTier ? getModelConfig(config.modelTier).modelId : 'claude-sonnet-4-20250514',
+              model_used: getModelConfig(config.modelTier ?? DEFAULT_PRO_TIER).modelId,
               total_tokens_used: 0,
       })
       .select('id, version_number')
@@ -153,17 +157,41 @@ export async function POST(request: NextRequest) {
   }
 
   // ── Update project status ─────────────────────────────────────────────
-  await supabase
+  const { error: projectStartError } = await supabase
       .from('projects')
       .update({ status: 'generating' })
       .eq('id', projectId);
 
+  if (projectStartError) {
+    await supabase
+      .from('generation_versions')
+      .update({
+        status: 'error',
+        completed_at: new Date().toISOString(),
+        error_message: 'Could not start project generation lifecycle',
+      })
+      .eq('id', version.id);
+    return NextResponse.json(
+      { error: 'Could not start generation. Please try again.' },
+      { status: 503 }
+    );
+  }
+
   // ── Run pipeline and stream results ───────────────────────────────────
   const startTime = Date.now();
-    let persistedFileCount = 0;
 
   const pipelineWithPersistence = async function* (): AsyncGenerator<GenerationEvent> {
         let hasError = false;
+        let completionEvent: GenerationEvent | null = null;
+        const persistenceFailures: string[] = [];
+        // Captured from the assembly stage so it can be persisted onto the
+        // project row — export/deploy/publisher read projects.design_system
+        // and previously always fell through to their hardcoded fallback.
+        let capturedDesignSystem: unknown = null;
+        // Post-generation passes (dividers/links/layout runtimes) re-emit
+        // files that were already persisted — those must UPDATE the existing
+        // row, not insert a duplicate the preview could stale-read.
+        const persistedPaths = new Set<string>();
 
 
           // Inject projectId into aiPrompt so AI can use real form endpoints
@@ -172,24 +200,53 @@ export async function POST(request: NextRequest) {
                 for await (const event of runGenerationPipeline(config)) {
                           // Collect files as they complete
                   if (event.type === 'component-complete' && event.file) {
-                    // Persist each file eagerly to prevent data loss on timeout
+                    if (event.file.path === 'src/lib/design-system.json') {
+                      try {
+                        capturedDesignSystem = JSON.parse(event.file.content);
+                      } catch {
+                        // leave null — publisher falls back as before
+                      }
+                    }
+                    // Persist each file eagerly to prevent data loss on timeout.
+                    // Re-emitted files (post-generation injection passes) update
+                    // their existing row instead of duplicating it.
                     try {
-                      await supabase.from('generated_files').insert({
-                        project_id: projectId,
-                        version_id: version.id,
-                        file_path: event.file.path,
-                        content: event.file.content,
-                        file_type: inferFileType(event.file.path),
-                        section_type: inferSectionType(event.file.path),
-                      });
-                      persistedFileCount++;
+                      if (persistedPaths.has(event.file.path)) {
+                        await retryDatabaseWrite(`update ${event.file.path}`, async () =>
+                          supabase
+                            .from('generated_files')
+                            .update({ content: event.file!.content })
+                            .eq('version_id', version.id)
+                            .eq('file_path', event.file!.path)
+                        );
+                      } else {
+                        await retryDatabaseWrite(`save ${event.file.path}`, async () =>
+                          supabase.from('generated_files').insert({
+                            project_id: projectId,
+                            version_id: version.id,
+                            file_path: event.file!.path,
+                            content: event.file!.content,
+                            file_type: inferFileType(event.file!.path),
+                            section_type: inferSectionType(event.file!.path),
+                          })
+                        );
+                        persistedPaths.add(event.file.path);
+                      }
                     } catch (e) {
                       console.error('Failed to persist file:', event.file.path, e);
+                      persistenceFailures.push(event.file.path);
                     }
                   }
 
                   if (event.type === 'error') {
                               hasError = true;
+                  }
+
+                  // Do not tell the client the site is complete until every
+                  // generated file and both lifecycle records are durable.
+                  if (event.type === 'generation-complete') {
+                    completionEvent = event;
+                    continue;
                   }
 
                   yield event;
@@ -206,44 +263,73 @@ export async function POST(request: NextRequest) {
         // ── Persist results after pipeline completes ────────────────────────
         const elapsedMs = Date.now() - startTime;
 
+        if (persistenceFailures.length > 0 || persistedPaths.size === 0) {
+          hasError = true;
+          yield {
+            type: 'error',
+            stage: 'error',
+            error: persistenceFailures.length > 0
+              ? `We could not safely save ${persistenceFailures.length} generated file${persistenceFailures.length === 1 ? '' : 's'}. No credit was used; please retry.`
+              : 'The generator finished without producing any files. No credit was used; please retry.',
+          };
+        }
+
         if (hasError) {
                 // Mark version as errored
-          await supabase
-                  .from('generation_versions')
-                  .update({
-                              status: 'error',
-                              generation_time_ms: elapsedMs,
-                              completed_at: new Date().toISOString(),
-                  })
-                  .eq('id', version.id);
+          await retryDatabaseWrite('mark generation version failed', async () =>
+            supabase
+              .from('generation_versions')
+              .update({
+                status: 'error',
+                generation_time_ms: elapsedMs,
+                completed_at: new Date().toISOString(),
+              })
+              .eq('id', version.id)
+          );
 
-          await supabase
-                  .from('projects')
-                  .update({ status: 'error' })
-                  .eq('id', projectId);
+          await retryDatabaseWrite('mark project generation failed', async () =>
+            supabase
+              .from('projects')
+              .update({ status: 'error' })
+              .eq('id', projectId)
+          );
         } else {
                 // Files already persisted incrementally during streaming
+          const completedAt = new Date().toISOString();
 
           // Update generation version
-          await supabase
-                  .from('generation_versions')
-                  .update({
-                              status: 'complete',
-                              generation_time_ms: elapsedMs,
-                              completed_at: new Date().toISOString(),
-                  })
-                  .eq('id', version.id);
+          await retryDatabaseWrite('complete generation version', async () =>
+            supabase
+              .from('generation_versions')
+              .update({
+                status: 'complete',
+                generation_time_ms: elapsedMs,
+                completed_at: completedAt,
+              })
+              .eq('id', version.id)
+          );
 
-          // Update project
-          await supabase
-                  .from('projects')
-                  .update({
-                              status: 'generated',
-                              generation_config: config,
-                    business_type: config.siteType || null,
-                              last_generated_at: new Date().toISOString(),
-                  })
-                  .eq('id', projectId);
+          // Finalize lifecycle state separately from optional metadata so a
+          // malformed metadata value can never leave a completed project
+          // stuck on "generating".
+          await retryDatabaseWrite('complete project generation', async () =>
+            supabase
+              .from('projects')
+              .update({ status: 'generated', last_generated_at: completedAt })
+              .eq('id', projectId)
+          );
+
+          const { error: metadataError } = await supabase
+            .from('projects')
+            .update({
+              generation_config: config,
+              business_type: config.siteType || null,
+              ...(capturedDesignSystem ? { design_system: capturedDesignSystem } : {}),
+            })
+            .eq('id', projectId);
+          if (metadataError) {
+            console.error('Project metadata update failed (non-fatal):', metadataError);
+          }
 
           // Decrement generation credits
           await supabase
@@ -281,6 +367,12 @@ export async function POST(request: NextRequest) {
                     } catch (seedErr) {
                                   console.error('CMS seed error (non-fatal):', seedErr);
                     }
+
+          yield completionEvent ?? {
+            type: 'generation-complete',
+            stage: 'complete',
+            totalFiles: persistedPaths.size,
+          };
         }
   };
 
@@ -300,6 +392,25 @@ export async function POST(request: NextRequest) {
 // --------------------------------------------------------------------------
 // Helpers
 // --------------------------------------------------------------------------
+
+async function retryDatabaseWrite(
+  label: string,
+  operation: () => PromiseLike<{ error: { message?: string } | null }>,
+  maxAttempts = 3
+): Promise<void> {
+  let lastMessage = 'Unknown database error';
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const result = await operation();
+    if (!result.error) return;
+    lastMessage = result.error.message || lastMessage;
+    if (attempt < maxAttempts) {
+      await new Promise((resolve) => setTimeout(resolve, attempt * 250));
+    }
+  }
+
+  throw new Error(`${label} failed after ${maxAttempts} attempts: ${lastMessage}`);
+}
 
 function inferFileType(filePath: string): VirtualFile['type'] {
     if (filePath.includes('/app/') && filePath.endsWith('page.tsx')) return 'page';
@@ -336,4 +447,3 @@ function inferSectionType(filePath: string): string | null {
 
   return null;
 }
-

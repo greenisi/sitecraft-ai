@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGenerationStore } from '@/stores/generation-store';
+import { useGenerationEta } from '@/lib/hooks/use-generation-eta';
 
 // "Watch it build" — renders the in-flight site live, section by section, as
 // each component finishes generating. Uses two cross-fading iframes (double
@@ -32,6 +33,7 @@ export function LiveBuildPreview({ projectId }: { projectId: string }) {
   const progress = useGenerationStore((s) => s.progress);
   const currentStage = useGenerationStore((s) => s.currentStage);
   const components = useGenerationStore((s) => s.components);
+  const { label: etaLabel } = useGenerationEta();
 
   const aRef = useRef<HTMLIFrameElement>(null);
   const bRef = useRef<HTMLIFrameElement>(null);
@@ -129,7 +131,10 @@ export function LiveBuildPreview({ projectId }: { projectId: string }) {
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6 text-center">
           <div className="h-10 w-10 animate-spin rounded-full border-2 border-purple-500/30 border-t-purple-400" />
           <p className="pk-working text-lg font-semibold">{narration}</p>
-          <p className="text-sm text-gray-500">Your site will appear here as it builds, section by section…</p>
+          <p className="text-sm text-gray-500">
+            Your site will appear here as it builds, section by section…
+            {etaLabel && <span className="block mt-1 text-gray-400">{etaLabel}</span>}
+          </p>
         </div>
       )}
 
@@ -141,6 +146,12 @@ export function LiveBuildPreview({ projectId }: { projectId: string }) {
             <span className="pk-working font-medium">{narration}</span>
             <span className="text-gray-600">·</span>
             <span className="text-gray-400">{Math.max(progress.completed, fileCount)} built</span>
+            {etaLabel && (
+              <>
+                <span className="text-gray-600">·</span>
+                <span className="text-gray-400">{etaLabel}</span>
+              </>
+            )}
           </div>
         </div>
       )}

@@ -245,7 +245,11 @@ export async function POST(request: NextRequest) {
   );
   if (!hasPage) {
     const sectionNames = files
-      .filter((f) => f.file_path.startsWith('src/components/') && f.file_path.endsWith('.tsx'))
+      // Only mount page-level sections in the temporary composition. Nested
+      // kit components (for example GalleryMosaic) expect required props and
+      // are rendered by their owning section once it arrives; mounting them
+      // directly produces transient errors such as `images.map` on undefined.
+      .filter((f) => /^src\/components\/[^/]+\.tsx$/.test(f.file_path))
       .map((f) => f.file_path.match(/\/([^/]+)\.tsx$/)?.[1])
       .filter((n): n is string => Boolean(n));
     if (sectionNames.length > 0) {
@@ -624,6 +628,34 @@ tailwind.config = {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.5' },
         },
+        shimmerSweep: {
+          '0%': { transform: 'translateX(-150%)' },
+          '100%': { transform: 'translateX(150%)' },
+        },
+        gradientShift: {
+          '0%, 100%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+        },
+        kenburns: {
+          '0%': { transform: 'scale(1)' },
+          '100%': { transform: 'scale(1.08)' },
+        },
+        marquee: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
+        blurIn: {
+          '0%': { opacity: '0', filter: 'blur(8px)' },
+          '100%': { opacity: '1', filter: 'blur(0)' },
+        },
+        riseIn: {
+          '0%': { opacity: '0', transform: 'translateY(40px) scale(0.98)' },
+          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+        },
+        spinSlow: {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
+        },
       },
       animation: {
         'fade-in': 'fadeIn 0.6s ease-out forwards',
@@ -635,6 +667,13 @@ tailwind.config = {
         'bounce-in': 'bounceIn 0.6s ease-out forwards',
         'float': 'float 3s ease-in-out infinite',
         'pulse-slow': 'pulse 3s ease-in-out infinite',
+        'shimmer': 'shimmerSweep 2.5s ease-in-out infinite',
+        'gradient-shift': 'gradientShift 8s ease-in-out infinite',
+        'kenburns': 'kenburns 16s ease-out forwards',
+        'marquee': 'marquee 32s linear infinite',
+        'blur-in': 'blurIn 0.9s ease-out forwards',
+        'rise-in': 'riseIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'spin-slow': 'spinSlow 20s linear infinite',
       },
     },
   },
@@ -720,6 +759,11 @@ ${tailwindExtendScript}
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
 
   <script id="app-source" type="text/plain">
+    // Node globals shim — generated components may reference process.env
+    // (e.g. NEXT_PUBLIC_SITE_URL); without this a single reference crashes
+    // the entire preview render.
+    const process = (typeof globalThis !== 'undefined' && (globalThis as any).process) || { env: {} };
+
     // React hooks destructured for component-scope access
     const { useState, useEffect, useRef, useCallback, useMemo, useContext, useReducer, useLayoutEffect, useId } = React;
     const Fragment = React.Fragment;

@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
 import { useChat } from '@/lib/hooks/use-chat';
 import { usePlan } from '@/lib/hooks/use-plan';
 import { useGenerationStore } from '@/stores/generation-store';
@@ -9,11 +10,11 @@ import { ChatMessage } from './chat-message';
 import { ChatInput } from './chat-input';
 import { ChatWelcome } from './chat-welcome';
 import { GenerationProgress } from './generation-progress';
-import { useUpgradeGate, LockBadge } from './upgrade-gate';
+import { useUpgradeGate } from './upgrade-gate';
 import { Sparkles, Lock, RefreshCw } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { ModelSelector } from './ModelSelector';
-import { DEFAULT_FREE_TIER, DEFAULT_PRO_TIER, MODEL_TIERS, type ModelTier } from '@/lib/ai/models';
+import { DEFAULT_PRO_TIER, MODEL_TIERS, type ModelTier } from '@/lib/ai/models';
 
 interface ChatPanelProps {
   projectId: string;
@@ -22,26 +23,32 @@ interface ChatPanelProps {
 export function ChatPanel({ projectId }: ChatPanelProps) {
   const { messages, isProcessing, processingStage, sendMessage } =
     useChat(projectId);
-  const { currentStage, progress, isGenerating, projectId: genProjectId } =
+  const { isGenerating, projectId: genProjectId } =
     useGenerationStore();
   const { isPaid, loading: planLoading } = usePlan();
   const { modal: upgradeModal, showUpgrade } = useUpgradeGate();
   const searchParams = useSearchParams();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const journeyAutoStarted = useRef(false);
 
   const [projectName, setProjectName] = useState<string>('');
   const [projectDescription, setProjectDescription] = useState<string>('');
   const [projectStatus, setProjectStatus] = useState<string>('draft');
   const [inputPrefill, setInputPrefill] = useState<string>('');
+  const [journeyPrompt, setJourneyPrompt] = useState<string>('');
 
   // Model tier selection — initialise from URL param, then update when plan loads
   const urlTier = searchParams.get('tier') as ModelTier | null;
   const [selectedTier, setSelectedTier] = useState<ModelTier>(
-    urlTier && MODEL_TIERS[urlTier] ? urlTier : DEFAULT_FREE_TIER
+    urlTier === 'architect' && MODEL_TIERS[urlTier] ? urlTier : DEFAULT_PRO_TIER
   );
   useEffect(() => {
     if (!planLoading && !urlTier) {
-      setSelectedTier(isPaid ? DEFAULT_PRO_TIER : DEFAULT_FREE_TIER);
+      const tierTimer = window.setTimeout(
+        () => setSelectedTier(DEFAULT_PRO_TIER),
+        0
+      );
+      return () => window.clearTimeout(tierTimer);
     }
   }, [isPaid, planLoading, urlTier]);
 
@@ -53,18 +60,47 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
       const supabase = createClient();
       const { data } = await supabase
         .from('projects')
-        .select('name, status')
+        .select('name, status, generation_config')
         .eq('id', projectId)
         .single();
       if (data) {
         setProjectName(data.name || '');
         setProjectStatus(data.status || 'draft');
+        const config = data.generation_config as { aiPrompt?: string } | null;
+        if (searchParams.get('journey') === '1' && config?.aiPrompt) {
+          setJourneyPrompt(config.aiPrompt);
+        }
       }
       const desc = searchParams.get('desc') || '';
       if (desc) setProjectDescription(desc);
     };
     fetchProject();
-  }, [projectId]);
+  }, [projectId, searchParams]);
+
+  useEffect(() => {
+    if (journeyAutoStarted.current || !journeyPrompt || planLoading || isProcessing) return;
+    if (messages.length > 0) return;
+
+    let shouldStart = false;
+    try {
+      const marker = JSON.parse(sessionStorage.getItem(`sitecraft.journey_autostart.${projectId}`) || '{}');
+      shouldStart = typeof marker.createdAt === 'number' && Date.now() - marker.createdAt < 15 * 60 * 1000;
+      if (shouldStart) sessionStorage.removeItem(`sitecraft.journey_autostart.${projectId}`);
+    } catch {}
+    if (!shouldStart) return;
+
+    journeyAutoStarted.current = true;
+    if (!isPaid) {
+      const prefillTimer = window.setTimeout(() => {
+        setInputPrefill(journeyPrompt);
+        toast.info('Your website plan is ready', { description: 'Upgrade to start the AI build. Your full brief is saved.' });
+      }, 0);
+      return () => window.clearTimeout(prefillTimer);
+    }
+
+    const startTimer = window.setTimeout(() => sendMessage(journeyPrompt, undefined, selectedTier), 450);
+    return () => window.clearTimeout(startTimer);
+  }, [isPaid, isProcessing, journeyPrompt, messages.length, planLoading, projectId, selectedTier, sendMessage]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -231,4 +267,3 @@ export function ChatPanel({ projectId }: ChatPanelProps) {
     </div>
   );
 }
-

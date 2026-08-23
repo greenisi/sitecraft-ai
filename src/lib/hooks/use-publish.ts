@@ -2,13 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-
-interface PublishResult {
-  url: string;
-  domain: string;
-  deploymentId: string;
-  vercelProjectName: string;
-}
+import type { PublishResult } from '@/types/api';
 
 export function usePublish(projectId: string) {
   const queryClient = useQueryClient();
@@ -32,8 +26,15 @@ export function usePublish(projectId: string) {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['project', projectId] });
       queryClient.invalidateQueries({ queryKey: ['projects'] });
-      toast.success('Published successfully!', {
-        description: data.url,
+      if (data.status === 'published') {
+        toast.success('Published successfully!', {
+          description: data.url,
+        });
+        return;
+      }
+
+      toast.info('Deployment in progress', {
+        description: 'Your site is still building. Check back shortly.',
       });
     },
     onError: (error) => {
@@ -46,7 +47,9 @@ export function usePublish(projectId: string) {
   return {
     publish: mutation.mutateAsync,
     isPublishing: mutation.isPending,
-    publishedUrl: mutation.data?.url ?? null,
+    publishedUrl:
+      mutation.data?.status === 'published' ? mutation.data.url : null,
+    publishStatus: mutation.data?.status ?? null,
     reset: mutation.reset,
   };
 }

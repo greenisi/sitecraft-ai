@@ -17,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGenerationStore, type ComponentStatus } from '@/stores/generation-store';
+import { useGenerationEta } from '@/lib/hooks/use-generation-eta';
 import type { GenerationStage } from '@/types/generation';
 
 // --------------------------------------------------------------------------
@@ -31,28 +32,28 @@ interface StageInfo {
 
 const STAGE_INFO: Record<string, StageInfo> = {
   'config-assembly': {
-    label: 'Preparing',
-    description: 'Assembling generation configuration',
+    label: 'Reading your brief',
+    description: 'Matching the business, audience, and conversion goal',
     icon: Package,
   },
   'design-system': {
-    label: 'Design System',
-    description: 'Generating colors, typography, and tokens',
+    label: 'Curating direction',
+    description: 'Setting a visual language that fits this business',
     icon: Palette,
   },
   blueprint: {
-    label: 'Blueprint',
-    description: 'Planning site architecture and pages',
+    label: 'Composing the journey',
+    description: 'Planning proof, page rhythm, and conversion moments',
     icon: LayoutTemplate,
   },
   components: {
-    label: 'Components',
-    description: 'Building React components',
+    label: 'Crafting the site',
+    description: 'Building the tailored sections and interactions',
     icon: Code2,
   },
   assembly: {
-    label: 'Assembly',
-    description: 'Combining files into final project',
+    label: 'Quality pass',
+    description: 'Checking the experience holds together',
     icon: Package,
   },
   complete: {
@@ -85,6 +86,8 @@ export default function GenerationProgress() {
     events,
   } = useGenerationStore();
 
+  const { label: etaLabel } = useGenerationEta();
+
   const logEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll event log to bottom
@@ -106,7 +109,10 @@ export default function GenerationProgress() {
       {/* Stage Pipeline */}
       <Card>
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg">Generation Progress</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">Generation Progress</CardTitle>
+            <span className="text-xs text-muted-foreground">{etaLabel}</span>
+          </div>
         </CardHeader>
         <CardContent>
           {/* Stage steps */}

@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient as createClient } from '@/lib/supabase/server';
-import { getAnthropicClient, GENERATION_MODEL } from '@/lib/ai/client';
+import { streamGenerationText } from '@/lib/ai/client';
+import {
+    DEFAULT_PRO_TIER,
+    getModelConfig,
+    type ModelTier,
+} from '@/lib/ai/models';
 import { buildSystemPrompt } from '@/lib/ai/prompts/system-prompt';
-import { parseDesignSystem } from '@/lib/ai/parsers';
 import { extractCompletedBlocks } from '@/lib/ai/parsers';
 import { isParseable, repairWithAI, findContrastBugs, repairContrastWithAI, findShadelessBrandColors, repairShadelessColors } from '@/lib/ai/pipeline';
+import { createGalleryContext, repairDeadImageUrls } from '@/lib/ai/image-guard';
+import { getIndustryGallery } from '@/lib/ai/image-gallery';
 import { createSSEStream } from '@/lib/ai/stream-handler';
-import type { GenerationEvent, VirtualFile } from '@/types/generation';
+import type { GenerationEvent } from '@/types/generation';
 import type { DesignSystem } from '@/types/project';
 
 export const runtime = 'nodejs';
@@ -16,6 +22,7 @@ interface RequestBody {
     projectId: string;
     editInstructions: string;
     targetFiles: string[];
+    modelTier?: ModelTier;
 }
 
 export async function POST(request: NextRequest) {
@@ -37,7 +44,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
 
-    const { projectId, editInstructions, targetFiles } = body;
+    const { projectId, editInstructions, targetFiles, modelTier: requestedTier } = body;
 
     if (!projectId || !editInstructions) {
         return NextResponse.json(
@@ -60,6 +67,9 @@ export async function POST(request: NextRequest) {
     if (project.user_id !== user.id) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
+
+    const savedTier = (project.generation_config as { modelTier?: ModelTier } | null)?.modelTier;
+    const model = getModelConfig(requestedTier ?? savedTier ?? DEFAULT_PRO_TIER);
 
     // Check credits
     const { data: profile } = await supabase
@@ -160,7 +170,7 @@ export async function POST(request: NextRequest) {
             version_number: nextVersionNumber,
             status: 'generating',
             trigger_type: 'full-regenerate',
-            model_used: 'claude-sonnet-4-20250514',
+            model_used: model.modelId,
             total_tokens_used: 0,
         })
         .select('id, version_number')
@@ -204,12 +214,13 @@ export async function POST(request: NextRequest) {
         };
 
         try {
-            const client = getAnthropicClient();
-
             // Build the edit prompt with current file contents
             const fileContents = filesToEdit
                 .map((f) => '--- ' + f.path + ' ---\n' + f.content)
                 .join('\n\n');
+            const galleryContext = createGalleryContext(
+                getIndustryGallery(editInstructions, fileContents)
+            );
 
             const systemPrompt = designSystem
                 ? buildSystemPrompt(designSystem)
@@ -227,13 +238,12 @@ export async function POST(request: NextRequest) {
                 '- If adding a new section, also return the updated page.tsx that imports it\n\n' +
                 'CURRENT FILES:\n\n' + fileContents;
 
-            // Stream the edit response
-            const stream = client.messages.stream({
-                model: GENERATION_MODEL,
-                max_tokens: 16000,
-                system: systemPrompt,
-                messages: [{ role: 'user', content: editPrompt }],
-            });
+            const stream = streamGenerationText(
+                model,
+                systemPrompt,
+                editPrompt,
+                model.reasoningEffort === 'max' ? 96000 : 24000,
+            );
 
             let buffer = '';
             let completedCount = 0;
@@ -241,12 +251,7 @@ export async function POST(request: NextRequest) {
             const seenFiles = new Set<string>();
             let currentComponent: string | null = null;
 
-            for await (const event of stream) {
-                if (
-                    event.type === 'content_block_delta' &&
-                    event.delta.type === 'text_delta'
-                ) {
-                    const chunk = event.delta.text;
+            for await (const chunk of stream) {
                     buffer += chunk;
 
                     // Detect component start
@@ -307,6 +312,9 @@ export async function POST(request: NextRequest) {
                             if (fixed) safeContent = fixed;
                         }
 
+                        // Dead Unsplash IDs render as blank boxes — verify and swap them.
+                        safeContent = await repairDeadImageUrls(safeContent, galleryContext);
+
                         const fileType = inferFileType(block.filePath);
                         editedFiles.push({
                             path: block.filePath,
@@ -325,7 +333,6 @@ export async function POST(request: NextRequest) {
                         };
                         currentComponent = null;
                     }
-                }
             }
 
             // Process remaining buffer
@@ -352,6 +359,9 @@ export async function POST(request: NextRequest) {
                         const fixed = await repairContrastWithAI(safeContent, block.filePath, contrastBugs);
                         if (fixed) safeContent = fixed;
                     }
+
+                    // Dead Unsplash IDs render as blank boxes — verify and swap them.
+                    safeContent = await repairDeadImageUrls(safeContent, galleryContext);
 
                     const fileType = inferFileType(block.filePath);
                     editedFiles.push({

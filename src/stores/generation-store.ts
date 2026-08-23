@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { GenerationStage, GenerationEvent } from '@/types/generation';
+import { saveLearnedPerFile } from '@/lib/generation/eta';
 
 export type ComponentStatus = 'pending' | 'generating' | 'complete' | 'error';
 
@@ -25,6 +26,10 @@ interface GenerationState {
   error: string | null;
   events: GenerationEvent[];
   files: Record<string, string>;
+  /** Epoch ms when the current stage began — drives the time-remaining estimate. */
+  stageStartedAt: number | null;
+  /** Epoch ms when the components stage began — used to learn the per-file rate. */
+  componentsStartedAt: number | null;
 
   // Actions
   startGeneration: (projectId: string) => void;
@@ -42,6 +47,8 @@ const INITIAL_STATE = {
   error: null as string | null,
   events: [] as GenerationEvent[],
   files: {} as Record<string, string>,
+  stageStartedAt: null as number | null,
+  componentsStartedAt: null as number | null,
 };
 
 export const useGenerationStore = create<GenerationState>((set, get) => ({
@@ -64,11 +71,16 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
 
     switch (event.type) {
       case 'stage-start': {
+        const now = Date.now();
         set({
           currentStage: event.stage ?? null,
+          stageStartedAt: now,
           events,
-          ...(event.stage === 'components' && event.totalFiles
-            ? { progress: { total: event.totalFiles, completed: 0 } }
+          ...(event.stage === 'components'
+            ? {
+                componentsStartedAt: now,
+                ...(event.totalFiles ? { progress: { total: event.totalFiles, completed: 0 } } : {}),
+              }
             : {}),
         });
         break;
@@ -172,6 +184,13 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
         break;
       }
       case 'generation-complete': {
+        // Teach the ETA estimator this run's real per-file rate so the next
+        // generation's countdown starts calibrated.
+        if (state.componentsStartedAt && state.progress.completed > 0) {
+          saveLearnedPerFile(
+            (Date.now() - state.componentsStartedAt) / 1000 / state.progress.completed
+          );
+        }
         set({
           currentStage: 'complete',
           isGenerating: false,

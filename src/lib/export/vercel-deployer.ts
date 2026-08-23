@@ -31,7 +31,7 @@ export async function deployToVercel(
     const buffer = Buffer.from(file.content, 'utf-8');
     const sha = crypto.createHash('sha1').update(buffer).digest('hex');
 
-    await fetch(`${VERCEL_API}/v2/files`, {
+    const uploadResponse = await fetch(`${VERCEL_API}/v2/files`, {
       method: 'POST',
       headers: {
         ...headers,
@@ -40,6 +40,14 @@ export async function deployToVercel(
       },
       body: buffer,
     });
+
+    // Verify the file was uploaded successfully (200 = uploaded, 409 = already exists — both OK)
+    if (!uploadResponse.ok && uploadResponse.status !== 409) {
+      const errorText = await uploadResponse.text().catch(() => 'unknown error');
+      throw new Error(
+        `Failed to upload file ${path}: ${uploadResponse.status} ${uploadResponse.statusText} — ${errorText}`
+      );
+    }
 
     fileEntries.push({
       file: path,
