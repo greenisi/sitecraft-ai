@@ -1,336 +1,175 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { LogOut, Sparkles, Menu, X, LayoutGrid, CreditCard, Settings, User, Gift, Globe, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import {
+  AlertCircle,
+  ChevronDown,
+  CreditCard,
+  Gift,
+  Globe,
+  GraduationCap,
+  Inbox,
+  LayoutGrid,
+  LogOut,
+  Settings,
+  Sparkles,
+  User,
+  WalletCards,
+} from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/lib/hooks/use-user';
-import Image from 'next/image';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
+const secondaryLinks = [
+  { label: 'Workspace', href: '/dashboard', icon: Inbox, workspace: true },
+  { label: 'Academy', href: '/academy', icon: GraduationCap },
+  { label: 'Domains', href: '/domains', icon: Globe },
+  { label: 'Billing', href: '/billing', icon: CreditCard },
+  { label: 'Affiliates', href: '/affiliates', icon: Gift },
+  { label: 'Report an issue', href: '/issues', icon: AlertCircle },
+];
 
 export function SpaceNavbar() {
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useUser();
-  const [credits, setCredits] = useState<number>(0);
-  const [plan, setPlan] = useState('free');
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [credits, setCredits] = useState(0);
+  const [lastProjectId] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      return localStorage.getItem('lastProjectId');
+    } catch {
+      return null;
+    }
+  });
 
   useEffect(() => {
-    if (user) {
-      const supabase = createClient();
-      supabase
-        .from('profiles')
-        .select('generation_credits, plan')
-        .eq('id', user.id)
-        .single()
-        .then(({ data }) => {
-          if (data) {
-            setCredits(data.generation_credits);
-            setPlan(data.plan);
-          }
-        });
-    }
+    if (!user) return;
+    createClient()
+      .from('profiles')
+      .select('generation_credits')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => setCredits(data?.generation_credits || 0));
   }, [user]);
 
-  useEffect(() => { setMenuOpen(false); }, [pathname]);
-
-  useEffect(() => {
-    if (menuOpen) { document.body.style.overflow = 'hidden'; }
-    else { document.body.style.overflow = ''; }
-    return () => { document.body.style.overflow = ''; };
-  }, [menuOpen]);
-
   const handleSignOut = async () => {
-    setMenuOpen(false);
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    await createClient().auth.signOut();
     router.refresh();
     router.push('/login');
   };
 
-  const isActive = (path: string) => pathname === path;
-  const navTo = (path: string) => { setMenuOpen(false); router.push(path); };
+  const workspaceHref = lastProjectId ? `/projects/${lastProjectId}/workspace` : '/dashboard';
+  const pageTitle = pathname.startsWith('/cards')
+    ? 'Business Cards'
+    : pathname.startsWith('/settings')
+      ? 'Account'
+      : 'Websites';
+  const primaryLinks = [
+    { label: 'Websites', href: '/dashboard', icon: LayoutGrid, active: pathname === '/dashboard' || pathname.startsWith('/projects') },
+    { label: 'Cards', href: '/cards', icon: WalletCards, active: pathname.startsWith('/cards') },
+  ];
 
   return (
     <>
-      {/* ===== TOP HEADER ===== */}
-      <header className="relative z-20 flex items-center justify-between px-4 md:px-8 lg:px-12 py-4">
-        {/* Logo */}
-        <a href="/" className="flex items-center gap-2">
-          <Image
-            src="/logo.png"
-            alt="Innovated Marketing"
-            width={844}
-            height={563}
-            className="brightness-0 invert w-auto"
-            style={{ height: '120px' }}
-            priority
-          />
-        </a>
-
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1 md:gap-2">
-          {credits > 0 && (
-            <div
-              className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-amber-400"
-              style={{ background: 'rgba(245,158,11,0.1)' }}
-            >
-              <Sparkles className="h-3 w-3" />
-              <span className="tabular-nums">{credits >= 999999 ? '\u221e' : credits}</span>
-            </div>
-          )}
-
-          {plan !== 'free' && (
-            <div
-              className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium"
-              style={{ background: 'rgba(139,92,246,0.15)', color: '#a78bfa' }}
-            >
-              <Sparkles className="h-3 w-3" />
-              {plan === 'pro' ? 'Pro' : 'Beta Pro'}
-            </div>
-          )}
-
-          <a
-            href="/dashboard"
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive('/dashboard')
-                ? 'bg-white/10 text-white'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            Projects
-          </a>
-          <a
-            href="/billing"
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive('/billing')
-                ? 'bg-white/10 text-white'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            Billing
-          </a>
-          <a
-            href="/affiliates"
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive('/affiliates')
-                ? 'bg-white/10 text-white'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            Affiliates
-          </a>
-
-            <a
-              href="/domains"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                isActive('/domains')
-                  ? 'bg-purple-500/20 text-purple-300'
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Globe className="h-3.5 w-3.5" />
-              Domains
-            </a>
-          <a
-              href="/issues"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                isActive('/issues')
-                  ? 'bg-purple-500/20 text-purple-300'
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <AlertCircle className="h-3.5 w-3.5" />
-              Report Issue
-            </a>          <button
-            onClick={handleSignOut}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
-          >
-            <LogOut className="h-3.5 w-3.5" />
-            <span>Logout</span>
-          </button>
-        </nav>
-      </header>
-
-      {/* ===== FLOATING HAMBURGER BUTTON ===== */}
-      <button
-        onClick={() => setMenuOpen(true)}
-        className="md:hidden fixed bottom-6 left-5 z-40 flex items-center justify-center rounded-2xl shadow-2xl transition-all duration-200 active:scale-95"
-        style={{
-          width: '52px',
-          height: '52px',
-          background: 'linear-gradient(135deg, rgba(139,92,246,0.9) 0%, rgba(109,40,217,0.9) 100%)',
-          boxShadow: '0 8px 32px rgba(139,92,246,0.4), 0 2px 8px rgba(0,0,0,0.4)',
-          backdropFilter: 'blur(12px)',
-          border: '1px solid rgba(167,139,250,0.3)',
-        }}
-        aria-label="Open menu"
-      >
-        <Menu className="h-5 w-5 text-white" />
-      </button>
-
-      {/* ===== BACKDROP ===== */}
-      <div
-        className={`fixed inset-0 z-50 bg-black/70 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
-          menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={() => setMenuOpen(false)}
-      />
-
-      {/* ===== SLIDE-OUT DRAWER ===== */}
-      <div
-        className={`fixed top-0 left-0 z-50 h-full w-[290px] flex flex-col transition-transform duration-300 ease-out md:hidden ${
-          menuOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-        style={{
-          background: 'linear-gradient(180deg, #0a0d14 0%, #0d1117 50%, #111827 100%)',
-          borderRight: '1px solid rgba(71,85,105,0.25)',
-        }}
-      >
-        {/* Drawer header */}
-        <div
-          className="flex items-center justify-between px-5 py-4"
-          style={{ borderBottom: '1px solid rgba(71,85,105,0.2)' }}
-        >
-          <a href="/">
-            <Image
-              src="/logo.png"
-              alt="Innovated Marketing"
-              width={844}
-              height={563}
-              className="brightness-0 invert w-auto"
-              style={{ height: '120px' }}
-            />
-          </a>
-          <button
-            onClick={() => setMenuOpen(false)}
-            className="flex items-center justify-center w-11 h-11 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
-            aria-label="Close menu"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Plan & credits strip */}
-        <div className="px-5 py-3 flex items-center gap-3" style={{ borderBottom: '1px solid rgba(71,85,105,0.15)' }}>
-          {plan !== 'free' ? (
-            <span
-              className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold"
-              style={{ background: 'rgba(139,92,246,0.18)', color: '#c4b5fd' }}
-            >
-              <Sparkles className="h-3 w-3" />
-              {plan === 'pro' ? 'Pro' : 'Beta Pro'}
+      <header className="premium-nav sticky top-0 z-30 border-b border-white/[0.07] bg-[#080c15]/88 backdrop-blur-2xl">
+        <div className="mx-auto flex h-16 max-w-[1600px] items-center justify-between px-4 md:px-8 lg:px-12">
+          <Link href="/dashboard" className="flex items-center gap-2.5 text-white" aria-label="Sitecraft home">
+            <span className="brand-gem flex h-9 w-9 items-center justify-center rounded-xl">
+              <Sparkles className="h-4.5 w-4.5" />
             </span>
-          ) : (
-            <span className="text-xs text-gray-500 font-medium">Free Plan</span>
-          )}
+            <span className="hidden text-base font-semibold tracking-[-0.02em] sm:inline">Sitecraft</span>
+            <span className="text-sm font-semibold sm:hidden">{pageTitle}</span>
+          </Link>
 
-          <div className="flex items-center gap-1 ml-auto">
-            <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-            <span className="text-amber-400 font-semibold text-sm tabular-nums">
-              {credits >= 999999 ? '\u221e' : credits}
-            </span>
-            <span className="text-gray-500 text-xs">credits</span>
+          <nav className="hidden items-center gap-1 md:flex" aria-label="Main navigation">
+            {primaryLinks.map(({ label, href, active }) => (
+              <Link
+                key={href}
+                href={href}
+                className={`rounded-xl px-4 py-2 text-sm font-medium transition ${active ? 'bg-white/10 text-white' : 'text-white/45 hover:bg-white/[0.05] hover:text-white'}`}
+              >
+                {label}
+              </Link>
+            ))}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-1 rounded-xl px-4 py-2 text-sm font-medium text-white/45 transition hover:bg-white/[0.05] hover:text-white">
+                  More <ChevronDown className="h-3.5 w-3.5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="center" className="w-52 border-gray-800 bg-gray-950 text-gray-200">
+                {secondaryLinks.map(({ label, href, icon: Icon, workspace }) => (
+                  <DropdownMenuItem key={label} onSelect={() => router.push(workspace ? workspaceHref : href)} className="cursor-pointer focus:bg-white/5 focus:text-white">
+                    <Icon className="h-4 w-4 text-gray-400" /> {label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </nav>
+
+          <div className="flex items-center gap-2">
+            {credits > 0 && (
+              <div className="hidden items-center gap-1.5 rounded-full bg-amber-400/10 px-3 py-1.5 text-xs font-medium text-amber-300 sm:flex">
+                <Sparkles className="h-3 w-3" />
+                <span>{credits >= 999999 ? '\u221e' : credits}</span>
+              </div>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-white/65 transition hover:bg-white/10 hover:text-white" aria-label="Account menu">
+                  <User className="h-4 w-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-60 border-gray-800 bg-gray-950 text-gray-200">
+                {user?.email && (
+                  <>
+                    <DropdownMenuLabel className="truncate text-xs font-normal text-gray-500">{user.email}</DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-gray-800" />
+                  </>
+                )}
+                <DropdownMenuItem onSelect={() => router.push('/settings')} className="cursor-pointer focus:bg-white/5 focus:text-white">
+                  <Settings className="h-4 w-4 text-gray-400" /> Account
+                </DropdownMenuItem>
+                <div className="md:hidden">
+                  <DropdownMenuSeparator className="bg-gray-800" />
+                  {secondaryLinks.map(({ label, href, icon: Icon, workspace }) => (
+                    <DropdownMenuItem key={label} onSelect={() => router.push(workspace ? workspaceHref : href)} className="cursor-pointer focus:bg-white/5 focus:text-white">
+                      <Icon className="h-4 w-4 text-gray-400" /> {label}
+                    </DropdownMenuItem>
+                  ))}
+                </div>
+                <DropdownMenuSeparator className="bg-gray-800" />
+                <DropdownMenuItem onSelect={handleSignOut} className="cursor-pointer text-red-400 focus:bg-red-500/10 focus:text-red-300">
+                  <LogOut className="h-4 w-4" /> Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
+      </header>
 
-        {/* Nav links */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-600 px-3 pb-2">
-            Menu
-          </p>
-          <button
-            onClick={() => navTo('/dashboard')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-              isActive('/dashboard') ? 'text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'
-            }`}
-            style={isActive('/dashboard') ? { background: 'rgba(139,92,246,0.15)', color: '#e2d9f3' } : {}}
-          >
-            <LayoutGrid className={`h-4 w-4 ${isActive('/dashboard') ? 'text-purple-400' : ''}`} />
-            Projects
-          </button>
-          <button
-            onClick={() => navTo('/billing')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-              isActive('/billing') ? 'text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'
-            }`}
-            style={isActive('/billing') ? { background: 'rgba(139,92,246,0.15)', color: '#e2d9f3' } : {}}
-          >
-            <CreditCard className={`h-4 w-4 ${isActive('/billing') ? 'text-purple-400' : ''}`} />
-            Billing
-          </button>
-          <button
-            onClick={() => navTo('/affiliates')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-              isActive('/affiliates')
-                ? 'text-white'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
-            }`}
-            style={isActive('/affiliates') ? { background: 'rgba(139,92,246,0.15)', color: '#e2d9f3' } : {}}
-          >
-            <Gift className={`h-4 w-4 ${isActive('/affiliates') ? 'text-purple-400' : ''}`} />
-            Affiliates
-          </button>
-
-              <button
-                onClick={() => navTo('/domains')}
-                className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200"
-                style={isActive('/domains') ? { background: 'rgba(139,92,246,0.15)', color: 'rgb(196,181,253)' } : { color: 'rgb(156,163,175)' }}
-              >
-                <Globe className={`h-4 w-4 ${isActive('/domains') ? 'text-purple-400' : ''}`} />
-                Domains
-              </button>
-          <button
-            onClick={() => navTo('/issues')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-              isActive('/issues') ? 'text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'
-            }`}
-            style={isActive('/issues') ? { background: 'rgba(139,92,246,0.15)', color: '#e2d9f3' } : {}}
-          >
-            <AlertCircle className={`h-4 w-4 ${isActive('/issues') ? 'text-purple-400' : ''}`} />
-            Report Issue
-          </button>          <button
-            onClick={() => navTo('/settings')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-              isActive('/settings') ? 'text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'
-            }`}
-            style={isActive('/settings') ? { background: 'rgba(139,92,246,0.15)', color: '#e2d9f3' } : {}}
-          >
-            <Settings className={`h-4 w-4 ${isActive('/settings') ? 'text-purple-400' : ''}`} />
-            Settings
-          </button>
-        </nav>
-
-        {/* Bottom: sign out + user info */}
-        <div style={{ borderTop: '1px solid rgba(71,85,105,0.2)' }}>
-          <button
-            onClick={handleSignOut}
-            className="w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-white/5 transition-colors"
-          >
-            <LogOut className="h-4 w-4" />
-            Sign Out
-          </button>
-          {user && (
-            <div
-              className="flex items-center gap-3 px-5 py-4"
-              style={{ borderTop: '1px solid rgba(71,85,105,0.12)' }}
-            >
-              <div
-                className="flex items-center justify-center w-9 h-9 rounded-full flex-shrink-0"
-                style={{ background: 'rgba(139,92,246,0.2)', border: '1px solid rgba(139,92,246,0.3)' }}
-              >
-                <User className="h-4 w-4 text-purple-400" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-white truncate">{user.email}</p>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  {plan === 'free' ? 'Free' : plan === 'pro' ? 'Pro' : 'Beta Pro'} Plan
-                </p>
-              </div>
-            </div>
-          )}
+      <nav className="premium-mobile-nav fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#080c14]/92 px-3 pb-[max(.6rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-2xl md:hidden" aria-label="Mobile navigation">
+        <div className="mx-auto grid max-w-sm grid-cols-3">
+          {primaryLinks.map(({ label, href, icon: Icon, active }) => (
+            <Link key={href} href={href} className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-[11px] font-medium ${active ? 'text-violet-300' : 'text-white/40'}`}>
+              <Icon className="h-5 w-5" /> {label}
+            </Link>
+          ))}
+          <Link href="/settings" className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-[11px] font-medium ${pathname.startsWith('/settings') ? 'text-violet-300' : 'text-white/40'}`}>
+            <Settings className="h-5 w-5" /> Account
+          </Link>
         </div>
-      </div>
+      </nav>
     </>
   );
 }

@@ -20,7 +20,7 @@ const STATUS_CONFIG: Record<string, { variant: 'default' | 'secondary' | 'succes
   draft: { variant: 'secondary', dot: 'bg-gray-400' },
   generating: { variant: 'warning', dot: 'bg-amber-400 animate-pulse' },
   generated: { variant: 'success', dot: 'bg-emerald-400' },
-  deployed: { variant: 'success', dot: 'bg-emerald-400' },
+  deployed: { variant: 'warning', dot: 'bg-amber-400' },
   published: { variant: 'default', dot: 'bg-violet-400' },
   error: { variant: 'destructive', dot: 'bg-red-400' },
 };
@@ -100,10 +100,10 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
                   Edit
                 </Link>
               </DropdownMenuItem>
-              {(project.published_url || project.vercel_deployment_url) && (
+              {project.status === 'published' && project.published_url && (
                 <DropdownMenuItem asChild>
                   <a
-                    href={project.published_url || project.vercel_deployment_url!}
+                    href={project.published_url}
                     target="_blank"
                     rel="noopener noreferrer"
                   >

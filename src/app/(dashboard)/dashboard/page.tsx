@@ -2,11 +2,10 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Clock, Pencil, Trash2, Sparkles, Loader2, X, Inbox, Settings, Megaphone } from 'lucide-react';
+import Link from 'next/link';
+import { Plus, Clock, Pencil, Trash2, Sparkles, Loader2, Inbox, Settings, Megaphone, ArrowRight, CreditCard, GraduationCap } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/lib/hooks/use-user';
-import { ModelSelector } from '@/components/editor/ModelSelector';
-import { DEFAULT_FREE_TIER, DEFAULT_PRO_TIER, type ModelTier } from '@/lib/ai/models';
 import { usePageTour } from '@/components/tour/use-page-tour';
 import {
   subscribeGlobal,
@@ -14,6 +13,8 @@ import {
   isGenerating as bgIsGenerating,
 } from '@/lib/generation/background-generation';
 import { toast } from 'sonner';
+import { Portal } from '@/components/ui/portal';
+import { FreePlanAd } from '@/components/monetization/free-plan-ad';
 
 interface Project {
   id: string;
@@ -31,9 +32,11 @@ interface Project {
 
 // Mini browser-frame preview for project cards
 function ProjectPreview({ project, isGenerating: generating }: { project: Project; isGenerating: boolean }) {
-  const previewUrl = project.published_url || (project.slug ? `/api/preview/${project.id}` : null);
   const hasPreview = project.status === 'published' && project.published_url;
   const isGenerated = ['generated', 'deployed', 'published'].includes(project.status);
+  const previewLabel = project.status === 'deployed'
+    ? 'Deployment in progress'
+    : 'Ready to publish';
 
   // Generating animation
   if (generating) {
@@ -46,7 +49,7 @@ function ProjectPreview({ project, isGenerating: generating }: { project: Projec
               <div
                 className="h-2 rounded-full shrink-0"
                 style={{
-                  width: `${12 + Math.random() * 20}%`,
+                  width: `${12 + ((i * 7) % 20)}%`,
                   background: 'rgba(139,92,246,0.3)',
                   animation: `shimmer 2s ease-in-out ${i * 0.2}s infinite`,
                 }}
@@ -54,7 +57,7 @@ function ProjectPreview({ project, isGenerating: generating }: { project: Projec
               <div
                 className="h-2 rounded-full"
                 style={{
-                  width: `${20 + Math.random() * 40}%`,
+                  width: `${20 + ((i * 11) % 40)}%`,
                   background: 'rgba(56,189,248,0.2)',
                   animation: `shimmer 2s ease-in-out ${i * 0.2 + 0.3}s infinite`,
                 }}
@@ -128,7 +131,7 @@ function ProjectPreview({ project, isGenerating: generating }: { project: Projec
               <div className="h-1 w-10 rounded-full bg-violet-500/20" />
             </div>
           </div>
-          <span className="text-[10px] text-violet-300/60">Ready to publish</span>
+          <span className="text-[10px] text-violet-300/60">{previewLabel}</span>
         </div>
       </div>
     );
@@ -156,13 +159,9 @@ export default function DashboardPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [credits, setCredits] = useState(0);
   const [plan, setPlan] = useState('free');
+  const [planLoaded, setPlanLoaded] = useState(false);
   const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set());
 
-  // New Project Modal state
-  const [showModal, setShowModal] = useState(false);
-  const [projectName, setProjectName] = useState('');
-  const [projectDescription, setProjectDescription] = useState('');
-  const [selectedTier, setSelectedTier] = useState<ModelTier>(DEFAULT_FREE_TIER);
 
   // Helper to refresh project list from Supabase
   const refreshProjects = useCallback(async () => {
@@ -178,7 +177,7 @@ export default function DashboardPage() {
 
   // Poll server for generating projects that the client doesn't know about
   // (e.g. after page refresh or new tab)
-  const pollingRef = useRef<ReturnType<typeof setInterval>>();
+  const pollingRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const serverCheckRanRef = useRef(false);
 
   useEffect(() => {
@@ -312,6 +311,7 @@ export default function DashboardPage() {
             setCredits(data.generation_credits);
             setPlan(data.plan);
           }
+          setPlanLoaded(true);
         });
 
       supabase
@@ -326,34 +326,23 @@ export default function DashboardPage() {
     }
   }, [user]);
 
-  const openNewProjectModal = () => {
-    setProjectName('');
-    setProjectDescription('');
-    setSelectedTier(plan !== 'free' ? DEFAULT_PRO_TIER : DEFAULT_FREE_TIER);
-    setShowModal(true);
-  };
-
-  const handleCreateProject = async () => {
-    if (!projectName.trim()) {
-      toast.error('Please enter a project name');
-      return;
-    }
+  // Skip the setup modal entirely: create a blank draft and drop the user
+  // straight into the chat editor. Their first prompt describes the site and
+  // the generator auto-names the project (smart title), so there's nothing to
+  // fill in up front. Name starts as 'Untitled Project' — the sentinel the
+  // editor welcome screen uses to show its clean generic prompt.
+  const createAndOpenProject = async () => {
+    if (creating || !user) return;
     setCreating(true);
     try {
       const supabase = createClient();
-      const slug = projectName
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '')
-        + '-'
-        + Date.now().toString(36);
+      const slug = 'site-' + Date.now().toString(36);
 
       const { data, error } = await supabase
         .from('projects')
         .insert({
-          user_id: user!.id,
-          name: projectName.trim(),
+          user_id: user.id,
+          name: 'Untitled Project',
           slug,
           site_type: 'business',
           status: 'draft',
@@ -362,18 +351,9 @@ export default function DashboardPage() {
         .single();
 
       if (error) throw error;
-
-      setShowModal(false);
-      if (data) {
-        const params = new URLSearchParams();
-        if (projectDescription.trim())
-          params.set('desc', projectDescription.trim());
-        params.set('tier', selectedTier);
-        router.push(`/projects/${data.id}?${params.toString()}`);
-      }
-    } catch (err) {
+      if (data) router.push(`/projects/${data.id}`);
+    } catch {
       toast.error('Failed to create project');
-    } finally {
       setCreating(false);
     }
   };
@@ -408,20 +388,46 @@ export default function DashboardPage() {
 
   return (
     <div className="pt-4 md:pt-8 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl md:text-3xl font-bold text-white">
-            My Projects
-          </h1>
-          <p className="text-base text-gray-400 mt-1">
-            Create and manage your AI-generated websites
-          </p>
-        </div>
+      {/* Mobbin-inspired command header: one primary action, supporting tools stay secondary. */}
+      <section className="premium-feature-card relative mb-6 overflow-hidden rounded-[26px] border border-white/10 bg-[#0d1220]/90 p-5 sm:p-7">
+        <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-violet-500/20 blur-3xl" />
+        <div className="relative flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[.16em] text-violet-300">
+              <Sparkles className="h-3.5 w-3.5" /> Sitecraft workspace
+            </div>
+            <h1 className="max-w-xl text-3xl font-semibold tracking-[-.045em] text-white sm:text-4xl">
+              What are we building today?
+            </h1>
+            <p className="mt-2 max-w-lg text-sm leading-6 text-white/45">
+              Start with one idea. Sitecraft handles the structure, design, and business tools around it.
+            </p>
+          </div>
 
-        <div className="flex items-center gap-2">
+          <button
+            onClick={createAndOpenProject}
+            disabled={creating}
+            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-950 shadow-xl shadow-black/20 transition hover:-translate-y-0.5 hover:bg-violet-100 disabled:opacity-70 sm:w-auto"
+          >
+            {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+            Create a website
+            {!creating && <ArrowRight className="h-4 w-4" />}
+          </button>
+        </div>
+      </section>
+
+      <div className="mb-8 grid grid-cols-2 gap-3 sm:flex sm:items-center">
+        <Link href="/cards" className="flex min-h-14 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-4 text-sm font-medium text-white/75 transition hover:border-violet-400/30 hover:bg-white/[0.06]">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500/15 text-violet-300"><CreditCard className="h-4 w-4" /></span>
+          Business cards
+        </Link>
+        <Link href="/academy" className="flex min-h-14 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-4 text-sm font-medium text-white/75 transition hover:border-cyan-400/30 hover:bg-white/[0.06]">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-300"><GraduationCap className="h-4 w-4" /></span>
+          Academy
+        </Link>
+        <div className="col-span-2 ml-auto flex items-center gap-2">
           <div
-            className="hidden sm:flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-amber-400"
+            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-amber-400"
             style={{ background: 'rgba(245,158,11,0.1)' }}
           >
             <Sparkles className="h-3 w-3" />
@@ -441,17 +447,15 @@ export default function DashboardPage() {
               {plan === 'pro' ? 'Pro' : 'Beta Pro'}
             </div>
           )}
-          <button
-            onClick={openNewProjectModal}
-            className="flex items-center justify-center gap-2 rounded-xl px-6 py-4 md:px-4 md:py-2.5 text-base md:text-sm font-semibold text-white transition-all w-full sm:w-auto min-h-[52px] md:min-h-[44px]"
-            style={{
-              background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
-            }}
-          >
-            <Plus className="h-5 w-5 md:h-4 md:w-4" />
-            New Project
-          </button>
         </div>
+      </div>
+
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-white">Recent websites</h2>
+          <p className="mt-0.5 text-xs text-white/35">Continue where you left off</p>
+        </div>
+        <span className="text-xs text-white/30">{projects.length} total</span>
       </div>
 
       {/* Projects grid */}
@@ -463,25 +467,30 @@ export default function DashboardPage() {
         <div className="text-center py-20">
           <p className="text-gray-400 text-lg mb-4">No projects yet</p>
           <button
-            onClick={openNewProjectModal}
-            className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white"
+            onClick={createAndOpenProject}
+            disabled={creating}
+            className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white disabled:opacity-70"
             style={{
               background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
             }}
           >
-            <Plus className="h-4 w-4" />
+            {creating ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Plus className="h-4 w-4" />
+            )}
             Create Your First Project
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-3">
           {projects.map((project) => {
             const isProjectGenerating = generatingIds.has(project.id);
 
             return (
               <div
                 key={project.id}
-                className="group rounded-2xl overflow-hidden transition-all hover:-translate-y-1"
+                className="group min-w-[84vw] snap-center overflow-hidden rounded-2xl transition-all hover:-translate-y-1 sm:min-w-0"
                 style={{
                   background: 'rgba(30,41,59,0.5)',
                   border: isProjectGenerating
@@ -523,7 +532,7 @@ export default function DashboardPage() {
                       <button
                         onClick={() => setConfirmDeleteId(project.id)}
                         disabled={deletingId === project.id || isProjectGenerating}
-                        className="flex items-center justify-center w-11 h-11 rounded-lg text-gray-500 hover:text-red-400 hover:bg-white/5 transition-colors disabled:opacity-50"
+                        className="hidden items-center justify-center w-11 h-11 rounded-lg text-gray-500 hover:text-red-400 hover:bg-white/5 transition-colors disabled:opacity-50 sm:flex"
                       >
                         {deletingId === project.id ? (
                           <Loader2 className="h-5 w-5 animate-spin" />
@@ -536,7 +545,7 @@ export default function DashboardPage() {
                           e.stopPropagation();
                           router.push(`/projects/${project.id}/leads`);
                         }}
-                        className="flex items-center justify-center w-11 h-11 rounded-lg text-gray-500 hover:text-emerald-400 hover:bg-white/5 transition-colors"
+                        className="hidden items-center justify-center w-11 h-11 rounded-lg text-gray-500 hover:text-emerald-400 hover:bg-white/5 transition-colors sm:flex"
                         title="View leads & orders"
                       >
                         <Inbox className="h-5 w-5" />
@@ -579,8 +588,13 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {planLoaded && plan === 'free' && (
+        <FreePlanAd slot={process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_DASHBOARD_SLOT || ''} />
+      )}
+
             {/* Delete Confirmation Modal */}
       {confirmDeleteId && (
+        <Portal>
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -647,128 +661,9 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+        </Portal>
       )}
 
-      {/* New Project Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setShowModal(false)}
-          />
-          <div
-            className="relative w-full max-w-md rounded-2xl p-6"
-            style={{
-              background: 'linear-gradient(135deg, #1e293b, #0f172a)',
-              border: '1px solid rgba(139,92,246,0.2)',
-            }}
-          >
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-3 right-3 flex items-center justify-center w-10 h-10 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </button>
-            <div className="flex items-center gap-3 mb-6">
-              <div
-                className="flex h-10 w-10 items-center justify-center rounded-xl"
-                style={{
-                  background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
-                }}
-              >
-                <Sparkles className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-white">New Project</h2>
-                <p className="text-xs text-gray-400">
-                  Tell us about your website
-                </p>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-base font-medium text-gray-300 mb-2">
-                  Project Name *
-                </label>
-                <input
-                  type="text"
-                  value={projectName}
-                  onChange={(e) => setProjectName(e.target.value)}
-                  placeholder="e.g. My Coffee Shop Website"
-                  className="w-full rounded-xl px-4 text-base text-white placeholder-gray-500 outline-none focus:ring-2 focus:ring-violet-500/50"
-                  style={{
-                    background: 'rgba(15,23,42,0.8)',
-                    border: '1px solid rgba(71,85,105,0.4)',
-                    minHeight: '56px',
-                  }}
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey)
-                      handleCreateProject();
-                  }}
-                />
-              </div>
-              <div>
-                <label className="block text-base font-medium text-gray-300 mb-2">
-                  Description
-                </label>
-                <textarea
-                  value={projectDescription}
-                  onChange={(e) => setProjectDescription(e.target.value)}
-                  placeholder="Briefly describe what your business does and what you want the website to include..."
-                  rows={3}
-                  className="w-full rounded-xl px-4 py-4 text-base text-white placeholder-gray-500 outline-none focus:ring-2 focus:ring-violet-500/50 resize-none"
-                  style={{
-                    background: 'rgba(15,23,42,0.8)',
-                    border: '1px solid rgba(71,85,105,0.4)',
-                    minHeight: '100px',
-                  }}
-                />
-              </div>
-              <div>
-                <label className="block text-base font-medium text-gray-300 mb-2">
-                  Build Mode
-                </label>
-                <ModelSelector
-                  selected={selectedTier}
-                  onSelect={setSelectedTier}
-                  isPaid={plan !== 'free'}
-                />
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowModal(false)}
-                className="flex-1 py-4 rounded-xl text-base font-medium text-gray-400 transition-colors hover:text-white"
-                style={{
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreateProject}
-                disabled={creating || !projectName.trim()}
-                className="flex-1 py-4 rounded-xl text-base font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
-                style={{
-                  background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
-                }}
-              >
-                {creating ? (
-                  <>
-                    <Loader2 className="h-5 w-5 animate-spin" /> Creating...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-5 w-5" /> Create Project
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
   }
