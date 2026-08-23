@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import OnboardingChecklist from '@/components/admin/OnboardingChecklist';
 import { InboxPanel } from '@/components/workspace/InboxPanel';
+import { CapabilitySuggestions } from '@/components/workspace/CapabilitySuggestions';
 
 const CARD_CONFIG: Record<
   string,
@@ -317,6 +318,8 @@ export default function WorkspacePage() {
       </div>
 
       <OnboardingChecklist projectId={projectId} />
+
+      <CapabilitySuggestions projectId={projectId} />
 
       {/* Stat Cards - business-type aware */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
