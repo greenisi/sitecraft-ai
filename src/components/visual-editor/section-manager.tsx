@@ -26,7 +26,7 @@ interface SectionInfo {
 export function SectionManager() {
   const [sections, setSections] = useState<SectionInfo[]>([]);
   const [loading, setLoading] = useState(false);
-  const retryTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const retryCountRef = useRef(0);
   const gotResponseRef = useRef(false);
 
