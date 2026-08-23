@@ -5,10 +5,10 @@ import { useParams, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const NAV_VISIBILITY: Record<string, string[]> = {
-  service: ['Dashboard', 'Setup', 'Services', 'Bookings', 'Blog', 'Gallery', 'Media Studio', 'Reviews', 'Leads', 'Marketing', 'Business Info', 'Notifications'],
-  ecommerce: ['Dashboard', 'Setup', 'Products', 'Orders', 'Blog', 'Gallery', 'Media Studio', 'Reviews', 'Leads', 'Marketing', 'Business Info', 'Notifications'],
-  realestate: ['Dashboard', 'Setup', 'Properties', 'Blog', 'Gallery', 'Media Studio', 'Reviews', 'Leads', 'Marketing', 'Business Info', 'Notifications'],
-  general: ['Dashboard', 'Setup', 'Services', 'Products', 'Blog', 'Gallery', 'Media Studio', 'Reviews', 'Leads', 'Marketing', 'Business Info', 'Notifications'],
+  service: ['Workspace', 'Setup', 'Services', 'Bookings', 'Blog', 'Gallery', 'Visual Studio', 'Reviews', 'Leads', 'Marketing', 'Business Info', 'Notifications'],
+  ecommerce: ['Workspace', 'Setup', 'Products', 'Orders', 'Blog', 'Gallery', 'Visual Studio', 'Reviews', 'Leads', 'Marketing', 'Business Info', 'Notifications'],
+  realestate: ['Workspace', 'Setup', 'Properties', 'Blog', 'Gallery', 'Visual Studio', 'Reviews', 'Leads', 'Marketing', 'Business Info', 'Notifications'],
+  general: ['Workspace', 'Setup', 'Services', 'Products', 'Blog', 'Gallery', 'Visual Studio', 'Reviews', 'Leads', 'Marketing', 'Business Info', 'Notifications'],
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -32,7 +32,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [projectId]);
 
   const allItems = [
-    { label: 'Dashboard', href: basePath },
+    { label: 'Workspace', href: `/projects/${projectId}/workspace` },
     { label: 'Setup', href: `${basePath}/setup` },
     { label: 'Services', href: `${basePath}/services` },
     { label: 'Products', href: `${basePath}/products` },
@@ -41,7 +41,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: 'Bookings', href: `${basePath}/bookings` },
     { label: 'Blog', href: `${basePath}/blog` },
     { label: 'Gallery', href: `${basePath}/gallery` },
-    { label: 'Media Studio', href: `${basePath}/media` },
+    { label: 'Visual Studio', href: `${basePath}/media` },
     { label: 'Reviews', href: `${basePath}/reviews` },
     { label: 'Leads', href: `${basePath}/leads` },
     { label: 'Marketing', href: `${basePath}/marketing` },
