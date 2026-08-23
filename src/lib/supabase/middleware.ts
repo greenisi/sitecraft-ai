@@ -52,6 +52,8 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/dashboard') ||
     request.nextUrl.pathname.startsWith('/projects') ||
     request.nextUrl.pathname.startsWith('/templates') ||
+    request.nextUrl.pathname.startsWith('/cards') ||
+    request.nextUrl.pathname.startsWith('/academy') ||
     request.nextUrl.pathname.startsWith('/settings') ||
     request.nextUrl.pathname.startsWith('/admin') ||
     request.nextUrl.pathname.startsWith('/affiliates') ||

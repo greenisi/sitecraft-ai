@@ -14,6 +14,15 @@ function getSupabaseAdmin() {
 }
 
 export async function middleware(request: NextRequest) {
+  // The Visual Studio demo is intentionally isolated from Supabase so it can
+  // be previewed safely before the foundation migration is applied.
+  if (
+    request.nextUrl.pathname === '/visual-studio-demo' ||
+    request.nextUrl.pathname === '/journey-demo'
+  ) {
+    return NextResponse.next();
+  }
+
   // Get the response from the session update
   const response = await updateSession(request);
   

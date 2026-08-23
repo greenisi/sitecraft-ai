@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Loader2, Mail, ArrowLeft, CheckCircle } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { createRecoveryClient } from '@/lib/supabase/recovery-client';
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState('');
@@ -25,10 +25,13 @@ export default function ForgotPasswordPage() {
 
       setIsLoading(true);
         try {
-                const supabase = createClient();
+                // Recovery links are commonly opened from Gmail in Safari,
+                // outside the browser that requested them. Use an implicit
+                // recovery token so the link is self-contained across apps.
+                const supabase = createRecoveryClient();
                 const { error: resetError } = await supabase.auth.resetPasswordForEmail(
                           email.trim(),
-                  { redirectTo: `${window.location.origin}/callback?next=/settings` }
+                  { redirectTo: `${window.location.origin}/update-password` }
                         );
 
           if (resetError) {

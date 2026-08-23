@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function AuthLayout({
   children,
@@ -6,7 +7,7 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center relative" style={{ background: 'linear-gradient(135deg, #0a0e1a 0%, #111827 30%, #0f172a 60%, #0a0e1a 100%)' }}>
+    <div className="premium-auth relative flex min-h-dvh w-full flex-col items-center justify-center overflow-x-clip px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))]" style={{ background: 'linear-gradient(145deg, #070a12 0%, #0c1220 44%, #090d18 100%)' }}>
       {/* Starfield */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div className="stars-small" />
@@ -16,27 +17,26 @@ export default function AuthLayout({
       </div>
 
       {/* Logo */}
-      <a href="/" className="relative z-10 mb-8 block">
+      <Link href="/" className="relative z-10 mb-4 block sm:mb-6">
         <Image
           src="/logo.png"
           alt="Innovated Marketing"
           width={844}
           height={563}
-          className="brightness-0 invert w-auto"
-          style={{ height: '120px' }}
+          className="h-16 w-auto brightness-0 invert sm:h-20"
           priority
         />
-      </a>
+      </Link>
 
       {/* Auth card */}
-      <div className="relative z-10 w-full max-w-md mx-4">
-        <div className="rounded-2xl p-8" style={{ background: 'rgba(30,41,59,0.6)', border: '1px solid rgba(71,85,105,0.3)', backdropFilter: 'blur(20px)' }}>
+      <div className="relative z-10 w-full max-w-md">
+        <div className="premium-auth-card rounded-[24px] p-5 sm:p-8">
           {children}
         </div>
       </div>
 
       {/* Footer */}
-      <p className="relative z-10 mt-8 text-sm text-gray-500">
+      <p className="relative z-10 mt-5 text-center text-xs text-gray-500 sm:mt-7 sm:text-sm">
         Powered by Innovated Marketing AI
       </p>
     </div>
