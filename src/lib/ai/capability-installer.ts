@@ -18,6 +18,13 @@ interface InstallSpec {
   componentName: string;
   filePath: string;
   content: string;
+  /**
+   * Page patterns to try before falling back to the home page, most wanted
+   * first. A booking form belongs on the page a visitor lands on when they
+   * have already decided to book; an email signup belongs where the traffic
+   * is. Omit to keep the home-page-first default.
+   */
+  preferPages?: RegExp[];
 }
 
 interface InstallResult {
@@ -35,10 +42,18 @@ function parses(content: string): boolean {
   }
 }
 
-/** Prefers the home page: an email signup nobody navigates to collects nothing. */
-function pickPage(paths: string[]): string | undefined {
-  if (paths.includes('src/app/page.tsx')) return 'src/app/page.tsx';
-  return paths.find((path) => /^src\/app\/.*page\.tsx$/.test(path));
+/**
+ * Prefers the home page by default: an email signup nobody navigates to
+ * collects nothing. A spec can name better-fitting pages first.
+ */
+export function pickPage(paths: string[], prefer?: RegExp[]): string | undefined {
+  const pages = paths.filter((path) => /^src\/app\/.*page\.tsx$/.test(path));
+  for (const pattern of prefer || []) {
+    const match = pages.find((path) => pattern.test(path));
+    if (match) return match;
+  }
+  if (pages.includes('src/app/page.tsx')) return 'src/app/page.tsx';
+  return pages[0];
 }
 
 export async function injectComponentIntoPage(
@@ -70,7 +85,7 @@ export async function injectComponentIntoPage(
   }
 
   const rows = files as Array<{ id: string; file_path: string; content: string }>;
-  const targetPath = pickPage(rows.map((row) => row.file_path));
+  const targetPath = pickPage(rows.map((row) => row.file_path), spec.preferPages);
   if (!targetPath) return { ok: false, reason: 'Could not find a page to add it to.' };
 
   const target = rows.find((row) => row.file_path === targetPath)!;
