@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient as createClient } from '@/lib/supabase/server';
-import { getAnthropicClient, GENERATION_MODEL } from '@/lib/ai/client';
+import { getAnthropicClient, GENERATION_MODEL, callOpenRouter } from '@/lib/ai/client';
+import { completePromptWithFallback } from '@/lib/ai/parse-prompt-provider';
 import type { SectionConfig } from '@/types/project';
 
 export const runtime = 'nodejs';
@@ -26,7 +27,7 @@ CAPABILITIES YOU CAN RECOMMEND (only suggest things the platform can do):
 - Adding/removing/reordering sections (hero, features, testimonials, pricing, FAQ, contact, about, gallery, stats, team, blog-preview, cta)
 - Changing the site type (landing-page, business, ecommerce, saas, local-service)
 - Updating business name, tagline, and description
-- Changing navbar style (transparent, solid, glassmorphism, dark, colored)
+- Changing navbar style (solid, glassmorphism, dark, colored)
 - Changing footer style (multi-column, simple, centered, minimal)
 - Adding more pages (About, Services, Contact, Pricing, Menu, Gallery, etc.)
 - Using the Visual Editor to fine-tune individual elements (colors, spacing, text)
@@ -35,18 +36,22 @@ CAPABILITIES YOU CAN RECOMMEND (only suggest things the platform can do):
 - SEO optimization (meta titles, descriptions, keywords, schema markup, SEO score)
 - Social media post generation (Instagram, Facebook, X/Twitter)
 - Google Business Profile setup guidance
+- Built-in lead capture and contact-form submissions routed to the project workspace
+- Built-in services, bookings, products, orders, properties, reviews, and galleries when appropriate for the business type
+- Built-in Stripe checkout and payment onboarding for supported commerce projects
+- Recommending the smallest useful backend after generation based on the site's actual customer actions
 - Ad copy generation (coming soon)
 
 DO NOT recommend or suggest things outside the platform's capabilities. These will BREAK the website or confuse the user:
 - Custom domain setup (coming soon)
-- Backend functionality, databases, or user authentication
-- Payment processing or e-commerce checkout (no Stripe, PayPal, etc.)
+- Custom databases, arbitrary user authentication, or unsupported server code outside Site Craft's built-in business backend
+- Payment providers other than the platform's supported Stripe flows
 - Blog CMS or dynamic content management
 - Email marketing or CRM integration (coming soon)
 - Interactive features like chatbots, search bars with real search, live feeds
 - Animations beyond what Tailwind CSS provides (no Framer Motion, GSAP, etc.)
 - Third-party API integrations or plugins
-- Form submissions that connect to external services (forms are static/visual only unless using the built-in contact form component)
+- Form submissions that connect directly to unsupported external services (use Site Craft's built-in project endpoints)
 - Dark mode toggle (the site has a fixed theme, not a toggle)
 - Multi-language/i18n support
 
@@ -87,11 +92,11 @@ MODE 2 - GENERATE (use ONLY for first-time website creation or MAJOR redesigns):
       { "id": "unique-id", "type": "hero" | "features" | "pricing" | "testimonials" | "cta" | "contact" | "about" | "gallery" | "faq" | "stats" | "team" | "blog-preview" | "product-grid" | "custom", "order": 0 }
     ],
     "navigation": {
-      "navbarStyle": "transparent" | "solid" | "glassmorphism" | "dark" | "colored",
+      "navbarStyle": "solid" | "glassmorphism" | "dark" | "colored",
       "navbarPosition": "fixed" | "sticky" | "static",
       "footerStyle": "multi-column" | "simple" | "centered" | "minimal"
     },
-    "aiPrompt": "string - detailed description for the AI generator."
+    "aiPrompt": "string - a COMPLETE CREATIVE BRIEF for the AI generator. This is the single most important field (150-300 words) - it is what makes the output match the user's intent without further prompting. Structure it exactly as: USER'S EXACT WORDS: quote the user's request verbatim - these are hard constraints that must be honored literally. BUSINESS REALITY: who the customer is, what they fear when buying in this industry, what builds instant trust here, the price-point feel (budget/mid/premium), and the ONE action the site must drive. DESIGN DIRECTION: mood in 3-5 adjectives, palette guidance tied to the industry, typography feel (editorial serif vs modern sans), and ONE signature layout moment to include. CONTENT PLAN: the pages with their key sections in the order this industry's customer actually decides, 2-3 specific copy angles with concrete ownable claims (numbers, place names, methods, guarantees), and imagery direction (what the photos should literally show). NEGATIVE CONSTRAINTS: anything the user said to avoid, plus generic-template patterns to ban. Commit to specific choices the owner would recognize as 'exactly my business' - never leave an inference generic."
   },
   "projectName": "string",
   "planDescription": "string",
@@ -124,11 +129,11 @@ marketingOptions examples:
 
 WHEN TO USE EACH MODE:
 
-CONVERSATION mode:
-- For the user's FIRST message UNLESS they explicitly say "build it", "generate", "create my website now"
-- When the user asks questions, wants help planning, or says things like "help me", "I'm not sure"
-- To ask about: business details, target audience, preferred style/colors, must-have pages/sections
-- Ask 2-4 focused questions at a time
+CONVERSATION mode (use SPARINGLY — the product promise is "Describe it. We build it."):
+- ONLY when the message gives you nothing to design from (no discernible business type or purpose — e.g. "hi", "help me", "what can you do?") or is a direct question that needs answering
+- If the user describes ANY identifiable business or site purpose ("a bakery in Austin", "plumber website", "landing page for my fitness app"), go STRAIGHT to GENERATE mode. Infer everything they didn't specify — confidently, from industry conventions and the READ-THE-OWNER'S-MIND analysis you encode into aiPrompt. The user refines AFTER seeing a build; never interrogate them before showing one.
+- If the user didn't give a business name, invent a credible industry-appropriate one and mention in planDescription that they can rename it.
+- Never ask more than ONE round of questions total, and only when genuinely blocked.
 
 GENERATE mode (FULL rebuild - expensive, avoid when possible):
 - ONLY for the initial website creation when no website exists yet
@@ -162,9 +167,9 @@ These suggestions will be sent as the user's next message, so they MUST be thing
 
 CRITICAL RULES FOR SUGGESTIONS:
 - ONLY suggest things listed under "CAPABILITIES YOU CAN RECOMMEND" above
-- NEVER suggest features outside the platform's capabilities (custom domains, backend functionality, payment processing, blog CMS, database setup, user authentication, API integrations, third-party plugins)
+- NEVER suggest features outside the platform's capabilities (unsupported custom databases, arbitrary user authentication, unsupported API integrations, or third-party plugins)
 - NEVER suggest "Add animations" or "Add interactive features" — the platform generates static React components, not complex interactive apps
-- NEVER suggest "Add a blog", "Set up email", "Connect payment", "Add login/signup", "Add search functionality", "Add a chatbot", "Add social media feed", "Integrate with Stripe/PayPal", or any backend/dynamic feature
+- NEVER suggest unsupported login systems, arbitrary search, chatbots, social feeds, or third-party payment providers. You MAY suggest the built-in lead, booking, order, content, and Stripe capabilities when the site type supports them.
 - Suggestions should be visual/content changes OR marketing actions: colors, text, layout, SEO, social posts, etc.
 - Keep suggestions under 8 words — they appear as small clickable chips
 - Make suggestions specific to what was just built/changed
@@ -281,8 +286,6 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-        const anthropic = getAnthropicClient();
-
         // Build messages array
         const messages: Array<{ role: 'user' | 'assistant'; content: string }> = [];
 
@@ -345,21 +348,31 @@ export async function POST(request: NextRequest) {
 
         messages.push({ role: 'user', content: promptWithContext });
 
-        const response = await anthropic.messages.create({
-            model: GENERATION_MODEL,
-            max_tokens: 2048,
-            system: SYSTEM_PROMPT,
-            messages,
-        });
-
-        const textBlock = response.content.find((b) => b.type === 'text');
-        if (!textBlock || textBlock.type !== 'text') {
-            throw new Error('No text response from AI');
-        }
+        const responseText = await completePromptWithFallback(
+            async () => {
+                const response = await getAnthropicClient().messages.create({
+                    model: GENERATION_MODEL,
+                    max_tokens: 8192,
+                    system: SYSTEM_PROMPT,
+                    messages,
+                });
+                const textBlock = response.content.find((b) => b.type === 'text');
+                if (!textBlock || textBlock.type !== 'text') {
+                    throw new Error('No text response from AI');
+                }
+                return textBlock.text;
+            },
+            async () => callOpenRouter(
+                'qwen/qwen3-coder',
+                [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
+                8192,
+                { jsonOutput: true },
+            ),
+        );
 
         let parsed;
         try {
-            let jsonStr = textBlock.text.trim();
+            let jsonStr = responseText.trim();
 
             // Try to extract from a fenced json block first
             const jsonBlockMatch = jsonStr.match(/```(?:json)?\s*\n([\s\S]*?)```/);
@@ -378,8 +391,8 @@ export async function POST(request: NextRequest) {
             }
 
             parsed = JSON.parse(jsonStr);
-        } catch (parseError) {
-            console.error('JSON parse failed. Raw response:', textBlock.text.substring(0, 500));
+        } catch {
+            console.error('JSON parse failed. Raw response:', responseText.substring(0, 500));
             throw new Error('Failed to parse AI response as JSON');
         }
 

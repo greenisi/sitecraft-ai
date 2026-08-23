@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireProjectOwner } from '@/lib/project-auth';
-import { getAnthropicClient, GENERATION_MODEL, withRetry } from '@/lib/ai/client';
+import { getAnthropicClient, GENERATION_MODEL, callOpenRouter } from '@/lib/ai/client';
+import { completePromptWithFallback } from '@/lib/ai/parse-prompt-provider';
 import { buildSeoGenerationPrompt } from '@/lib/ai/prompts/marketing-seo';
 
 export const runtime = 'nodejs';
@@ -80,24 +81,30 @@ export async function POST(
         : undefined,
     });
 
-    const anthropic = getAnthropicClient();
-
-    const response = await withRetry(() =>
-      anthropic.messages.create({
-        model: GENERATION_MODEL,
-        max_tokens: 4096,
-        messages: [{ role: 'user', content: prompt }],
-      })
+    const responseText = await completePromptWithFallback(
+      async () => {
+        const response = await getAnthropicClient().messages.create({
+          model: GENERATION_MODEL,
+          max_tokens: 4096,
+          messages: [{ role: 'user', content: prompt }],
+        });
+        const textBlock = response.content.find((b) => b.type === 'text');
+        if (!textBlock || textBlock.type !== 'text') {
+          throw new Error('No text response from AI');
+        }
+        return textBlock.text;
+      },
+      async () => callOpenRouter(
+        'qwen/qwen3-coder',
+        [{ role: 'user', content: prompt }],
+        4096,
+        { jsonOutput: true },
+      ),
     );
-
-    const textBlock = response.content.find((b) => b.type === 'text');
-    if (!textBlock || textBlock.type !== 'text') {
-      throw new Error('No text response from AI');
-    }
 
     let parsed;
     try {
-      let jsonStr = textBlock.text.trim();
+      let jsonStr = responseText.trim();
       const firstBrace = jsonStr.indexOf('{');
       const lastBrace = jsonStr.lastIndexOf('}');
       if (firstBrace !== -1 && lastBrace > firstBrace) {
