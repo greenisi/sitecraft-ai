@@ -11,7 +11,7 @@
  *   npx tsx scripts/test-capability-installers.ts
  */
 
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { parse } from '@babel/parser';
 import { generateQuoteFormComponent, deriveQuoteOptions } from '../src/lib/templates/base/quote-form';
 import {
@@ -208,20 +208,32 @@ console.log('\nPublic site endpoints are reachable cross-origin');
     !createCheckout.includes('Access-Control-Allow-Origin')
   );
 
+  check(
+    'create-checkout still accepts the name-only cart the publisher injects',
+    createCheckout.includes('productNames')
+  );
+
   // profiles.stripe_account_id does not exist; the real column is
   // stripe_connect_account_id. Selecting the phantom silently disables
   // whatever depends on it.
-  for (const file of [
-    'src/app/api/projects/[projectId]/onboarding-status/route.ts',
-    'src/app/api/sites/[projectId]/checkout/route.ts',
-    'src/app/api/sites/[projectId]/checkout/success/route.ts',
-  ]) {
+  for (const file of ['src/app/api/projects/[projectId]/onboarding-status/route.ts']) {
     const source = readFileSync(file, 'utf8');
     check(
       `${file.split('/').slice(-2)[0]} reads a stripe column that exists`,
       !/select\('stripe_account_id'\)/.test(source)
     );
   }
+
+  // The superseded pair is gone; nothing should reintroduce a second
+  // checkout under /api/sites/.
+  check(
+    'superseded /api/sites checkout route is gone',
+    !existsSync('src/app/api/sites/[projectId]/checkout/route.ts')
+  );
+  check(
+    'superseded checkout success route is gone',
+    !existsSync('src/app/api/sites/[projectId]/checkout/success/route.ts')
+  );
 }
 
 console.log('\nBooking intent overrides trade guessing');

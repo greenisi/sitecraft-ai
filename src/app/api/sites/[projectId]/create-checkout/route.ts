@@ -5,24 +5,37 @@ import { getStripe } from '@/lib/stripe';
 export const dynamic = 'force-dynamic';
 
 /**
- * SUPERSEDED. Generated storefronts check out through
- * POST /api/storefront/[projectId]/checkout, which is the maintained
- * implementation: it resolves prices from the database, clamps quantities,
- * checks charges_enabled, and reuses Stripe Price objects.
+ * Checkout for published sites wired by FormAutoWire.
  *
- * This route is kept only because it is a live public endpoint that something
- * older may still call. It is deliberately NOT given CORS headers: bringing a
- * superseded payment path back within reach of every origin is the opposite of
- * what it needs.
+ * NOT dead, despite looking like a duplicate of
+ * /api/storefront/[projectId]/checkout. The cart script that
+ * platform-publisher injects into every published site posts here, so this is
+ * the endpoint behind the checkout button on live storefronts. The storefront
+ * route is the better implementation and the one new work should target, but
+ * it takes productIds, and FormAutoWire's cart is scraped from the DOM and has
+ * only names.
  *
  * It previously took `name`, `price` and `quantity` straight from the request
  * body and charged whatever price arrived, so anyone could POST
  * `{"items":[{"name":"Anything","price":0.01,"quantity":1}]}` and create a
  * Stripe session for a cent against the merchant's connected account, then
- * have an order row written with the fabricated total. Prices are now resolved
- * server-side from the products table by id and the client's numbers are
- * ignored entirely.
+ * have an order row written with the fabricated total.
+ *
+ * Now every price is resolved server-side from the products table and the
+ * client's number is ignored. Items may identify a product by id or, because
+ * that is all the injected cart has, by exact name within this project. A name
+ * that does not resolve is refused rather than guessed at, since guessing on a
+ * payment path means charging someone for something nobody sells.
+ *
+ * Deliberately no CORS headers: the browsers that reach this are running the
+ * merchant's own published page, and widening a payment path to every origin
+ * buys nothing. CORS was never what protected it anyway -- curl ignores it.
  */
+
+/** Escapes names for a PostgREST `in.(...)` list, which is comma-delimited. */
+function quoteList(values: string[]): string {
+  return values.map((value) => `"${value.replace(/"/g, '\\"')}"`).join(',');
+}
 
 export async function POST(
   request: Request,
@@ -39,15 +52,21 @@ export async function POST(
 
     // The client may only say WHICH product and HOW MANY. Never what it costs.
     const productIds: string[] = [];
+    const productNames: string[] = [];
     for (const item of items) {
       const id = item?.product_id || item?.productId;
-      if (typeof id !== 'string' || !id) {
+      if (typeof id === 'string' && id) {
+        productIds.push(id);
+        continue;
+      }
+      const name = typeof item?.name === 'string' ? item.name.trim() : '';
+      if (!name) {
         return NextResponse.json(
-          { error: 'Each item must reference a product_id' },
+          { error: 'Each item must reference a product by id or name' },
           { status: 400 }
         );
       }
-      productIds.push(id);
+      productNames.push(name);
     }
 
     const supabase = createAdminClient();
@@ -72,17 +91,25 @@ export async function POST(
       return NextResponse.json({ error: 'This store has not set up payments yet' }, { status: 400 });
     }
 
-    const { data: products } = await supabase
+    // Only active products are ever candidates, so something the owner has
+    // taken down cannot be bought by an older page still showing it.
+    let lookup = supabase
       .from('products')
       .select('id, name, price, images, is_active')
       .eq('project_id', projectId)
-      .in('id', productIds);
+      .eq('is_active', true);
 
-    if (!products || products.length !== new Set(productIds).size) {
+    lookup =
+      productIds.length && productNames.length
+        ? lookup.or(`id.in.(${productIds.join(',')}),name.in.(${quoteList(productNames)})`)
+        : productIds.length
+          ? lookup.in('id', productIds)
+          : lookup.in('name', productNames);
+
+    const { data: products } = await lookup;
+
+    if (!products || products.length === 0) {
       return NextResponse.json({ error: 'One or more items are unavailable' }, { status: 400 });
-    }
-    if (products.some((product) => !product.is_active)) {
-      return NextResponse.json({ error: 'One or more items are inactive' }, { status: 400 });
     }
 
     const lineItems = [];
@@ -91,9 +118,15 @@ export async function POST(
 
     for (const item of items) {
       const id = item.product_id || item.productId;
-      const product = products.find((candidate) => candidate.id === id);
+      const name = typeof item.name === 'string' ? item.name.trim() : '';
+      const product = id
+        ? products.find((candidate) => candidate.id === id)
+        : products.find((candidate) => candidate.name === name);
       if (!product) {
-        return NextResponse.json({ error: 'Item not found' }, { status: 400 });
+        return NextResponse.json(
+          { error: `We could not find "${name || id}" in this store` },
+          { status: 400 }
+        );
       }
 
       const quantity = Math.max(1, Math.min(99, Math.floor(Number(item.quantity) || 1)));
