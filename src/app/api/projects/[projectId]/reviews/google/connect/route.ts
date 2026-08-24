@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireProjectOwner } from '@/lib/project-auth';
-import { getPlaceDetails } from '@/lib/googlePlaces';
+import { getPlaceDetails, looksLikeSameBusiness } from '@/lib/googlePlaces';
 import { syncGoogleReviewsForProject } from '@/lib/googleReviewsSync';
 
 /**
@@ -20,7 +20,7 @@ export async function POST(
 ) {
   try {
     const { projectId } = await params;
-    const { error, supabase } = await requireProjectOwner(projectId);
+    const { error, supabase, project } = await requireProjectOwner(projectId);
     if (error) return error;
 
     const body = await request.json().catch(() => ({}));
@@ -33,8 +33,20 @@ export async function POST(
 
     if (body.confirmed !== true) {
       const reviews = details.reviews ?? [];
+      const projectBusinessName =
+        (project as { generation_config?: { business?: { name?: string } }; name?: string })
+          .generation_config?.business?.name ||
+        (project as { name?: string }).name ||
+        '';
+
       return NextResponse.json({
         needsConfirmation: true,
+        // A warning, never a block: real listings legitimately differ from
+        // what an owner typed. This only speaks up when the two names share
+        // nothing, which is the case that put an Austin pressure washer on a
+        // Brooklyn restaurant.
+        nameMismatch: !looksLikeSameBusiness(projectBusinessName, details.name),
+        projectBusinessName,
         place: {
           place_id,
           name: details.name,
