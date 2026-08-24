@@ -12,6 +12,8 @@ interface Candidate {
 
 interface PendingPlace {
   place_id: string;
+  nameMismatch?: boolean;
+  projectBusinessName?: string;
   name: string;
   formatted_address: string;
   rating: number | null;
@@ -101,7 +103,11 @@ export function GoogleReviewsPanel({
       if (!res.ok) throw new Error(data.error ?? 'connect failed');
 
       if (data.needsConfirmation) {
-        setPending(data.place as PendingPlace);
+        setPending({
+          ...(data.place as PendingPlace),
+          nameMismatch: data.nameMismatch,
+          projectBusinessName: data.projectBusinessName,
+        });
         return;
       }
 
@@ -254,6 +260,21 @@ export function GoogleReviewsPanel({
                 before importing.
               </p>
 
+              {pending.nameMismatch && (
+                <div className="mt-3 rounded border border-red-500/40 bg-red-500/10 p-3">
+                  <div className="text-xs font-semibold text-red-300">
+                    This listing has a different name to your business
+                  </div>
+                  <p className="mt-1 text-xs leading-relaxed text-red-200/80">
+                    Your site is for{' '}
+                    <span className="font-medium">{pending.projectBusinessName || 'this project'}</span>,
+                    but this listing is <span className="font-medium">{pending.name}</span>. Importing
+                    would put another company&rsquo;s reviews on your site. Only continue if you are
+                    certain this is the same business.
+                  </p>
+                </div>
+              )}
+
               <div className="mt-3 rounded bg-gray-900/60 p-3">
                 <div className="font-medium text-white">{pending.name}</div>
                 <div className="text-xs text-gray-400">{pending.formatted_address}</div>
@@ -283,7 +304,11 @@ export function GoogleReviewsPanel({
                   disabled={connecting === pending.place_id}
                   className="rounded bg-purple-600 px-3 py-2 text-xs font-semibold text-white hover:bg-purple-500 disabled:opacity-60"
                 >
-                  {connecting === pending.place_id ? 'Importing…' : 'Yes, import these'}
+                  {connecting === pending.place_id
+                    ? 'Importing…'
+                    : pending.nameMismatch
+                      ? 'Import anyway'
+                      : 'Yes, import these'}
                 </button>
                 <button
                   onClick={() => setPending(null)}

@@ -113,3 +113,45 @@ export async function getPlaceDetails(placeId: string): Promise<PlaceDetails> {
     url: r.url as string | undefined,
   };
 }
+
+/**
+ * Do these two business names plausibly refer to the same business?
+ *
+ * Deliberately generous. Real listings legitimately differ from what an owner
+ * typed -- "Fortress Floors GA" against "Fortress Floors of Georgia LLC" is
+ * the same company -- so this only reports what it is confident about, and the
+ * caller warns rather than blocks. The case it must catch is the one that
+ * actually happened: "Salt & Ember" against "Activate Pressure Washing",
+ * which share nothing at all.
+ */
+const NAME_NOISE = new Set([
+  'the', 'and', 'of', 'llc', 'inc', 'ltd', 'co', 'corp', 'company', 'group',
+  'services', 'service', 'holdings', 'enterprises', 'usa', 'plc', 'pllc',
+]);
+
+function nameTokens(value: string): Set<string> {
+  return new Set(
+    value
+      .toLowerCase()
+      .replace(/&/g, ' and ')
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter((word) => word.length >= 3 && !NAME_NOISE.has(word))
+  );
+}
+
+export function looksLikeSameBusiness(projectName: string, placeName: string): boolean {
+  const a = nameTokens(projectName);
+  const b = nameTokens(placeName);
+  // Nothing meaningful to compare -- say nothing rather than cry wolf.
+  if (a.size === 0 || b.size === 0) return true;
+
+  for (const token of a) {
+    if (b.has(token)) return true;
+    // Catch "Ridgeline" against "Ridgeline Roofing Co" style prefixes.
+    for (const other of b) {
+      if (token.length >= 5 && (other.startsWith(token) || token.startsWith(other))) return true;
+    }
+  }
+  return false;
+}
