@@ -140,6 +140,18 @@ export function scrubFabricatedContacts<T extends { path: string; content: strin
       content = content.replace(/href=(["'])mailto:[^"']*\1/g, 'href="#contact"');
     }
 
+    // An empty tel: or mailto: is a dead "Call us" button. Once the model
+    // stopped inventing numbers it started omitting the value but keeping the
+    // link, which taps and does nothing. Point those at the contact section
+    // too, so the visitor still reaches a way to get in touch.
+    const deadBefore = content;
+    content = content
+      .replace(/href=(["'])tel:\s*\1/g, 'href="#contact"')
+      .replace(/href=(["'])mailto:\s*\1/g, 'href="#contact"');
+    if (content !== deadBefore) {
+      changes.push(`${file.path}: repointed empty tel:/mailto: link to the contact section`);
+    }
+
     if (content === before) return file;
 
     // Same contract the booking injector uses: a repair that breaks the file
