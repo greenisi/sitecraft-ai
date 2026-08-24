@@ -6,8 +6,8 @@ import type { ModelConfig } from './models';
 let client: Anthropic | null = null;
 
 /**
- * Returns a singleton Anthropic SDK client.
- * Only usable on the server side -- will throw if ANTHROPIC_API_KEY is missing.
+ * Returns a singleton client for OpenRouter's Anthropic-compatible Messages API.
+ * Only usable on the server side -- will throw if OPENROUTER_API_KEY is missing.
  */
 export function getAnthropicClient(): Anthropic {
   if (typeof window !== 'undefined') {
@@ -18,14 +18,14 @@ export function getAnthropicClient(): Anthropic {
   }
 
   if (!client) {
-    let apiKey = process.env.ANTHROPIC_API_KEY;
+    let apiKey = process.env.OPENROUTER_API_KEY;
 
     // If the system env has an empty string, try loading from .env.local directly
     if (!apiKey) {
       try {
         const envPath = resolve(process.cwd(), '.env.local');
         const envContent = readFileSync(envPath, 'utf8');
-        const match = envContent.match(/^ANTHROPIC_API_KEY=(.+)$/m);
+        const match = envContent.match(/^OPENROUTER_API_KEY=(.+)$/m);
         if (match) {
           apiKey = match[1].trim();
         }
@@ -36,104 +36,29 @@ export function getAnthropicClient(): Anthropic {
 
     if (!apiKey) {
       throw new Error(
-        'ANTHROPIC_API_KEY environment variable is not set. ' +
+        'OPENROUTER_API_KEY environment variable is not set. ' +
         'Please add it to your .env.local file.'
       );
     }
 
-    client = new Anthropic({ apiKey });
+    client = new Anthropic({
+      apiKey,
+      baseURL: 'https://openrouter.ai/api',
+      defaultHeaders: {
+        'HTTP-Referer': 'https://app.innovated.marketing',
+        'X-Title': 'SiteCraft AI',
+      },
+    });
   }
 
   return client;
 }
 
 /**
- * Default model identifier for supporting generation tasks that do not carry
- * a user-selected tier. Full site generation resolves its model through the
- * Standard (Sonnet 5) or Power Mode (Opus 5) tier instead.
+ * Default model identifier (used when no tier is specified).
+ * All SiteCraft generations use Kimi K3 through OpenRouter.
  */
-export const GENERATION_MODEL = 'claude-sonnet-5';
-
-/** GLM-5.2 on OpenRouter — optional cheaper generation provider (flag-gated). */
-export const GLM_GENERATION_MODEL = 'z-ai/glm-5.2';
-
-/** Which provider drives site generation. Default 'anthropic'; 'glm' routes the
- *  bulk component generation through GLM-5.2 on OpenRouter (~5x cheaper). */
-export function generationProvider(): 'anthropic' | 'glm' {
-  return process.env.SITE_GENERATION_PROVIDER === 'glm' ? 'glm' : 'anthropic';
-}
-
-/**
- * Streams a chat completion from OpenRouter, yielding text deltas. Lets the
- * generation pipeline consume OpenRouter exactly like the Anthropic stream.
- */
-export async function* streamOpenRouter(
-  modelId: string,
-  systemPrompt: string,
-  userPrompt: string,
-  maxTokens: number,
-  reasoningEffort: ModelConfig['reasoningEffort'] = 'none',
-): AsyncGenerator<string> {
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) throw new Error('OPENROUTER_API_KEY environment variable is not set.');
-
-  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://app.innovated.marketing',
-      'X-Title': 'SiteCraft AI',
-    },
-    body: JSON.stringify({
-      model: modelId,
-      max_tokens: maxTokens,
-      reasoning: reasoningEffort && reasoningEffort !== 'none'
-        ? { effort: reasoningEffort, exclude: true }
-        : { effort: 'none', exclude: true },
-      stream: true,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-    }),
-  });
-
-  if (!res.ok || !res.body) {
-    const err = await res.text().catch(() => '');
-    if (res.status === 402) {
-      throw new Error(
-        'This OpenRouter-powered generation option is connected, but the OpenRouter balance is empty. ' +
-        'Add credits at https://openrouter.ai/settings/credits and try again.'
-      );
-    }
-    throw new Error(`OpenRouter stream error (${res.status}): ${err}`);
-  }
-
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n');
-    buffer = lines.pop() || '';
-    for (const raw of lines) {
-      const line = raw.trim();
-      if (!line.startsWith('data:')) continue;
-      const data = line.slice(5).trim();
-      if (data === '[DONE]') return;
-      try {
-        const json = JSON.parse(data);
-        const delta = json.choices?.[0]?.delta?.content;
-        if (delta) yield delta as string;
-      } catch {
-        // ignore keepalive / partial lines
-      }
-    }
-  }
-}
+export const GENERATION_MODEL = 'moonshotai/kimi-k3';
 
 /**
  * Makes a chat completion request to OpenRouter (for free-tier models).
@@ -239,6 +164,79 @@ export async function completeGenerationText(
     throw new Error(`No text content returned by ${model.displayName}`);
   }
   return textBlock.text;
+}
+
+/**
+ * Streams a chat completion from OpenRouter, yielding text deltas, so the
+ * generation pipeline can consume OpenRouter exactly like the Anthropic
+ * stream. streamGenerationText below dispatches to it by model.provider.
+ */
+export async function* streamOpenRouter(
+  modelId: string,
+  systemPrompt: string,
+  userPrompt: string,
+  maxTokens: number,
+  reasoningEffort: ModelConfig['reasoningEffort'] = 'none',
+): AsyncGenerator<string> {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) throw new Error('OPENROUTER_API_KEY environment variable is not set.');
+
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': 'https://app.innovated.marketing',
+      'X-Title': 'SiteCraft AI',
+    },
+    body: JSON.stringify({
+      model: modelId,
+      max_tokens: maxTokens,
+      reasoning: reasoningEffort && reasoningEffort !== 'none'
+        ? { effort: reasoningEffort, exclude: true }
+        : { effort: 'none', exclude: true },
+      stream: true,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+    }),
+  });
+
+  if (!res.ok || !res.body) {
+    const err = await res.text().catch(() => '');
+    if (res.status === 402) {
+      throw new Error(
+        'This OpenRouter-powered generation option is connected, but the OpenRouter balance is empty. ' +
+        'Add credits at https://openrouter.ai/settings/credits and try again.'
+      );
+    }
+    throw new Error(`OpenRouter stream error (${res.status}): ${err}`);
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+    for (const raw of lines) {
+      const line = raw.trim();
+      if (!line.startsWith('data:')) continue;
+      const data = line.slice(5).trim();
+      if (data === '[DONE]') return;
+      try {
+        const json = JSON.parse(data);
+        const delta = json.choices?.[0]?.delta?.content;
+        if (delta) yield delta as string;
+      } catch {
+        // ignore keepalive / partial lines
+      }
+    }
+  }
 }
 
 /** Streams generation text through Anthropic or OpenRouter with one shape. */

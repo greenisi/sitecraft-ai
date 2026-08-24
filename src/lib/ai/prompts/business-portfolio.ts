@@ -179,6 +179,9 @@ ${config.navigation.socialLinks?.length ? `Social links: ${config.navigation.soc
 ` : ''}
 ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 === QUALITY REQUIREMENTS ===
+- Preserve the exact business name everywhere: navigation, hero, page titles, and footer. Never replace it with a generic category name.
+- Use only facts provided in the business context. Never fabricate reviews, ratings, years in business, customer counts, staff, contact details, hours, addresses, newsletter signups, or guarantees.
+- Omit a testimonials, stats, team, newsletter, or emergency section when no real details were provided. A focused site is better than a padded template.
 - Above-the-fold content animates with CSS-only utilities (animate-fade-in-up, animate-rise-in, animate-blur-in — they fire on render and can never leave content hidden). Below-the-fold sections use the fail-open useReveal hook from the system prompt (starts visible, opts into the reveal only once the observer is confirmed working, 2.5s failsafe). NEVER initialize any element as opacity-0/hidden by default, and NEVER use arbitrary animation values like animate-[fade-in-up_0.7s_ease-out_forwards] — only the NAMED Tailwind utilities from the design system
 - All buttons MUST have hover:scale-105 and transition effects
 - Cards MUST have hover:-translate-y-1 hover:shadow-xl effects

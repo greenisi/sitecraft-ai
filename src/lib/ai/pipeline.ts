@@ -24,7 +24,7 @@ function resolveModelConfig(tier?: ModelTier): ModelConfig {
 
 function buildTierExecutionBrief(model: ModelConfig): string {
   if (model.tier !== 'architect') return '';
-  return `=== ULTRA PREMIUM KIMI K3 MAX EXECUTION ===
+  return `=== POWER MODE EXECUTION ===
 - Plan and implement a genuinely complex multi-page experience, not a long homepage with shallow duplicate interior pages.
 - Give every page a distinct information architecture and at least one page-specific visual composition.
 - Build working client-side interactions where they improve the experience: responsive navigation, tabs, accordions, filters, galleries, sliders, calculators, multi-step forms, and contextual state. Use React state and the project's existing dependencies only.

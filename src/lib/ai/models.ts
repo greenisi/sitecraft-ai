@@ -11,7 +11,7 @@ export interface ModelConfig {
   description: string;
   badge: string;
   requiresPro: boolean;
-  provider: 'anthropic' | 'openrouter';
+  provider: 'openrouter';
   modelId: string;
   maxTokens: number;
   reasoningEffort?: 'max' | 'xhigh' | 'high' | 'medium' | 'low' | 'minimal' | 'none';
@@ -25,7 +25,7 @@ export const MODEL_TIERS: Record<ModelTier, ModelConfig> = {
     badge: '⚡',
     requiresPro: false,
     provider: 'openrouter',
-    modelId: 'qwen/qwen3-coder',
+    modelId: 'moonshotai/kimi-k3',
     maxTokens: 64000,
   },
   'pro-build': {
@@ -34,9 +34,9 @@ export const MODEL_TIERS: Record<ModelTier, ModelConfig> = {
     description: 'Smart, fast generation for most websites',
     badge: '✦',
     requiresPro: true,
-    provider: 'anthropic',
-    modelId: 'claude-sonnet-5',
-    maxTokens: 128000,
+    provider: 'openrouter',
+    modelId: 'moonshotai/kimi-k3',
+    maxTokens: 64000,
   },
   'architect': {
     tier: 'architect',
@@ -44,9 +44,9 @@ export const MODEL_TIERS: Record<ModelTier, ModelConfig> = {
     description: 'More reasoning power for complex, high-detail builds',
     badge: '⚡',
     requiresPro: true,
-    provider: 'anthropic',
-    modelId: 'claude-opus-5',
-    maxTokens: 128000,
+    provider: 'openrouter',
+    modelId: 'anthropic/claude-opus-5',
+    maxTokens: 64000,
     reasoningEffort: 'max',
   },
   'lightning': {
@@ -55,8 +55,8 @@ export const MODEL_TIERS: Record<ModelTier, ModelConfig> = {
     description: 'Fastest generation — great for quick iterations',
     badge: '⚡',
     requiresPro: true,
-    provider: 'anthropic',
-    modelId: 'claude-haiku-4-5-20251001',
+    provider: 'openrouter',
+    modelId: 'moonshotai/kimi-k3',
     maxTokens: 64000,
   },
 };
