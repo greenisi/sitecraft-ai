@@ -23,11 +23,11 @@ export async function POST(
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('stripe_account_id')
+      .select('stripe_connect_account_id')
       .eq('id', project.user_id)
       .single();
 
-    if (!profile?.stripe_account_id) {
+    if (!profile?.stripe_connect_account_id) {
       return NextResponse.json(
         { error: 'Payment not configured. The business owner needs to connect their Stripe account.' },
         { status: 400 }
@@ -126,7 +126,7 @@ export async function POST(
           project_id: projectId,
         },
       },
-      { stripeAccount: profile.stripe_account_id }
+      { stripeAccount: profile.stripe_connect_account_id }
     );
 
     // Update order with stripe session id

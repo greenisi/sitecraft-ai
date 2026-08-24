@@ -39,7 +39,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
   // Check for Stripe connected account (actual payment setup, not just project status)
   const { data: stripeData } = await supabase
     .from('profiles')
-    .select('stripe_account_id')
+    .select('stripe_connect_account_id')
     .eq('id', project.user_id)
     .maybeSingle();
 
@@ -69,7 +69,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
     'first-product': !!(productsRes.data && productsRes.data.length > 0),
     'gallery':       !!(galleryRes.data && galleryRes.data.length > 0),
     'blog':          !!(blogRes.data && blogRes.data.length > 0),
-    'stripe':        !!(stripeData?.stripe_account_id),
+    'stripe':        !!(stripeData?.stripe_connect_account_id),
   };
 
   const visibleKeys = businessType && STEP_VISIBILITY[businessType]

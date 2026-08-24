@@ -177,7 +177,14 @@ console.log('\nReviews and gallery read live data and stay quiet when empty');
 
 console.log('\nPublic site endpoints are reachable cross-origin');
 {
-  const routes = ['reviews', 'gallery', 'bookings', 'submit-form', 'contact', 'services', 'products', 'orders'];
+  // Every route a published site reads content from. cart, checkout and
+  // create-checkout are deliberately absent: they are superseded by
+  // /api/storefront/[projectId]/checkout and must NOT be made reachable from
+  // other origins.
+  const routes = [
+    'reviews', 'gallery', 'bookings', 'submit-form', 'contact',
+    'services', 'products', 'orders', 'blog', 'business-info', 'properties',
+  ];
   for (const route of routes) {
     const source = readFileSync(
       `src/app/api/sites/[projectId]/${route}/route.ts`,
@@ -185,6 +192,35 @@ console.log('\nPublic site endpoints are reachable cross-origin');
     );
     check(`${route} sends CORS headers`, source.includes('Access-Control-Allow-Origin'));
     check(`${route} answers the preflight`, /export async function OPTIONS/.test(source));
+  }
+
+  // Prices must never come from the request body on a payment path.
+  const createCheckout = readFileSync(
+    'src/app/api/sites/[projectId]/create-checkout/route.ts',
+    'utf8'
+  );
+  check(
+    'create-checkout resolves prices from the database',
+    createCheckout.includes("from('products')") && /unit_amount: unitAmount/.test(createCheckout)
+  );
+  check(
+    'create-checkout stays unreachable cross-origin',
+    !createCheckout.includes('Access-Control-Allow-Origin')
+  );
+
+  // profiles.stripe_account_id does not exist; the real column is
+  // stripe_connect_account_id. Selecting the phantom silently disables
+  // whatever depends on it.
+  for (const file of [
+    'src/app/api/projects/[projectId]/onboarding-status/route.ts',
+    'src/app/api/sites/[projectId]/checkout/route.ts',
+    'src/app/api/sites/[projectId]/checkout/success/route.ts',
+  ]) {
+    const source = readFileSync(file, 'utf8');
+    check(
+      `${file.split('/').slice(-2)[0]} reads a stripe column that exists`,
+      !/select\('stripe_account_id'\)/.test(source)
+    );
   }
 }
 

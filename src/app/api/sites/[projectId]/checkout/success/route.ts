@@ -29,11 +29,11 @@ export async function GET(
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('stripe_account_id')
+      .select('stripe_connect_account_id')
       .eq('id', project.user_id)
       .single();
 
-    if (!profile?.stripe_account_id) {
+    if (!profile?.stripe_connect_account_id) {
       return NextResponse.json({ error: 'Stripe account not found' }, { status: 400 });
     }
 
@@ -45,7 +45,7 @@ export async function GET(
 
     const stripe = new Stripe(stripeKey, { typescript: true });
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      stripeAccount: profile.stripe_account_id,
+      stripeAccount: profile.stripe_connect_account_id,
     });
 
     if (session.payment_status !== 'paid') {
