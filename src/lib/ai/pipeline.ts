@@ -86,6 +86,7 @@ import {
 import { createColorContract, formatColorContract } from './color-contract';
 import { createMotionContract, formatMotionContract } from './motion-contract';
 import { evaluateDesignQuality } from './design-quality-gate';
+import { scrubFabricatedContacts } from './fabrication-scrub';
 
 // --------------------------------------------------------------------------
 // Stage 1: Assemble Config
@@ -1069,6 +1070,35 @@ async function* generateComponents(
   // modes. We don't spend a second full generation by default; severe results
   // are logged with concrete diagnostics so the next targeted edit can repair
   // only the missing art direction rather than rebuilding the entire site.
+  // Contact details the model invented are replaced before the gate scores
+  // anything. Prompt instructions did not stop this across three builds; a
+  // phone number is a slot the design demands, so it gets filled correctly
+  // here rather than asked for politely upstream.
+  //
+  // Wrapped because a generation that completed is worth more than a perfect
+  // scrub: if this throws, the site still ships.
+  try {
+    const scrubbed = scrubFabricatedContacts(
+      allFiles,
+      // GenerationConfig carries no phone, email or address -- the owner fills
+      // those into business_info later, from the dashboard. So at generation
+      // time there is no real contact detail to preserve, and every number on
+      // the page is invented by definition. Placeholders it is; publish-time
+      // substitution can fill them once business_info exists.
+      { phone: null, email: null, address: null },
+      [config.business?.name, config.business?.tagline, config.business?.description]
+        .filter(Boolean)
+        .join(' ')
+    );
+    if (scrubbed.changes.length > 0) {
+      console.warn('[fabrication-scrub]', { edits: scrubbed.changes.length, changes: scrubbed.changes.slice(0, 10) });
+      allFiles.length = 0;
+      allFiles.push(...scrubbed.files);
+    }
+  } catch (scrubError) {
+    console.error('[fabrication-scrub] skipped:', scrubError);
+  }
+
   const quality = evaluateDesignQuality(allFiles, artDirection, {
     requiredDeviceId: motion.signatureDevice.id,
     // Everything the owner actually told us. Anything concrete on the site
