@@ -38,11 +38,19 @@ export async function GET(request: Request) {
 
   for (const row of rows ?? []) {
     try {
-      const { data: profile } = await sb
+      // profiles has no email column, and this never used one anyway. Asking
+      // for it made the whole select error, so `profile` came back null and
+      // every renewal failed as no_stripe_customer_on_file -- burning an
+      // attempt each night until the domain passed the attempt cap and
+      // stopped being picked up at all.
+      const { data: profile, error: profileError } = await sb
         .from('profiles')
-        .select('stripe_customer_id, email')
+        .select('stripe_customer_id')
         .eq('id', row.user_id)
         .single();
+      if (profileError) {
+        throw new Error(`profile_lookup_failed: ${profileError.message}`);
+      }
       if (!profile?.stripe_customer_id) {
         throw new Error('no_stripe_customer_on_file');
       }
