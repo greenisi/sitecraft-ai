@@ -166,6 +166,50 @@ export async function completeGenerationText(
   return textBlock.text;
 }
 
+let anthropicDirect: Anthropic | null = null;
+
+/**
+ * A client that actually talks to Anthropic.
+ *
+ * getAnthropicClient above is misleadingly named: it points the SDK at
+ * OpenRouter's baseURL, so everything it sends is an OpenRouter request and a
+ * bare model id like "claude-opus-5" would be rejected as unknown. Power Mode
+ * needs the real API, so it gets its own client with no baseURL override.
+ */
+export function getRealAnthropicClient(): Anthropic {
+  if (typeof window !== 'undefined') {
+    throw new Error(
+      'Anthropic client must only be used on the server side. ' +
+      'Do not import this module in client components.'
+    );
+  }
+
+  if (!anthropicDirect) {
+    let apiKey = process.env.ANTHROPIC_API_KEY;
+
+    if (!apiKey) {
+      try {
+        const envPath = resolve(process.cwd(), '.env.local');
+        const match = readFileSync(envPath, 'utf8').match(/^ANTHROPIC_API_KEY=(.+)$/m);
+        if (match) apiKey = match[1].trim();
+      } catch {
+        // Ignore file read errors
+      }
+    }
+
+    if (!apiKey) {
+      throw new Error(
+        'Power Mode needs ANTHROPIC_API_KEY, which is not set. ' +
+        'Add it to the environment, or choose Standard to build through OpenRouter.'
+      );
+    }
+
+    anthropicDirect = new Anthropic({ apiKey });
+  }
+
+  return anthropicDirect;
+}
+
 /**
  * Streams a chat completion from OpenRouter, yielding text deltas, so the
  * generation pipeline can consume OpenRouter exactly like the Anthropic
@@ -261,7 +305,7 @@ export async function* streamGenerationText(
 
   const useAdaptiveThinking = model.modelId === 'claude-opus-5';
   const anthropicEffort = options.reasoningEffort ?? model.reasoningEffort;
-  const stream = getAnthropicClient().messages.stream({
+  const stream = getRealAnthropicClient().messages.stream({
     model: model.modelId,
     max_tokens: effectiveMaxTokens,
     thinking: useAdaptiveThinking ? { type: 'adaptive' } : { type: 'disabled' },
