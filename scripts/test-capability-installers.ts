@@ -177,7 +177,7 @@ console.log('\nReviews and gallery read live data and stay quiet when empty');
 
 console.log('\nPublic site endpoints are reachable cross-origin');
 {
-  const routes = ['reviews', 'gallery', 'bookings', 'submit-form', 'contact'];
+  const routes = ['reviews', 'gallery', 'bookings', 'submit-form', 'contact', 'services', 'products', 'orders'];
   for (const route of routes) {
     const source = readFileSync(
       `src/app/api/sites/[projectId]/${route}/route.ts`,
