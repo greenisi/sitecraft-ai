@@ -379,17 +379,23 @@ export async function POST(request: NextRequest) {
             // a single component was generated -- no tier could get past this,
             // including Power Mode. A fallback has to be a different provider.
             async () => {
+                // The OpenRouter fallback forced JSON mode. Anthropic has no
+                // such flag, and without one the model answers with a sentence
+                // in front of the object, which the caller then fails to parse.
+                // Prefilling the assistant turn with an opening brace leaves it
+                // no room to preamble.
                 const response = await getRealAnthropicClient().messages.create({
                     model: 'claude-haiku-4-5-20251001',
                     max_tokens: 8192,
                     system: SYSTEM_PROMPT,
-                    messages,
+                    messages: [...messages, { role: 'assistant' as const, content: '{' }],
                 });
                 const textBlock = response.content.find((b) => b.type === 'text');
                 if (!textBlock || textBlock.type !== 'text') {
                     throw new Error('No text response from the fallback model');
                 }
-                return textBlock.text;
+                // Put back the brace the prefill consumed.
+                return '{' + textBlock.text;
             },
         );
 
