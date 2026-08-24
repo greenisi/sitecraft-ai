@@ -7,6 +7,11 @@
  */
 
 import { readSSEStream } from '@/lib/ai/stream-handler';
+import {
+    isGenerationComplete,
+    isGenerationError,
+    pollForTerminalGenerationStatus,
+} from '@/lib/generation/status';
 import type { GenerationEvent } from '@/types/generation';
 
 export type BGStatus = 'idle' | 'generating' | 'complete' | 'error';
@@ -25,6 +30,27 @@ type Listener = (state: BGState) => void;
 // Module-level state: survives component remounts and route changes
 const activeGenerations = new Map<string, BGState>();
 const listeners = new Map<string, Set<Listener>>();
+
+function isConnectionLikeError(error: unknown): boolean {
+    const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+    return (
+        message.includes('load failed') ||
+        message.includes('failed to fetch') ||
+        message.includes('network') ||
+        message.includes('aborted') ||
+        message.includes('stream ended unexpectedly') ||
+        message.includes('no response stream')
+    );
+}
+
+function completeGeneration(state: BGState): BGState {
+    state.status = 'complete';
+    state.error = null;
+    state.completedAt = new Date().toISOString();
+    activeGenerations.set(state.projectId, { ...state });
+    notifyListeners(state.projectId);
+    return state;
+}
 
 function notifyListeners(projectId: string) {
     const state = activeGenerations.get(projectId);
@@ -113,7 +139,12 @@ export async function startBackgroundGeneration(
         const response = await fetch((config._editMode ? '/api/generate/edit' : '/api/generate/stream'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(config._editMode ? { projectId, editInstructions: config.editInstructions, targetFiles: config.targetFiles } : { projectId, config }),
+                body: JSON.stringify(config._editMode ? {
+                  projectId,
+                  editInstructions: config.editInstructions,
+                  targetFiles: config.targetFiles,
+                  modelTier: config.modelTier,
+                } : { projectId, config }),
         });
 
       if (!response.ok) {
@@ -143,11 +174,7 @@ export async function startBackgroundGeneration(
           notifyListeners(projectId);
 
           if (event.type === 'generation-complete') {
-                    state.status = 'complete';
-                    state.completedAt = new Date().toISOString();
-                    activeGenerations.set(projectId, { ...state });
-                    notifyListeners(projectId);
-                    return state;
+                    return completeGeneration(state);
           }
 
           if (event.type === 'error') {
@@ -160,38 +187,57 @@ export async function startBackgroundGeneration(
       }
 
       // Stream ended without an explicit generation-complete event.
-      // This can happen when Vercel times out and kills the function
-      // mid-generation. Don't assume success — check the server.
-      try {
-        const statusRes = await fetch(
-          `/api/generate/status?projectId=${encodeURIComponent(projectId)}`
-        );
-        if (statusRes.ok) {
-          const statusData = await statusRes.json();
-          const vs = statusData.latestVersion?.status;
-          if (vs === 'complete' || statusData.projectStatus === 'generated') {
-            state.status = 'complete';
-            state.completedAt = new Date().toISOString();
-            activeGenerations.set(projectId, { ...state });
-            notifyListeners(projectId);
-            return state;
-          }
-          if (vs === 'error' || statusData.projectStatus === 'error') {
-            throw new Error('The generation failed on the server. Please try again.');
-          }
-        }
-      } catch (checkErr) {
-        // If the status check itself fails, fall through to the error below
-        if (checkErr instanceof Error && checkErr.message.includes('generation failed')) {
-          throw checkErr;
-        }
+      // This usually means the SSE connection died before the server-side
+      // generation finished, so keep reconciling against the DB instead of
+      // immediately treating it as a client-side failure.
+      const terminalStatus = await pollForTerminalGenerationStatus(
+        projectId,
+        state.startedAt,
+        { maxAttempts: 24, intervalMs: 5_000 }
+      );
+
+      if (terminalStatus && isGenerationComplete(terminalStatus)) {
+        return completeGeneration(state);
       }
-      // Server still shows "generating" or we couldn't confirm — treat as error
-      // so the client doesn't show a false success
+
+      if (terminalStatus && isGenerationError(terminalStatus)) {
+        throw new Error('The generation failed on the server. Please try again.');
+      }
+
       throw new Error(
-        'The generation stream ended unexpectedly. Your site may still be building — please wait a moment and refresh.'
+        'The generation stream ended unexpectedly. We could not confirm whether it finished on the server yet.'
       );
   } catch (error) {
+        // A dropped mobile/Safari connection does not mean the server-side
+        // generation failed. Keep the UI in its generating state and reconcile
+        // against persisted status for up to ten minutes before showing an
+        // error. This covers long Power Mode generations on weak cellular
+        // connections without producing a false "Load failed" message.
+        if (isConnectionLikeError(error)) {
+          state.error = null;
+          state.status = 'generating';
+          activeGenerations.set(projectId, { ...state });
+          notifyListeners(projectId);
+
+          const terminalStatus = await pollForTerminalGenerationStatus(
+            projectId,
+            state.startedAt,
+            { maxAttempts: 120, intervalMs: 5_000 }
+          );
+
+          if (terminalStatus && isGenerationComplete(terminalStatus)) {
+            return completeGeneration(state);
+          }
+
+          if (terminalStatus && isGenerationError(terminalStatus)) {
+            error = new Error('The generation failed on the server. Please try again.');
+          } else {
+            error = new Error(
+              'We lost the connection and could not confirm the final server state. Your saved progress is safe; refresh the project to continue.'
+            );
+          }
+        }
+
         const errMsg = error instanceof Error ? error.message : 'Unknown error';
         state.status = 'error';
         state.error = errMsg;

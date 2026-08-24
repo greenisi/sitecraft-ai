@@ -141,9 +141,9 @@ products you'll love"). BANNED copy: "Welcome to our store", "We are committed t
 
 3. \`src/components/Navbar.tsx\` -- Fixed navigation bar (follow DESIGN VARIETY navbar style):
    - \`'use client'\` component with useState for mobile menu and cart count
-   - Use the navbar style from DESIGN VARIETY instructions (glassmorphism, dark, transparent, solid, or colored)
+   - Use the navbar style from DESIGN VARIETY instructions (solid white, solid dark, brand-colored, or bg-white/90 backdrop-blur — always a solid, always-visible background)
    - Logo/brand name, links (Home, Shop, Cart), cart icon with animated item count badge
-   - Mobile hamburger menu with Menu/X icons
+   - Mobile hamburger menu with Menu/X icons; the open menu panel is ALWAYS solid bg-white with text-gray-900
    - \`aria-expanded\` and \`aria-label\` for accessibility
 
 4. \`src/components/Footer.tsx\` -- Professional 4-column dark footer:
@@ -243,11 +243,11 @@ ${config.navigation.socialLinks?.length ? `Social links: ${config.navigation.soc
 ` : ''}
 ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 === QUALITY REQUIREMENTS ===
-- Every section MUST have scroll-triggered fade-in animations using IntersectionObserver
+- Above-the-fold content animates with CSS-only utilities (animate-fade-in-up, animate-rise-in, animate-blur-in — they fire on render and can never leave content hidden). Below-the-fold sections use the fail-open useReveal hook from the system prompt (starts visible, opts into the reveal only once the observer is confirmed working, 2.5s failsafe). NEVER initialize any element as opacity-0/hidden by default
 - All buttons MUST have hover:scale-105 and transition effects
 - Product cards MUST have hover:-translate-y-1 hover:shadow-xl effects
 - The hero style should follow the DESIGN VARIETY instructions (gradient, split, dark, minimal, etc.)
-- The navbar style should follow the DESIGN VARIETY instructions (glassmorphism, dark, transparent, etc.)
+- The navbar style should follow the DESIGN VARIETY instructions (solid white, solid dark, brand-colored, or bg-white/90 backdrop-blur — always a solid, always-visible background, never transparent)
 - Footer MUST be 4-column dark themed with newsletter signup
 - Mobile hamburger menu MUST work with useState toggle
 - Add \`pt-16\` to page content for fixed navbar

@@ -1,4 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import type { ModelConfig } from './models';
 
 let client: Anthropic | null = null;
 
@@ -20,10 +23,8 @@ export function getAnthropicClient(): Anthropic {
     // If the system env has an empty string, try loading from .env.local directly
     if (!apiKey) {
       try {
-        const fs = require('fs');
-        const path = require('path');
-        const envPath = path.resolve(process.cwd(), '.env.local');
-        const envContent = fs.readFileSync(envPath, 'utf8');
+        const envPath = resolve(process.cwd(), '.env.local');
+        const envContent = readFileSync(envPath, 'utf8');
         const match = envContent.match(/^OPENROUTER_API_KEY=(.+)$/m);
         if (match) {
           apiKey = match[1].trim();
@@ -66,6 +67,10 @@ export async function callOpenRouter(
   modelId: string,
   messages: Array<{ role: string; content: string }>,
   maxTokens: number = 64000,
+  options: {
+    reasoningEffort?: ModelConfig['reasoningEffort'];
+    jsonOutput?: boolean;
+  } = {},
 ): Promise<string> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
@@ -84,11 +89,21 @@ export async function callOpenRouter(
       model: modelId,
       messages,
       max_tokens: maxTokens,
+      reasoning: options.reasoningEffort && options.reasoningEffort !== 'none'
+        ? { effort: options.reasoningEffort, exclude: true }
+        : { effort: 'none', exclude: true },
+      ...(options.jsonOutput ? { response_format: { type: 'json_object' } } : {}),
     }),
   });
 
   if (!response.ok) {
     const err = await response.text();
+    if (response.status === 402) {
+      throw new Error(
+        'This OpenRouter-powered generation option is connected, but the OpenRouter balance is empty. ' +
+        'Add credits at https://openrouter.ai/settings/credits and try again.'
+      );
+    }
     throw new Error(`OpenRouter API error (${response.status}): ${err}`);
   }
 
@@ -96,11 +111,189 @@ export async function callOpenRouter(
   return data.choices?.[0]?.message?.content ?? '';
 }
 
-/** Token limits for different generation stages. */
+/**
+ * Completes one generation request through the provider selected by the
+ * branded model tier. OpenRouter reasoning stays private (`exclude: true`)
+ * so parsers receive only the requested JSON or code.
+ */
+export async function completeGenerationText(
+  model: ModelConfig,
+  systemPrompt: string,
+  userPrompt: string,
+  maxTokens: number,
+  options: {
+    jsonOutput?: boolean;
+    reasoningEffort?: ModelConfig['reasoningEffort'];
+  } = {},
+): Promise<string> {
+  if (model.provider === 'openrouter') {
+    return callOpenRouter(
+      model.modelId,
+      [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      Math.min(model.maxTokens, maxTokens),
+      {
+        reasoningEffort: options.reasoningEffort ?? model.reasoningEffort,
+        jsonOutput: options.jsonOutput,
+      },
+    );
+  }
+
+  const useAdaptiveThinking = model.modelId === 'claude-opus-5';
+  const anthropicEffort = options.reasoningEffort ?? model.reasoningEffort;
+  const response = await getAnthropicClient().messages.create({
+    model: model.modelId,
+    max_tokens: Math.min(model.maxTokens, maxTokens),
+    thinking: useAdaptiveThinking ? { type: 'adaptive' } : { type: 'disabled' },
+    ...(useAdaptiveThinking && anthropicEffort && anthropicEffort !== 'none'
+      ? {
+          output_config: {
+            effort: anthropicEffort === 'minimal' || anthropicEffort === 'xhigh'
+              ? 'high' as const
+              : anthropicEffort,
+          },
+        }
+      : {}),
+    system: systemPrompt,
+    messages: [{ role: 'user', content: userPrompt }],
+  });
+  const textBlock = response.content.find((block) => block.type === 'text');
+  if (!textBlock || textBlock.type !== 'text') {
+    throw new Error(`No text content returned by ${model.displayName}`);
+  }
+  return textBlock.text;
+}
+
+/**
+ * Streams a chat completion from OpenRouter, yielding text deltas, so the
+ * generation pipeline can consume OpenRouter exactly like the Anthropic
+ * stream. streamGenerationText below dispatches to it by model.provider.
+ */
+export async function* streamOpenRouter(
+  modelId: string,
+  systemPrompt: string,
+  userPrompt: string,
+  maxTokens: number,
+  reasoningEffort: ModelConfig['reasoningEffort'] = 'none',
+): AsyncGenerator<string> {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) throw new Error('OPENROUTER_API_KEY environment variable is not set.');
+
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': 'https://app.innovated.marketing',
+      'X-Title': 'SiteCraft AI',
+    },
+    body: JSON.stringify({
+      model: modelId,
+      max_tokens: maxTokens,
+      reasoning: reasoningEffort && reasoningEffort !== 'none'
+        ? { effort: reasoningEffort, exclude: true }
+        : { effort: 'none', exclude: true },
+      stream: true,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+    }),
+  });
+
+  if (!res.ok || !res.body) {
+    const err = await res.text().catch(() => '');
+    if (res.status === 402) {
+      throw new Error(
+        'This OpenRouter-powered generation option is connected, but the OpenRouter balance is empty. ' +
+        'Add credits at https://openrouter.ai/settings/credits and try again.'
+      );
+    }
+    throw new Error(`OpenRouter stream error (${res.status}): ${err}`);
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+    for (const raw of lines) {
+      const line = raw.trim();
+      if (!line.startsWith('data:')) continue;
+      const data = line.slice(5).trim();
+      if (data === '[DONE]') return;
+      try {
+        const json = JSON.parse(data);
+        const delta = json.choices?.[0]?.delta?.content;
+        if (delta) yield delta as string;
+      } catch {
+        // ignore keepalive / partial lines
+      }
+    }
+  }
+}
+
+/** Streams generation text through Anthropic or OpenRouter with one shape. */
+export async function* streamGenerationText(
+  model: ModelConfig,
+  systemPrompt: string,
+  userPrompt: string,
+  maxTokens: number,
+  options: { reasoningEffort?: ModelConfig['reasoningEffort'] } = {},
+): AsyncGenerator<string> {
+  const effectiveMaxTokens = Math.min(model.maxTokens, maxTokens);
+  if (model.provider === 'openrouter') {
+    yield* streamOpenRouter(
+      model.modelId,
+      systemPrompt,
+      userPrompt,
+      effectiveMaxTokens,
+      options.reasoningEffort ?? model.reasoningEffort,
+    );
+    return;
+  }
+
+  const useAdaptiveThinking = model.modelId === 'claude-opus-5';
+  const anthropicEffort = options.reasoningEffort ?? model.reasoningEffort;
+  const stream = getAnthropicClient().messages.stream({
+    model: model.modelId,
+    max_tokens: effectiveMaxTokens,
+    thinking: useAdaptiveThinking ? { type: 'adaptive' } : { type: 'disabled' },
+    ...(useAdaptiveThinking && anthropicEffort && anthropicEffort !== 'none'
+      ? {
+          output_config: {
+            effort: anthropicEffort === 'minimal' || anthropicEffort === 'xhigh'
+              ? 'high' as const
+              : anthropicEffort,
+          },
+        }
+      : {}),
+    system: systemPrompt,
+    messages: [{ role: 'user', content: userPrompt }],
+  });
+  for await (const event of stream) {
+    if (
+      event.type === 'content_block_delta' &&
+      event.delta.type === 'text_delta'
+    ) {
+      yield event.delta.text;
+    }
+  }
+}
+
+/** Token limits for different generation stages. Sized for Sonnet 5's
+ *  tokenizer (~30% more tokens for the same text than Sonnet 4.6) so full
+ *  sites don't truncate at the old caps. */
 export const TOKEN_LIMITS = {
-  designSystem: 4096,
-  blueprint: 4096,
-  component: 64000,
+  designSystem: 8192,
+  blueprint: 8192,
+  component: 96000,
 } as const;
 
 // --------------------------------------------------------------------------

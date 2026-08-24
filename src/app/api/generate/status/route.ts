@@ -70,14 +70,14 @@ export async function GET(request: NextRequest) {
   }
 
   // ── Auto-recovery for stuck generations ─────────────────────────────
-  // Vercel serverless functions have a 5-min timeout. If the function is
-  // killed mid-generation, the post-pipeline cleanup code never runs,
-  // leaving both generation_versions and projects stuck in "generating".
-  // Detect and fix this automatically.
+  // The generation route can run for up to 800 seconds on Fluid Compute. If
+  // the function is killed after that window, its post-pipeline cleanup never
+  // runs and both records remain stuck in "generating". Allow the full route
+  // window plus a small propagation buffer before recovering it.
   if (latestVersion && latestVersion.status === 'generating') {
     const createdAt = new Date(latestVersion.created_at).getTime();
     const now = Date.now();
-    const staleThreshold = 4 * 60 * 1000; // 4 minutes (Vercel max is 5 min)
+    const staleThreshold = 14 * 60 * 1000;
 
     if (now - createdAt > staleThreshold) {
       if (fileCount > 0) {
@@ -128,6 +128,22 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // The latest version is authoritative while a generation is active. Repair
+  // a stale project row so polling can never mistake an older successful
+  // version for completion of the current run.
+  if (
+    latestVersion &&
+    latestVersion.status === 'generating' &&
+    project.status !== 'generating'
+  ) {
+    const { error } = await supabase
+      .from('projects')
+      .update({ status: 'generating' })
+      .eq('id', projectId);
+
+    if (!error) project.status = 'generating';
+  }
+
   // ── Auto-recovery for stuck project status ─────────────────────────
   // If the version completed but the project is still 'generating', fix it.
   if (
@@ -136,7 +152,7 @@ export async function GET(request: NextRequest) {
     project.status === 'generating' &&
     fileCount > 0
   ) {
-    await supabase
+    const { error } = await supabase
       .from('projects')
       .update({
         status: 'generated',
@@ -144,8 +160,10 @@ export async function GET(request: NextRequest) {
       })
       .eq('id', projectId);
 
-    project.status = 'generated';
-    project.last_generated_at = latestVersion.completed_at || new Date().toISOString();
+    if (!error) {
+      project.status = 'generated';
+      project.last_generated_at = latestVersion.completed_at || new Date().toISOString();
+    }
   }
 
   return NextResponse.json({

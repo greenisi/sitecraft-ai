@@ -72,12 +72,12 @@ competitor could not claim verbatim (name the niche, the method, the results, th
 
 1. \`src/components/Navbar.tsx\` -- Fixed navigation bar (follow DESIGN VARIETY navbar style):
    - \`'use client'\` component with useState for mobile menu toggle
-   - Use the navbar style from DESIGN VARIETY instructions (glassmorphism, dark, transparent, solid, or colored)
+   - Use the navbar style from DESIGN VARIETY instructions (solid white, solid dark, brand-colored, or bg-white/90 backdrop-blur) — always a solid, always-visible background, NEVER transparent
    - Logo/business name with primary brand color
    - Desktop nav links: Home, About, Services, Contact using \`next/link\`
    - CTA button in nav with hover:scale-105 effect
    - Mobile hamburger menu with Menu/X icons from lucide-react
-   - Full-screen mobile overlay with smooth opacity transition
+   - Full-screen mobile overlay with smooth opacity transition — the menu panel is ALWAYS solid bg-white with text-gray-900
    - \`aria-expanded\` and \`aria-label\` for accessibility
 
 2. \`src/components/Footer.tsx\` -- Professional 4-column dark footer:
@@ -97,19 +97,19 @@ competitor could not claim verbatim (name the niche, the method, the results, th
 4. \`src/components/Hero.tsx\` -- Premium hero section (follow DESIGN VARIETY hero style):
    - Use the hero layout from the DESIGN VARIETY instructions (gradient, split, dark, minimal, etc.)
    - Large, impactful headline
-   - Two CTA buttons: primary (filled, hover:scale-105, hover:shadow-lg) and secondary (outlined)
+   - ONE dominant CTA button (filled, hover:scale-105, hover:shadow-lg); optionally a quiet text-link secondary — not two side-by-side buttons in a centered hero
    - Decorative elements appropriate to the hero style
    - Subtle floating animation on decorative elements
 
-5. \`src/components/ServicesPreview.tsx\` -- Service preview with scroll-triggered animations:
-   - 'use client' component with IntersectionObserver for fade-in
-   - Grid of 3-4 services with icons, titles, descriptions, "Learn more" links
-   - Card hover: \`hover:-translate-y-1 hover:shadow-xl transition-all duration-300\`
+5. \`src/components/ServicesPreview.tsx\` -- Service preview as a numbered editorial list:
+   - 'use client' component using the fail-open useReveal hook from the system prompt (starts visible, opts into the reveal only once the observer is confirmed working, 2.5s failsafe) — NEVER initialize any element as opacity-0/hidden by default
+   - Numbered editorial list of 3-4 services (01, 02, 03…) with full-bleed photography per item — NOT an icon card grid with "Learn more" links
+   - Item hover: \`hover:-translate-y-1 hover:shadow-xl transition-all duration-300\`
    - Staggered animation delays
 
-6. \`src/components/Stats.tsx\` -- Animated stats section:
-   - 'use client' for animated number counting with useEffect + setInterval
-   - Key metrics with large numbers that count up when visible
+6. \`src/components/Stats.tsx\` -- Oversized-number stats moment (an editorial layout, not 3 plain numbers in a row):
+   - 'use client' — stat counters render their FINAL value by default (fail-open) and only animate 0→value with requestAnimationFrame once the fail-open useReveal hook confirms visibility. Never render 0 or blank as the default state
+   - Key metrics at huge, oversized type scale with supporting editorial copy
    - Background gradient or subtle pattern
 
 7. \`src/app/page.tsx\` -- Home page composing Hero, ServicesPreview, Stats, and a CTA.
@@ -126,10 +126,11 @@ competitor could not claim verbatim (name the niche, the method, the results, th
 
 **Services / Work Page**
 
-11. \`src/components/ServiceCard.tsx\` -- Detailed service card with icon, title,
-    description, and feature bullet points.
+11. \`src/components/ServiceCard.tsx\` -- Detailed service entry with an oversized index
+    number (01, 02…), title, description, and feature bullet points.
 
-12. \`src/components/ServicesList.tsx\` -- Responsive grid of ServiceCards. Generate
+12. \`src/components/ServicesList.tsx\` -- Numbered editorial list of ServiceCards with
+    full-bleed photography per item (not an icon card grid). Generate
     4-6 services relevant to "${business.industry}".
 
 13. \`src/app/services/page.tsx\` -- Services page composing ServicesList.
@@ -149,7 +150,7 @@ competitor could not claim verbatim (name the niche, the method, the results, th
 **Testimonials Page (/testimonials)**
 
 19. \`src/components/TestimonialsGrid.tsx\` -- Full testimonials page:
-   - 'use client' for scroll-triggered animations
+   - 'use client' using the fail-open useReveal hook from the system prompt (starts visible, 2.5s failsafe) — never initialize any element as opacity-0/hidden by default
    - 6-8 detailed testimonial cards with star ratings, customer names, roles, and review text
    - Mix of card sizes (featured large + standard grid)
    - Each card with hover effects and staggered animations
@@ -159,7 +160,7 @@ competitor could not claim verbatim (name the niche, the method, the results, th
    - Overall rating display (e.g., "4.9 out of 5 stars")
    - Total review count
    - Platform badges (Google, Yelp, etc.)
-   - Animated counters
+   - Counters render their FINAL value by default (fail-open) and only animate 0→value when the reveal hook confirms visibility — never render 0 or blank as the default state
 
 21. \`src/app/testimonials/page.tsx\` -- Testimonials page composing TestimonialsGrid and TestimonialStats. Add \`pt-16\` for fixed navbar.
 
@@ -181,11 +182,11 @@ ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 - Preserve the exact business name everywhere: navigation, hero, page titles, and footer. Never replace it with a generic category name.
 - Use only facts provided in the business context. Never fabricate reviews, ratings, years in business, customer counts, staff, contact details, hours, addresses, newsletter signups, or guarantees.
 - Omit a testimonials, stats, team, newsletter, or emergency section when no real details were provided. A focused site is better than a padded template.
-- Every section MUST have scroll-triggered fade-in animations using IntersectionObserver
+- Above-the-fold content animates with CSS-only utilities (animate-fade-in-up, animate-rise-in, animate-blur-in — they fire on render and can never leave content hidden). Below-the-fold sections use the fail-open useReveal hook from the system prompt (starts visible, opts into the reveal only once the observer is confirmed working, 2.5s failsafe). NEVER initialize any element as opacity-0/hidden by default, and NEVER use arbitrary animation values like animate-[fade-in-up_0.7s_ease-out_forwards] — only the NAMED Tailwind utilities from the design system
 - All buttons MUST have hover:scale-105 and transition effects
 - Cards MUST have hover:-translate-y-1 hover:shadow-xl effects
 - The hero style should follow the DESIGN VARIETY instructions (gradient, split, dark, minimal, etc.)
-- The navbar style should follow the DESIGN VARIETY instructions (glassmorphism, dark, transparent, etc.)
+- The navbar style should follow the DESIGN VARIETY instructions (solid white, solid dark, brand-colored, or bg-white/90 backdrop-blur) — always a solid, always-visible background, never transparent
 - Footer MUST be 4-column with newsletter signup
 - Mobile hamburger menu MUST work with useState toggle
 - Use realistic, industry-appropriate content — NEVER lorem ipsum

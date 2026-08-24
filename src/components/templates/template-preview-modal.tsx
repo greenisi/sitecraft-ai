@@ -12,6 +12,11 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import type { PremiumTemplate } from '@/lib/templates/premium-templates';
+import {
+  getPreviewPages,
+  previewHref,
+  type PageKey,
+} from '@/lib/templates/preview-nav';
 
 interface TemplatePreviewModalProps {
   template: PremiumTemplate | null;
@@ -32,6 +37,7 @@ export function TemplatePreviewModal({
 }: TemplatePreviewModalProps) {
   const [iframeLoading, setIframeLoading] = useState(true);
   const [deviceMode, setDeviceMode] = useState<DeviceMode>('desktop');
+  const [activePage, setActivePage] = useState<PageKey>('home');
   const [mounted, setMounted] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -44,6 +50,7 @@ export function TemplatePreviewModal({
     if (isOpen) {
       setIframeLoading(true);
       setDeviceMode('desktop');
+      setActivePage('home');
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -65,7 +72,8 @@ export function TemplatePreviewModal({
 
   if (!isOpen || !template || !mounted) return null;
 
-  const previewUrl = `/api/templates/preview/${template.id}`;
+  const previewUrl = previewHref(template.id, activePage);
+  const previewPages = getPreviewPages(template.id);
 
   const deviceWidths: Record<DeviceMode, string> = {
     desktop: '100%',
@@ -166,6 +174,31 @@ export function TemplatePreviewModal({
               <X className="h-5 w-5 sm:h-4 sm:w-4" strokeWidth={2.5} />
             </button>
           </div>
+        </div>
+
+        {/* Page tabs — the preview is a real multi-page site, so let people move
+            through it here as well as via the links inside the frame. */}
+        <div className="relative z-20 flex items-center gap-1 px-3 sm:px-5 py-1.5 border-b border-border/30 bg-muted/20 flex-shrink-0 overflow-x-auto scrollbar-none">
+          <span className="hidden sm:inline text-[11px] font-medium uppercase tracking-wider text-muted-foreground mr-2 flex-shrink-0">
+            Pages
+          </span>
+          {previewPages.map((page) => (
+            <button
+              key={page.key}
+              onClick={() => {
+                if (page.key === activePage) return;
+                setIframeLoading(true);
+                setActivePage(page.key);
+              }}
+              className={`px-3 py-1.5 rounded-md text-[11px] sm:text-xs font-medium whitespace-nowrap transition-all duration-200 ${
+                activePage === page.key
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {page.label}
+            </button>
+          ))}
         </div>
 
         {/* Mobile device switcher bar */}

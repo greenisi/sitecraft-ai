@@ -8,6 +8,7 @@ import {
   Globe,
   Loader2,
   ExternalLink,
+  AlertCircle,
   CheckCircle2,
   MousePointerClick,
   Copy,
@@ -43,12 +44,17 @@ interface EditorTopbarProps {
 export function EditorTopbar({ projectId }: EditorTopbarProps) {
   const router = useRouter();
   const { data: project, isLoading: projectLoading } = useProject(projectId);
-  const { publish, isPublishing, reset: resetPublish } = usePublish(projectId);
+  const {
+    publish,
+    isPublishing,
+    publishedUrl,
+    publishStatus,
+    reset: resetPublish,
+  } = usePublish(projectId);
   const { isPaid, loading: planLoading } = usePlan();
   const { modal: upgradeModal, showUpgrade } = useUpgradeGate();
   const [downloading, setDownloading] = useState(false);
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
-  const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
   const [autofilling, setAutofilling] = useState(false);
   const [showDomainOptions, setShowDomainOptions] = useState(false);
@@ -75,6 +81,16 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
     project && ['generated', 'deployed', 'published'].includes(project.status);
   const isAlreadyPublished =
     project?.status === 'published' && project?.published_url;
+  const isDeploymentPending =
+    publishStatus === 'deploying' ||
+    (project?.status === 'deployed' && Boolean(project?.vercel_project_name));
+  const hasFreshPublishedUrl = publishStatus === 'published' && publishedUrl;
+  const effectivePublishedUrl = hasFreshPublishedUrl
+    ? publishedUrl
+    : project?.published_url || null;
+  const showPublishedState = !isDeploymentPending && Boolean(
+    hasFreshPublishedUrl || isAlreadyPublished
+  );
   const isLocked = !isPaid && !planLoading;
 
   const handleBack = useCallback(() => {
@@ -140,10 +156,7 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
 
   const handlePublish = async () => {
     try {
-      const result = await publish();
-      if (result?.url) {
-        setPublishedUrl(result.url);
-      }
+      await publish();
     } catch (error) {
       console.error('Publish failed:', error);
     }
@@ -158,11 +171,6 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
     if (isLocked) {
       showUpgrade();
       return;
-    }
-    if (isAlreadyPublished) {
-      setPublishedUrl(project.published_url);
-    } else {
-      setPublishedUrl(null);
     }
     resetPublish();
     setShowDomainOptions(false);
@@ -358,30 +366,46 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {publishedUrl || isAlreadyPublished
-                ? 'Your Site is Live!'
-                : 'Publish Website'}
+              {isDeploymentPending
+                ? 'Deployment in Progress'
+                : showPublishedState
+                  ? 'Your Site is Live!'
+                  : 'Publish Website'}
             </DialogTitle>
             <DialogDescription>
-              {publishedUrl || isAlreadyPublished
-                ? 'Your website is live and accessible at the URL below.'
-                : 'Publish your website to a live URL with one click.'}
+              {isDeploymentPending
+                ? 'Your latest publish is still building. Check back shortly before sharing the site.'
+                : showPublishedState
+                  ? 'Your website is live and accessible at the URL below.'
+                  : 'Publish your website to a live URL with one click.'}
             </DialogDescription>
           </DialogHeader>
 
-          {publishedUrl || isAlreadyPublished ? (
+          {isDeploymentPending ? (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/50 dark:bg-amber-950/30">
+                <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">Still deploying</p>
+                  <p className="text-sm text-muted-foreground">
+                    The deployment timed out before Vercel reported it as ready. We will show the live URL once the publish finishes.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : showPublishedState ? (
             <div className="space-y-4">
               <div className="flex items-center gap-3 rounded-lg border bg-green-50 dark:bg-green-950/30 p-4">
                 <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">Published successfully!</p>
                   <a
-                    href={publishedUrl || project?.published_url || ''}
+                    href={effectivePublishedUrl || ''}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-primary hover:underline flex items-center gap-1 truncate"
                   >
-                    {publishedUrl || project?.published_url}
+                    {effectivePublishedUrl}
                     <ExternalLink className="h-3 w-3 flex-shrink-0" />
                   </a>
                 </div>
@@ -391,7 +415,7 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
                   className="h-8 w-8 flex-shrink-0"
                   onClick={() =>
                     handleCopyUrl(
-                      publishedUrl || project?.published_url || ''
+                      effectivePublishedUrl || ''
                     )
                   }
                 >
@@ -486,7 +510,7 @@ export function EditorTopbar({ projectId }: EditorTopbarProps) {
           )}
 
           <DialogFooter>
-            {!publishedUrl && !isAlreadyPublished && (
+            {!showPublishedState && !isDeploymentPending && (
               <Button
                 onClick={handlePublish}
                 disabled={isPublishing}

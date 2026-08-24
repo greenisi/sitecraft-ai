@@ -11,6 +11,9 @@ type StatusResp = {
   chargesEnabled: boolean;
   onboardingComplete: boolean;
   dashboardUrl: string | null;
+  configured?: boolean;
+  error?: string;
+  code?: string;
   userDefault: { connected: boolean; accountId: string; chargesEnabled: boolean; onboardingComplete: boolean } | null;
 };
 
@@ -46,6 +49,15 @@ export function StripeConnectCard({ projectId }: { projectId: string }) {
     if (!code) return;
     if (code === 'success') toast.success('Stripe onboarding done — checking status…');
     else if (code === 'refresh') toast.info('Continue your Stripe onboarding.');
+    else if (code === 'not_connected') toast.info('Connect Stripe before opening its dashboard.');
+    else if (code === 'error') {
+      const reason = params.get('reason');
+      toast.error(
+        reason === 'connect_not_configured'
+          ? 'Stripe Connect is not available yet'
+          : 'Stripe could not complete that request',
+      );
+    }
   }, [params]);
 
   async function connectUserDefault() {
@@ -82,6 +94,48 @@ export function StripeConnectCard({ projectId }: { projectId: string }) {
 
   if (busy === 'load' || status === null) {
     return <Skeleton text="Loading payment connection…" />;
+  }
+
+  if (status.configured === false) {
+    return (
+      <Card>
+        <div className="flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 flex-shrink-0 text-amber-500 mt-0.5" />
+          <div>
+            <h3 className="text-base font-semibold">Stripe Connect is temporarily unavailable</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              The platform owner needs to finish Stripe Connect setup. Your project and any existing Stripe account were not changed.
+            </p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  if (status.code === 'connect_account_unavailable') {
+    const reconnectProject = status.mode === 'project';
+    return (
+      <Card>
+        <div className="flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 flex-shrink-0 text-amber-500 mt-0.5" />
+          <div>
+            <h3 className="text-base font-semibold">Reconnect Stripe</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              The saved connection is no longer available to this platform. Reconnecting creates a fresh link without deleting the previous Stripe account.
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={reconnectProject ? connectProjectAccount : connectUserDefault}
+          disabled={busy === 'start' || busy === 'start-project'}
+          className="inline-flex items-center gap-2 rounded-full bg-[#635bff] hover:bg-[#5851e0] text-white font-medium px-5 py-2.5 text-sm disabled:opacity-60"
+        >
+          {(busy === 'start' || busy === 'start-project')
+            ? <Loader2 className="h-4 w-4 animate-spin" />
+            : <><Wordmark /> Reconnect with Stripe</>}
+        </button>
+      </Card>
+    );
   }
 
   // STATE 1 — nothing connected anywhere.

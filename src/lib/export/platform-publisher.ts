@@ -1085,14 +1085,19 @@ export async function publishToSubdomain(
   }
 
     
-  // Force-inject Navbar & Footer into root layout if components exist
+  // Force-inject Navbar & Footer into root layout if components exist and the
+  // generated layout does not already render them. ClientLayout still carries
+  // FormAutoWire, but must not duplicate generated chrome.
   const hasNavbar = availableComponents.has('Navbar');
   const hasFooter = availableComponents.has('Footer');
+  const generatedLayoutContent = tree.getFile('src/app/layout.tsx')?.content || '';
+  const injectNavbar = hasNavbar && !/<Navbar\b/.test(generatedLayoutContent);
+  const injectFooter = hasFooter && !/<Footer\b/.test(generatedLayoutContent);
   if (hasNavbar || hasFooter) {
-    const navImport = hasNavbar ? "import Navbar from '@/components/Navbar';" : '';
-    const footerImport = hasFooter ? "import Footer from '@/components/Footer';" : '';
-    const navJsx = hasNavbar ? '      <Navbar />' : '';
-    const footerJsx = hasFooter ? '      <Footer />' : '';
+    const navImport = injectNavbar ? "import Navbar from '@/components/Navbar';" : '';
+    const footerImport = injectFooter ? "import Footer from '@/components/Footer';" : '';
+    const navJsx = injectNavbar ? '      <Navbar />' : '';
+    const footerJsx = injectFooter ? '      <Footer />' : '';
     const clientLayout = [
       "'use client';",
       navImport,

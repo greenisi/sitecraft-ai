@@ -26,7 +26,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
   if (authError || !supabase || !project) return authError || NextResponse.json({ error: 'Not found' }, { status: 404 });
 
   const [bizInfoRes, servicesRes, productsRes, galleryRes, blogRes] = await Promise.all([
-    supabase.from('business_info').select('hours,name,phone,email,address').eq('project_id', projectId).maybeSingle(),
+    // business_info has no `name` column; selecting it made this query error,
+    // so bizInfoRes.data was always null and the checklist could never mark
+    // business info or hours as done however much the owner filled in.
+    supabase.from('business_info').select('hours,phone,email,address').eq('project_id', projectId).maybeSingle(),
     supabase.from('services').select('id').eq('project_id', projectId).limit(1),
     supabase.from('products').select('id').eq('project_id', projectId).limit(1),
     supabase.from('gallery_images').select('id').eq('project_id', projectId).limit(1),
@@ -36,7 +39,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
   // Check for Stripe connected account (actual payment setup, not just project status)
   const { data: stripeData } = await supabase
     .from('profiles')
-    .select('stripe_account_id')
+    .select('stripe_connect_account_id')
     .eq('id', project.user_id)
     .maybeSingle();
 
@@ -50,7 +53,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
   // Determine if business_info has REAL user-entered data (not just auto-seeded defaults)
   const bizData = bizInfoRes.data;
   const hasRealBusinessInfo = !!(bizData && (
-    (bizData.name && bizData.name.trim() !== '') ||
     (bizData.phone && bizData.phone.trim() !== '') ||
     (bizData.email && bizData.email.trim() !== '') ||
     (bizData.address && bizData.address.trim() !== '')
@@ -67,7 +69,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
     'first-product': !!(productsRes.data && productsRes.data.length > 0),
     'gallery':       !!(galleryRes.data && galleryRes.data.length > 0),
     'blog':          !!(blogRes.data && blogRes.data.length > 0),
-    'stripe':        !!(stripeData?.stripe_account_id),
+    'stripe':        !!(stripeData?.stripe_connect_account_id),
   };
 
   const visibleKeys = businessType && STEP_VISIBILITY[businessType]

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getSharedProjectIds } from '@/lib/projects/data-group';
 
 export async function GET(
     request: NextRequest,
@@ -27,10 +28,18 @@ export async function GET(
   const url = new URL(request.url);
     const status = url.searchParams.get('status');
 
+  // Customer data pools across a user's projects only when they opted in;
+  // otherwise this is just [projectId] and nothing changes.
+  const sharedProjectIds = await getSharedProjectIds(
+    supabase!,
+    projectId,
+    user!.id
+  );
+
   let query = supabase
       .from('orders')
       .select('*')
-      .eq('project_id', projectId)
+      .in('project_id', sharedProjectIds)
       .order('created_at', { ascending: false });
 
   if (status) {

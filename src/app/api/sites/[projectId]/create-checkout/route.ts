@@ -1,8 +1,41 @@
 import { NextResponse } from 'next/server';
-import { createRouteHandlerClient as createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { getStripe } from '@/lib/stripe';
 
 export const dynamic = 'force-dynamic';
+
+/**
+ * Checkout for published sites wired by FormAutoWire.
+ *
+ * NOT dead, despite looking like a duplicate of
+ * /api/storefront/[projectId]/checkout. The cart script that
+ * platform-publisher injects into every published site posts here, so this is
+ * the endpoint behind the checkout button on live storefronts. The storefront
+ * route is the better implementation and the one new work should target, but
+ * it takes productIds, and FormAutoWire's cart is scraped from the DOM and has
+ * only names.
+ *
+ * It previously took `name`, `price` and `quantity` straight from the request
+ * body and charged whatever price arrived, so anyone could POST
+ * `{"items":[{"name":"Anything","price":0.01,"quantity":1}]}` and create a
+ * Stripe session for a cent against the merchant's connected account, then
+ * have an order row written with the fabricated total.
+ *
+ * Now every price is resolved server-side from the products table and the
+ * client's number is ignored. Items may identify a product by id or, because
+ * that is all the injected cart has, by exact name within this project. A name
+ * that does not resolve is refused rather than guessed at, since guessing on a
+ * payment path means charging someone for something nobody sells.
+ *
+ * Deliberately no CORS headers: the browsers that reach this are running the
+ * merchant's own published page, and widening a payment path to every origin
+ * buys nothing. CORS was never what protected it anyway -- curl ignores it.
+ */
+
+/** Escapes names for a PostgREST `in.(...)` list, which is comma-delimited. */
+function quoteList(values: string[]): string {
+  return values.map((value) => `"${value.replace(/"/g, '\\"')}"`).join(',');
+}
 
 export async function POST(
   request: Request,
@@ -14,15 +47,30 @@ export async function POST(
     const { items, successUrl, cancelUrl } = body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
-      return NextResponse.json(
-        { error: 'Items are required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Items are required' }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    // The client may only say WHICH product and HOW MANY. Never what it costs.
+    const productIds: string[] = [];
+    const productNames: string[] = [];
+    for (const item of items) {
+      const id = item?.product_id || item?.productId;
+      if (typeof id === 'string' && id) {
+        productIds.push(id);
+        continue;
+      }
+      const name = typeof item?.name === 'string' ? item.name.trim() : '';
+      if (!name) {
+        return NextResponse.json(
+          { error: 'Each item must reference a product by id or name' },
+          { status: 400 }
+        );
+      }
+      productNames.push(name);
+    }
 
-    // Get the project and its owner's Stripe Connect account
+    const supabase = createAdminClient();
+
     const { data: project } = await supabase
       .from('projects')
       .select('user_id, name, slug')
@@ -30,13 +78,9 @@ export async function POST(
       .single();
 
     if (!project) {
-      return NextResponse.json(
-        { error: 'Project not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
 
-    // Get the owner's Stripe Connect account
     const { data: profile } = await supabase
       .from('profiles')
       .select('stripe_connect_account_id, stripe_connect_charges_enabled')
@@ -44,33 +88,79 @@ export async function POST(
       .single();
 
     if (!profile?.stripe_connect_account_id || !profile.stripe_connect_charges_enabled) {
-      return NextResponse.json(
-        { error: 'This store has not set up payments yet' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'This store has not set up payments yet' }, { status: 400 });
+    }
+
+    // Only active products are ever candidates, so something the owner has
+    // taken down cannot be bought by an older page still showing it.
+    let lookup = supabase
+      .from('products')
+      .select('id, name, price, images, is_active')
+      .eq('project_id', projectId)
+      .eq('is_active', true);
+
+    lookup =
+      productIds.length && productNames.length
+        ? lookup.or(`id.in.(${productIds.join(',')}),name.in.(${quoteList(productNames)})`)
+        : productIds.length
+          ? lookup.in('id', productIds)
+          : lookup.in('name', productNames);
+
+    const { data: products } = await lookup;
+
+    if (!products || products.length === 0) {
+      return NextResponse.json({ error: 'One or more items are unavailable' }, { status: 400 });
+    }
+
+    const lineItems = [];
+    const orderItems: Array<{ product_id: string; name: string; price: number; quantity: number }> = [];
+    let totalAmount = 0;
+
+    for (const item of items) {
+      const id = item.product_id || item.productId;
+      const name = typeof item.name === 'string' ? item.name.trim() : '';
+      const product = id
+        ? products.find((candidate) => candidate.id === id)
+        : products.find((candidate) => candidate.name === name);
+      if (!product) {
+        return NextResponse.json(
+          { error: `We could not find "${name || id}" in this store` },
+          { status: 400 }
+        );
+      }
+
+      const quantity = Math.max(1, Math.min(99, Math.floor(Number(item.quantity) || 1)));
+      const price = Number(product.price);
+      const unitAmount = Math.round(price * 100);
+      if (!Number.isFinite(unitAmount) || unitAmount <= 0) {
+        return NextResponse.json({ error: `Invalid price for ${product.name}` }, { status: 400 });
+      }
+
+      const firstImage = Array.isArray(product.images) && product.images[0]
+        ? String(product.images[0])
+        : null;
+
+      lineItems.push({
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: product.name,
+            ...(firstImage ? { images: [firstImage] } : {}),
+          },
+          unit_amount: unitAmount,
+        },
+        quantity,
+      });
+
+      orderItems.push({ product_id: product.id, name: product.name, price, quantity });
+      totalAmount += price * quantity;
     }
 
     const stripe = getStripe();
-
-    // Build line items for Stripe Checkout
-    const lineItems = items.map((item: { name: string; price: number; quantity: number; image?: string }) => ({
-      price_data: {
-        currency: 'usd',
-        product_data: {
-          name: item.name,
-          ...(item.image ? { images: [item.image] } : {}),
-        },
-        unit_amount: Math.round(item.price * 100),
-      },
-      quantity: item.quantity || 1,
-    }));
-
-    // Determine URLs
     const origin = successUrl ? new URL(successUrl).origin : request.headers.get('origin') || '';
     const finalSuccessUrl = successUrl || origin + '/checkout/success?session_id={CHECKOUT_SESSION_ID}';
     const finalCancelUrl = cancelUrl || origin + '/';
 
-    // Create Stripe Checkout session on the connected account
     const session = await stripe.checkout.sessions.create(
       {
         payment_method_types: ['card'],
@@ -83,21 +173,7 @@ export async function POST(
           project_name: project.name,
         },
       },
-      {
-        stripeAccount: profile.stripe_connect_account_id,
-      }
-    );
-
-    // Also save the order to our database
-    const orderItems = items.map((item: { name: string; price: number; quantity: number }) => ({
-      name: item.name,
-      price: item.price,
-      quantity: item.quantity || 1,
-    }));
-
-    const totalAmount = orderItems.reduce(
-      (sum: number, item: { price: number; quantity: number }) => sum + item.price * item.quantity,
-      0
+      { stripeAccount: profile.stripe_connect_account_id }
     );
 
     await supabase.from('orders').insert({
@@ -113,9 +189,6 @@ export async function POST(
   } catch (error: unknown) {
     console.error('Create checkout error:', error);
     const message = error instanceof Error ? error.message : 'Failed to create checkout session';
-    return NextResponse.json(
-      { error: message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -160,7 +160,7 @@ export function MobileStylesDrawer({ onSave }: MobileStylesDrawerProps) {
         type: 'style',
         cssPath: selectedElement.cssPath,
         property: attribute,
-        oldValue: (selectedElement as Record<string, unknown>)[attribute] as string || '',
+        oldValue: (selectedElement as unknown as Record<string, unknown>)[attribute] as string || '',
         newValue: value,
       });
     },

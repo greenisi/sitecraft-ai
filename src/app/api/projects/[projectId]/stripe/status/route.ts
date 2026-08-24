@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createRouteHandlerClient as createClient } from '@/lib/supabase/server';
 import { getStripe } from '@/lib/stripe';
+import { classifyStripeConnectError } from '@/lib/billing/stripe-connect-errors';
 
 /**
  * GET /api/projects/[projectId]/stripe/status
@@ -54,6 +55,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ project
     const stripe = getStripe();
     let chargesEnabled = Boolean(project.stripe_connect_charges_enabled);
     let onboardingComplete = Boolean(project.stripe_connect_onboarding_complete);
+    let connectError: ReturnType<typeof classifyStripeConnectError> | null = null;
     try {
       const account = await stripe.accounts.retrieve(project.stripe_connect_account_id);
       chargesEnabled = Boolean(account.charges_enabled);
@@ -72,14 +74,18 @@ export async function GET(_req: Request, { params }: { params: Promise<{ project
       }
     } catch (e) {
       console.warn('Failed to retrieve project Stripe account:', e);
+      connectError = classifyStripeConnectError(e);
     }
     return NextResponse.json({
       mode: 'project',
       accountId: project.stripe_connect_account_id,
       chargesEnabled,
       onboardingComplete,
-      dashboardUrl: chargesEnabled
-        ? `https://dashboard.stripe.com/${project.stripe_connect_account_id}`
+      configured: connectError?.code !== 'connect_not_configured',
+      error: connectError?.message,
+      code: connectError?.code,
+      dashboardUrl: chargesEnabled && !connectError
+        ? `/api/projects/${projectId}/stripe/dashboard`
         : null,
       userDefault,
     });
@@ -92,7 +98,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ project
       chargesEnabled: userDefault.chargesEnabled,
       onboardingComplete: userDefault.onboardingComplete,
       dashboardUrl: userDefault.chargesEnabled
-        ? `https://dashboard.stripe.com/${userDefault.accountId}`
+        ? '/api/stripe/connect/dashboard'
         : null,
       userDefault,
     });

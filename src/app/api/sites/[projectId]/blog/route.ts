@@ -1,5 +1,26 @@
 import { NextResponse } from 'next/server';
-import { createRouteHandlerClient as createClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
+
+/**
+ * Blog posts for a published site.
+ *
+ * Published sites call in from their own origin, so this needs CORS, a
+ * preflight, and a service-role client rather than the cookie-scoped one a
+ * cross-origin visitor never sends cookies to.
+ *
+ * The status filter is the gate on what leaves here, and it matches the RLS
+ * policy that was previously doing the work ("Public can view published blog
+ * posts"): drafts must never be returned.
+ */
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
 
 export async function GET(
   request: Request,
@@ -7,7 +28,7 @@ export async function GET(
 ) {
   try {
     const { projectId } = await params;
-    const supabase = await createClient();
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { data: posts, error: fetchError } = await supabase
       .from('blog_posts')
@@ -17,11 +38,18 @@ export async function GET(
       .order('published_at', { ascending: false });
 
     if (fetchError) {
-      return NextResponse.json({ error: fetchError.message }, { status: 500 });
+      return NextResponse.json({ error: fetchError.message }, { status: 500, headers: CORS_HEADERS });
     }
 
-    return NextResponse.json({ posts: posts || [] });
+    return NextResponse.json({ posts: posts || [] }, { headers: CORS_HEADERS });
   } catch {
-    return NextResponse.json({ error: 'Failed to fetch blog posts' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch blog posts' },
+      { status: 500, headers: CORS_HEADERS }
+    );
   }
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
 }

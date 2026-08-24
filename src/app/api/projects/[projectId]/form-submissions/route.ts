@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireProjectOwner } from '@/lib/project-auth';
+import { getSharedProjectIds } from '@/lib/projects/data-group';
 
 export async function GET(
   request: NextRequest,
@@ -7,16 +8,24 @@ export async function GET(
 ) {
   try {
     const { projectId } = await params;
-    const { error, supabase } = await requireProjectOwner(projectId);
+    const { error, supabase, user } = await requireProjectOwner(projectId);
     if (error) return error;
 
     const url = new URL(request.url);
     const status = url.searchParams.get('status');
 
+    // Customer data pools across a user's projects only when they opted in;
+    // otherwise this is just [projectId] and nothing changes.
+    const sharedProjectIds = await getSharedProjectIds(
+      supabase!,
+      projectId,
+      user!.id
+    );
+
     let query = supabase!
       .from('form_submissions')
       .select('*')
-      .eq('project_id', projectId)
+      .in('project_id', sharedProjectIds)
       .order('created_at', { ascending: false });
 
     if (status) {

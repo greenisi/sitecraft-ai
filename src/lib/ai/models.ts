@@ -14,6 +14,7 @@ export interface ModelConfig {
   provider: 'openrouter';
   modelId: string;
   maxTokens: number;
+  reasoningEffort?: 'max' | 'xhigh' | 'high' | 'medium' | 'low' | 'minimal' | 'none';
 }
 
 export const MODEL_TIERS: Record<ModelTier, ModelConfig> = {
@@ -29,9 +30,9 @@ export const MODEL_TIERS: Record<ModelTier, ModelConfig> = {
   },
   'pro-build': {
     tier: 'pro-build',
-    displayName: 'Pro Build',
-    description: 'Fast and smart — perfect balance of speed and quality',
-    badge: '🚀',
+    displayName: 'Standard',
+    description: 'Smart, fast generation for most websites',
+    badge: '✦',
     requiresPro: true,
     provider: 'openrouter',
     modelId: 'moonshotai/kimi-k3',
@@ -39,13 +40,14 @@ export const MODEL_TIERS: Record<ModelTier, ModelConfig> = {
   },
   'architect': {
     tier: 'architect',
-    displayName: 'Architect Mode',
-    description: 'Highest quality — most detailed and polished results',
-    badge: '🏗️',
+    displayName: 'Power Mode',
+    description: 'More reasoning power for complex, high-detail builds',
+    badge: '⚡',
     requiresPro: true,
     provider: 'openrouter',
-    modelId: 'moonshotai/kimi-k3',
+    modelId: 'anthropic/claude-opus-5',
     maxTokens: 64000,
+    reasoningEffort: 'max',
   },
   'lightning': {
     tier: 'lightning',

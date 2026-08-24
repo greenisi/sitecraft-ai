@@ -123,72 +123,72 @@ const HERO_VARIANTS: HeroVariant[] = [
   {
     id: 'gradient-bold',
     name: 'Bold Gradient',
-    description: 'Full-width gradient background (primary to secondary) with large centered text, two CTA buttons, and decorative blur circles. Text is white/light on the gradient.',
+    description: 'Asymmetric gradient hero: content occupies the left 7 columns of a 12-column grid with an oversized headline, ONE dominant CTA button plus a simple text link beside it. Background is a gradient from primary-700 to primary-900 with an animate-gradient-shift background treatment. Decorative layer: a fine inline-SVG dot-grid pattern overlay at 4% opacity across the right third of the gradient (pointer-events-none). Motion: stagger the headline, sub-copy, and CTA entrances with animate-fade-in-up at 100ms increments. Text is white/light on the gradient. NO decorative blur circles, NO centered layout with two side-by-side buttons.',
   },
   {
     id: 'split-image',
     name: 'Split Layout',
-    description: 'Two-column layout: left side has headline, description, and CTAs on a light/white background. Right side has a large image placeholder or illustration area with a subtle background shape.',
+    description: 'Two-column layout: left side has headline, description, and CTAs on a light/white background. Right side has a large image placeholder or illustration area with a subtle background shape. Decorative layer: back the image with an offset rounded-3xl tinted panel (primary-100, shifted down-right, behind via z-index) so it reads as stacked layers, plus one glass badge chip (backdrop-blur-md bg-white/60 ring-1) overlapping the image corner. Motion: text column enters with animate-slide-in-left, image with animate-slide-in-right, and the badge chip idles on animate-float.',
   },
   {
     id: 'dark-hero',
     name: 'Dark Cinematic',
-    description: 'Dark/near-black background (bg-gray-950 or bg-neutral-900) with white text, a subtle gradient overlay, floating decorative dots or grid pattern, and a prominent glowing CTA button.',
+    description: 'Dark/near-black background (bg-gray-950 or bg-neutral-900) with white text, a subtle gradient overlay, an optional grid/dot texture at 2-3% opacity, and a prominent solid high-contrast CTA button (no glow effects). Decorative layer: one very large blurred primary-600/10 orb anchored half off the top-right corner — soft structural depth, NOT a neon glow. Motion: headline enters with animate-blur-in, supporting copy with animate-fade-in-up, and a scroll-cue chevron at bottom-center gently floats (animate-float). All text stays white/gray-100 on the dark surface.',
   },
   {
     id: 'minimal-clean',
     name: 'Minimal Clean',
-    description: 'White/very light background, centered text with extra-large typography, minimal decorations. Only a thin accent line or small icon above the headline. Lots of whitespace. Single CTA.',
+    description: 'White/very light background, centered text with extra-large typography, minimal decorations. Only a thin accent line or small icon above the headline. Lots of whitespace. Single CTA. Decorative layer: one whisper-quiet oversized outlined echo of the key headline word behind the text (text-transparent, 1px stroke, 4% opacity, select-none pointer-events-none) — nearly subliminal, the minimalism stays intact. Motion: headline enters with animate-rise-in and the thin accent line draws in with animate-scale-in. Text remains text-gray-900 on the light background.',
   },
   {
     id: 'angled-bg',
     name: 'Angled Background',
-    description: 'Hero with a diagonal/angled background split — top portion is colored (primary gradient), bottom is white. Content sits at the intersection. Creates dynamic visual movement.',
+    description: 'Hero with a diagonal/angled background split — top portion is colored (primary gradient), bottom is white. Content sits at the intersection. Creates dynamic visual movement. Decorative layer: a 4%-opacity dot-grid overlay on the colored portion, plus a small stat/badge card (rounded-3xl, ring-1, shadow-xl, z-10) overlapping the diagonal seam. Motion: content rises with animate-rise-in and the seam-straddling badge card idles on animate-float. Keep white text on the colored portion, dark text on the white portion.',
   },
   {
     id: 'video-bg-style',
     name: 'Full-Bleed Image',
-    description: 'Full-width background image placeholder with dark overlay (bg-black/60). White text centered on top. Tall hero (min-h-[80vh]). Evokes premium/cinematic feel.',
+    description: 'Full-width background image placeholder with dark overlay (bg-black/60). White text centered on top. Tall hero (min-h-[80vh]). Evokes premium/cinematic feel. Decorative layer: a soft dot-grid pattern overlay at 4% opacity in one corner (pointer-events-none). Motion: slow animate-kenburns zoom on the backdrop image, headline enters with animate-blur-in, and a scroll-cue chevron at bottom-center gently floats (animate-float). White text stays on the dark overlay at all times.',
   },
   {
     id: 'card-hero',
     name: 'Card Overlay',
-    description: 'Subtle patterned or light gradient background with a floating white card in the center containing the headline, description, and CTAs. Card has shadow-2xl and rounded-2xl.',
+    description: 'Subtle patterned or light gradient background with a floating white card in the center containing the headline, description, and CTAs. Card has shadow-2xl and rounded-2xl. Decorative layer: two offset rounded-3xl tinted panes (primary-100 and a soft accent tint, ring-1) peeking out behind the white card so it reads as layered paper. Motion: the card enters with animate-scale-in while the background gradient drifts slowly with animate-gradient-shift. Dark text (text-gray-900) inside the white card.',
   },
   {
     id: 'asymmetric',
     name: 'Asymmetric Layout',
-    description: 'Off-center layout where text is positioned on the left third, with a large decorative shape (circle or blob using primary color at 10-20% opacity) on the right. Creates visual interest through asymmetry.',
+    description: 'Off-center layout where text is positioned on the left third, with a large decorative shape (circle or blob using primary color at 10-20% opacity) on the right. Creates visual interest through asymmetry. Decorative layer: give the large shape a companion — a small 4%-opacity dot-grid patch tucked behind the text column (pointer-events-none). Motion: the shape rotates almost imperceptibly with animate-spin-slow while the headline enters with animate-slide-in-left and the shape settles in with animate-blur-in.',
   },
   {
     id: 'floating-cards',
     name: 'Floating Cards Hero',
-    description: 'Dark or gradient background with the headline on the left, and 2-3 floating glassmorphism cards (tilted slightly with rotate-1, rotate-2) on the right side showing key stats, features, or testimonials. Cards use bg-white/10 backdrop-blur-xl with shadow-2xl.',
+    description: 'Dark or gradient background with the headline on the left, and 2-3 floating glassmorphism cards (tilted slightly with rotate-1, rotate-2) on the right side showing key stats, features, or testimonials. Cards use bg-white/10 backdrop-blur-xl with shadow-2xl. Decorative layer: give each glass card a ring-1 ring-white/20 edge and tuck a faint grid texture at 3% opacity behind the card cluster. Motion: each card idles on animate-float with staggered delays so the stack feels alive, and the headline enters with animate-fade-in-up. All text on the dark/gradient background stays white.',
   },
   {
     id: 'text-reveal',
     name: 'Oversized Typography',
-    description: 'Minimal hero focused on massive typography. Business name in text-8xl lg:text-9xl font-black with gradient text treatment. A single compelling tagline below in normal size. One CTA button. Background is white or very light with subtle grain texture. No images.',
+    description: 'Minimal hero focused on massive typography. Business name in text-8xl lg:text-9xl font-black with gradient text treatment. A single compelling tagline below in normal size. One CTA button. Background is white or very light with subtle grain texture. No images. Decorative layer: an oversized outlined echo of one keyword behind the headline (text-transparent, 1px stroke, 5% opacity, select-none pointer-events-none). Motion: the giant headline enters with animate-blur-in and a single animate-shimmer highlight sweeps across the gradient text treatment.',
   },
   {
     id: 'magazine-layout',
     name: 'Magazine Editorial',
-    description: 'Editorial/magazine-style layout with a large image taking up 60% of the hero, text overlapping the image boundary on one side (negative margin). Thin accent lines and small uppercase labels. Feels like a high-end print layout translated to web.',
+    description: 'Editorial/magazine-style layout with a large image taking up 60% of the hero, text overlapping the image boundary on one side (negative margin). Thin accent lines and small uppercase labels. Feels like a high-end print layout translated to web. Decorative layer: a huge outlined folio word or issue number behind the text block at 5% opacity (text-transparent, 1px stroke, pointer-events-none). Motion: a very slow animate-kenburns drift on the large image, the overlapping text block rises in with animate-rise-in, and the thin accent rules draw in with animate-scale-in.',
   },
   {
     id: 'stacked-media',
     name: 'Stacked Image Collage',
-    description: 'Three overlapping images arranged in a stacked/offset pattern on one side of the hero (like photos scattered on a desk). Text on the other side. Creates depth through z-index layering and slight rotations. Shadow on each image.',
+    description: 'Three overlapping images arranged in a stacked/offset pattern on one side of the hero (like photos scattered on a desk). Text on the other side. Creates depth through z-index layering and slight rotations. Shadow on each image. Decorative layer: a 4%-opacity dot-grid patch tucked behind the photo stack, plus a glass caption chip (backdrop-blur-md bg-white/15 ring-1 ring-white/25) pinned to the front image. Motion: each photo enters with animate-scale-in at staggered delays and the top photo idles on a barely-perceptible animate-float.',
   },
   {
     id: 'wave-gradient',
     name: 'Wave Gradient',
-    description: 'Hero with a flowing wave-shaped gradient background (using SVG wave at the bottom). Gradient goes from primary-600 at top to primary-900 at bottom. Content centered on the gradient. Wave separates hero from next section smoothly.',
+    description: 'Hero with a flowing wave-shaped gradient background (using SVG wave at the bottom). Gradient goes from primary-600 at top to primary-900 at bottom. Content centered on the gradient. Wave separates hero from next section smoothly. Decorative layer: echo the main wave with one or two thin translucent SVG wave strokes (white at roughly 10% opacity) floating above it for layered depth. Motion: the gradient stays alive with a slow animate-gradient-shift, content enters with animate-fade-in-up, and a scroll-cue chevron gently floats (animate-float). White text on the gradient.',
   },
   {
     id: 'spotlight',
     name: 'Spotlight Focus',
-    description: 'Near-black background (bg-gray-950) with a radial gradient spotlight effect (a large circle of primary-500/20 behind the text). White headline with one word in accent color. Dramatic, cinematic feel. Small decorative dots or stars scattered.',
+    description: 'Near-black background (bg-gray-950) with a radial gradient spotlight effect (a large circle of primary-500/20 behind the text). White headline with one word in accent color. Dramatic, cinematic feel — no scattered decorative dots or stars. Decorative layer: faint concentric topo-style SVG rings around the spotlight at 3-4% white opacity (pointer-events-none). Motion: headline enters with animate-blur-in, the accent word follows with a slightly delayed animate-fade-in, and a minimal scroll-cue chevron floats at the bottom (animate-float). Still no glow effects on buttons.',
   },
 ];
 
@@ -204,42 +204,42 @@ const SECTION_LAYOUT_PATTERNS: LayoutPattern[] = [
   {
     id: 'cards-grid',
     name: 'Card Grid',
-    description: 'Features/services displayed in a responsive card grid (3-col desktop, 2-col tablet, 1-col mobile). Each card has an icon, title, and description with hover lift effect.',
+    description: 'Feature cards with full-bleed image tops in a mixed-size grid (one featured card spans 2 columns), text content below each image, hover lift — never icon+title+description-only cards. Depth & divider: cards are rounded-3xl with ring-1 ring-gray-900/5 and layered shadows (a tight shadow-md plus a softer ambient shadow on hover); let the featured card overlap the section heading zone slightly with negative top margin and z-10; when this section abuts a contrasting background, separate the two with one of the SECTION DIVIDER snippets (SVG wave or diagonal) instead of a hard edge.',
   },
   {
     id: 'alternating-rows',
     name: 'Alternating Rows',
-    description: 'Features shown as alternating left-right rows. Odd rows: image left, text right. Even rows: text left, image right. Creates a zigzag visual flow down the page.',
+    description: 'Features shown as alternating left-right rows. Odd rows: image left, text right. Even rows: text left, image right. Creates a zigzag visual flow down the page. Depth & divider: images sit in rounded-3xl frames with ring-1 and layered shadows, and each image gets a small offset tinted panel behind it (overlapping via z-index) so rows read as stacked layers rather than flat halves; hand off to any adjacent contrasting section with one of the SECTION DIVIDER snippets.',
   },
   {
     id: 'icon-list',
     name: 'Icon + Text List',
-    description: 'Vertical list of features with a large icon on the left and title + description on the right. Clean, scannable layout. Good for 4-6 items.',
+    description: 'Vertical list of features with a large icon on the left and title + description on the right. Clean, scannable layout. Good for 4-6 items. Depth & divider: wrap each row in a rounded-3xl ring-1 card that lifts with layered shadows on hover, and let the icon medallion overlap the card edge (negative margin, z-10) for depth; if this section neighbors a contrasting band, split them with one of the SECTION DIVIDER snippets.',
   },
   {
     id: 'bento-grid',
     name: 'Bento Grid',
-    description: 'Asymmetric grid layout (like Apple/Vercel style) where items have different sizes. One large featured item spans 2 columns, others are single-column. Creates visual hierarchy.',
+    description: 'Asymmetric grid layout (like Apple/Vercel style) where items have different sizes. One large featured item spans 2 columns, others are single-column. Creates visual hierarchy. Depth & divider: bento cells are rounded-3xl with ring-1 ring-gray-900/5 and layered shadows, and the featured cell may overlap the grid gap with z-10 for a collage feel; transitions into darker or contrasting neighboring sections use one of the SECTION DIVIDER snippets (wave or diagonal).',
   },
   {
     id: 'centered-stack',
     name: 'Centered Stack',
-    description: 'All items centered and stacked vertically with generous spacing. Each item has a centered icon, large title, and description. Minimalist and elegant.',
+    description: 'All items centered and stacked vertically with generous spacing. Each item has a centered icon, large title, and description. Minimalist and elegant. Depth & divider: give each item a floating rounded-3xl ring-1 card treatment with soft layered shadows, or a subtle tinted backdrop layer that overlaps the previous item slightly via z-index so the stack has depth; close the section against contrasting neighbors with one of the SECTION DIVIDER snippets.',
   },
   {
     id: 'sidebar-features',
     name: 'Sidebar + Content',
-    description: 'Left sidebar with feature/service navigation tabs. Right content area shows the selected feature detail with image and description. Interactive tab-switching layout.',
+    description: 'Left sidebar with feature/service navigation tabs. Right content area shows the selected feature detail with image and description. Interactive tab-switching layout. Depth & divider: the content panel is a rounded-3xl ring-1 card with layered shadows, and the active tab indicator overlaps the panel edge with z-10 so the two planes visibly interlock; when this section touches a contrasting background, hand off with one of the SECTION DIVIDER snippets.',
   },
   {
     id: 'timeline',
     name: 'Timeline Layout',
-    description: 'Vertical timeline with alternating left-right content blocks connected by a central line and dots. Each node has an icon, title, and description. Great for process steps, history, or milestones.',
+    description: 'Vertical timeline with alternating left-right content blocks connected by a central line and dots. Each node has an icon, title, and description. Great for process steps, history, or milestones. Depth & divider: each node card is rounded-3xl with ring-1 and layered shadows, and the timeline dots overlap the central line with z-10 depth (ringed, not flat); transition into contrasting neighboring sections via one of the SECTION DIVIDER snippets instead of a flat edge.',
   },
   {
     id: 'overlap-grid',
     name: 'Overlapping Grid',
-    description: 'Cards that slightly overlap each other in a staggered grid. First card has a larger size spanning 2 rows. Creates depth with varying z-index and shadow levels. Premium, magazine-style layout.',
+    description: 'Cards that slightly overlap each other in a staggered grid. First card has a larger size spanning 2 rows. Creates depth with varying z-index and shadow levels. Premium, magazine-style layout. Depth & divider: push the layering further — rounded-3xl cards with ring-1, a distinct layered shadow level per z-index tier, and at least one card breaking out of the section padding; separate this section from any contrasting neighbor with one of the SECTION DIVIDER snippets.',
   },
 ];
 
@@ -276,7 +276,7 @@ export interface NavbarVariant {
 const NAVBAR_VARIANTS: NavbarVariant[] = [
   {
     id: 'glassmorphism',
-    description: 'Glassmorphism: `fixed top-0 w-full z-50 backdrop-blur-md bg-white/80 border-b border-gray-200/50 shadow-sm`. Light, transparent feel.',
+    description: 'Glassmorphism: `fixed top-0 w-full z-50 backdrop-blur-md bg-white/90 border-b border-gray-200/50 shadow-sm`. Light, airy feel — always visible, never fully transparent.',
   },
   {
     id: 'solid-white',
@@ -288,11 +288,55 @@ const NAVBAR_VARIANTS: NavbarVariant[] = [
   },
   {
     id: 'transparent-hero',
-    description: 'Transparent over hero: `fixed top-0 w-full z-50 bg-transparent`. Text is white. Adds bg-white/90 backdrop-blur-md shadow-sm on scroll using a useEffect scroll listener.',
+    description: 'Elevated over hero: `fixed top-0 w-full z-50 bg-gray-950/85 backdrop-blur-md text-white border-b border-white/10` — always visible; never fully transparent; no scroll-listener background toggling. Keeps the airy over-hero look with guaranteed readability. Mobile menu panel is ALWAYS solid bg-white with text-gray-900.',
   },
   {
     id: 'colored-nav',
-    description: 'Brand colored: `fixed top-0 w-full z-50 bg-primary-600 text-white shadow-md`. CTA button uses white bg with primary text color.',
+    description: 'Brand colored: `fixed top-0 w-full z-50 bg-primary-600 text-white shadow-md`. CTA button uses white bg with text-primary-700.',
+  },
+];
+
+// ─── Decorative Accents ─────────────────────────────────────────────────────
+// Named decorative accent recipes. Two are hash-picked per site and become
+// that site's decorative signature, applied at least twice across the page.
+// All accents respect the standing bans: no neon glow, no rainbow gradients,
+// no scattered emoji — these are craft layers, not clutter.
+
+export interface DecorAccent {
+  id: string;
+  instruction: string;
+}
+
+export const DECOR_ACCENTS: DecorAccent[] = [
+  {
+    id: 'dot-grid',
+    instruction:
+      'An inline SVG <pattern> of tiny 1.5px circles rendered as an absolutely-positioned corner overlay (roughly 300-400px square) at 3-5% opacity, pointer-events-none, bleeding off one edge of the section. Use fill="currentColor" so it inherits the section text color and works on both light and dark surfaces.',
+  },
+  {
+    id: 'gradient-ring',
+    instruction:
+      'One very large ring — a rounded-full circle (600px+) with a thick border in primary-500/10 and blur-2xl — anchored half off one edge of a section, rotating almost imperceptibly with animate-spin-slow, pointer-events-none. Reads as soft structural depth, never a neon glow.',
+  },
+  {
+    id: 'topo-lines',
+    instruction:
+      'Thin concentric SVG curves (topographic contour lines) drawn with stroke="currentColor" at 4-6% opacity, fill="none", absolutely positioned behind content in one organic-feeling section, pointer-events-none. Best for nature, wellness, and organic brands; skip it for hard-edged tech.',
+  },
+  {
+    id: 'glass-chip',
+    instruction:
+      'Small glass badge chips floating over imagery — backdrop-blur-md bg-white/15 ring-1 ring-white/25 rounded-full px-3 py-1 text-white text-xs font-medium — carrying a rating, location, or "Since 2008"-style marker. One chip per image maximum; optionally idle it on animate-float.',
+  },
+  {
+    id: 'oversize-outline-word',
+    instruction:
+      'A huge (text-[10rem] or larger) outlined keyword behind a section heading: text-transparent with a 1px stroke via the arbitrary property [-webkit-text-stroke:1px_currentColor], at roughly 5% opacity, absolutely positioned, select-none pointer-events-none, cropped by overflow-hidden on the section.',
+  },
+  {
+    id: 'marquee-strip',
+    instruction:
+      'A full-width horizontal band between two sections that scrolls a repeated row of services, keywords, or city names with animate-marquee (duplicate the row content once so the loop is seamless), items separated by small dots or asterisks, uppercase tracking-widest text-sm, on a contrasting background band with correct text contrast.',
   },
 ];
 
@@ -320,7 +364,7 @@ const INDUSTRY_PROFILES: Record<string, IndustryProfile> = {
   landscaping: {
     paletteGroup: 'nature',
     fontVibes: ['bold', 'friendly', 'contemporary'],
-    heroStyles: ['split-image', 'full-bleed-image', 'gradient-bold', 'angled-bg'],
+    heroStyles: ['split-image', 'video-bg-style', 'gradient-bold', 'angled-bg'],
     sectionLayouts: ['cards-grid', 'alternating-rows', 'bento-grid'],
     testimonialStyles: ['cards-row', 'masonry'],
     navbarStyles: ['glassmorphism', 'solid-white', 'transparent-hero'],
@@ -355,7 +399,7 @@ const INDUSTRY_PROFILES: Record<string, IndustryProfile> = {
   },
   realestate: {
     paletteGroup: 'luxury',
-    fontVibes: ['luxury', 'serif-heavy', 'elegant'],
+    fontVibes: ['luxurious', 'elegant', 'classic'],
     heroStyles: ['video-bg-style', 'dark-hero', 'split-image', 'magazine-layout', 'stacked-media'],
     sectionLayouts: ['bento-grid', 'alternating-rows', 'cards-grid'],
     testimonialStyles: ['large-quote', 'cards-row'],
@@ -400,9 +444,9 @@ const INDUSTRY_PROFILES: Record<string, IndustryProfile> = {
   },
   creative: {
     paletteGroup: 'creative',
-    fontVibes: ['bold', 'contemporary', 'artistic'],
+    fontVibes: ['bold', 'contemporary', 'creative'],
     heroStyles: ['asymmetric', 'dark-hero', 'gradient-bold', 'card-hero', 'text-reveal', 'floating-cards', 'spotlight'],
-    sectionLayouts: ['bento-grid', 'masonry', 'alternating-rows'],
+    sectionLayouts: ['bento-grid', 'overlap-grid', 'alternating-rows'],
     testimonialStyles: ['masonry', 'large-quote'],
     navbarStyles: ['transparent-hero', 'dark-nav', 'glassmorphism'],
     visualNotes: 'Expressive, artistic. Bold typography and colors.',
@@ -705,7 +749,7 @@ const REFERENCE_STYLES: Record<string, ReferenceStyle> = {
       'Massive display type, often custom or bespoke font',
       'Bold one-color hero (single saturated color or black) with confident type',
       'Project case studies use scroll-driven storytelling — image, then context, then image',
-      'Microinteractions: cursor follow, hover image previews, smooth scroll reveals',
+      'Microinteractions: cursor follow, hover image previews, smooth scroll reveals (via the fail-open useReveal hook only)',
     ],
     antiPatterns: [
       'Standard portfolio card grid of square thumbnails',
@@ -775,7 +819,7 @@ const DEFAULT_REFERENCE_STYLE: ReferenceStyle = {
 // Catch-all for industries not explicitly listed
 const DEFAULT_PROFILE: IndustryProfile = {
   paletteGroup: 'cool',
-  fontVibes: ['minimal', 'contemporary', 'clean'],
+  fontVibes: ['minimal', 'contemporary', 'corporate'],
   heroStyles: ['gradient-bold', 'split-image', 'minimal-clean', 'dark-hero'],
   sectionLayouts: ['cards-grid', 'alternating-rows', 'bento-grid'],
   testimonialStyles: ['cards-row', 'large-quote', 'slider'],
@@ -929,42 +973,45 @@ export function getDesignVariety(
   const matchedIndustry = matchIndustry(industry, description);
   const profile = INDUSTRY_PROFILES[matchedIndustry] || DEFAULT_PROFILE;
 
-  // Hash based on business name + industry for consistency
-  const hash = simpleHash(`${businessName.toLowerCase()}-${industry.toLowerCase()}`);
+  // Hash based on business name + industry + description for consistency.
+  // Each dimension gets its own independent hash (salted) so the six picks
+  // are decorrelated instead of all shifting together off a single hash.
+  const base = `${businessName.toLowerCase()}-${industry.toLowerCase()}-${description.toLowerCase().slice(0, 80)}`;
+  const dim = (salt: string): number => simpleHash(`${base}::${salt}`);
 
   // Pick palette from the industry's palette group
   const paletteGroup = PALETTES[profile.paletteGroup] || PALETTES.cool;
-  const palette = pickFromArray(paletteGroup, hash);
+  const palette = pickFromArray(paletteGroup, dim('palette'));
 
   // Pick fonts from the industry's preferred vibes
   const matchingFonts = FONT_PAIRINGS.filter((f) => profile.fontVibes.includes(f.vibe));
   const fonts = matchingFonts.length > 0
-    ? pickFromArray(matchingFonts, hash, 1)
-    : pickFromArray(FONT_PAIRINGS, hash, 1);
+    ? pickFromArray(matchingFonts, dim('fonts'))
+    : pickFromArray(FONT_PAIRINGS, dim('fonts'));
 
   // Pick hero variant from industry preferences
   const matchingHeroes = HERO_VARIANTS.filter((h) => profile.heroStyles.includes(h.id));
   const heroVariant = matchingHeroes.length > 0
-    ? pickFromArray(matchingHeroes, hash, 2)
-    : pickFromArray(HERO_VARIANTS, hash, 2);
+    ? pickFromArray(matchingHeroes, dim('hero'))
+    : pickFromArray(HERO_VARIANTS, dim('hero'));
 
   // Pick section layout pattern
   const matchingLayouts = SECTION_LAYOUT_PATTERNS.filter((l) => profile.sectionLayouts.includes(l.id));
   const sectionLayout = matchingLayouts.length > 0
-    ? pickFromArray(matchingLayouts, hash, 3)
-    : pickFromArray(SECTION_LAYOUT_PATTERNS, hash, 3);
+    ? pickFromArray(matchingLayouts, dim('layout'))
+    : pickFromArray(SECTION_LAYOUT_PATTERNS, dim('layout'));
 
   // Pick testimonial pattern
   const matchingTestimonials = TESTIMONIAL_PATTERNS.filter((t) => profile.testimonialStyles.includes(t.id));
   const testimonialLayout = matchingTestimonials.length > 0
-    ? pickFromArray(matchingTestimonials, hash, 4)
-    : pickFromArray(TESTIMONIAL_PATTERNS, hash, 4);
+    ? pickFromArray(matchingTestimonials, dim('testimonial'))
+    : pickFromArray(TESTIMONIAL_PATTERNS, dim('testimonial'));
 
   // Pick navbar variant
   const matchingNavbars = NAVBAR_VARIANTS.filter((n) => profile.navbarStyles.includes(n.id));
   const navbarVariant = matchingNavbars.length > 0
-    ? pickFromArray(matchingNavbars, hash, 5)
-    : pickFromArray(NAVBAR_VARIANTS, hash, 5);
+    ? pickFromArray(matchingNavbars, dim('navbar'))
+    : pickFromArray(NAVBAR_VARIANTS, dim('navbar'));
 
   const referenceStyle = REFERENCE_STYLES[matchedIndustry] || DEFAULT_REFERENCE_STYLE;
 
@@ -986,8 +1033,71 @@ export function getDesignVariety(
  * the AI component generation prompt. This tells Claude exactly what
  * visual approach to use for THIS specific website.
  */
+/**
+ * Structural recipes per interior page role. Each page of a site gets its
+ * own composition so no page clones another — while the coherence contract
+ * (emitted below) keeps tokens identical so the site never reads as
+ * Frankenstein. Every recipe stays inside existing law: fail-open reveals,
+ * verified-gallery images, contrast rules, no icon-card grids.
+ */
+interface PageRecipe {
+  id: string;
+  instruction: string;
+}
+
+const PAGE_LAYOUT_RECIPES: Record<string, PageRecipe[]> = {
+  services: [
+    { id: 'numbered-editorial-rows', instruction: 'Numbered editorial rows (01/02/03) with full-bleed photography alternating sides; oversized serif numerals as texture; one tinted band per practice area.' },
+    { id: 'sticky-chapters', instruction: 'Use the STICKY STACKED CHAPTERS template — one full-viewport sticky panel per service, photo backdrop with dark scrim, panels sliding over each other on scroll.' },
+    { id: 'banded-chapters', instruction: 'Full-width horizontal bands, one per service: each band carries its own tinted background, a 7/5 split of photography and copy, and a wave divider into the next band.' },
+    { id: 'side-rail-index', instruction: 'Two-column: a slim left rail with a sticky index of service names (active item in accent color), right column of tall scrolling detail panels with photography and pricing chips.' },
+  ],
+  about: [
+    { id: 'story-timeline', instruction: 'Vertical story timeline with year markers on a center line, alternating entries, small photos clipped in rounded-full/arch masks; ends in an oversized founding-belief pull quote.' },
+    { id: 'split-manifesto', instruction: 'Asymmetric manifesto: a sticky left column with one oversized serif statement, right column scrolling through values/team/credentials with portrait photography and glass chips.' },
+    { id: 'photo-chapters', instruction: 'Chapters separated by full-bleed parallax image interludes with single-line captions; between them, dense editorial text blocks with drop caps and stat callouts.' },
+  ],
+  portfolio: [
+    { id: 'snap-gallery-strips', instruction: 'Use the HORIZONTAL SNAP GALLERY template as the spine: one snap strip per project category, section headings offset left, captions with project location.' },
+    { id: 'case-study-rows', instruction: 'Stacked case-study rows: oversized project number, full-width photo with kenburns, then a 2-column detail grid (scope, materials, timeline) under each.' },
+    { id: 'mixed-mosaic', instruction: 'Mixed-size mosaic grid (one hero cell spanning 2 cols, satellites around it) with hover captions sliding up; a full-bleed interlude photo halfway down.' },
+  ],
+  contact: [
+    { id: 'split-photo-form', instruction: 'Split layout: form on the left, a tall verified photo on the right with floating glass chips (hours, phone, service area); marquee of neighborhoods above the footer.' },
+    { id: 'card-over-backdrop', instruction: 'Full-bleed verified photo backdrop with dark scrim; the contact form floats as a centered rounded-3xl card with ring and heavy shadow; contact details as glass chips below the card.' },
+    { id: 'faq-beside-form', instruction: 'Two columns: the form beside an FAQ accordion (smooth height transitions); a slim dark strip at the top with phone/email/hours in a single credential line.' },
+  ],
+};
+
 export function buildVarietyInstructions(variety: DesignVariety): string {
   const dna = INDUSTRY_VISUAL_DNA[variety.matchedIndustry] || INDUSTRY_VISUAL_DNA.default;
+
+  // Hash-pick TWO distinct signature decorative accents for this site,
+  // mirroring the per-dimension salted-hash pattern used in getDesignVariety.
+  // The base is derived from the site's already-picked variety dimensions so
+  // the accents are deterministic per site.
+  const accentBase = `${variety.palette.name.toLowerCase()}-${variety.fonts.name.toLowerCase()}-${variety.matchedIndustry}-${variety.heroVariant.id}`;
+  const accentDim = (salt: string): number => simpleHash(`${accentBase}::${salt}`);
+  const accentOne = pickFromArray(DECOR_ACCENTS, accentDim('accent1'));
+  let accentTwo = pickFromArray(DECOR_ACCENTS, accentDim('accent2'));
+  if (accentTwo.id === accentOne.id) {
+    accentTwo = pickFromArray(DECOR_ACCENTS, accentDim('accent2'), 1);
+  }
+
+  // One structural recipe per interior page, salted per role so picks are
+  // independent; a simple uniqueness pass guarantees no two pages share a
+  // recipe id (pools are per-role so collisions are already unlikely).
+  const usedRecipeIds = new Set<string>();
+  const pageRecipes = Object.entries(PAGE_LAYOUT_RECIPES).map(([role, pool]) => {
+    let pick = pickFromArray(pool, accentDim(`page-${role}`));
+    let offset = 1;
+    while (usedRecipeIds.has(pick.id) && offset < pool.length) {
+      pick = pickFromArray(pool, accentDim(`page-${role}`), offset);
+      offset++;
+    }
+    usedRecipeIds.add(pick.id);
+    return { role, pick };
+  });
 
   // Editorial verticals — for these, the system-prompt's editorial templates
   // OVERRIDE the variety system's hero/section variants. The variety system's
@@ -1038,6 +1148,12 @@ generate 3-up icon-text card grids — that's the AI-template look.`
 ${variety.sectionLayout.description}
 IMPORTANT: Use this layout pattern for the main features/services section.`;
 
+  const criticalLayoutLines = isEditorial
+    ? `- The hero MUST use the editorial Pattern A (full-bleed photographic) or Pattern B (asymmetric 12-column grid) template from the system prompt — NOT a generic gradient hero, and NOT the variety system's hero variants
+- The features/services section MUST use the EDITORIAL NUMBERED LIST layout described above (oversized numbers + full-bleed photography per item) — NOT a basic 3-column card grid`
+    : `- The hero MUST use the "${variety.heroVariant.name}" style described above — NOT a generic gradient hero
+- The features/services section MUST use the "${variety.sectionLayout.name}" layout — NOT a basic 3-column card grid`;
+
   return `
 === DESIGN VARIETY — UNIQUE VISUAL IDENTITY FOR THIS SITE ===
 
@@ -1060,6 +1176,29 @@ ${variety.testimonialLayout.description}
 IMPORTANT: Use this testimonial layout instead of the default card grid.
 
 **VISUAL NOTES**: ${variety.industryProfile.visualNotes}
+
+=== SIGNATURE DECORATIVE ACCENTS — apply each at least twice across the site, tastefully ===
+These two accents are this site's decorative signature. Weave EACH one into at
+least two different sections (the hero counts as one). Keep them subtle and
+non-interactive (pointer-events-none where applicable), and always respect the
+text-contrast rules — they should read as craft, not clutter.
+
+**Accent 1 — "${accentOne.id}":** ${accentOne.instruction}
+**Accent 2 — "${accentTwo.id}":** ${accentTwo.instruction}
+
+=== PER-PAGE LAYOUT MAP — EACH PAGE HAS ITS OWN STRUCTURE ===
+The homepage structure comes from the hero + section assignments above. Every INTERIOR page uses its assigned recipe below. Do NOT reuse the homepage section structure on interior pages — a page that clones another page's layout is rejected.
+
+${pageRecipes.map(({ role, pick }) => `**/${role} — "${pick.id}":** ${pick.instruction}`).join('\n')}
+
+=== COHERENCE CONTRACT — WHAT MAKES IT ONE SITE, NOT FRANKENSTEIN ===
+Variety lives in STRUCTURE (layout, composition, section rhythm); identity lives in TOKENS. These stay IDENTICAL on every page:
+- The palette and its usage pattern (primary for headings/CTAs, accent for eyebrows/pops)
+- The font pairing and heading treatment (same serif/sans roles everywhere)
+- Button shape, size and hover behavior; card radius family (pick rounded-2xl OR rounded-3xl, not both)
+- The SAME two signature accents above — never introduce a third decorative device
+- The divider family, navbar, and footer
+Never invent a new color, font, or button style on an interior page. A visitor moving between pages should feel "same brand, new room."
 
 === INDUSTRY VISUAL DNA — MAKE THE INDUSTRY OBVIOUS ===
 Matched industry: ${variety.matchedIndustry}
@@ -1091,8 +1230,7 @@ ${variety.referenceStyle.antiPatterns.map((a) => `- ${a}`).join('\n')}
 
 CRITICAL — READ THIS CAREFULLY:
 This website must look COMPLETELY DIFFERENT from every other website you have ever generated.
-- The hero MUST use the "${variety.heroVariant.name}" style described above — NOT a generic gradient hero
-- The features/services section MUST use the "${variety.sectionLayout.name}" layout — NOT a basic 3-column card grid
+${criticalLayoutLines}
 - The testimonials MUST use the "${variety.testimonialLayout.name}" pattern — NOT the same cards-in-a-row
 - The navbar MUST follow the "${variety.navbarVariant.id}" style — NOT default glassmorphism
 - SECTION BACKGROUNDS: Mostly white/light (bg-white, bg-gray-50, bg-primary-50). Use dark (bg-gray-900) on at most 1-2 sections per page (hero and/or CTA). Do NOT make every section dark.
@@ -1106,6 +1244,7 @@ DESIGN QUALITY RULES:
 - NO floating decorative elements (stars, sparkles, emoji shapes) — these look AI-generated
 - NO neon glow effects on borders or buttons — use clean, solid colors
 - Subtle shadows (shadow-sm, shadow-md) — NOT shadow-2xl with colored glow
+- Density: every major section carries at least one decorative layer AND one motion moment; flat text-on-plain-background sections are rejected.
 - This must look like a custom \$50,000–\$100,000 bespoke build from a top-10 design studio — clean, confident, world-class. Aim higher than "premium WordPress." Aim for the design language of an Awwwards Site of the Day winner.
 
 TEXT CONTRAST — MANDATORY CHECK BEFORE EVERY COMPONENT:

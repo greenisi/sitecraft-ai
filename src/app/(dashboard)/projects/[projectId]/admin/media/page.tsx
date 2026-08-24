@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { VisualStudioEditor } from '@/components/media/visual-studio-editor';
 
 interface MediaAsset {
   id: string;
@@ -13,11 +14,13 @@ interface MediaAsset {
 }
 
 type Mode = 'image' | 'video';
+type StudioSurface = 'edit' | 'generate';
 
 export default function MediaStudioPage() {
   const params = useParams();
   const projectId = params.projectId as string;
 
+  const [surface, setSurface] = useState<StudioSurface>('edit');
   const [mode, setMode] = useState<Mode>('image');
   const [prompt, setPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState<'16:9' | '1:1' | '9:16'>('16:9');
@@ -123,13 +126,37 @@ export default function MediaStudioPage() {
   return (
     <div className="max-w-5xl space-y-8">
       <div className="pk-fade-up">
-        <h1 className="text-2xl font-bold text-white">Media Studio</h1>
+        <h1 className="text-2xl font-bold text-white">AI Visual Studio</h1>
         <p className="text-sm text-gray-400 mt-1">
-          Generate images and videos for your website with AI. Everything you create is saved to this
-          project and ready to use in your gallery, hero sections, or marketing.
+          Edit your footage with plain language, or generate a new image or short AI clip.
         </p>
       </div>
 
+      <div className="inline-flex rounded-full border border-gray-800 bg-gray-950 p-1">
+        <button
+          type="button"
+          onClick={() => setSurface('edit')}
+          className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+            surface === 'edit' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          Edit my footage
+        </button>
+        <button
+          type="button"
+          onClick={() => setSurface('generate')}
+          className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+            surface === 'generate' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          Generate an asset
+        </button>
+      </div>
+
+      {surface === 'edit' ? (
+        <VisualStudioEditor projectId={projectId} />
+      ) : (
+        <>
       <div className={`rounded-xl border border-gray-800 bg-gray-900/50 p-5 space-y-4 pk-fade-up pk-stagger-1 ${generating ? 'pk-glow border-purple-700/60' : ''}`}>
         <div className="flex gap-2">
           {(['image', 'video'] as Mode[]).map((m) => (
@@ -252,6 +279,8 @@ export default function MediaStudioPage() {
           </div>
         )}
       </div>
+        </>
+      )}
     </div>
   );
 }

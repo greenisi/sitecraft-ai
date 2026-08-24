@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useGeneratedFiles } from '@/lib/hooks/use-preview';
 import { useGenerationStore } from '@/stores/generation-store';
+import { useGenerationEta } from '@/lib/hooks/use-generation-eta';
 import { PreviewFrame } from '@/components/preview/preview-frame';
 import { LiveBuildPreview } from '@/components/preview/live-build-preview';
 import { Monitor, FileCode2, ChevronRight, Loader2, Terminal } from 'lucide-react';
@@ -89,7 +90,7 @@ function useTypewriter(
 // For completed/tab-selected code, colorizes immediately.
 function useDebouncedColorize(code: string, isActive: boolean): string {
   const [colorized, setColorized] = useState(() => colorize(code));
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const lastCodeRef = useRef(code);
 
   useEffect(() => {
@@ -125,6 +126,7 @@ export function PreviewPanel({ projectId }: PreviewPanelProps) {
     currentStage,
     components,
   } = useGenerationStore();
+  const { label: etaLabel } = useGenerationEta();
 
   const codeRef = useRef<HTMLDivElement>(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -189,7 +191,7 @@ export function PreviewPanel({ projectId }: PreviewPanelProps) {
   }, [isGenerating, currentStage]);
 
   // Throttled auto-scroll — only scroll at most every 100ms to avoid layout thrash
-  const scrollTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => {
     if (!codeRef.current || !isViewingActive) return;
     clearTimeout(scrollTimerRef.current);
@@ -483,6 +485,10 @@ export function PreviewPanel({ projectId }: PreviewPanelProps) {
                 />
               </div>
             </div>
+
+            {etaLabel && (
+              <span className="text-[#8b949e]">{etaLabel}</span>
+            )}
 
             {progress.total > 0 && (
               <span className="text-[#3fb950]">

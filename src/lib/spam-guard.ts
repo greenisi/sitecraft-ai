@@ -11,8 +11,6 @@
 //     (a real lead must never be dropped) but AI drafting and emails are
 //     skipped; the cron sweep's pending notification still reaches the owner.
 
-import type { SupabaseClient } from '@supabase/supabase-js';
-
 const PER_IP_HOURLY_LIMIT = 5;
 const PER_PROJECT_DAILY_CAP = 150;
 
@@ -29,10 +27,12 @@ export interface SpamCheckResult {
   degraded: boolean;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function checkSubmissionRate(
-  supabase: SupabaseClient<any>,
-  table: 'form_submissions' | 'bookings',
+  // Supabase's generated client type varies between service-role and SSR
+  // callers; the guard only needs the common query-builder surface.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: { from: (table: string) => any },
+  table: 'form_submissions' | 'bookings' | 'reviews',
   projectId: string,
   ip: string
 ): Promise<SpamCheckResult> {

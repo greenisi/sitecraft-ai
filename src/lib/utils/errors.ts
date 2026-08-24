@@ -67,7 +67,7 @@ export function formatErrorResponse(error: unknown) {
   console.error('Unexpected error:', error);
   return {
     error: {
-      message: 'An unexpected error occurred',
+      message: 'Internal server error',
       code: 'INTERNAL_ERROR',
     },
     status: 500,

@@ -86,14 +86,23 @@ function DomainsPageContent() {
     if (!searchQuery.trim()) return;
     setSearching(true);
     setSearchResults([]);
+    setMessage(null);
     try {
       const res = await fetch(`/api/domains/search?q=${encodeURIComponent(searchQuery)}`);
-      if (res.ok) {
-        const data = await res.json();
-        setSearchResults(data.results || []);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const apiMsg =
+          data?.error?.message || data?.error || `Search failed (HTTP ${res.status})`;
+        setMessage({ type: 'error', text: `Domain search unavailable: ${apiMsg}` });
+        return;
       }
+      setSearchResults(data.results || []);
     } catch (e) {
       console.error('Domain search failed:', e);
+      setMessage({
+        type: 'error',
+        text: 'Network error while searching for domains. Please try again.',
+      });
     } finally {
       setSearching(false);
     }

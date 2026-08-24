@@ -90,12 +90,12 @@ The owner should look at the finished site and think "how did it know exactly wh
 
 1. \`src/components/Navbar.tsx\` -- Fixed navigation bar (follow DESIGN VARIETY navbar style):
    - \`'use client'\` component with useState for mobile menu toggle
-   - Use the navbar style from DESIGN VARIETY instructions (glassmorphism, dark, transparent, solid, or colored)
+   - Use the navbar style from DESIGN VARIETY instructions (solid white, solid dark, brand-colored, or bg-white/90 backdrop-blur — always a solid, always-visible background; never transparent)
    - Logo/business name with primary brand color
    - Desktop nav links must match the industry and generated pages using \`next/link\`
    - Use industry-appropriate CTA: Call Now for trades, Reserve for restaurants, Book for appointments, View Work for studios, Request Quote for construction/landscaping
    - Mobile hamburger menu with Menu/X icons from lucide-react
-   - Full-screen mobile overlay with smooth opacity transition
+   - Full-screen mobile menu panel: ALWAYS solid bg-white with text-gray-900, with smooth open/close transition
    - Optional top banner only when it fits the industry
    - \`aria-expanded\` and \`aria-label\` for accessibility
 
@@ -117,10 +117,10 @@ The owner should look at the finished site and think "how did it know exactly wh
 4. \`src/components/Hero.tsx\` -- Bold hero section (follow DESIGN VARIETY hero style):
    - Strong industry-specific headline emphasizing the business, experience, product, craft, or locality
    - Use the hero layout from DESIGN VARIETY instructions (gradient, split, dark, full-bleed image, etc.)
-   - Use the correct CTA pair for the industry: Reserve/View Menu, Book Appointment, Request Quote/View Projects, Shop Collection, Contact Studio, etc.
+   - Use the correct CTA(s) for the industry: Reserve/View Menu, Book Appointment, Request Quote/View Projects, Shop Collection, Contact Studio, etc. — one clear primary action; do NOT default to a centered hero with two side-by-side buttons (follow the system prompt's asymmetric/photographic hero patterns)
    - Trust/credibility strip should fit the industry: reviews, press, years, certifications, awards, featured projects, chef/menu notes, service areas, or client logos
    - Visual elements must fit the industry style
-   - Subtle animation on hero elements
+   - Subtle animation on hero elements using CSS-only named utilities (animate-fade-in-up, animate-rise-in, animate-blur-in — they fire on render and can never leave content hidden)
 
 5. \`src/components/TrustBadges.tsx\` -- Horizontal trust indicators strip:
    - Use industry-appropriate proof points. Examples:
@@ -129,22 +129,22 @@ The owner should look at the finished site and think "how did it know exactly wh
      restaurant: "Seasonal Menu", "Biodynamic Wines", "Reservations Open"
      clinic: "Board-Certified Team", "Insurance Friendly", "Same-Week Appointments"
    - Use lucide-react icons only when they strengthen the concept
-   - Scroll-triggered fade-in animation
+   - Reveal animation via the fail-open useReveal hook from the system prompt (starts visible; never initialize elements as opacity-0)
    - Cards with hover effects
 
-6. \`src/components/ServicesPreview.tsx\` -- Preview grid of 3-4 top services:
+6. \`src/components/ServicesPreview.tsx\` -- Preview of 3-4 top services (numbered editorial list or photographic layout — never an icon card grid):
    - Rename/adapt this component's content to the industry: Services, Menu Highlights, Capabilities, Treatments, Programs, Collections, or Selected Work
    - Use photography where possible; avoid generic icon-only cards
    - "View All Services" link to /services page
    - Card hover: \`hover:-translate-y-1 hover:shadow-xl transition-all duration-300\`
-   - Scroll-triggered staggered animation
+   - Staggered reveal via the fail-open useReveal hook (starts visible; never opacity-0 by default)
 
 7. \`src/components/ReviewsPreview.tsx\` -- 3 featured testimonial cards:
    - 5-star rating display with Star icons
    - Customer name, location, review text
    - "See All Reviews" link
    - Hover:rotate-1 micro-interaction
-   - Scroll-triggered animation
+   - Reveal via the fail-open useReveal hook (starts visible; never opacity-0 by default)
 
 8. \`src/components/EmergencyCallout.tsx\` -- Full-width urgency/CTA banner:
    - Accent/contrasting color background with gradient
@@ -163,11 +163,11 @@ The owner should look at the finished site and think "how did it know exactly wh
 **Services Page (/services)**
 
 11. \`src/components/ServicesGrid.tsx\` -- Full industry offering grid:
-    - 'use client' for scroll-triggered animations
+    - 'use client' for the fail-open useReveal hook (sections start visible; reveal opts in only once the observer is confirmed working)
     - 6-8 detailed offerings with titles, descriptions, feature bullets, and industry-specific imagery
     - Responsive: 1 col mobile, 2 tablet, 3 desktop
     - Card hover effects with shadow and translate
-    - Staggered fade-in animation
+    - Staggered reveal via the fail-open useReveal hook (never opacity-0 by default)
     - Generate realistic services for "${business.industry}"
 
 12. \`src/components/BeforeAfterGallery.tsx\` -- Gallery, work, or proof section:
@@ -196,16 +196,16 @@ prefer Work/Services. Do not include nav links for pages you do not generate.
 **About Page (/about)**
 
 15. \`src/components/AboutContent.tsx\` -- Company story section:
-    - 'use client' for scroll animations
+    - 'use client' for the fail-open useReveal hook and stat counters
     - Two-column layout: company story text + image placeholder
     - Mission/values section
-    - Animated stat counters (years in business, projects completed, happy customers)
+    - Oversized-number stat counters (years in business, projects completed, happy customers) that render their FINAL value by default (fail-open) and only animate 0→value when the reveal hook confirms visibility — never render 0 or blank as the default state
     - Certifications and licenses section
 
 16. \`src/components/WhyChooseUs.tsx\` -- Why choose us section:
-    - 4-6 differentiator cards with icons
+    - Numbered editorial list of 4-6 differentiators, each with full-bleed photography — NOT a grid of icon cards (avoid generic icon-only cards, same as ServicesPreview)
     - e.g., "Licensed & Insured", "Transparent Pricing", "Same-Day Service"
-    - Scroll-triggered staggered animation
+    - Staggered reveal via the fail-open useReveal hook (starts visible; never opacity-0 by default)
 
 17. \`src/app/about/page.tsx\` -- About page composing: AboutContent, WhyChooseUs.
     Add \`pt-16\` for fixed navbar.
@@ -252,11 +252,12 @@ ${config.navigation.socialLinks?.length ? `Social links: ${config.navigation.soc
 ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 === QUALITY REQUIREMENTS ===
 - The site must look unique AND industry-specific. Use the DESIGN VARIETY and INDUSTRY VISUAL DNA instructions as hard creative direction.
-- Every section MUST have scroll-triggered fade-in animations using IntersectionObserver
+- Above-the-fold content animates with CSS-only utilities (animate-fade-in-up, animate-rise-in, animate-blur-in — they fire on render and can never leave content hidden). Below-the-fold sections use the fail-open useReveal hook from the system prompt (starts visible, opts into the reveal only once the observer is confirmed working, 2.5s failsafe). NEVER initialize any element as opacity-0/hidden by default.
+- Animations MUST use the NAMED Tailwind utilities from the design system (animate-fade-in, animate-fade-in-up, animate-fade-in-down, animate-slide-in-left, animate-slide-in-right, animate-scale-in, animate-float, animate-shimmer, animate-gradient-shift, animate-kenburns, animate-marquee, animate-blur-in, animate-rise-in) — NEVER arbitrary animation values like animate-[fade-in-up_0.7s_ease-out_forwards]
 - All buttons MUST have hover:scale-105 and transition effects
 - Cards MUST have hover:-translate-y-1 hover:shadow-xl effects
 - The hero style should follow the DESIGN VARIETY instructions (gradient, split, dark, minimal, etc.)
-- The navbar style should follow the DESIGN VARIETY instructions (glassmorphism, dark, transparent, etc.)
+- The navbar style should follow the DESIGN VARIETY instructions (solid white, solid dark, brand-colored, or bg-white/90 backdrop-blur — always a solid, always-visible background; never transparent). Mobile menu panel is ALWAYS solid bg-white with text-gray-900.
 - Footer MUST be 4-column dark themed
 - Mobile hamburger menu MUST work with useState toggle
 - Phone numbers MUST use \`tel:\` links for click-to-call on mobile

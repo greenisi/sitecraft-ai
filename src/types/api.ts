@@ -48,3 +48,20 @@ export interface DeploymentResult {
   url: string;
   readyState: string;
 }
+
+export interface PublishedPublishResult {
+  status: 'published';
+  url: string;
+  domain: string;
+  deploymentId: string;
+  vercelProjectName: string;
+}
+
+export interface DeployingPublishResult {
+  status: 'deploying';
+  domain: string;
+  deploymentId: string;
+  vercelProjectName: string;
+}
+
+export type PublishResult = PublishedPublishResult | DeployingPublishResult;

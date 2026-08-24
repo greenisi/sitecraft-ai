@@ -2,13 +2,37 @@ import type { GenerationConfig, DesignSystem, PageBlueprint } from '@/types/proj
 import type { GenerationEvent, VirtualFile } from '@/types/generation';
 import { VirtualFileTree } from '@/types/generation';
 import { parse as babelParse } from '@babel/parser';
-import { getAnthropicClient, GENERATION_MODEL, TOKEN_LIMITS, withRetry } from './client';
-import { type ModelTier, getModelConfig, DEFAULT_FREE_TIER } from './models';
+import {
+  completeGenerationText,
+  getAnthropicClient,
+  GENERATION_MODEL,
+  streamGenerationText,
+  TOKEN_LIMITS,
+  withRetry,
+} from './client';
+import {
+  type ModelConfig,
+  type ModelTier,
+  getModelConfig,
+  DEFAULT_PRO_TIER,
+} from './models';
 
-// Resolve the global OpenRouter model ID for every SiteCraft generation tier.
-function resolveModel(tier?: ModelTier): string {
-  if (!tier) return GENERATION_MODEL;
-  return getModelConfig(tier).modelId;
+// Resolve the provider/model pair selected by the branded tier.
+function resolveModelConfig(tier?: ModelTier): ModelConfig {
+  return getModelConfig(tier ?? DEFAULT_PRO_TIER);
+}
+
+function buildTierExecutionBrief(model: ModelConfig): string {
+  if (model.tier !== 'architect') return '';
+  return `=== POWER MODE EXECUTION ===
+- Plan and implement a genuinely complex multi-page experience, not a long homepage with shallow duplicate interior pages.
+- Give every page a distinct information architecture and at least one page-specific visual composition.
+- Build working client-side interactions where they improve the experience: responsive navigation, tabs, accordions, filters, galleries, sliders, calculators, multi-step forms, and contextual state. Use React state and the project's existing dependencies only.
+- Every visible control must work. Never draw fake buttons, filters, dropdowns, or form steps.
+- Preserve useful state during interaction, provide empty/error/success feedback, and make keyboard focus visible.
+- Use shared data and reusable components where content repeats, while keeping page layouts compositionally distinct.
+- Keep all generated functionality compatible with the preview sandbox and static deployment. Do not invent an unavailable database, API, authentication system, or external service.
+- Spend the extra reasoning budget on hierarchy, flow completeness, responsive behavior, code integrity, and refined art direction—not decorative clutter.`;
 }
 import { buildSystemPrompt } from './prompts/system-prompt';
 import { buildLandingPagePrompt } from './prompts/landing-page';
@@ -17,16 +41,51 @@ import { buildEcommercePrompt } from './prompts/ecommerce';
 import { buildSaasPrompt } from './prompts/saas';
 import { buildLocalServicePrompt } from './prompts/local-service';
 import { parseDesignSystem, parseBlueprint, extractCompletedBlocks } from './parsers';
+import { enforceReadableScales } from './contrast-guard';
+import { repairDeadImageUrls, createGalleryContext } from './image-guard';
+import { injectSectionDividers, injectLayoutRuntimes } from './divider-injector';
+import { generateDynamicsRuntimeComponent } from '@/lib/templates/base/dynamics-runtime';
+import { enforceLinkIntegrity } from './link-guard';
+import { injectBookingForm } from './booking-injector';
+import { pickSiteMotion, varyInteriorRhythm } from './motion-variety';
+import { buildGalleryPromptBlock, getIndustryGallery } from './image-gallery';
+import { generateSectionDividerComponent } from '@/lib/templates/base/section-divider';
+import {
+  generateSectionKitFiles,
+  buildSectionKitPromptBlock,
+} from '@/lib/templates/base/section-kit';
+import {
+  generateBookingFormComponent,
+  deriveBookingOptions,
+} from '@/lib/templates/base/booking-form';
 import { generateTailwindConfig } from '@/lib/templates/base/tailwind-config';
 import { generatePackageJson } from '@/lib/templates/base/package-json';
 import { generateNextConfig } from '@/lib/templates/base/next-config';
 import { generateTsConfig } from '@/lib/templates/base/tsconfig';
 import {
-  getDesignVariety,
+  generateRobotsTs,
+  generateSitemapTs,
+  generateSeoSchemaComponent,
+} from '@/lib/templates/base/seo';
+import {
   buildVarietyInstructions,
-  overrideVarietyWithUserChoices,
   getIndustryPaletteGuidance,
+  type DesignVariety,
 } from './design-variety';
+import {
+  createDesignReferenceBrief,
+  formatDesignReferenceBrief,
+  type DesignReferenceBrief,
+} from './reference-research';
+import {
+  applyArtDirectionToBlueprint,
+  createArtDirectionContract,
+  formatArtDirectionContract,
+  type ArtDirectionContract,
+} from './art-direction';
+import { createColorContract, formatColorContract } from './color-contract';
+import { createMotionContract, formatMotionContract } from './motion-contract';
+import { evaluateDesignQuality } from './design-quality-gate';
 
 // --------------------------------------------------------------------------
 // Stage 1: Assemble Config
@@ -58,9 +117,10 @@ function assembleConfig(config: GenerationConfig): GenerationConfig {
 // Stage 2: Generate Design System
 // --------------------------------------------------------------------------
 
-export async function generateDesignSystem(config: GenerationConfig): Promise<DesignSystem> {
-  const client = getAnthropicClient();
-
+export async function generateDesignSystem(
+  config: GenerationConfig,
+  referenceBrief?: DesignReferenceBrief
+): Promise<DesignSystem> {
   const systemPrompt = `You are a design system expert who creates UNIQUE, visually distinctive color systems for each project. Given a business description and branding preferences, generate a comprehensive Tailwind CSS design system as a JSON object.
 
 Return ONLY valid JSON -- no markdown, no explanation, no code fences.
@@ -124,6 +184,10 @@ TEXT CONTRAST — NON-NEGOTIABLE:
     config.business.description
   );
 
+  const researchBlock = referenceBrief
+    ? `\n${formatDesignReferenceBrief(referenceBrief)}\n`
+    : '';
+
   const userPrompt = `Generate a UNIQUE, distinctive design system for:
 Business: "${config.business.name}" (${config.business.industry})
 Description: ${config.business.description}
@@ -158,21 +222,29 @@ CRITICAL — read this twice:
 - The 500 shade of primary should be the dominant brand color and should
   embody the industry character — not the user's input verbatim if it conflicts.
 - Make the colors rich and distinctive. NO generic Tailwind blue. NO default
-  slate. The palette should feel deliberately chosen for THIS vertical.`;
+  slate. The palette should feel deliberately chosen for THIS vertical.
+${researchBlock}`;
 
-  const response = await withRetry(() => client.messages.create({
-    model: GENERATION_MODEL,
-    max_tokens: TOKEN_LIMITS.designSystem,
-    system: systemPrompt,
-    messages: [{ role: 'user', content: userPrompt }],
-  }));
+  const model = resolveModelConfig(config.modelTier);
+  const text = await withRetry(() => completeGenerationText(
+    model,
+    systemPrompt,
+    userPrompt,
+    TOKEN_LIMITS.designSystem,
+    {
+      jsonOutput: true,
+      // Power Mode reserves its deepest reasoning for the component/code
+      // pass. Palette JSON is tightly specified and deterministic validation
+      // follows it, so a bounded planning effort avoids consuming most of the
+      // five-minute request window before any site code is generated.
+      reasoningEffort: model.reasoningEffort === 'max' ? 'low' : model.reasoningEffort,
+    },
+  ));
 
-  const textBlock = response.content.find((block) => block.type === 'text');
-  if (!textBlock || textBlock.type !== 'text') {
-    throw new Error('No text content in design system response');
-  }
-
-  return parseDesignSystem(textBlock.text);
+  // Deterministic guarantee: clamp every scale so light shades (50-200) hold
+  // WCAG AA against dark text and dark shades (700-950) against white text,
+  // regardless of what the model emitted. Prompts guide; math enforces.
+  return enforceReadableScales(parseDesignSystem(text));
 }
 
 // --------------------------------------------------------------------------
@@ -181,10 +253,11 @@ CRITICAL — read this twice:
 
 async function generateBlueprint(
   config: GenerationConfig,
-  designSystem: DesignSystem
+  designSystem: DesignSystem,
+  referenceBrief: DesignReferenceBrief,
+  artDirection: ArtDirectionContract
 ): Promise<PageBlueprint> {
-  const client = getAnthropicClient();
-
+  const model = resolveModelConfig(config.modelTier);
   const systemPrompt = `You are a website architecture expert. Given a site configuration and design system, generate a page blueprint as a JSON object.
 
 Return ONLY valid JSON -- no markdown, no explanation, no code fences.
@@ -222,7 +295,8 @@ From the business type and description, infer: (1) WHO the customer is, (2) what
 - The ONE primary action must have a dedicated section AND appear in the hero — name it concretely in componentName/props ("BookingCTA", "ReservationBar", "QuoteRequest", "EmergencyCall"), not a generic "CTA".
 - Section ORDER must mirror how this industry's customer actually decides: restaurants lead with menu/atmosphere and put hours/location prominently; trades lead with proof (before/after, service area) and licensing; premium services lead with portfolio and story; emergency services lead with the phone number.
 - Vary the section rhythm per industry — do NOT emit the same Hero→Features→Testimonials→CTA skeleton for every site. Choose at least one industry-signature section a competitor template would not have (e.g. FinancingOptions for roofers, ChefStory for restaurants, NeighborhoodGuides for realtors, SecurityCompliance for B2B SaaS) and include it in props as a content hint.
-- Use the props object to pass these inferences as content hints (e.g. { "audience": "...", "trustAngle": "...", "primaryAction": "..." }) so the component generator can act on them.`;
+- Use the props object to pass these inferences as content hints (e.g. { "audience": "...", "trustAngle": "...", "primaryAction": "..." }) so the component generator can act on them.
+- ASSIGN VISUAL TREATMENT PER SECTION in props: every section gets { "background": "white" | "tinted" | "dark", "decor": one of "dot-grid" | "gradient-ring" | "outline-word" | "glass-chip" | "marquee-strip" | "none", "entrance": one of "fade-up" | "slide-left" | "slide-right" | "scale-in" | "blur-in" }. Alternate backgrounds (never two identical in a row), spread at least four distinct decor devices and three distinct entrances across the homepage, and give the homepage 9-12 sections minimum including a Gallery/Portfolio section and a full-width MarqueeStrip.`;
 
   const sectionsSummary = config.sections
     .map((s) => `${s.type} (order: ${s.order})`)
@@ -237,21 +311,33 @@ Heading font: ${designSystem.typography.headingFont}
 Body font: ${designSystem.typography.bodyFont}
 ${config.aiPrompt ? `User creative direction: ${config.aiPrompt}` : ''}
 ${config.ecommerce ? `E-commerce: ${config.ecommerce.products.length} products, cart ${config.ecommerce.cartEnabled ? 'enabled' : 'disabled'}` : ''}
-${config.saas ? `SaaS: ${config.saas.features.length} features, ${config.saas.pricingTiers.length} pricing tiers, auth ${config.saas.hasAuth ? 'yes' : 'no'}, dashboard ${config.saas.hasDashboard ? 'yes' : 'no'}` : ''}`;
+${config.saas ? `SaaS: ${config.saas.features.length} features, ${config.saas.pricingTiers.length} pricing tiers, auth ${config.saas.hasAuth ? 'yes' : 'no'}, dashboard ${config.saas.hasDashboard ? 'yes' : 'no'}` : ''}
 
-  const response = await withRetry(() => client.messages.create({
-    model: GENERATION_MODEL,
-    max_tokens: TOKEN_LIMITS.blueprint,
-    system: systemPrompt,
-    messages: [{ role: 'user', content: userPrompt }],
-  }));
+${formatDesignReferenceBrief(referenceBrief)}
 
-  const textBlock = response.content.find((block) => block.type === 'text');
-  if (!textBlock || textBlock.type !== 'text') {
-    throw new Error('No text content in blueprint response');
-  }
+${formatArtDirectionContract(artDirection, { pages: [], sharedComponents: [], dataRequirements: {} })}
 
-  return parseBlueprint(textBlock.text);
+${buildTierExecutionBrief(model)}`;
+
+  const text = await withRetry(() => completeGenerationText(
+    model,
+    systemPrompt,
+    userPrompt,
+    TOKEN_LIMITS.blueprint,
+    {
+      jsonOutput: true,
+      // The art-direction contract deterministically amends this plan after
+      // parsing. Keep planning responsive, then spend the Max reasoning budget
+      // on the high-value composition and implementation stage.
+      reasoningEffort: model.reasoningEffort === 'max' ? 'low' : model.reasoningEffort,
+    },
+  ));
+
+  return varyInteriorRhythm(
+    applyArtDirectionToBlueprint(parseBlueprint(text), artDirection),
+    config.business.name,
+    config.business.description
+  );
 }
 
 // --------------------------------------------------------------------------
@@ -327,19 +413,69 @@ export function findContrastBugs(content: string): string[] {
   const bugs: string[] = [];
   const classMatches = content.matchAll(/className\s*=\s*["'`]([^"'`]+)["'`]/g);
 
-  const LIGHT_BG = /\bbg-(?:white|gray-(?:50|100|200)|slate-(?:50|100|200)|neutral-(?:50|100|200)|stone-(?:50|100|200)|zinc-(?:50|100|200)|\w+-(?:50|100))\b/;
-  const LIGHT_TEXT = /\btext-(?:white|gray-(?:50|100|200|300)|slate-(?:50|100|200|300)|neutral-(?:50|100|200|300)|\w+-(?:50|100|200))\b/;
-  const DARK_BG = /\bbg-(?:black|gray-(?:800|900|950)|slate-(?:800|900|950)|neutral-(?:800|900|950)|stone-(?:800|900|950)|zinc-(?:800|900|950)|\w+-(?:900|950))\b/;
-  const DARK_TEXT = /\btext-(?:black|gray-(?:700|800|900|950)|slate-(?:700|800|900|950)|neutral-(?:700|800|900|950)|\w+-(?:800|900|950))\b/;
+  // Same-element checks use OPAQUE backgrounds only — the (?!\/) lookahead
+  // excludes opacity-suffixed classes like bg-white/10 (glass cards over a
+  // dark hero) whose real surface depends on what's behind them.
+  const LIGHT_BG = /\bbg-(?:white|gray-(?:50|100|200)|slate-(?:50|100|200)|neutral-(?:50|100|200)|stone-(?:50|100|200)|zinc-(?:50|100|200)|\w+-(?:50|100|200))(?!\/)\b/;
+  const LIGHT_TEXT = /\btext-(?:white|gray-(?:50|100|200|300)|slate-(?:50|100|200|300)|neutral-(?:50|100|200|300)|\w+-(?:50|100|200|300))\b/;
+  // 700 included — the contrast guard mathematically guarantees bg-*-700
+  // passes AA against white text, so it's a legitimate dark surface, and
+  // dark text on it is a real bug.
+  const DARK_BG = /\bbg-(?:black|gray-(?:700|800|900|950)|slate-(?:700|800|900|950)|neutral-(?:700|800|900|950)|stone-(?:700|800|900|950)|zinc-(?:700|800|900|950)|\w+-(?:700|800|900|950))(?!\/)\b/;
+  const DARK_TEXT = /\btext-(?:black|gray-(?:700|800|900|950)|slate-(?:700|800|900|950)|neutral-(?:700|800|900|950)|\w+-(?:700|800|900|950))\b/;
+  // Dark-text-on-mid flag: only 500/600 of hues where white text is actually
+  // the correct pairing. High-luminance hues (amber/yellow/lime/cyan/sky/
+  // orange) correctly pair with DARK text at these shades — flagging them
+  // would make the AI repair switch to white text and make contrast WORSE.
+  const MID_BG_FOR_DARK_TEXT = /\bbg-(?!(?:amber|yellow|lime|cyan|sky|orange)-)\w+-(?:500|600)(?!\/)\b/;
+
+  // Drop any class carrying a state variant ANYWHERE in its prefix chain
+  // (md:hover:bg-primary-50 must not count as a rendered background), then
+  // strip responsive prefixes — a bg that changes at a breakpoint still
+  // renders, so those combos are real.
+  const stripStateVariants = (cls: string) =>
+    cls
+      .split(/\s+/)
+      .filter((c) => !/(?:^|:)(?:hover|focus|focus-within|focus-visible|active|visited|disabled|group-hover|group-focus|peer-[\w-]*|aria-[\w-]+|dark)[:/]/.test(c))
+      .map((c) => c.replace(/(?:sm|md|lg|xl|2xl):/g, ''))
+      .join(' ');
 
   for (const match of classMatches) {
-    const cls = match[1];
+    const cls = stripStateVariants(match[1]);
 
     if (LIGHT_BG.test(cls) && LIGHT_TEXT.test(cls)) {
-      bugs.push(`light text on light background — classes: "${cls.slice(0, 140)}"`);
+      bugs.push(`light text on light background — classes: "${match[1].slice(0, 140)}"`);
     }
     if (DARK_BG.test(cls) && DARK_TEXT.test(cls)) {
-      bugs.push(`dark text on dark background — classes: "${cls.slice(0, 140)}"`);
+      bugs.push(`dark text on dark background — classes: "${match[1].slice(0, 140)}"`);
+    }
+    if (MID_BG_FOR_DARK_TEXT.test(cls) && DARK_TEXT.test(cls)) {
+      bugs.push(`dark text on mid-tone background (bg-*-500/600 needs white text) — classes: "${match[1].slice(0, 140)}"`);
+    }
+  }
+
+  // File-level heuristic for the classic invisible-hero bug: light text used
+  // somewhere in the file, but NO dark surface exists anywhere — no dark bg
+  // class, no dark gradient stop, no photo overlay (bg-black/40 style), no
+  // absolutely-positioned <img> backdrop. Same-element checks can't see
+  // nested parents, so this catches text-white inside a section whose
+  // wrapper is bg-white.
+  const usesLightText = /\btext-(?:white|gray-(?:50|100|200)|slate-(?:50|100|200)|neutral-(?:50|100|200)|\w+-(?:50|100|200))\b/.test(content);
+  if (usesLightText) {
+    // Unlike the same-element checks, dark-surface detection here is
+    // opacity-TOLERANT (bg-primary-900/40 overlays are dark surfaces) and
+    // includes mid shades — this check fails open on purpose.
+    const hasDarkSurface =
+      /\bbg-(?:black|\w+-(?:400|500|600|700|800|900|950))(?:\/\d+)?\b/.test(content) ||
+      // Any gradient stop at 500+ (or black, incl. /opacity forms) can carry white text
+      /\b(?:from|via|to)-(?:black|\w+-(?:500|600|700|800|900|950))(?:\/\d+)?\b/.test(content) ||
+      // Style-prop or arbitrary-value background images (banned but possible)
+      /backgroundImage|bg-\[url/.test(content) ||
+      (/<img\b/i.test(content) && /\babsolute\b[^"'`]*\binset-0\b|\binset-0\b[^"'`]*\babsolute\b/.test(content));
+    if (!hasDarkSurface) {
+      bugs.push(
+        'light/white text used but the file contains no dark background, dark gradient stop, or photo overlay anywhere — text is likely invisible on a light surface'
+      );
     }
   }
 
@@ -370,7 +506,8 @@ export async function repairWithAI(content: string, filePath: string): Promise<s
     const client = getAnthropicClient();
     const response = await client.messages.create({
       model: GENERATION_MODEL,
-      max_tokens: 8000,
+      max_tokens: 12000,
+      thinking: { type: 'disabled' },
       system:
         'You repair broken React/TSX files. Return ONLY a single fenced code block ' +
         'containing the fixed file content. No prose, no explanation, no extra blocks.',
@@ -411,7 +548,8 @@ export async function repairShadelessColors(
     const client = getAnthropicClient();
     const response = await client.messages.create({
       model: GENERATION_MODEL,
-      max_tokens: 8000,
+      max_tokens: 12000,
+      thinking: { type: 'disabled' },
       system:
         'You fix Tailwind shadeless-color bugs in React/TSX files. Return ONLY a single ' +
         'fenced code block containing the fixed file content. No prose, no explanation, ' +
@@ -466,7 +604,8 @@ export async function repairContrastWithAI(
     const client = getAnthropicClient();
     const response = await client.messages.create({
       model: GENERATION_MODEL,
-      max_tokens: 8000,
+      max_tokens: 12000,
+      thinking: { type: 'disabled' },
       system:
         'You fix Tailwind contrast bugs in React/TSX files. Return ONLY a single ' +
         'fenced code block containing the fixed file content. No prose, no ' +
@@ -665,25 +804,52 @@ function autoFixSyntax(content: string): string {
 async function* generateComponents(
   config: GenerationConfig,
   designSystem: DesignSystem,
-  blueprint: PageBlueprint
+  blueprint: PageBlueprint,
+  referenceBrief: DesignReferenceBrief,
+  finalVariety: DesignVariety,
+  artDirection: ArtDirectionContract
 ): AsyncGenerator<GenerationEvent & { _files?: Array<{ path: string; content: string; type: VirtualFile['type'] }> }> {
-  const client = getAnthropicClient();
   const promptBuilder = getPromptBuilder(config.siteType);
 
-  // Get unique design variety based on business identity
-  const variety = getDesignVariety(
-    config.business.name,
+  const varietyInstructions = buildVarietyInstructions(finalVariety);
+  const model = resolveModelConfig(config.modelTier);
+
+  const systemPrompt = buildSystemPrompt(designSystem);
+  // Inject variety instructions into the user prompt so each site gets unique
+  // layouts, then the verified image gallery LAST — its hard image rules must
+  // outrank everything else, including user creative direction.
+  const baseUserPrompt = promptBuilder(config);
+  const galleryBlock = buildGalleryPromptBlock(
     config.business.industry,
     config.business.description
   );
-  // Let user choices override auto-picked variety
-  const finalVariety = overrideVarietyWithUserChoices(variety, config);
-  const varietyInstructions = buildVarietyInstructions(finalVariety);
 
-  const systemPrompt = buildSystemPrompt(designSystem);
-  // Inject variety instructions into the user prompt so each site gets unique layouts
-  const baseUserPrompt = promptBuilder(config);
-  const userPrompt = `${baseUserPrompt}\n${varietyInstructions}\n${buildCreativeDirectionOverride(config)}`;
+  // Colour and motion are decided here, deterministically, rather than left to
+  // the model's defaults (white sections, one fade-up). Both blocks sit late in
+  // the prompt — after the generic guidance it would otherwise regress toward —
+  // but still ahead of the user's verbatim direction and the image rules, which
+  // must outrank everything.
+  const homeSectionCount =
+    blueprint.pages.find((page) => page.path === '/')?.sections.length ?? 12;
+  const color = createColorContract(
+    config,
+    designSystem,
+    finalVariety,
+    artDirection.positioning,
+    homeSectionCount
+  );
+  const colorScheme = color.schemeName;
+  const colorContract = formatColorContract(color);
+  const motion = createMotionContract(config, finalVariety, artDirection.positioning);
+  const motionContract = formatMotionContract(motion);
+
+  const userPrompt = `${baseUserPrompt}\n${buildTierExecutionBrief(model)}\n${formatDesignReferenceBrief(referenceBrief)}\n${formatArtDirectionContract(artDirection, blueprint)}\n${varietyInstructions}\n${colorContract}\n${motionContract}\n${buildSectionKitPromptBlock()}\n${buildCreativeDirectionOverride(config)}\n${galleryBlock}`;
+
+  // Generation-scoped image tracking: enforces the "no image reused across
+  // sections" rule from the gallery block deterministically.
+  const galleryCtx = createGalleryContext(
+    getIndustryGallery(config.business.industry, config.business.description)
+  );
 
   // Track expected components from blueprint
   const expectedComponents = new Set<string>();
@@ -705,13 +871,20 @@ async function* generateComponents(
     completedFiles: 0,
   };
 
-  // Use the Anthropic SDK streaming API
-  const stream = client.messages.stream({
-    model: GENERATION_MODEL,
-    max_tokens: TOKEN_LIMITS.component,
-    system: systemPrompt,
-    messages: [{ role: 'user', content: userPrompt }],
-  });
+  // Stream through the selected provider. Power Mode receives Opus 5's
+  // deeper reasoning budget; Standard preserves a faster, lower-cost pass.
+  const stream = streamGenerationText(
+    model,
+    systemPrompt,
+    userPrompt,
+    model.reasoningEffort === 'max' ? model.maxTokens : TOKEN_LIMITS.component,
+    {
+      // High effort gives Opus 5 room to reason about a complex build while
+      // keeping generation time and token cost bounded for an interactive
+      // customer-facing request.
+      reasoningEffort: model.reasoningEffort === 'max' ? 'high' : model.reasoningEffort,
+    },
+  );
 
   let buffer = '';
   let completedCount = 0;
@@ -721,12 +894,7 @@ async function* generateComponents(
   // Track what component we're currently streaming
   let currentComponent: string | null = null;
 
-  for await (const event of stream) {
-    if (
-      event.type === 'content_block_delta' &&
-      event.delta.type === 'text_delta'
-    ) {
-      const chunk = event.delta.text;
+  for await (const chunk of stream) {
       buffer += chunk;
 
       // Detect if we're starting a new component file
@@ -800,6 +968,10 @@ async function* generateComponents(
           if (fixed) content = fixed;
         }
 
+        // Dead Unsplash IDs render as blank boxes — verify and swap them.
+        // The gallery context also enforces cross-section image uniqueness.
+        content = await repairDeadImageUrls(content, galleryCtx);
+
         allFiles.push({
           path: block.filePath,
           content,
@@ -818,7 +990,6 @@ async function* generateComponents(
 
         currentComponent = null;
       }
-    }
   }
 
   // Process any remaining buffer content
@@ -847,11 +1018,19 @@ async function* generateComponents(
         }
       }
 
+      const shadelessBugs = findShadelessBrandColors(content);
+      if (shadelessBugs.length > 0) {
+        const fixed = await repairShadelessColors(content, block.filePath, shadelessBugs);
+        if (fixed) content = fixed;
+      }
       const contrastBugs = findContrastBugs(content);
       if (contrastBugs.length > 0) {
         const fixed = await repairContrastWithAI(content, block.filePath, contrastBugs);
         if (fixed) content = fixed;
       }
+
+      // Dead Unsplash IDs render as blank boxes — verify and swap them.
+      content = await repairDeadImageUrls(content, galleryCtx);
 
       allFiles.push({
         path: block.filePath,
@@ -869,6 +1048,52 @@ async function* generateComponents(
         completedFiles: completedCount,
       };
     }
+  }
+
+  // Deterministic divider pass: the model ignores prompt mandates for
+  // section dividers, so — image-guard style — we inject them in code after
+  // all files exist. The link-guard then rewrites any internal href that
+  // points at a route this generation never produced (non-technical owners
+  // judge the whole product by one dead button). Changed pages are re-yielded
+  // as component-complete events so the client store and DB persistence pick
+  // up the final content.
+  const beforeInjection = new Map(allFiles.map((f) => [f.path, f.content]));
+  const dividerResult = injectSectionDividers(allFiles);
+  const linkResult = enforceLinkIntegrity(dividerResult.files);
+  const runtimeResult = injectLayoutRuntimes(linkResult.files);
+  const bookingResult = injectBookingForm(runtimeResult.files);
+  allFiles.length = 0;
+  allFiles.push(...bookingResult.files);
+
+  // A cheap, deterministic guard for the unmistakable AI-template failure
+  // modes. We don't spend a second full generation by default; severe results
+  // are logged with concrete diagnostics so the next targeted edit can repair
+  // only the missing art direction rather than rebuilding the entire site.
+  const quality = evaluateDesignQuality(allFiles, artDirection, {
+    requiredDeviceId: motion.signatureDevice.id,
+  });
+  if (quality.issues.length > 0) {
+    console.warn('[design-quality-gate]', {
+      score: quality.score,
+      severe: quality.severe,
+      industry: artDirection.industry,
+      scheme: colorScheme,
+      motion: motion.personality,
+      device: motion.signatureDevice.id,
+      issues: quality.issues,
+    });
+  }
+  for (const file of bookingResult.files) {
+    if (beforeInjection.get(file.path) === file.content) continue;
+    const componentName = extractComponentName(file.path);
+    yield {
+      type: 'component-complete',
+      stage: 'components',
+      componentName: componentName ?? file.path,
+      file: { path: file.path, content: file.content },
+      totalFiles: totalExpected,
+      completedFiles: completedCount,
+    };
   }
 
   // Attach all files to the final event for assembly
@@ -914,6 +1139,51 @@ async function* assembleProject(
       content: JSON.stringify(designSystem, null, 2),
       type: 'data',
     },
+    // SEO layer: robots + sitemap metadata routes and JSON-LD schema component
+    { path: 'src/app/robots.ts', content: generateRobotsTs(config), type: 'config' },
+    { path: 'src/app/sitemap.ts', content: generateSitemapTs(config), type: 'config' },
+    {
+      path: 'src/components/SeoSchema.tsx',
+      content: generateSeoSchemaComponent(config),
+      type: 'component',
+    },
+    // Divider component referenced by the injected <SectionDivider /> usages
+    // (see divider-injector.ts) — shipped with every site so injected pages
+    // always resolve their import.
+    {
+      path: 'src/components/SectionDivider.tsx',
+      content: generateSectionDividerComponent(),
+      type: 'component',
+    },
+    // Scroll dynamics runtime referenced by the injected layout usage (see
+    // injectLayoutRuntimes) — parallax, stat count-ups, and a brand-colored
+    // scroll progress bar on every site, deterministically.
+    {
+      path: 'src/components/DynamicsRuntime.tsx',
+      content: generateDynamicsRuntimeComponent(
+        designSystem.colors.primary['500'],
+        designSystem.colors.accent['500'],
+        pickSiteMotion(config.business.name, config.business.description)
+      ),
+      type: 'component',
+    },
+    // Booking form referenced by the injected <BookingForm /> usage (see
+    // booking-injector) — every site gets a working booking flow wired to the
+    // real endpoint, instead of whatever contact form the model improvised.
+    {
+      path: 'src/components/BookingForm.tsx',
+      content: generateBookingFormComponent(
+        deriveBookingOptions(config.siteType, config.business.industry)
+      ),
+      type: 'component' as const,
+    },
+    // Pre-built premium sections. The model chooses which to use and writes the
+    // content; it never re-implements the layout.
+    ...generateSectionKitFiles().map((file) => ({
+      path: file.path,
+      content: file.content,
+      type: 'component' as const,
+    })),
   ];
 
   for (const file of scaffoldFiles) {
@@ -977,6 +1247,9 @@ export async function* runGenerationPipeline(
 ): AsyncGenerator<GenerationEvent> {
   let designSystem: DesignSystem;
   let blueprint: PageBlueprint;
+  let referenceBrief: DesignReferenceBrief;
+  let designVariety: DesignVariety;
+  let artDirection: ArtDirectionContract;
   let generatedFiles: Array<{ path: string; content: string; type: VirtualFile['type'] }> = [];
 
   // ── Stage 1: Config Assembly ──────────────────────────────────────────
@@ -984,6 +1257,10 @@ export async function* runGenerationPipeline(
 
   try {
     config = assembleConfig(config);
+    const research = createDesignReferenceBrief(config);
+    referenceBrief = research.brief;
+    designVariety = research.variety;
+    artDirection = createArtDirectionContract(config, designVariety);
   } catch (err) {
     yield {
       type: 'error',
@@ -999,7 +1276,7 @@ export async function* runGenerationPipeline(
   yield { type: 'stage-start', stage: 'design-system' };
 
   try {
-    designSystem = await generateDesignSystem(config);
+    designSystem = await generateDesignSystem(config, referenceBrief);
   } catch (err) {
     yield {
       type: 'error',
@@ -1015,7 +1292,7 @@ export async function* runGenerationPipeline(
   yield { type: 'stage-start', stage: 'blueprint' };
 
   try {
-    blueprint = await generateBlueprint(config, designSystem);
+    blueprint = await generateBlueprint(config, designSystem, referenceBrief, artDirection);
   } catch (err) {
     yield {
       type: 'error',
@@ -1029,14 +1306,21 @@ export async function* runGenerationPipeline(
 
   // ── Stage 4: Component Generation (streaming) ─────────────────────────
   try {
-    for await (const event of generateComponents(config, designSystem, blueprint)) {
+    for await (const event of generateComponents(
+      config,
+      designSystem,
+      blueprint,
+      referenceBrief,
+      designVariety,
+      artDirection
+    )) {
       // Collect generated files from the internal _files property
-      if (event._files) {
-        generatedFiles = event._files;
+      const { _files: internalFiles, ...publicEvent } = event;
+      if (internalFiles) {
+        generatedFiles = internalFiles;
       }
 
       // Strip internal property before yielding to consumers
-      const { _files, ...publicEvent } = event;
       yield publicEvent;
     }
   } catch (err) {

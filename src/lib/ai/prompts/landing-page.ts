@@ -73,12 +73,12 @@ nothing; rewrite with a number, mechanism, or guarantee. BANNED copy: "Welcome t
 
 1. \`src/components/Navbar.tsx\` -- Fixed navigation bar (follow DESIGN VARIETY navbar style):
    - \`'use client'\` component with useState for mobile menu toggle
-   - Use the navbar style from the DESIGN VARIETY instructions (glassmorphism, dark, transparent, solid, or colored)
+   - Use the navbar style from the DESIGN VARIETY instructions — always a solid, always-visible background (solid white, solid dark, brand-colored, or bg-white/90 backdrop-blur); never transparent
    - Logo/business name with gradient or primary brand color
    - Desktop nav links: Home, About, Pricing, Contact using \`next/link\` with \`href="/about"\` etc.
    - CTA button in nav: "Get Started" with hover:scale-105 effect
    - Mobile hamburger menu using Menu/X icons from lucide-react
-   - Full-screen mobile overlay with smooth opacity transition
+   - Full-screen mobile menu panel — ALWAYS solid bg-white with text-gray-900 — with smooth opacity transition
    - \`aria-expanded\` and \`aria-label\` for accessibility
    - Click any link closes mobile menu
 
@@ -101,20 +101,20 @@ nothing; rewrite with a number, mechanism, or guarantee. BANNED copy: "Welcome t
    - Use the hero layout specified in the DESIGN VARIETY instructions
    - Large, impactful headline (gradient text, white on dark, or dark on light — depending on hero style)
    - Supporting sub-headline
-   - Two CTA buttons: primary (filled, hover:scale-105, hover:shadow-lg) and secondary (outlined)
+   - One strong primary CTA button (filled, hover:scale-105, hover:shadow-lg), optionally a quiet secondary text link — placed per the asymmetric/photographic hero layout (system prompt Pattern A/B), never a centered pair of side-by-side buttons
    - Trust indicators below CTAs (e.g., "No credit card required", "14-day free trial")
    - Decorative elements appropriate to the hero style (blur circles, shapes, overlays, etc.)
    - Subtle floating animation on decorative elements
 
-5. \`src/components/Features.tsx\` -- Feature grid with scroll-triggered animations:
-   - 'use client' component with IntersectionObserver for scroll-triggered fade-in
-   - 3-6 feature cards in responsive grid (1 col mobile, 2 tablet, 3 desktop)
-   - Each card: lucide-react icon in colored circle, title, description
-   - Card hover effects: \`hover:-translate-y-1 hover:shadow-xl transition-all duration-300\`
+5. \`src/components/Features.tsx\` -- Features as an editorial layout — numbered list with photography, alternating image/text rows, or a bento grid with mixed cell sizes — matched to the brand; never a uniform 3-up icon card grid:
+   - 'use client' component using the fail-open useReveal hook from the system prompt for below-the-fold reveals (starts visible, opts into the reveal only once the observer is confirmed working, 2.5s failsafe); NEVER initialize any element as opacity-0/hidden by default
+   - 3-6 feature entries, responsive (stacked on mobile, editorial layout on desktop)
+   - Each entry: title, description, and photography or an oversized number — matched to the brand
+   - Hover effects: \`hover:-translate-y-1 hover:shadow-xl transition-all duration-300\`
    - Staggered animation delays: delay-100, delay-200, delay-300
 
 6. \`src/components/Testimonials.tsx\` -- Social proof section:
-   - 'use client' component with scroll-triggered animations
+   - 'use client' component using the fail-open useReveal hook from the system prompt (starts visible; never opacity-0/hidden by default)
    - 3 testimonial cards with avatar placeholders, names, roles, star ratings, quote text
    - Cards with hover:rotate-1 micro-interaction
    - Generate realistic testimonials for "${business.industry}"
@@ -131,11 +131,11 @@ nothing; rewrite with a number, mechanism, or guarantee. BANNED copy: "Welcome t
 **About Page (/about)**
 
 9. \`src/components/AboutContent.tsx\` -- Company story section:
-   - 'use client' for scroll animations
+   - 'use client' using the fail-open useReveal hook from the system prompt for below-the-fold reveals (starts visible; never opacity-0/hidden by default)
    - Two-column layout: text on left, image placeholder on right
    - Mission statement, values, company story
-   - Animated stat counters (years in business, clients served, etc.)
-   - Fade-in on scroll
+   - Stat counters (years in business, clients served, etc.) as oversized-number moments — render the FINAL value by default (fail-open) and only animate 0→value when the reveal hook confirms visibility; never render 0 or blank as the default state
+   - Above-the-fold content animates with CSS-only utilities (animate-fade-in-up, animate-rise-in, animate-blur-in)
 
 10. \`src/components/TeamGrid.tsx\` -- Team members section:
     - 3-4 team member cards with avatar placeholders, names, roles
@@ -149,7 +149,7 @@ nothing; rewrite with a number, mechanism, or guarantee. BANNED copy: "Welcome t
 **Pricing Page (/pricing)**
 
 12. \`src/components/PricingTable.tsx\` -- Pricing tiers section:
-    - 'use client' for scroll animations and toggle
+    - 'use client' for toggle state; below-the-fold reveals via the fail-open useReveal hook from the system prompt (starts visible; never opacity-0/hidden by default)
     - 3 pricing tiers in responsive grid
     - Highlighted/recommended tier with border and "Most Popular" badge
     - Each tier: name, price, feature list with check icons, CTA button
@@ -199,11 +199,11 @@ ${config.navigation.socialLinks?.length ? `Social links: ${config.navigation.soc
 ` : ''}
 ${aiPrompt ? `=== ADDITIONAL INSTRUCTIONS ===\n${aiPrompt}\n` : ''}
 === QUALITY REQUIREMENTS ===
-- Every section MUST have scroll-triggered fade-in animations
+- Above-the-fold content animates with CSS-only utilities (animate-fade-in-up, animate-rise-in, animate-blur-in — they fire on render and can never leave content hidden). Below-the-fold sections use the fail-open useReveal hook from the system prompt (starts visible, opts into the reveal only once the observer is confirmed working, 2.5s failsafe). NEVER initialize any element as opacity-0/hidden by default
 - All buttons MUST have hover:scale-105 and transition effects
 - Cards MUST have hover:-translate-y-1 hover:shadow-xl effects
 - The hero style should follow the DESIGN VARIETY instructions (gradient, split, dark, minimal, etc.)
-- The navbar style should follow the DESIGN VARIETY instructions (glassmorphism, dark, transparent, etc.)
+- The navbar style should follow the DESIGN VARIETY instructions with a solid, always-visible background (solid white, solid dark, brand-colored, or bg-white/90 backdrop-blur — never transparent); mobile menu panel is ALWAYS solid bg-white with text-gray-900
 - The footer MUST be 4-column with newsletter signup
 - Mobile hamburger menu MUST work with useState toggle
 - Use realistic, industry-appropriate content — NEVER lorem ipsum

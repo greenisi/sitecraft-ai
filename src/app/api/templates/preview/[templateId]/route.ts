@@ -1,5 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getTemplateById } from '@/lib/templates/premium-templates';
+import {
+  buildAboutPage,
+  buildContactPage,
+  buildServicesPage,
+  chromeNav,
+  getContent,
+  getPages,
+  getTheme,
+  linkify,
+  type PageKey,
+} from './preview-pages';
+import { SECTION_CSS } from './preview-sections';
+import { enliven, MOTION_CSS, MOTION_JS } from './preview-motion';
+import { injectMobileNav, unifyNav, INTERACTIVE_CSS, INTERACTIVE_JS } from './preview-interactive';
+import { getVariety } from './preview-variety';
 
 interface RouteContext {
   params: Promise<{ templateId: string }>;
@@ -71,7 +86,10 @@ function css(isDark: boolean, primary: string, secondary: string, fHead: string,
 section{animation:fadeUp .7s ease both}section:nth-child(2){animation-delay:.1s}section:nth-child(3){animation-delay:.2s}section:nth-child(4){animation-delay:.3s}
 .card{transition:transform .3s,box-shadow .3s}.card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.12)}
 .glass{background:rgba(255,255,255,.05);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.08);border-radius:16px}
-@media(max-width:768px){.hide-m{display:none!important}.g1{grid-template-columns:1fr!important}.g2{grid-template-columns:1fr!important}.g3{grid-template-columns:1fr!important}.g4{grid-template-columns:repeat(2,1fr)!important}.sp{padding:60px 16px!important}}`;
+@media(max-width:768px){.hide-m{display:none!important}.g1{grid-template-columns:1fr!important}.g2{grid-template-columns:1fr!important}.g3{grid-template-columns:1fr!important}.g4{grid-template-columns:repeat(2,1fr)!important}.sp{padding:60px 16px!important}}
+${SECTION_CSS}
+${MOTION_CSS}
+${INTERACTIVE_CSS}`;
 }
 
 function nav(name: string, links: string[], ctaText: string, isDark: boolean, primary: string, fHead: string, fBody: string) {
@@ -96,7 +114,7 @@ function footer(name: string, desc: string, isDark: boolean, fHead: string, fBod
 
 function wrap(title: string, fHead: string, fBody: string, isDark: boolean, primary: string, secondary: string, body: string) {
   const gf = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fHead)}:wght@400;600;700;800&family=${encodeURIComponent(fBody)}:wght@400;500;600&display=swap`;
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>${title}</title><link href="${gf}" rel="stylesheet"/><style>${css(isDark,primary,secondary,fHead,fBody)}</style></head><body>${body}</body></html>`;
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>${title}</title><link href="${gf}" rel="stylesheet"/><style>${css(isDark,primary,secondary,fHead,fBody)}</style></head><body>${body}<script>${MOTION_JS}</script><script>${INTERACTIVE_JS}</script></body></html>`;
 }
 
 /* ============ SAAS ============ */
@@ -555,12 +573,72 @@ export async function GET(
     return NextResponse.json({ error: 'Preview not available' }, { status: 404 });
   }
 
-  const html = builder(images);
+  const pageTheme = getTheme(templateId);
+  const pageMotion = getVariety(templateId).motion;
+  const pageBg = pageTheme.isDark ? '#09090b' : '#fafaf9';
+  const requested = request.nextUrl.searchParams.get('page');
+  const pages = getPages(templateId);
+  const page: PageKey = pages.some((p) => p.key === requested)
+    ? (requested as PageKey)
+    : 'home';
+
+  // The homepage keeps its hand-authored, template-specific composition; only
+  // its dead anchors are rewritten. Interior pages are composed generically so
+  // the preview is a real multi-page site rather than one scrolling mock.
+  const html =
+    page === 'home'
+      ? injectMobileNav(enliven(unifyNav(linkify(builder(images), templateId), chromeNav(templateId, pageTheme, 'home')), pageBg, pageTheme.secondary, pageMotion), templateId, pageTheme)
+      : injectMobileNav(enliven(buildInteriorPage(templateId, page, template.description), pageBg, pageTheme.secondary, pageMotion), templateId, pageTheme);
 
   return new Response(html, {
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600',
+      // Previews are cheap to regenerate and are actively iterated on. A long
+      // max-age meant edits were invisible until a hard refresh, which reads as
+      // "the fix did not work" when the server is already serving the new page.
+      'Cache-Control': 'no-store, must-revalidate',
     },
   });
+}
+
+function buildInteriorPage(
+  templateId: string,
+  page: PageKey,
+  description: string
+): string {
+  const theme = getTheme(templateId);
+  const content = getContent(templateId);
+  const images = getImages(templateId);
+
+  if (!content) {
+    // No authored content for this template yet — send the viewer to the
+    // homepage rather than rendering an empty shell.
+    return enliven(linkify(BUILDERS[templateId](images), templateId), theme.isDark ? '#09090b' : '#fafaf9', theme.secondary, getVariety(templateId).motion);
+  }
+
+  const body =
+    page === 'services'
+      ? buildServicesPage(templateId, theme, content, images)
+      : page === 'about'
+        ? buildAboutPage(templateId, theme, content, images)
+        : buildContactPage(templateId, theme, content, images);
+
+  const label = getPages(templateId).find((p) => p.key === page)?.label ?? 'Page';
+  const composed =
+    chromeNav(templateId, theme, page) +
+    body +
+    footer(theme.name, description, theme.isDark, theme.fHead, theme.fBody);
+
+  return linkify(
+    wrap(
+      `${label} — ${theme.name}`,
+      theme.fHead,
+      theme.fBody,
+      theme.isDark,
+      theme.primary,
+      theme.secondary,
+      composed
+    ),
+    templateId
+  );
 }
