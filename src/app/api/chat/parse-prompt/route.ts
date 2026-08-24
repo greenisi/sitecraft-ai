@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient as createClient } from '@/lib/supabase/server';
-import { getAnthropicClient, GENERATION_MODEL, callOpenRouter } from '@/lib/ai/client';
+import { getAnthropicClient, GENERATION_MODEL, getRealAnthropicClient } from '@/lib/ai/client';
 import { completePromptWithFallback } from '@/lib/ai/parse-prompt-provider';
 import type { SectionConfig } from '@/types/project';
 
@@ -373,12 +373,24 @@ export async function POST(request: NextRequest) {
                 }
                 return textBlock.text;
             },
-            async () => callOpenRouter(
-                'qwen/qwen3-coder',
-                [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
-                8192,
-                { jsonOutput: true },
-            ),
+            // The fallback used to be a second OpenRouter model, which is not a
+            // fallback at all: when the OpenRouter balance emptied, both the
+            // primary and the fallback failed together and intake died before
+            // a single component was generated -- no tier could get past this,
+            // including Power Mode. A fallback has to be a different provider.
+            async () => {
+                const response = await getRealAnthropicClient().messages.create({
+                    model: 'claude-haiku-4-5-20251001',
+                    max_tokens: 8192,
+                    system: SYSTEM_PROMPT,
+                    messages,
+                });
+                const textBlock = response.content.find((b) => b.type === 'text');
+                if (!textBlock || textBlock.type !== 'text') {
+                    throw new Error('No text response from the fallback model');
+                }
+                return textBlock.text;
+            },
         );
 
         let parsed;
