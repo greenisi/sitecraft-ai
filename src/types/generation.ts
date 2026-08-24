@@ -43,6 +43,7 @@ export interface GenerationEvent {
     | 'component-chunk'
     | 'component-complete'
     | 'generation-complete'
+    | 'quality-report'
     | 'error';
   stage?: GenerationStage;
   componentName?: string;
@@ -51,6 +52,10 @@ export interface GenerationEvent {
   totalFiles?: number;
   completedFiles?: number;
   error?: string;
+  /** Design-quality gate findings, carried so a failure is not just logged. */
+  score?: number;
+  severe?: boolean;
+  issues?: string[];
 }
 
 export interface VirtualFile {
