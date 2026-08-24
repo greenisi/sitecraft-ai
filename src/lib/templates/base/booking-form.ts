@@ -365,11 +365,53 @@ export default function BookingForm() {
 }
 
 /**
+ * What the owner is booking, when they have told us directly.
+ *
+ * Trade sniffing is a guess made at generation time from a free-text industry
+ * string. An accepted capability is not a guess -- someone who clicked "Table
+ * reservations" wants a table booked, whatever their industry field happens to
+ * say -- so the intent wins when there is one.
+ */
+export type BookingIntent = 'table' | 'class' | 'appointment';
+
+const INTENT_OPTIONS: Record<BookingIntent, BookingFormOptions> = {
+  table: {
+    heading: 'Reserve a table',
+    intro: 'Pick an evening and a sitting. We hold the table for fifteen minutes past your time.',
+    choiceLabel: 'Party size',
+    choices: ['2 guests', '3 guests', '4 guests', '5 guests', '6 guests', '7+ (call us)'],
+  },
+  class: {
+    heading: 'Book a class',
+    intro: 'Pick a time and we will save you a place. Bring water and arrive five minutes early.',
+    choiceLabel: 'Which class?',
+    // Neutral rather than invented class names: a made-up timetable on a form
+    // that emails real people is worse than one the owner edits once.
+    choices: ['First class', 'Regular class', 'Drop-in', 'Something else'],
+  },
+  appointment: {
+    heading: 'Book an appointment',
+    intro: 'Choose a time that suits you and we will confirm by email.',
+    choiceLabel: 'Reason for visit',
+    choices: ['New enquiry', 'Existing customer', 'Something else'],
+  },
+};
+
+/**
  * Booking framing per site type. A restaurant books a table, a clinic books an
  * appointment, a trade books a visit -- the wrong noun makes the whole section
  * read as generic.
+ *
+ * Pass `intent` when the owner has explicitly accepted a booking capability;
+ * omit it to keep the generation-time behaviour of inferring from the trade.
  */
-export function deriveBookingOptions(siteType: string, industry: string): BookingFormOptions {
+export function deriveBookingOptions(
+  siteType: string,
+  industry: string,
+  intent?: BookingIntent
+): BookingFormOptions {
+  if (intent) return INTENT_OPTIONS[intent];
+
   const trade = `${siteType} ${industry}`.toLowerCase();
   // Deliberately NOT derived from a service list: the config has no structured
   // one, and inventing service names here would put words in the owner's mouth

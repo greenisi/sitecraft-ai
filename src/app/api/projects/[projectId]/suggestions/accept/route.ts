@@ -54,6 +54,11 @@ const PREBUILT: Record<string, PrebuiltCapability> = {
       `Email signup added to ${page}. Signups appear under ${adminLabel}.`,
   },
 
+  // The three booking capabilities are one component with different framing,
+  // all landing in the same bookings dashboard. Appointment booking keeps the
+  // trade inference, which already picks a better noun per trade (a clinic
+  // books an appointment, a contractor books a visit). Tables and classes are
+  // unambiguous once accepted, so they say so outright.
   'appointment-booking': {
     componentName: 'BookingForm',
     filePath: 'src/components/BookingForm.tsx',
@@ -63,6 +68,29 @@ const PREBUILT: Record<string, PrebuiltCapability> = {
     preferPages: [/\/(book|booking|appointments?|reservations?)\/page\.tsx$/, /\/contact\/page\.tsx$/],
     installedMessage: (page, adminLabel) =>
       `Booking added to ${page}, showing real availability. Requests arrive under ${adminLabel} for you to confirm or decline.`,
+  },
+
+  'table-reservations': {
+    componentName: 'BookingForm',
+    filePath: 'src/components/BookingForm.tsx',
+    build: (context) =>
+      generateBookingFormComponent(deriveBookingOptions(context.siteType, context.industry, 'table')),
+    preferPages: [/\/(reservations?|book|booking)\/page\.tsx$/, /\/contact\/page\.tsx$/],
+    installedMessage: (page, adminLabel) =>
+      `Table reservations added to ${page}, showing which sittings are still free. They arrive under ${adminLabel} for you to confirm or decline.`,
+  },
+
+  'class-booking': {
+    componentName: 'BookingForm',
+    filePath: 'src/components/BookingForm.tsx',
+    build: (context) =>
+      generateBookingFormComponent(deriveBookingOptions(context.siteType, context.industry, 'class')),
+    preferPages: [
+      /\/(classes|schedule|timetable|book|booking)\/page\.tsx$/,
+      /\/contact\/page\.tsx$/,
+    ],
+    installedMessage: (page, adminLabel) =>
+      `Class booking added to ${page}, showing real availability. Reservations arrive under ${adminLabel} for you to confirm or decline.`,
   },
 
   'quote-requests': {

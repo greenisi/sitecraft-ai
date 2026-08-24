@@ -85,13 +85,38 @@ export async function injectComponentIntoPage(
   }
 
   const rows = files as Array<{ id: string; file_path: string; content: string }>;
+
+  // If this component is already on a page, that page wins over the preference.
+  // The booking capabilities share one component, and the generator scaffolds
+  // it at build time too, so without this a second accepted booking capability
+  // would render a duplicate form on a different page while overwriting the
+  // shared component underneath the first one.
+  const rendered = new RegExp(`<${spec.componentName}\\b`);
+  const existingPage = rows.find(
+    (row) => /^src\/app\/.*page\.tsx$/.test(row.file_path) && rendered.test(row.content)
+  );
+
+  if (existingPage) {
+    // Still refresh the component itself, since the newly accepted capability
+    // is what decides the copy.
+    const componentRow = rows.find((row) => row.file_path === spec.filePath);
+    if (componentRow) {
+      await supabase.from('generated_files').update({ content: spec.content }).eq('id', componentRow.id);
+    } else {
+      await supabase.from('generated_files').insert({
+        version_id: versionId,
+        file_path: spec.filePath,
+        content: spec.content,
+        file_type: 'component',
+      });
+    }
+    return { ok: true, page: existingPage.file_path };
+  }
+
   const targetPath = pickPage(rows.map((row) => row.file_path), spec.preferPages);
   if (!targetPath) return { ok: false, reason: 'Could not find a page to add it to.' };
 
   const target = rows.find((row) => row.file_path === targetPath)!;
-  if (new RegExp(`<${spec.componentName}\\b`).test(target.content)) {
-    return { ok: true, page: targetPath };
-  }
 
   let content = target.content;
   const usesAlias = /from\s+['"]@\//.test(content);

@@ -13,8 +13,12 @@
 
 import { parse } from '@babel/parser';
 import { generateQuoteFormComponent, deriveQuoteOptions } from '../src/lib/templates/base/quote-form';
-import { generateBookingFormComponent, deriveBookingOptions } from '../src/lib/templates/base/booking-form';
-import { pickPage } from '../src/lib/ai/capability-installer';
+import {
+  generateBookingFormComponent,
+  deriveBookingOptions,
+  type BookingIntent,
+} from '../src/lib/templates/base/booking-form';
+import { pickPage, injectComponentIntoPage } from '../src/lib/ai/capability-installer';
 
 let failures = 0;
 
@@ -120,9 +124,144 @@ console.log('\nInstaller puts each capability on the right page');
   check('non-page files are never chosen', pickPage(['src/components/Hero.tsx']) === undefined);
 }
 
-console.log(
-  failures === 0
-    ? '\nAll checks passed.\n'
-    : `\n${failures} check(s) failed.\n`
-);
-process.exit(failures === 0 ? 0 : 1);
+console.log('\nBooking intent overrides trade guessing');
+{
+  const intents: BookingIntent[] = ['table', 'class', 'appointment'];
+  for (const intent of intents) {
+    const source = generateBookingFormComponent(deriveBookingOptions('', '', intent));
+    check(`${intent} parses`, parses(source) === null);
+  }
+
+  // A gym whose industry string never matches the restaurant regex must still
+  // get table copy if that is the capability the owner accepted.
+  const table = deriveBookingOptions('business', 'Hospitality Group', 'table');
+  check('table intent wins over an unmatched industry', table.heading === 'Reserve a table');
+  check('table intent asks party size', table.choiceLabel === 'Party size');
+
+  const klass = deriveBookingOptions('business', 'Wellness', 'class');
+  check('class intent wins over the wellness trade match', klass.heading === 'Book a class');
+  check('class intent never invents a timetable', !klass.choices.some((c) => /yoga|spin|pilates/i.test(c)));
+
+  // Omitting intent must keep the generation-time behaviour untouched.
+  check(
+    'no intent still infers from the trade',
+    deriveBookingOptions('restaurant', 'Italian Dining').heading === 'Reserve a table'
+  );
+  check(
+    'no intent still gives a contractor a visit',
+    deriveBookingOptions('local-service', 'Roofing').heading === 'Book a visit'
+  );
+}
+
+async function installerChecks() {
+console.log('\nA second booking capability does not duplicate the form');
+{
+  const files = [
+    { id: 'f1', file_path: 'src/app/page.tsx', content: 'export default function Home(){\n  return (\n    <main>\n      <h1>Home</h1>\n    </main>\n  );\n}\n' },
+    { id: 'f2', file_path: 'src/app/contact/page.tsx', content: "import BookingForm from '@/components/BookingForm';\n\nexport default function Contact(){\n  return (\n    <main>\n      <BookingForm />\n    </main>\n  );\n}\n" },
+    { id: 'f3', file_path: 'src/app/reservations/page.tsx', content: 'export default function Reservations(){\n  return (\n    <main>\n      <h1>Reservations</h1>\n    </main>\n  );\n}\n' },
+    { id: 'f4', file_path: 'src/components/BookingForm.tsx', content: '// old appointment framing\n' },
+  ];
+
+  const updates: Array<{ id: string; content: string }> = [];
+  const inserts: Array<{ file_path: string }> = [];
+  const supabase = fakeSupabase(files, updates, inserts);
+
+  const result = await injectComponentIntoPage(supabase, 'p1', {
+    componentName: 'BookingForm',
+    filePath: 'src/components/BookingForm.tsx',
+    content: '// new table framing\n',
+    preferPages: [/\/(reservations?|book|booking)\/page\.tsx$/, /\/contact\/page\.tsx$/],
+  });
+
+  check('install reports success', result.ok === true);
+  check(
+    'reuses the page already rendering the form, not the preferred one',
+    result.page === 'src/app/contact/page.tsx',
+    `got ${result.page}`
+  );
+  check('reservations page was left alone', !updates.some((u) => u.id === 'f3'));
+  check('no duplicate component file inserted', inserts.length === 0);
+  check(
+    'the shared component was refreshed with the new framing',
+    updates.some((u) => u.id === 'f4' && u.content.includes('new table framing'))
+  );
+}
+
+console.log('\nA first booking capability installs onto the preferred page');
+{
+  const files = [
+    { id: 'f1', file_path: 'src/app/page.tsx', content: 'export default function Home(){\n  return (\n    <main>\n      <h1>Home</h1>\n    </main>\n  );\n}\n' },
+    { id: 'f2', file_path: 'src/app/reservations/page.tsx', content: 'export default function Reservations(){\n  return (\n    <main>\n      <h1>Reservations</h1>\n    </main>\n  );\n}\n' },
+  ];
+
+  const updates: Array<{ id: string; content: string }> = [];
+  const inserts: Array<{ file_path: string }> = [];
+  const supabase = fakeSupabase(files, updates, inserts);
+
+  const result = await injectComponentIntoPage(supabase, 'p1', {
+    componentName: 'BookingForm',
+    filePath: 'src/components/BookingForm.tsx',
+    content: generateBookingFormComponent(deriveBookingOptions('', '', 'table')),
+    preferPages: [/\/(reservations?|book|booking)\/page\.tsx$/, /\/contact\/page\.tsx$/],
+  });
+
+  check('installs onto the reservations page', result.page === 'src/app/reservations/page.tsx');
+  check('writes the component file', inserts.some((i) => i.file_path === 'src/components/BookingForm.tsx'));
+
+  const page = updates.find((u) => u.id === 'f2');
+  check('page now imports the component', Boolean(page && /import BookingForm/.test(page.content)));
+  check('page now renders the component', Boolean(page && /<BookingForm \/>/.test(page.content)));
+  check('edited page still parses', Boolean(page && parses(page.content) === null));
+}
+}
+
+/**
+ * Minimal stand-in for the Supabase query builder, covering only the chains
+ * injectComponentIntoPage actually uses.
+ */
+function fakeSupabase(
+  files: Array<{ id: string; file_path: string; content: string }>,
+  updates: Array<{ id: string; content: string }>,
+  inserts: Array<{ file_path: string }>
+) {
+  return {
+    from(table: string) {
+      if (table === 'generation_versions') {
+        const chain: Record<string, unknown> = {};
+        for (const method of ['select', 'eq', 'order', 'limit']) {
+          chain[method] = () => chain;
+        }
+        chain.maybeSingle = async () => ({ data: { id: 'v1' } });
+        return chain;
+      }
+
+      return {
+        select: () => ({ eq: async () => ({ data: files }) }),
+        update: (patch: { content: string }) => ({
+          eq: async (_column: string, id: string) => {
+            updates.push({ id, content: patch.content });
+            const row = files.find((file) => file.id === id);
+            if (row) row.content = patch.content;
+            return { data: null };
+          },
+        }),
+        insert: async (row: { file_path: string; content: string }) => {
+          inserts.push({ file_path: row.file_path });
+          files.push({ id: 'new', ...row });
+          return { data: null };
+        },
+      };
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any;
+}
+
+installerChecks().then(() => {
+  console.log(
+    failures === 0
+      ? '\nAll checks passed.\n'
+      : `\n${failures} check(s) failed.\n`
+  );
+  process.exit(failures === 0 ? 0 : 1);
+});
