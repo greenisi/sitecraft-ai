@@ -10,6 +10,15 @@ interface Candidate {
   user_ratings_total?: number;
 }
 
+interface PendingPlace {
+  place_id: string;
+  name: string;
+  formatted_address: string;
+  rating: number | null;
+  user_ratings_total: number | null;
+  sample: Array<{ rating: number; author: string; text: string }>;
+}
+
 interface Connection {
   place_id: string;
   business_name: string;
@@ -37,6 +46,7 @@ export function GoogleReviewsPanel({
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [searching, setSearching] = useState(false);
   const [connecting, setConnecting] = useState<string | null>(null);
+  const [pending, setPending] = useState<PendingPlace | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -75,18 +85,33 @@ export function GoogleReviewsPanel({
     }
   }
 
-  async function connect(place_id: string) {
+  // Two phases. The first call imports nothing and comes back with what
+  // Google matched, so a wrong listing is caught before its reviews land on
+  // someone's site rather than after.
+  async function connect(place_id: string, confirmed = false) {
     setConnecting(place_id);
     setMsg(null);
     try {
       const res = await fetch(`/api/projects/${projectId}/reviews/google/connect`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ place_id }),
+        body: JSON.stringify({ place_id, confirmed }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'connect failed');
-      setMsg(`Imported ${data.reviewsImported} reviews.`);
+
+      if (data.needsConfirmation) {
+        setPending(data.place as PendingPlace);
+        return;
+      }
+
+      const held = data.reviewsHeld ?? 0;
+      setMsg(
+        held > 0
+          ? `Imported ${data.reviewsImported}. ${data.reviewsApproved} are live; ${held} under 4 stars are waiting for you below.`
+          : `Imported ${data.reviewsImported} reviews.`
+      );
+      setPending(null);
       setCandidates([]);
       setQuery('');
       await load();
@@ -221,6 +246,55 @@ export function GoogleReviewsPanel({
 
       {candidates.length > 0 && (
         <ul className="mt-4 space-y-2">
+          {pending && (
+            <li className="rounded border border-amber-500/40 bg-amber-500/5 p-4">
+              <div className="text-sm font-semibold text-white">Is this your business?</div>
+              <p className="mt-1 text-xs leading-relaxed text-gray-400">
+                These reviews will appear on your site. Check the name and address match you
+                before importing.
+              </p>
+
+              <div className="mt-3 rounded bg-gray-900/60 p-3">
+                <div className="font-medium text-white">{pending.name}</div>
+                <div className="text-xs text-gray-400">{pending.formatted_address}</div>
+                {pending.rating ? (
+                  <div className="mt-1 text-xs text-gray-300">
+                    ⭐ {pending.rating} · {pending.user_ratings_total ?? 0} reviews
+                  </div>
+                ) : null}
+              </div>
+
+              {pending.sample.length > 0 && (
+                <ul className="mt-3 space-y-2">
+                  {pending.sample.map((r, i) => (
+                    <li key={i} className="rounded bg-gray-900/60 p-2 text-xs text-gray-300">
+                      <span className="text-gray-500">
+                        {'★'.repeat(Math.max(1, Math.min(5, Math.round(r.rating))))} {r.author}
+                      </span>
+                      <p className="mt-1 leading-relaxed text-gray-400">{r.text}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              <div className="mt-4 flex gap-2">
+                <button
+                  onClick={() => connect(pending.place_id, true)}
+                  disabled={connecting === pending.place_id}
+                  className="rounded bg-purple-600 px-3 py-2 text-xs font-semibold text-white hover:bg-purple-500 disabled:opacity-60"
+                >
+                  {connecting === pending.place_id ? 'Importing…' : 'Yes, import these'}
+                </button>
+                <button
+                  onClick={() => setPending(null)}
+                  className="rounded border border-gray-700 px-3 py-2 text-xs font-medium text-gray-300 hover:bg-gray-800"
+                >
+                  Not my business
+                </button>
+              </div>
+            </li>
+          )}
+
           {candidates.map((c) => (
             <li
               key={c.place_id}
