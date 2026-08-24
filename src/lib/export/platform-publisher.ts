@@ -37,6 +37,7 @@ function parsesAsModule(content: string): boolean {
  * Skips repairing if there are excess closers (negative balance).
  */
 function repairBracketBalance(content: string): string {
+  // Only reached for files that already fail to parse; PASS 5 skips valid ones.
   let braces = 0;
   let parens = 0;
   let inStr = false;
@@ -419,16 +420,11 @@ function validateAndFixFileTree(tree: VirtualFileTree): void {
     const content = file.content;
     const issues: string[] = [];
 
-    // Brace/paren balance check (simple pass — good enough for a diagnostic warning)
-    let braces = 0, parens = 0;
-    for (const ch of content) {
-      if (ch === '{') braces++;
-      else if (ch === '}') braces--;
-      else if (ch === '(') parens++;
-      else if (ch === ')') parens--;
-    }
-    if (braces !== 0) issues.push(`brace imbalance (${braces > 0 ? '+' : ''}${braces})`);
-    if (parens !== 0) issues.push(`paren imbalance (${parens > 0 ? '+' : ''}${parens})`);
+    // Ask the parser rather than counting characters. Bracket counting cannot
+    // tell JSX text from expression context -- an apostrophe in "We'll" reads
+    // as a string open -- and it reported a perfectly valid ContactForm as
+    // broken, which is what got it rewritten and removed from a live site.
+    if (!parsesAsModule(content)) issues.push('does not parse');
 
     // Odd number of unescaped backticks → likely unclosed template literal
     const backticks = (content.match(/(?<!\\)`/g) || []).length;
@@ -1157,6 +1153,37 @@ export async function publishToSubdomain(
       "    const API_BASE = 'https://app.innovated.marketing/api/sites/' + projectId;",
       "    const wired = new WeakSet<HTMLFormElement>();",
       "",
+      "    // A generated page often writes its own onSubmit that already posts",
+      "    // here, and it usually collects MORE than these heuristics can (the",
+      "    // real service name, for one). Two handlers on one form meant one",
+      "    // customer produced two leads and two owner emails, so this stands",
+      "    // down when the page handles its own submit -- but only once it has",
+      "    // seen the page actually send something, so a page whose handler",
+      "    // does nothing useful still gets captured.",
+      "    let externalPostAt = 0;",
+      "    let selfPosting = false;",
+      "    const nativeFetch = window.fetch.bind(window);",
+      "    window.fetch = function (input: any, init?: any) {",
+      "      try {",
+      "        const url = typeof input === 'string' ? input : (input && input.url) || '';",
+      "        const method = (init && init.method) || (input && input.method) || 'GET';",
+      "        if (!selfPosting && String(method).toUpperCase() === 'POST' && String(url).indexOf(API_BASE) === 0) {",
+      "          externalPostAt = Date.now();",
+      "        }",
+      "      } catch {}",
+      "      return nativeFetch(input as any, init as any);",
+      "    } as typeof window.fetch;",
+      "",
+      "    /** True when React has an onSubmit bound to this form. */",
+      "    function pageHandlesSubmit(form: HTMLFormElement): boolean {",
+      "      for (const key in form as any) {",
+      "        if (key.indexOf('__reactProps$') !== 0) continue;",
+      "        const props = (form as any)[key];",
+      "        if (props && typeof props.onSubmit === 'function') return true;",
+      "      }",
+      "      return false;",
+      "    }",
+      "",
       "    function wireForm(form: HTMLFormElement) {",
       "      if (wired.has(form)) return;",
       "      wired.add(form);",
@@ -1170,7 +1197,14 @@ export async function publishToSubdomain(
       "        form.appendChild(hp);",
       "      }",
       "      form.addEventListener('submit', async (e) => {",
+      "        // preventDefault stops a native navigation but does NOT stop the",
+      "        // page's own React handler, which still runs on this same event.",
       "        e.preventDefault();",
+      "        if (pageHandlesSubmit(form)) {",
+      "          const before = externalPostAt;",
+      "          await new Promise((r) => setTimeout(r, 1500));",
+      "          if (externalPostAt !== before) return;",
+      "        }",
       "        const formData = new FormData(form);",
       "        const data: Record<string, string> = {};",
 "        formData.forEach((v, k) => { if (k) data[k] = String(v); });",
@@ -1208,11 +1242,12 @@ export async function publishToSubdomain(
       "        const originalText = submitBtn?.textContent || '';",
       "        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Sending...'; }",
       "        try {",
+      "          selfPosting = true;",
       "          const res = await fetch(endpoint, {",
       "            method: 'POST',",
       "            headers: { 'Content-Type': 'application/json' },",
       "            body: JSON.stringify(data),",
-      "          });",
+      "          }).finally(() => { selfPosting = false; });",
       "          if (res.ok) {",
       "            form.reset();",
       "            if (submitBtn) { submitBtn.textContent = 'Sent!'; submitBtn.classList.add('bg-green-600'); }",
