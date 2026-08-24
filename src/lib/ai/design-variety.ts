@@ -850,18 +850,26 @@ function pickFromArray<T>(arr: T[], hash: number, offset = 0): T {
 
 const INDUSTRY_KEYWORDS: Record<string, string[]> = {
   landscaping: ['landscap', 'lawn', 'garden', 'outdoor', 'tree', 'mowing', 'irrigation', 'hardscape'],
-  restaurant: ['restaurant', 'food', 'dining', 'cafe', 'bakery', 'catering', 'pizza', 'sushi', 'bar', 'grill', 'bistro', 'kitchen'],
-  technology: ['tech', 'software', 'saas', 'app', 'digital', 'ai', 'cloud', 'cyber', 'data', 'platform', 'startup'],
+  restaurant: ['restaurant', 'food', 'dining', 'cafe', 'coffee', 'espresso', 'bakery', 'catering', 'pizza', 'sushi', 'grill', 'bistro', 'kitchen', 'deli', 'diner', 'brewery', 'taproom'],
+  technology: ['tech', 'software', 'saas', 'app', 'digital', 'cloud', 'cyber', 'platform', 'startup'],
   healthcare: ['health', 'medical', 'dental', 'clinic', 'wellness', 'therapy', 'doctor', 'nursing', 'hospital', 'pharma', 'chiropractic'],
-  realestate: ['real estate', 'realty', 'property', 'housing', 'mortgage', 'apartment', 'home', 'condo'],
-  fitness: ['fitness', 'gym', 'yoga', 'workout', 'personal train', 'crossfit', 'martial art', 'pilates', 'sport'],
-  education: ['education', 'school', 'tutoring', 'learning', 'academy', 'course', 'training', 'university', 'teaching'],
-  ecommerce: ['shop', 'store', 'retail', 'ecommerce', 'e-commerce', 'marketplace', 'boutique', 'fashion', 'clothing'],
-  legal: ['law', 'legal', 'attorney', 'lawyer', 'firm', 'litigation', 'counsel'],
-  creative: ['design', 'creative', 'art', 'photography', 'studio', 'agency', 'branding', 'portfolio', 'media', 'video', 'film'],
-  construction: ['construction', 'building', 'contractor', 'roofing', 'plumbing', 'electric', 'hvac', 'renovation', 'remodel', 'handyman', 'painting', 'flooring'],
-  finance: ['finance', 'accounting', 'bank', 'investment', 'insurance', 'tax', 'wealth', 'financial', 'consulting'],
+  realestate: ['real estate', 'realty', 'realtor', 'housing', 'mortgage', 'apartment', 'condo', 'listing', 'brokerage'],
+  fitness: ['fitness', 'gym', 'yoga', 'workout', 'personal train', 'crossfit', 'martial art', 'pilates'],
+  education: ['education', 'school', 'tutoring', 'learning', 'academy', 'course', 'university', 'teaching'],
+  ecommerce: ['shop', 'store', 'retail', 'ecommerce', 'e-commerce', 'marketplace', 'boutique', 'fashion', 'clothing', 'dispensary'],
+  legal: ['law', 'legal', 'attorney', 'lawyer', 'litigation', 'counsel'],
+  creative: ['design', 'creative', 'photography', 'studio', 'agency', 'branding', 'portfolio', 'media', 'video', 'film', 'florist', 'floral', 'flower'],
+  construction: ['construction', 'building', 'contractor', 'roofing', 'roofer', 'plumbing', 'electric', 'hvac', 'renovation', 'remodel', 'handyman', 'painting', 'flooring', 'cabling', 'wiring', 'siding', 'gutter', 'masonry', 'concrete', 'paving', 'fencing'],
+  finance: ['finance', 'accounting', 'bank', 'investment', 'insurance', 'tax', 'wealth', 'financial'],
 };
+
+// Removed deliberately, each having graded real businesses into the wrong
+// vertical: 'ai' matched inside "repair"; 'home' and 'property' made every
+// home-service business look like an estate agent; 'art' hid inside "start";
+// 'bar' inside "barn"; 'data' and 'sport' and 'firm' and 'consulting' and
+// 'training' were generic enough to pull unrelated trades. Keep keywords
+// specific enough that a whole-word match is genuine evidence.
+
 
 export function matchIndustryFromInputs(industry: string, description: string): string {
   return matchIndustry(industry, description);
@@ -928,24 +936,61 @@ export function getIndustryPaletteGuidance(industry: string, description: string
 }
 
 function matchIndustry(industry: string, description: string): string {
-  const searchText = `${industry} ${description}`.toLowerCase();
+  // Substring matching graded a roofing company as "technology" because "ai"
+  // appears inside "repair". "property" in "off your property" scored real
+  // estate, "home" scores it for any home-service business, and "art" hides
+  // inside "start". All three tied at one point and the winner was decided by
+  // whichever key happened to be declared first.
+  //
+  // So: whole words only, the declared industry counts for more than prose,
+  // and longer keywords count for more than short ones because they are the
+  // specific ones. Ties resolve by the more specific match rather than by
+  // object order.
+  const industryText = industry.toLowerCase();
+  const descriptionText = description.toLowerCase();
+
+  // Both ends anchored, with only ordinary inflections allowed to follow.
+  // A leading boundary alone still matched "deli" inside "delivery" and would
+  // match "app" inside "appointment", which graded an auto detailer as a
+  // restaurant and would grade any business taking appointments as a tech
+  // company. The optional suffixes keep intentional stems working, so
+  // "landscap" still reaches landscaping, landscape and landscapers.
+  const hits = (haystack: string, keyword: string): boolean =>
+    new RegExp(
+      `\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:e|s|es|ing|ed|er|ers)?\\b`,
+      'i'
+    ).test(haystack);
 
   let bestMatch = 'default';
   let bestScore = 0;
+  let bestSpecificity = 0;
 
   for (const [key, keywords] of Object.entries(INDUSTRY_KEYWORDS)) {
     let score = 0;
+    let specificity = 0;
+
     for (const kw of keywords) {
-      if (searchText.includes(kw)) score++;
+      // The industry field is what the business said it does. Prose is
+      // corroboration, not the claim itself.
+      if (hits(industryText, kw)) {
+        score += 3;
+        specificity = Math.max(specificity, kw.length);
+      } else if (hits(descriptionText, kw)) {
+        score += 1;
+        specificity = Math.max(specificity, kw.length);
+      }
     }
-    if (score > bestScore) {
+
+    if (score > bestScore || (score === bestScore && score > 0 && specificity > bestSpecificity)) {
       bestScore = score;
+      bestSpecificity = specificity;
       bestMatch = key;
     }
   }
 
   return bestMatch;
 }
+
 
 // ─── Public API ─────────────────────────────────────────────────────────────
 
