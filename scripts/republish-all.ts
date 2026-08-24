@@ -89,7 +89,8 @@ async function main() {
     try {
       const { publishToSubdomain } = await import('../src/lib/export/platform-publisher');
       const result = await publishToSubdomain(project.id, project.user_id);
-      console.log(`  ok    ${label} → ${result.url}`);
+      const url = 'url' in result ? result.url : project.published_url;
+      console.log(`  ok    ${label} → ${url}`);
       ok.push(label);
     } catch (e) {
       const reason = e instanceof Error ? e.message : String(e);
