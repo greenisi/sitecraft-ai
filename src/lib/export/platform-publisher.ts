@@ -1,3 +1,4 @@
+import { parse as babelParse } from '@babel/parser';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { deployToVercel } from '@/lib/export/vercel-deployer';
 import { buildScaffoldingTree } from '@/lib/export/file-tree';
@@ -13,6 +14,21 @@ const PLATFORM_DOMAIN = process.env.PLATFORM_DOMAIN || 'innovated.site';
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Does this file parse as a real TSX module?
+ *
+ * The regex repairs below cannot tell a broken file from a correct one, so
+ * this is what decides whether they are allowed to run at all.
+ */
+function parsesAsModule(content: string): boolean {
+  try {
+    babelParse(content, { sourceType: 'module', plugins: ['jsx', 'typescript'], errorRecovery: false });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -318,10 +334,19 @@ function validateAndFixFileTree(tree: VirtualFileTree): void {
   }
 
   // PASS 5: Fix common AI syntax errors
+  //
+  // Every repair below is a regex heuristic, and a heuristic that runs on a
+  // file which is already correct can only make it worse. That is not
+  // hypothetical: these passes silently gutted a valid ContactForm on a live
+  // site, and the contact form simply stopped rendering. So a file that
+  // already parses is left alone, and any repair that stops a file parsing is
+  // reverted -- the same parse-then-revert contract the booking injector uses.
   for (const [path, file] of tree.entries()) {
     if (!path.endsWith('.tsx') && !path.endsWith('.ts')) continue;
     let content = file.content;
     const before = content;
+
+    if (parsesAsModule(before)) continue;
 
     // Fix 1: Duplicate array/object literals: `[] []` → `[]`, `{} {}` → `{}`
     content = content.replace(/\[\]\s*\[\]/g, '[]');
@@ -354,6 +379,12 @@ function validateAndFixFileTree(tree: VirtualFileTree): void {
     content = repairBracketBalance(content);
 
     if (content !== before) {
+      // Only keep the repair if it actually produced something parseable.
+      // Trading one broken file for a differently broken file gains nothing
+      // and hides the real failure.
+      if (!parsesAsModule(content)) {
+        continue;
+      }
       tree.addFile(path, content, file.type);
       fixed.push(path + ' (syntax)');
     }
