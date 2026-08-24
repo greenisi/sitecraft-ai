@@ -1083,6 +1083,20 @@ async function* generateComponents(
       issues: quality.issues,
     });
   }
+
+  // The gate used to stop at that console.warn and throw the score away, which
+  // meant every failure it found shipped anyway. The copy formulas it now
+  // catches are exactly the kind a targeted rewrite fixes cheaply, so the
+  // findings are carried out of the pipeline instead of being swallowed.
+  yield {
+    type: 'quality-report',
+    stage: 'components',
+    score: quality.score,
+    severe: quality.severe,
+    issues: quality.issues,
+    totalFiles: totalExpected,
+    completedFiles: completedCount,
+  };
   for (const file of bookingResult.files) {
     if (beforeInjection.get(file.path) === file.content) continue;
     const componentName = extractComponentName(file.path);

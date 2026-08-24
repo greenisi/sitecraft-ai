@@ -181,6 +181,18 @@ ONE signature moment per site, executed cleanly — not three competing gimmicks
 
 **The opposite test:** every headline must fail-proof against "could a competitor claim the exact opposite?" "Quality You Can Trust" fails (no one claims untrustworthy poor quality) — rewrite sharper with a specific, ownable claim: a number, a place, a method, a guarantee. "Roofs replaced in 2 days, guaranteed for 25 years" passes.
 
+**BANNED HEADING FORMULAS — these are structural, not phrasal, and they are the single biggest tell.** Measured across 435 headings on twelve real generated sites: "Ready to ...?" appeared 18 times on 8 of 12 sites, three of which used the SAME one three or four times on one site. Changing the words does not help — the SHAPE is what a visitor recognises. Never emit a heading matching any of these:
+- "Ready to <verb> your <noun>?" — "Ready to Transform Your Life?", "Ready to Get Started?", "Ready to Experience the Difference?"
+- "What Our <audience> Say" — "What Our Customers Say", "What Our Members Say", "What Our Students Say"
+- "Our <industry> Services" — "Our Yoga Services", "Our Coffee Services", "Our Floral Services"
+- "Why Choose <business>"
+- "Get Started" / "Get In Touch" as a section heading
+- "Transform Your <noun>" / "Experience the Difference" anywhere
+
+**Write these instead.** A closing CTA heading should state the next physical step or the offer, not ask about readiness: "Book a Saturday slot", "We quote in 24 hours", "Two chairs open this week", "Free soil test with every design". A testimonial heading should name the proof: "Nine years of repeat customers", "Rated 4.9 by 212 neighbours". A services heading should say what is actually done: "Mowing, edging, and seasonal cleanup", "Root canals, crowns, and same-day repairs".
+
+**No heading may appear twice on this site.** If two pages need a closing CTA, they get two different headings.
+
 **BANNED PHRASES — never emit these or close variants:** "Welcome to our website", "We are committed to excellence", "Your trusted partner", "Quality you can trust", "We go above and beyond", "Look no further", "Lorem", "ipsum", "placeholder". If a sentence could be pasted onto any other business's site unchanged, delete it and write something only THIS business could say: name the city, the method, the years, the guarantee, the dish, the material.
 
 === BRAND COLOR USAGE — NON-NEGOTIABLE ===
