@@ -24,9 +24,9 @@ export const MODEL_TIERS: Record<ModelTier, ModelConfig> = {
     description: 'Fast and capable — great for most websites',
     badge: '⚡',
     requiresPro: false,
-    provider: 'openrouter',
-    modelId: 'moonshotai/kimi-k3',
-    maxTokens: 64000,
+    provider: 'anthropic',
+    modelId: 'claude-haiku-4-5-20251001',
+    maxTokens: 32000,
   },
   'pro-build': {
     tier: 'pro-build',
@@ -34,8 +34,8 @@ export const MODEL_TIERS: Record<ModelTier, ModelConfig> = {
     description: 'Smart, fast generation for most websites',
     badge: '✦',
     requiresPro: true,
-    provider: 'openrouter',
-    modelId: 'moonshotai/kimi-k3',
+    provider: 'anthropic',
+    modelId: 'claude-sonnet-5',
     maxTokens: 64000,
   },
   'architect': {
@@ -58,9 +58,9 @@ export const MODEL_TIERS: Record<ModelTier, ModelConfig> = {
     description: 'Fastest generation — great for quick iterations',
     badge: '⚡',
     requiresPro: true,
-    provider: 'openrouter',
-    modelId: 'moonshotai/kimi-k3',
-    maxTokens: 64000,
+    provider: 'anthropic',
+    modelId: 'claude-haiku-4-5-20251001',
+    maxTokens: 32000,
   },
 };
 

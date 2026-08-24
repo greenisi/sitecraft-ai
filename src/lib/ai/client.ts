@@ -10,55 +10,27 @@ let client: Anthropic | null = null;
  * Only usable on the server side -- will throw if OPENROUTER_API_KEY is missing.
  */
 export function getAnthropicClient(): Anthropic {
-  if (typeof window !== 'undefined') {
-    throw new Error(
-      'Anthropic client must only be used on the server side. ' +
-      'Do not import this module in client components.'
-    );
-  }
-
-  if (!client) {
-    let apiKey = process.env.OPENROUTER_API_KEY;
-
-    // If the system env has an empty string, try loading from .env.local directly
-    if (!apiKey) {
-      try {
-        const envPath = resolve(process.cwd(), '.env.local');
-        const envContent = readFileSync(envPath, 'utf8');
-        const match = envContent.match(/^OPENROUTER_API_KEY=(.+)$/m);
-        if (match) {
-          apiKey = match[1].trim();
-        }
-      } catch {
-        // Ignore file read errors
-      }
-    }
-
-    if (!apiKey) {
-      throw new Error(
-        'OPENROUTER_API_KEY environment variable is not set. ' +
-        'Please add it to your .env.local file.'
-      );
-    }
-
-    client = new Anthropic({
-      apiKey,
-      baseURL: 'https://openrouter.ai/api',
-      defaultHeaders: {
-        'HTTP-Referer': 'https://app.innovated.marketing',
-        'X-Title': 'SiteCraft AI',
-      },
-    });
-  }
-
-  return client;
+  // Historically this pointed the SDK at OpenRouter's baseURL, which is why
+  // the name is misleading. OpenRouter ran out of credit and took every
+  // supporting stage down with it -- design system generation, SEO, marketing
+  // copy, lead replies, weekly reports -- none of which are tier-aware, so no
+  // choice in the UI could route around it.
+  //
+  // They now run on Anthropic, which is the provider with balance. The
+  // OpenRouter helpers below are deliberately left intact: funding that
+  // account and pointing GENERATION_MODEL back at
+  // OPENROUTER_GENERATION_MODEL restores the cheaper path.
+  return getRealAnthropicClient();
 }
 
 /**
  * Default model identifier (used when no tier is specified).
  * All SiteCraft generations use Kimi K3 through OpenRouter.
  */
-export const GENERATION_MODEL = 'moonshotai/kimi-k3';
+export const GENERATION_MODEL = 'claude-haiku-4-5-20251001';
+
+/** Kept so funding OpenRouter can restore the cheaper path in one line. */
+export const OPENROUTER_GENERATION_MODEL = 'moonshotai/kimi-k3';
 
 /**
  * Makes a chat completion request to OpenRouter (for free-tier models).
