@@ -1071,6 +1071,16 @@ async function* generateComponents(
   // only the missing art direction rather than rebuilding the entire site.
   const quality = evaluateDesignQuality(allFiles, artDirection, {
     requiredDeviceId: motion.signatureDevice.id,
+    // Everything the owner actually told us. Anything concrete on the site
+    // that is not in here was invented by the model.
+    knownFacts: [
+      config.business?.name,
+      config.business?.tagline,
+      config.business?.description,
+      config.business?.industry,
+    ]
+      .filter(Boolean)
+      .join(' '),
   });
   if (quality.issues.length > 0) {
     console.warn('[design-quality-gate]', {

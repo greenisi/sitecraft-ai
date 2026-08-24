@@ -16,6 +16,79 @@ const GENERIC_COPY = [
 ];
 
 /**
+ * Concrete claims a site should never invent.
+ *
+ * Banning generic copy pushed the model toward specifics, and with nothing
+ * true to be specific with it filled the gap itself. Measured on a real
+ * build from a brief that contained none of them: a "(828) 555-1234" phone
+ * on the real Asheville area code, an invented "Sweeten Creek Rd", a
+ * fabricated "212 Roofs" statistic, "Licensed | Insured" badges, a "drone
+ * survey" service, and an office@ email address.
+ *
+ * A number a visitor might ring, an address they might drive to, or a
+ * licensing claim they might rely on is worse invented than absent, so these
+ * score harder than a dull heading does.
+ */
+function findFabrications(text: string, knownFacts: string): string[] {
+  const known = knownFacts.toLowerCase();
+  const found: string[] = [];
+  const seen = new Set<string>();
+
+  const flag = (what: string) => {
+    if (seen.has(what)) return;
+    seen.add(what);
+    found.push(what);
+  };
+
+  // 555 numbers are never a real business line. Always wrong, never supplied.
+  if (/\(?\d{3}\)?[-.\s]?555[-.\s]?\d{4}/.test(text)) {
+    flag('placeholder 555 phone number presented as the business line');
+  }
+
+  // Any other phone number the owner never gave us.
+  for (const match of text.matchAll(/\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}/g)) {
+    const digits = match[0].replace(/\D/g, '');
+    if (!known.replace(/\D/g, '').includes(digits)) {
+      flag(`invented phone number "${match[0].trim()}"`);
+      break;
+    }
+  }
+
+  for (const match of text.matchAll(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi)) {
+    if (!known.includes(match[0].toLowerCase())) {
+      flag(`invented email address "${match[0]}"`);
+      break;
+    }
+  }
+
+  const address = text.match(
+    /\b\d{1,5}\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?\s+(?:Road|Rd|Street|St|Avenue|Ave|Drive|Dr|Lane|Ln|Boulevard|Blvd)\b/
+  );
+  if (address && !known.includes(address[0].toLowerCase())) {
+    flag(`invented street address "${address[0]}"`);
+  }
+
+  // Fabricated proof: "212 Roofs", "500+ homes", "1,200 customers".
+  for (const match of text.matchAll(
+    /\b(\d{1,3}(?:,\d{3})*)\+?\s+(roofs|homes|customers|clients|projects|families|jobs|installs|properties)\b/gi
+  )) {
+    if (!known.includes(match[1].toLowerCase())) {
+      flag(`invented statistic "${match[0].trim()}"`);
+      break;
+    }
+  }
+
+  // Licensing and insurance are claims a customer relies on legally.
+  for (const claim of ['licensed', 'insured', 'bonded', 'certified']) {
+    if (new RegExp(`\\b${claim}\\b`, 'i').test(text) && !known.includes(claim)) {
+      flag(`unsupported "${claim}" claim`);
+    }
+  }
+
+  return found;
+}
+
+/**
  * Heading formulas measured across 435 headings on twelve live generated
  * sites. These are not guesses about what might read as generated -- they are
  * what the generator actually produced, and the reason a visitor can tell.
@@ -60,6 +133,12 @@ function literalHeadings(source: string): string[] {
 export interface BuildExpectations {
   /** Signature device id named by the motion contract for this build. */
   requiredDeviceId?: string;
+  /**
+   * Everything the owner actually told us -- name, tagline, description.
+   * A concrete claim on the site that appears nowhere in here was invented
+   * by the model, not supplied by the business.
+   */
+  knownFacts?: string;
 }
 
 /** Source signatures for each signature device the motion contract can assign. */
@@ -86,6 +165,25 @@ export function evaluateDesignQuality(
   if (genericCopyHits > 0) {
     score -= genericCopyHits * 14;
     issues.push(`generic fallback copy detected (${genericCopyHits})`);
+  }
+
+  // Scanned against the source rather than an extracted-text version. An
+  // earlier attempt stripped tags and then {...} expressions, but [^}]* runs
+  // to the first closing brace, which in a small component is the end of the
+  // function -- it silently deleted the very copy it was meant to check. A
+  // phone number or email in a class name is not a realistic false positive,
+  // and a tel: href is the business's claim anyway.
+  const visibleText = source.replace(/\s+/g, ' ');
+
+  const fabrications = expectations.knownFacts
+    ? findFabrications(visibleText, expectations.knownFacts)
+    : [];
+  if (fabrications.length > 0) {
+    // Heavier than a formulaic heading. Dull copy is a missed opportunity;
+    // an invented phone number or licensing claim is a business telling its
+    // customers something untrue.
+    score -= Math.min(60, fabrications.length * 20);
+    issues.push(`invented facts: ${fabrications.join('; ')}`);
   }
 
   const headings = literalHeadings(source);
