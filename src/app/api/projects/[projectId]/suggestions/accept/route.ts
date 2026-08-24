@@ -4,6 +4,8 @@ import { getCapability } from '@/lib/ai/capabilities';
 import { generateNewsletterFormComponent } from '@/lib/templates/base/newsletter-form';
 import { generateBookingFormComponent, deriveBookingOptions } from '@/lib/templates/base/booking-form';
 import { generateQuoteFormComponent, deriveQuoteOptions } from '@/lib/templates/base/quote-form';
+import { generateReviewsSectionComponent, deriveReviewsOptions } from '@/lib/templates/base/reviews-section';
+import { generateWorkGalleryComponent, deriveWorkGalleryOptions } from '@/lib/templates/base/work-gallery';
 import { injectComponentIntoPage } from '@/lib/ai/capability-installer';
 
 export const dynamic = 'force-dynamic';
@@ -101,6 +103,30 @@ const PREBUILT: Record<string, PrebuiltCapability> = {
     preferPages: [/\/(quote|quotes|estimates?)\/page\.tsx$/, /\/contact\/page\.tsx$/],
     installedMessage: (page, adminLabel) =>
       `Quote requests added to ${page}, with photo upload. They arrive under ${adminLabel}.`,
+  },
+
+  // Reviews and gallery read live data rather than baking content into the
+  // page, so the owner's next approval or upload shows up without a rebuild.
+  // Both render nothing while they have no content, which is why the home page
+  // is a safe default: an empty section never appears.
+  'review-collection': {
+    componentName: 'ReviewsSection',
+    filePath: 'src/components/ReviewsSection.tsx',
+    build: (context) =>
+      generateReviewsSectionComponent(deriveReviewsOptions(context.siteType, context.industry)),
+    preferPages: [/\/(reviews?|testimonials?)\/page\.tsx$/],
+    installedMessage: (page, adminLabel) =>
+      `Reviews added to ${page}. They stay hidden until you approve them under ${adminLabel}, and the section only appears once one is live.`,
+  },
+
+  'work-gallery': {
+    componentName: 'WorkGallery',
+    filePath: 'src/components/WorkGallery.tsx',
+    build: (context) =>
+      generateWorkGalleryComponent(deriveWorkGalleryOptions(context.siteType, context.industry)),
+    preferPages: [/\/(gallery|portfolio|work|projects)\/page\.tsx$/],
+    installedMessage: (page, adminLabel) =>
+      `Gallery added to ${page}. Upload photos under ${adminLabel} and the site picks them up on its own, no rebuild needed.`,
   },
 };
 
@@ -201,10 +227,6 @@ function buildEditInstruction(id: string, label: string, whatItDoes: string): st
       'Add a listings page with a filterable grid of properties, a detail page per property, and a "request a viewing" form on each.',
     'consultation-requests':
       'Add a consultation request section capturing the nature of the matter, preferred contact method, and urgency.',
-    'review-collection':
-      'Add a reviews section that displays existing reviews and links to leave one.',
-    'work-gallery':
-      'Add a before-and-after gallery section with paired images and short captions describing each job.',
   };
 
   return `${label}: ${whatItDoes} ${specifics[id] || ''} Match the existing design system, use the pre-built components in @/components/kit where they fit, and keep every claim truthful to this business.`.trim();

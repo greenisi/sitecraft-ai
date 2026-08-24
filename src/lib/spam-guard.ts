@@ -32,7 +32,7 @@ export async function checkSubmissionRate(
   // callers; the guard only needs the common query-builder surface.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: { from: (table: string) => any },
-  table: 'form_submissions' | 'bookings',
+  table: 'form_submissions' | 'bookings' | 'reviews',
   projectId: string,
   ip: string
 ): Promise<SpamCheckResult> {

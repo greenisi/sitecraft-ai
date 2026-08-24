@@ -11,6 +11,7 @@
  *   npx tsx scripts/test-capability-installers.ts
  */
 
+import { readFileSync } from 'fs';
 import { parse } from '@babel/parser';
 import { generateQuoteFormComponent, deriveQuoteOptions } from '../src/lib/templates/base/quote-form';
 import {
@@ -18,6 +19,8 @@ import {
   deriveBookingOptions,
   type BookingIntent,
 } from '../src/lib/templates/base/booking-form';
+import { generateReviewsSectionComponent, deriveReviewsOptions } from '../src/lib/templates/base/reviews-section';
+import { generateWorkGalleryComponent, deriveWorkGalleryOptions } from '../src/lib/templates/base/work-gallery';
 import { pickPage, injectComponentIntoPage } from '../src/lib/ai/capability-installer';
 
 let failures = 0;
@@ -122,6 +125,67 @@ console.log('\nInstaller puts each capability on the right page');
     pickPage(['src/app/page.tsx', 'src/app/about/page.tsx'], quotePrefs) === 'src/app/page.tsx'
   );
   check('non-page files are never chosen', pickPage(['src/components/Hero.tsx']) === undefined);
+}
+
+console.log('\nReviews section parses for every trade');
+for (const [siteType, industry] of TRADES) {
+  const source = generateReviewsSectionComponent(deriveReviewsOptions(siteType, industry));
+  const error = parses(source);
+  check(`${siteType || '(none)'} / ${industry || '(none)'}`, error === null, error || undefined);
+}
+
+console.log('\nWork gallery parses for every trade');
+for (const [siteType, industry] of TRADES) {
+  const source = generateWorkGalleryComponent(deriveWorkGalleryOptions(siteType, industry));
+  const error = parses(source);
+  check(`${siteType || '(none)'} / ${industry || '(none)'}`, error === null, error || undefined);
+}
+
+console.log('\nReviews and gallery read live data and stay quiet when empty');
+{
+  const reviews = generateReviewsSectionComponent(deriveReviewsOptions('local-service', 'Roofing'));
+  check('no literal ${ left in reviews', !/\$\{/.test(reviews));
+  check('reviews reads the live endpoint', reviews.includes("'/reviews'"));
+  check('reviews submits with a honeypot', reviews.includes('website_url'));
+  check('reviews renders nothing while empty', /return null/.test(reviews));
+  check('reviews says approval is required', /read before they appear/i.test(reviews));
+
+  const gallery = generateWorkGalleryComponent(deriveWorkGalleryOptions('local-service', 'Roofing'));
+  check('no literal ${ left in gallery', !/\$\{/.test(gallery));
+  check('gallery reads the live endpoint', gallery.includes("'/gallery'"));
+  check('gallery renders nothing while empty', /return null/.test(gallery));
+  check('gallery lightbox is escapable', gallery.includes("event.key === 'Escape'"));
+  check('gallery images lazy-load', gallery.includes('loading="lazy"'));
+
+  // The promise is "the site updates itself", which only holds if content is
+  // fetched at runtime rather than written into the component.
+  check('gallery bakes in no image URLs', !/https?:\/\/[^'"\s]+\.(?:png|jpe?g|webp)/i.test(gallery));
+
+  const headings = new Set(
+    TRADES.map(([s, i]) => deriveReviewsOptions(s, i).heading)
+  );
+  check('review headings differ by trade', headings.size >= 3, `got ${headings.size}`);
+  check(
+    'a clinic gets patients, not customers',
+    deriveReviewsOptions('business', 'Dental Clinic').heading === 'What our patients say'
+  );
+  check(
+    'a restaurant gets guests',
+    deriveReviewsOptions('restaurant', 'Italian Dining').heading === 'What our guests say'
+  );
+}
+
+console.log('\nPublic site endpoints are reachable cross-origin');
+{
+  const routes = ['reviews', 'gallery', 'bookings', 'submit-form', 'contact'];
+  for (const route of routes) {
+    const source = readFileSync(
+      `src/app/api/sites/[projectId]/${route}/route.ts`,
+      'utf8'
+    );
+    check(`${route} sends CORS headers`, source.includes('Access-Control-Allow-Origin'));
+    check(`${route} answers the preflight`, /export async function OPTIONS/.test(source));
+  }
 }
 
 console.log('\nBooking intent overrides trade guessing');
