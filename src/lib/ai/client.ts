@@ -129,25 +129,19 @@ export async function completeGenerationText(
         }
       : {}),
     system: systemPrompt,
-    // jsonOutput is an OpenRouter flag and was silently ignored on this path,
-    // so every JSON stage lost its enforcement when generation moved to
-    // Anthropic -- the design system stage started failing with "Failed to
-    // parse design system JSON" because the model prefaced the object with a
-    // sentence. Anthropic has no equivalent flag; prefilling the assistant
-    // turn with an opening brace leaves no room for a preamble.
-    messages: options.jsonOutput
-      ? [
-          { role: 'user' as const, content: userPrompt },
-          { role: 'assistant' as const, content: '{' },
-        ]
-      : [{ role: 'user' as const, content: userPrompt }],
+    // jsonOutput is an OpenRouter flag with no Anthropic equivalent. Prefilling
+    // the assistant turn with an opening brace was tried and is NOT usable
+    // here: this path configures thinking, and the API rejects it outright
+    // with "This model does not support assistant message prefill". The
+    // extractor in parsers.ts already strips fences and slices brace-to-brace,
+    // so a preamble is handled downstream rather than prevented here.
+    messages: [{ role: 'user' as const, content: userPrompt }],
   });
   const textBlock = response.content.find((block) => block.type === 'text');
   if (!textBlock || textBlock.type !== 'text') {
     throw new Error(`No text content returned by ${model.displayName}`);
   }
-  // Put back the brace the prefill consumed.
-  return options.jsonOutput ? '{' + textBlock.text : textBlock.text;
+  return textBlock.text;
 }
 
 let anthropicDirect: Anthropic | null = null;
