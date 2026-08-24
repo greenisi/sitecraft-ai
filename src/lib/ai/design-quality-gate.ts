@@ -19,15 +19,16 @@ const GENERIC_COPY = [
  * Concrete claims a site should never invent.
  *
  * Banning generic copy pushed the model toward specifics, and with nothing
- * true to be specific with it filled the gap itself. Measured on a real
- * build from a brief that contained none of them: a "(828) 555-1234" phone
- * on the real Asheville area code, an invented "Sweeten Creek Rd", a
- * fabricated "212 Roofs" statistic, "Licensed | Insured" badges, a "drone
- * survey" service, and an office@ email address.
+ * true to be specific with it filled the gap itself: phone numbers on the
+ * real local area code, street addresses, job-count statistics, licensing
+ * badges and office email addresses, none of which were in the brief.
  *
  * A number a visitor might ring, an address they might drive to, or a
  * licensing claim they might rely on is worse invented than absent, so these
  * score harder than a dull heading does.
+ *
+ * Deliberately no literal examples here or in the system prompt. Naming the
+ * exact fabricated values made the next build reproduce those very strings.
  */
 function findFabrications(text: string, knownFacts: string): string[] {
   const known = knownFacts.toLowerCase();

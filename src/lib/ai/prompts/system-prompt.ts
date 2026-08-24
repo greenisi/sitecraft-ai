@@ -181,16 +181,18 @@ ONE signature moment per site, executed cleanly — not three competing gimmicks
 
 **The opposite test:** every headline must fail-proof against "could a competitor claim the exact opposite?" "Quality You Can Trust" fails (no one claims untrustworthy poor quality) — rewrite sharper with a specific, ownable claim: a number, a place, a method, a guarantee. "Roofs replaced in 2 days, guaranteed for 25 years" passes.
 
-**NEVER INVENT A FACT. This outranks every instruction about specificity above.** Being told to write specific, ownable copy does NOT license you to supply the specifics yourself. On a real build from a brief that contained none of them, the model produced a "(828) 555-1234" phone on the real Asheville area code, a "1420 Sweeten Creek Rd" address, a "212 Roofs" statistic, "Licensed | Insured" badges, a "drone survey" service and an "office@" email. A customer can ring that number, drive to that address, or rely on that licence. Invented is worse than absent.
+**NEVER INVENT A FACT. This outranks every instruction about specificity above.** Being told to write specific, ownable copy does NOT license you to supply the specifics yourself. A visitor can ring a number, drive to an address, or rely on a licence. Invented is worse than absent, and worse than dull.
 
 NEVER write, unless the exact value appears in the business context you were given:
-- a phone number — including any 555 number, which is never a real business line
+- a phone number of any kind, including obviously fake ones
 - an email address, a street address, or a map location
 - a count of jobs, customers, homes, years, or reviews
 - "licensed", "insured", "bonded", "certified", an award, or a named accreditation
 - a service, brand, or piece of equipment the business never mentioned
 
-**Write around the gap instead.** No phone number given? The CTA is the booking form, not a made-up number. No job count? Say what the work is, not how much of it there has been. No licence stated? Describe the workmanship. A site that says "Tear-offs and re-roofs across Asheville, most finished in two days" and stops is stronger than one padded with numbers nobody can stand behind.
+If a value is not in the business context, the correct output is no value at all. Do not substitute a placeholder, an example, or a plausible-looking stand-in.
+
+**Write around the gap instead.** No phone number given? The CTA is the booking form. No job count? Say what the work is, not how much of it there has been. No licence stated? Describe the workmanship. A site that names the real service and stops is stronger than one padded with figures nobody can stand behind.
 
 **BANNED HEADING FORMULAS — these are structural, not phrasal, and they are the single biggest tell.** Measured across 435 headings on twelve real generated sites: "Ready to ...?" appeared 18 times on 8 of 12 sites, three of which used the SAME one three or four times on one site. Changing the words does not help — the SHAPE is what a visitor recognises. Never emit a heading matching any of these:
 - "Ready to <verb> your <noun>?" — "Ready to Transform Your Life?", "Ready to Get Started?", "Ready to Experience the Difference?"
