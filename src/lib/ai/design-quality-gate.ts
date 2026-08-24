@@ -176,6 +176,27 @@ export function evaluateDesignQuality(
   // and a tel: href is the business's claim anyway.
   const visibleText = source.replace(/\s+/g, ' ');
 
+  // Invented testimonials are the most damaging fabrication: a made-up quote
+  // tells a visitor that a person who does not exist vouched for this
+  // business. Anonymising the attribution does not make it true.
+  const testimonialFiles = files.filter((file) =>
+    /(testimonial|review|social-?proof)/i.test(file.path)
+  );
+  if (testimonialFiles.length > 0) {
+    const quoted = testimonialFiles.some((file) =>
+      /quote\s*:|testimonial\s*:|["'`][^"'`]{60,}["'`]\s*,\s*\n?\s*(?:name|author|customer)\s*:/i.test(
+        file.content
+      )
+    );
+    const hasRealSource = /\/reviews\b|useReviews|fetch\([^)]*reviews/i.test(source);
+    if (quoted && !hasRealSource) {
+      score -= 25;
+      issues.push(
+        `invented social proof in ${testimonialFiles.map((f) => f.path.split('/').pop()).join(', ')} — quotes not sourced from real reviews`
+      );
+    }
+  }
+
   const fabrications = expectations.knownFacts
     ? findFabrications(visibleText, expectations.knownFacts)
     : [];
