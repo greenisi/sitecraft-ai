@@ -1092,8 +1092,27 @@ async function* generateComponents(
     );
     if (scrubbed.changes.length > 0) {
       console.warn('[fabrication-scrub]', { edits: scrubbed.changes.length, changes: scrubbed.changes.slice(0, 10) });
+
+      // Files are written to generated_files as component-complete events
+      // arrive, so mutating this array alone changed nothing that was saved --
+      // the first run of this pass edited an in-memory copy of rows already on
+      // disk. Changed files have to be re-emitted, which the route treats as
+      // an update to the existing row, exactly as the booking injector does.
+      const previous = new Map(allFiles.map((file) => [file.path, file.content]));
       allFiles.length = 0;
       allFiles.push(...scrubbed.files);
+
+      for (const file of allFiles) {
+        if (previous.get(file.path) === file.content) continue;
+        yield {
+          type: 'component-complete',
+          stage: 'components',
+          componentName: extractComponentName(file.path) ?? file.path,
+          file: { path: file.path, content: file.content },
+          totalFiles: totalExpected,
+          completedFiles: completedCount,
+        };
+      }
     }
   } catch (scrubError) {
     console.error('[fabrication-scrub] skipped:', scrubError);
