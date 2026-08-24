@@ -11,7 +11,7 @@ export interface ModelConfig {
   description: string;
   badge: string;
   requiresPro: boolean;
-  provider: 'openrouter';
+  provider: 'openrouter' | 'anthropic';
   modelId: string;
   maxTokens: number;
   reasoningEffort?: 'max' | 'xhigh' | 'high' | 'medium' | 'low' | 'minimal' | 'none';
@@ -44,8 +44,11 @@ export const MODEL_TIERS: Record<ModelTier, ModelConfig> = {
     description: 'More reasoning power for complex, high-detail builds',
     badge: '⚡',
     requiresPro: true,
-    provider: 'openrouter',
-    modelId: 'anthropic/claude-opus-5',
+    // The one tier that talks to Anthropic directly. Standard and the rest
+    // stay on OpenRouter so the cheap default is unchanged; this is the tier
+    // someone opts into and pays for.
+    provider: 'anthropic',
+    modelId: 'claude-opus-5',
     maxTokens: 64000,
     reasoningEffort: 'max',
   },
