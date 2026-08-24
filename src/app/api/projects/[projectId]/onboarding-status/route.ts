@@ -36,6 +36,33 @@ export async function GET(request: Request, { params }: { params: Promise<{ proj
     supabase.from('blog_posts').select('id').eq('project_id', projectId).limit(1),
   ]);
 
+  // A failed query here returns data: null, which reads downstream as "the
+  // owner has not done this step yet" -- indistinguishable from an empty
+  // table. That is exactly how the business_info bug survived: the checklist
+  // looked merely stubborn rather than broken. Surface it instead.
+  const failed = (
+    [
+      ['business_info', bizInfoRes],
+      ['services', servicesRes],
+      ['products', productsRes],
+      ['gallery_images', galleryRes],
+      ['blog_posts', blogRes],
+    ] as const
+  ).filter(([, res]) => res.error);
+
+  if (failed.length > 0) {
+    for (const [table, res] of failed) {
+      console.error(`[onboarding-status] ${table} query failed:`, res.error?.message);
+    }
+    return NextResponse.json(
+      {
+        error: 'Could not read setup progress',
+        failedTables: failed.map(([table]) => table),
+      },
+      { status: 500 }
+    );
+  }
+
   // Check for Stripe connected account (actual payment setup, not just project status)
   const { data: stripeData } = await supabase
     .from('profiles')

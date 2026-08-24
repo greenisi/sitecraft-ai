@@ -14,9 +14,18 @@ export async function requireProjectOwner(projectId: string) {
         };
   }
 
+  // generation_config, accepted_capabilities and follow_up_answers are read
+  // by callers off the returned project. They were missing from this list,
+  // and because a Supabase select returns whatever it selected rather than
+  // erroring on an unread field, every one of those reads quietly saw
+  // undefined: suggestions always came back empty, accepting a capability
+  // overwrote the previously accepted ones with a fresh single-item array,
+  // and the per-trade copy fell through to its generic branch every time.
   const { data: project } = await supabase
       .from('projects')
-      .select('id, user_id, name, slug, business_type, status')
+      .select(
+        'id, user_id, name, slug, business_type, status, generation_config, accepted_capabilities, follow_up_answers'
+      )
       .eq('id', projectId)
       .eq('user_id', user.id)
       .single();
