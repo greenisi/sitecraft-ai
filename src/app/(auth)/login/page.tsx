@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, Mail, Lock } from 'lucide-react';
@@ -19,6 +19,65 @@ function LoginForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(oauthError);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Sign the visitor in when the link they followed carries the session in the
+  // URL fragment.
+  //
+  // Magic links, invites and any other implicit-flow link put the session in
+  // the hash. The SSR browser client always forces PKCE, whose verifier only
+  // exists in the browser that requested the email, so it ignores a hash token
+  // completely -- the visitor landed here holding a perfectly valid session
+  // and simply saw the login form again, with no session, no error, and
+  // nothing to explain it.
+  //
+  // setSession is used rather than a second implicit client because the server
+  // reads cookies, and only the SSR client writes them in the format it reads.
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash || hash.length < 2) return;
+
+    const params = new URLSearchParams(hash.slice(1));
+
+    // Supabase reports failures in the fragment too (an expired or already-used
+    // link). Surfacing it beats leaving the visitor to guess.
+    const hashError = params.get('error_description') || params.get('error');
+    if (hashError) {
+      setError(hashError.replace(/\+/g, ' '));
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      return;
+    }
+
+    const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+    if (!accessToken || !refreshToken) return;
+
+    let cancelled = false;
+    setIsLoading(true);
+
+    createClient()
+      .auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+      .then(({ error: sessionError }) => {
+        if (cancelled) return;
+        if (sessionError) {
+          setError(sessionError.message);
+          setIsLoading(false);
+          return;
+        }
+        // Drop the tokens from the address bar before moving on, so they are
+        // not left sitting in history or a shared screenshot.
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        window.location.href = redirectTo;
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setError('That sign-in link could not be used. Please request a new one.');
+        setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [redirectTo]);
 
   async function handleEmailLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
