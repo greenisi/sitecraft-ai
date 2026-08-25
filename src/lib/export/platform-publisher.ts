@@ -1,4 +1,5 @@
 import { parse as babelParse } from '@babel/parser';
+import { swapWordmarkForLogo } from '@/lib/export/logo-swap';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { deployToVercel } from '@/lib/export/vercel-deployer';
 import { buildScaffoldingTree } from '@/lib/export/file-tree';
@@ -737,6 +738,21 @@ export async function publishToSubdomain(
     throw new ValidationError('Generate a website before publishing.');
   }
 
+  // The logo the owner uploaded after the site was generated, if any. Nothing
+  // has ever read business_info.logo_url: the follow-up flow could store one
+  // but no UI asked, and publishing never looked for it.
+  const { data: ownerInfo } = await admin
+    .from('business_info')
+    .select('logo_url')
+    .eq('project_id', projectId)
+    .maybeSingle();
+  const ownerLogoUrl = (ownerInfo as { logo_url?: string | null } | null)?.logo_url || '';
+  const businessDisplayName =
+    (project as { generation_config?: { business?: { name?: string } }; name?: string })
+      .generation_config?.business?.name ||
+    (project as { name?: string }).name ||
+    'Home';
+
   // 3. Get generated files
   const { data: files } = await admin
     .from('generated_files')
@@ -1060,6 +1076,19 @@ export async function publishToSubdomain(
       let fileContent = file.content;
       // Replace PROJECT_ID placeholder with actual project ID
       fileContent = fileContent.replace(/PROJECT_ID/g, projectId);
+
+      // Swap the generated wordmark for the owner's logo, for the same reason
+      // PROJECT_ID is substituted here: the logo does not exist when the site
+      // is generated, only once the owner has uploaded one.
+      if (ownerLogoUrl && /\/(Navbar|Header|Footer)\.tsx$/.test(file.file_path)) {
+        const swapped = swapWordmarkForLogo(fileContent, ownerLogoUrl, businessDisplayName);
+        if (swapped.changed) {
+          fileContent = swapped.content;
+          console.log('[logo-swap] replaced wordmark in', file.file_path);
+        } else if (swapped.reason && swapped.reason !== 'no brand link found') {
+          console.warn('[logo-swap]', file.file_path, swapped.reason);
+        }
+      }
 
       if (
         (file.file_path.endsWith('page.tsx') || file.file_path.endsWith('page.ts')) &&

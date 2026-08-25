@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import OnboardingChecklist from '@/components/admin/OnboardingChecklist';
 import { InboxPanel } from '@/components/workspace/InboxPanel';
 import { CapabilitySuggestions } from '@/components/workspace/CapabilitySuggestions';
+import { LogoPrompt } from '@/components/workspace/LogoPrompt';
 
 const CARD_CONFIG: Record<
   string,
@@ -318,6 +319,8 @@ export default function WorkspacePage() {
       </div>
 
       <OnboardingChecklist projectId={projectId} />
+
+      <LogoPrompt projectId={projectId} />
 
       <CapabilitySuggestions projectId={projectId} />
 
