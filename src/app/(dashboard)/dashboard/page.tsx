@@ -119,28 +119,29 @@ function ProjectPreview({ project, isGenerating: generating }: { project: Projec
     );
   }
 
-  // Generated but not published — show code preview placeholder
+  // Generated but not published. Most of the library sits in this state,
+  // so it used to be a wall of navy gradient boxes with a tiny fake
+  // browser in the middle, which read as unfinished. A quiet page
+  // skeleton at least says what the thing is.
   if (isGenerated) {
     return (
-      <div className="w-full h-full relative overflow-hidden flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #0f172a, #1e1b4b)' }}>
-        <div className="text-center">
-          <div className="w-16 h-10 mx-auto mb-2 rounded border border-violet-500/30 overflow-hidden" style={{ background: 'rgba(15,23,42,0.8)' }}>
-            <div className="p-1 space-y-0.5">
-              <div className="h-1 w-8 rounded-full bg-violet-500/30" />
-              <div className="h-1 w-6 rounded-full bg-blue-500/20" />
-              <div className="h-1 w-10 rounded-full bg-violet-500/20" />
-            </div>
-          </div>
-          <span className="text-[10px] text-violet-300/60">{previewLabel}</span>
+      <div className="relative flex h-full w-full flex-col justify-center gap-2 overflow-hidden bg-[color:var(--surface-2)] px-6">
+        <div className="h-1.5 w-9 rounded-full bg-white/[0.14]" />
+        <div className="h-1.5 w-full max-w-[7rem] rounded-full bg-white/[0.09]" />
+        <div className="h-1.5 w-full max-w-[5rem] rounded-full bg-white/[0.09]" />
+        <div className="mt-1.5 flex gap-1.5">
+          <div className="h-4 w-11 rounded-[5px] bg-[color:var(--accent)]/25" />
+          <div className="h-4 w-8 rounded-[5px] bg-white/[0.07]" />
         </div>
+        <span className="absolute bottom-2.5 right-3 text-[10px] text-[color:var(--label-3)]">{previewLabel}</span>
       </div>
     );
   }
 
   // Draft — show initial
   return (
-    <div className="w-full h-full flex items-center justify-center" style={{ background: 'rgba(15,23,42,0.6)' }}>
-      <div className="text-3xl text-gray-600">
+    <div className="flex h-full w-full items-center justify-center bg-[color:var(--surface-2)]">
+      <div className="text-3xl font-semibold text-[color:var(--label-3)]">
         {project.name?.charAt(0)?.toUpperCase() || '?'}
       </div>
     </div>
@@ -470,12 +471,12 @@ export default function DashboardPage() {
             return (
               <div
                 key={project.id}
-                className="group min-w-[84vw] snap-center overflow-hidden rounded-2xl transition-all hover:-translate-y-1 sm:min-w-0"
+                className="group min-w-[84vw] snap-center overflow-hidden rounded-[18px] transition active:scale-[0.985] sm:min-w-0 sm:hover:-translate-y-1"
                 style={{
-                  background: 'rgba(30,41,59,0.5)',
+                  background: 'var(--surface-1)',
                   border: isProjectGenerating
-                    ? '1px solid rgba(139,92,246,0.5)'
-                    : '1px solid rgba(71,85,105,0.3)',
+                    ? '1px solid var(--accent)'
+                    : '1px solid var(--hairline)',
                 }}
               >
                 <div
@@ -497,7 +498,7 @@ export default function DashboardPage() {
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-gray-500 mt-1 truncate">
+                  <p className="ios-footnote mt-1 truncate">
                     {isProjectGenerating
                       ? 'Building your website...'
                       : project.description || project.site_type || 'No description'}
