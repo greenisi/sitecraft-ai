@@ -40,6 +40,12 @@ const PALETTES: Record<string, ColorPalette[]> = {
     { name: 'Arctic Dawn', primary: '#0284c7', secondary: '#e2e8f0', accent: '#10b981', mood: 'clean' },
     { name: 'Gradient Sky', primary: '#7c3aed', secondary: '#2563eb', accent: '#f43f5e', mood: 'playful-tech' },
   ],
+  automotive: [
+    { name: 'Lacquer Black', primary: '#0c0a09', secondary: '#44403c', accent: '#dc2626', mood: 'showroom' },
+    { name: 'Chrome & Graphite', primary: '#1c1917', secondary: '#a8a29e', accent: '#0ea5e9', mood: 'precision' },
+    { name: 'Garage Amber', primary: '#171717', secondary: '#525252', accent: '#f59e0b', mood: 'workshop' },
+    { name: 'Deep Marine', primary: '#0f172a', secondary: '#334155', accent: '#22d3ee', mood: 'detailed' },
+  ],
   luxury: [
     { name: 'Black Gold', primary: '#1c1917', secondary: '#78716c', accent: '#d4a574', mood: 'opulent' },
     { name: 'Champagne Rose', primary: '#9f1239', secondary: '#fdf2f8', accent: '#d4a574', mood: 'refined' },
@@ -370,6 +376,15 @@ const INDUSTRY_PROFILES: Record<string, IndustryProfile> = {
     navbarStyles: ['glassmorphism', 'solid-white', 'transparent-hero'],
     visualNotes: 'Use nature imagery placeholders. Emphasize outdoor/green spaces.',
   },
+  automotive: {
+    paletteGroup: 'automotive',
+    fontVibes: ['bold', 'contemporary', 'technical'],
+    heroStyles: ['dark-hero', 'split-image', 'spotlight', 'video-bg-style'],
+    sectionLayouts: ['alternating-rows', 'bento-grid', 'cards-grid'],
+    testimonialStyles: ['cards-row', 'masonry'],
+    navbarStyles: ['transparent-hero', 'solid-white', 'glassmorphism'],
+    visualNotes: 'Paint, reflection and surface detail carry the page. Close-ups of finish, not stock garages.',
+  },
   restaurant: {
     paletteGroup: 'warm',
     fontVibes: ['elegant', 'classic', 'luxurious'],
@@ -479,6 +494,13 @@ const INDUSTRY_VISUAL_DNA: Record<string, IndustryVisualDNA> = {
     contentDirection: 'Emphasize curb appeal, outdoor living, low-maintenance beauty, native planting, drainage, maintenance plans, and local climate expertise.',
     avoid: 'Avoid generic office/team imagery, tech gradients, neon colors, construction-only yellow/black palettes, and icon-card grids without landscape photography.',
   },
+  automotive: {
+    paletteDirection: 'Dark and reflective: lacquer black, graphite, gunmetal and chrome, with ONE signal accent (signal red, amber or electric cyan). The page should feel like a lit detailing bay, not a forecourt.',
+    imageryDirection: 'Use macro shots of paint, water beading on a finish, reflections and clear-coat depth, wheels and trim close up, before/after panels, and the car half-lit in a dark bay. Show surfaces, not showrooms.',
+    layoutDirection: 'Use full-bleed dark hero with a single vehicle, before/after sliders, tiered package comparison, a visible process sequence (assess, correct, protect), and service-area coverage.',
+    contentDirection: 'Emphasize the finish and what protects it, turnaround time, what is included at each tier, whether the work is mobile or in-bay, and how long the protection lasts.',
+    avoid: 'Avoid dealership blue-and-silver, safety-yellow construction palettes, generic mechanic clip art, stock handshake photos, and 3-up icon-card grids with no vehicle photography.',
+  },
   restaurant: {
     paletteDirection: 'Use warm hospitality colors: cream, charcoal, wine, tomato, olive, brass, espresso, or smoke. The palette should feel edible, tactile, and atmospheric.',
     imageryDirection: 'Use plated dishes, dining room atmosphere, chef/fire/steam details, wine pours, ingredient close-ups, table settings, and full-bleed food photography.',
@@ -580,6 +602,27 @@ const REFERENCE_STYLES: Record<string, ReferenceStyle> = {
       'Gradient backgrounds — landscaping needs real photography',
       'Three-up icon-text feature cards (the AI default)',
       'Dark hero with neon accent lines — feels tech, not horticultural',
+    ],
+  },
+  automotive: {
+    references: [
+      'Gtechniq and Gyeon — product-led, dark, macro finish photography',
+      'Detailing studios on Squarespace — single-vehicle hero, tiered packages',
+      'Porsche Classic — restrained type over large vehicle imagery',
+    ],
+    designMoves: [
+      'Full-bleed dark hero with one vehicle lit from the side — no gradient backgrounds',
+      'Macro detail shots as section breaks: beading, clear-coat depth, wheel faces',
+      'Before/after treated as the primary proof, ideally an interactive slider',
+      'Tiered packages as a comparison, with what is included stated plainly rather than iconified',
+      'A visible process sequence — assess, correct, protect — numbered and spare',
+      'One signal accent used only on CTAs, so the eye always knows where to go',
+    ],
+    antiPatterns: [
+      'Dealership blue-and-silver corporate palettes',
+      'Safety-yellow and black, which reads as construction rather than finish work',
+      'Three-up icon-text cards with no vehicle photography (the AI default)',
+      'Stock imagery of mechanics under bonnets when the business does appearance work',
     ],
   },
   restaurant: {
@@ -856,10 +899,17 @@ const INDUSTRY_KEYWORDS: Record<string, string[]> = {
   realestate: ['real estate', 'realty', 'realtor', 'housing', 'mortgage', 'apartment', 'condo', 'listing', 'brokerage'],
   fitness: ['fitness', 'gym', 'yoga', 'workout', 'personal train', 'crossfit', 'martial art', 'pilates'],
   education: ['education', 'school', 'tutoring', 'learning', 'academy', 'course', 'university', 'teaching'],
-  ecommerce: ['shop', 'store', 'retail', 'ecommerce', 'e-commerce', 'marketplace', 'boutique', 'fashion', 'clothing', 'dispensary'],
+  // 'shop' alone is dropped: barber shop, body shop, tire shop, coffee shop
+  // and print shop are not online stores, and it was claiming all of them.
+  // 'store', 'retail' and the rest carry the vertical without it.
+  ecommerce: ['online shop', 'store', 'retail', 'ecommerce', 'e-commerce', 'marketplace', 'boutique', 'fashion', 'clothing', 'dispensary'],
   legal: ['law', 'legal', 'attorney', 'lawyer', 'litigation', 'counsel'],
   creative: ['design', 'creative', 'photography', 'studio', 'agency', 'branding', 'portfolio', 'media', 'video', 'film', 'florist', 'floral', 'flower'],
   construction: ['construction', 'building', 'contractor', 'roofing', 'roofer', 'plumbing', 'electric', 'hvac', 'renovation', 'remodel', 'handyman', 'painting', 'flooring', 'cabling', 'wiring', 'siding', 'gutter', 'masonry', 'concrete', 'paving', 'fencing'],
+  // Multi-word entries earn their length: "Tire Shop" tied with ecommerce's
+  // 'shop' on both score and specificity, and lost to whichever vertical was
+  // declared first. "tire shop" outranks "shop" on its own merits.
+  automotive: ['auto', 'automotive', 'detailing', 'car wash', 'collision', 'body shop', 'tire shop', 'auto shop', 'repair shop', 'mechanic', 'tire', 'windshield', 'ceramic coating', 'paint correction', 'dealership', 'vehicle'],
   finance: ['finance', 'accounting', 'bank', 'investment', 'insurance', 'tax', 'wealth', 'financial'],
 };
 
@@ -888,6 +938,8 @@ const INDUSTRY_PALETTE_CHARACTER: Record<string, string> = {
     'Warm appetizing tones — burnt orange, deep cream, charcoal — paired with a single signal accent (oxblood, mustard, or olive). NEVER cold blue or grayscale palettes (kills appetite). Inspired by editorial food photography.',
   technology:
     'Confident contemporary palette: deep ink/charcoal as primary, off-white or warm bone as background, ONE saturated signal color (electric indigo, viridian, or coral) used sparingly on CTAs. Avoid stock SaaS blue.',
+  automotive:
+    'Deep lacquer black or graphite as primary, chrome and cool grey as neutrals, ONE signal accent (signal red, amber, or electric cyan) used on CTAs and nowhere else. The palette should read like a detailing bay under lights: dark, reflective, precise. Avoid dealership blue-and-silver and avoid safety-yellow construction palettes.',
   healthcare:
     'Calm restorative palette: soft sage or warm cream backgrounds, deep navy or forest as primary text/dark sections, ONE warm accent (terracotta, dusty rose, or warm gold). Avoid bright clinical blue and red.',
   realestate:
