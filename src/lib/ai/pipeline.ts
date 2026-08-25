@@ -88,6 +88,7 @@ import { createMotionContract, formatMotionContract } from './motion-contract';
 import { evaluateDesignQuality } from './design-quality-gate';
 import { scrubFabricatedContacts } from './fabrication-scrub';
 import { scrubFormulaicHeadings } from './heading-scrub';
+import { enrichHeroWithImage } from './hero-enrich';
 
 // --------------------------------------------------------------------------
 // Stage 1: Assemble Config
@@ -1117,6 +1118,38 @@ async function* generateComponents(
     }
   } catch (scrubError) {
     console.error('[fabrication-scrub] skipped:', scrubError);
+  }
+
+  // A gradient-only hero is what the prompt forbids and what it keeps
+  // producing: two of three real builds had no hero image at all. Injecting an
+  // absolutely positioned image activates the parallax the runtime already
+  // drives, and the scrim goes in with it so the text keeps its contrast.
+  try {
+    const hero = enrichHeroWithImage(
+      allFiles,
+      `${config.business?.industry ?? ''} ${config.business?.description ?? ''}`,
+      config.business?.name || ''
+    );
+    if (hero.changes.length > 0) {
+      console.warn('[hero-enrich]', { edits: hero.changes.length, changes: hero.changes });
+      const previousHero = new Map(allFiles.map((file) => [file.path, file.content]));
+      allFiles.length = 0;
+      allFiles.push(...hero.files);
+
+      for (const file of allFiles) {
+        if (previousHero.get(file.path) === file.content) continue;
+        yield {
+          type: 'component-complete',
+          stage: 'components',
+          componentName: extractComponentName(file.path) ?? file.path,
+          file: { path: file.path, content: file.content },
+          totalFiles: totalExpected,
+          completedFiles: completedCount,
+        };
+      }
+    }
+  } catch (heroError) {
+    console.error('[hero-enrich] skipped:', heroError);
   }
 
   // Formulaic headings get the same treatment as invented contact details, and
