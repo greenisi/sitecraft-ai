@@ -40,6 +40,12 @@ const PALETTES: Record<string, ColorPalette[]> = {
     { name: 'Arctic Dawn', primary: '#0284c7', secondary: '#e2e8f0', accent: '#10b981', mood: 'clean' },
     { name: 'Gradient Sky', primary: '#7c3aed', secondary: '#2563eb', accent: '#f43f5e', mood: 'playful-tech' },
   ],
+  pestcontrol: [
+    { name: 'Guard Navy', primary: '#1e293b', secondary: '#e2e8f0', accent: '#65a30d', mood: 'protective' },
+    { name: 'Charcoal Signal', primary: '#27272a', secondary: '#d4d4d8', accent: '#f59e0b', mood: 'technical' },
+    { name: 'Deep Olive', primary: '#3f3f26', secondary: '#e7e5e4', accent: '#0ea5e9', mood: 'grounded' },
+    { name: 'Slate Shield', primary: '#334155', secondary: '#f1f5f9', accent: '#16a34a', mood: 'assured' },
+  ],
   cleaning: [
     { name: 'Fresh Slate', primary: '#0f766e', secondary: '#e7e5e4', accent: '#f59e0b', mood: 'crisp' },
     { name: 'Deep Teal', primary: '#115e59', secondary: '#f5f5f4', accent: '#84cc16', mood: 'dependable' },
@@ -388,6 +394,15 @@ const INDUSTRY_PROFILES: Record<string, IndustryProfile> = {
     navbarStyles: ['glassmorphism', 'solid-white', 'transparent-hero'],
     visualNotes: 'Use nature imagery placeholders. Emphasize outdoor/green spaces.',
   },
+  pestcontrol: {
+    paletteGroup: 'pestcontrol',
+    fontVibes: ['bold', 'contemporary', 'technical'],
+    heroStyles: ['split-image', 'angled-bg', 'spotlight', 'dark-hero'],
+    sectionLayouts: ['cards-grid', 'alternating-rows', 'centered-stack'],
+    testimonialStyles: ['cards-row', 'masonry'],
+    navbarStyles: ['solid-white', 'transparent-hero', 'glassmorphism'],
+    visualNotes: 'The technician, the property and the treatment plan carry the page. Never close-up insect photography.',
+  },
   cleaning: {
     paletteGroup: 'cleaning',
     fontVibes: ['friendly', 'contemporary', 'bold'],
@@ -524,6 +539,13 @@ const INDUSTRY_VISUAL_DNA: Record<string, IndustryVisualDNA> = {
     contentDirection: 'Emphasize curb appeal, outdoor living, low-maintenance beauty, native planting, drainage, maintenance plans, and local climate expertise.',
     avoid: 'Avoid generic office/team imagery, tech gradients, neon colors, construction-only yellow/black palettes, and icon-card grids without landscape photography.',
   },
+  pestcontrol: {
+    paletteDirection: 'Deep navy, charcoal or olive against a light neutral base, with one signal accent on CTAs. Calm authority, never alarm.',
+    imageryDirection: 'Use the uniformed technician at a property, treatment equipment handled properly, sealed entry points, and clean protected homes. NEVER macro insect photography -- it repels the visitor at the exact moment they are deciding to call.',
+    layoutDirection: 'Use a fast contact or inspection CTA above the fold, pests handled listed plainly, the treatment plan as a numbered sequence, recurring protection plans compared, licensing and safety stated, and service-area coverage.',
+    contentDirection: 'Emphasize response time, whether treatments are safe around children and pets, what the inspection covers, what happens if the problem returns, licensing, and recurring protection versus one-off treatment.',
+    avoid: 'Avoid close-up insect imagery, red-and-black danger styling, cartoon bug mascots, fear-based headlines, and the landscaping green palette which makes a pest firm look like a lawn service.',
+  },
   cleaning: {
     paletteDirection: 'Cool, clean and organised: deep teal or slate against generous white, with one bright accent reserved for CTAs. Calm rather than clinical.',
     imageryDirection: 'Use real before/after of actual rooms, the finished space in natural light, and the crew at work in uniform. Avoid gloved hands on white backgrounds, spray bottles, and sparkle graphics.',
@@ -646,6 +668,27 @@ const REFERENCE_STYLES: Record<string, ReferenceStyle> = {
       'Gradient backgrounds — landscaping needs real photography',
       'Three-up icon-text feature cards (the AI default)',
       'Dark hero with neon accent lines — feels tech, not horticultural',
+    ],
+  },
+  pestcontrol: {
+    references: [
+      'Aptive and Terminix -- plan comparison, fast contact path',
+      'Independent regional firms -- technician-led photography, licence numbers shown',
+      'Modern home-services sites on Squarespace -- calm, plan-first layouts',
+    ],
+    designMoves: [
+      'Inspection or contact CTA visible above the fold, because these visitors arrive urgent',
+      'Pests handled listed plainly as text, not as a grid of insect icons',
+      'Treatment plan shown as a numbered sequence: inspect, treat, seal, follow up',
+      'Recurring protection plans compared side by side with what each covers',
+      'Licence number, insurance and pet/child safety stated as plain text near the CTA',
+      'Photography of the technician and the protected home, never the pest',
+    ],
+    antiPatterns: [
+      'Macro insect photography, which repels at the decision moment',
+      'Red-and-black danger styling and fear-based headlines',
+      'Cartoon bug mascots, which undercut a licensed professional service',
+      'The landscaping green palette, which makes a pest firm look like a lawn service',
     ],
   },
   cleaning: {
@@ -995,6 +1038,7 @@ const INDUSTRY_KEYWORDS: Record<string, string[]> = {
   // Multi-word entries earn their length: "Tire Shop" tied with ecommerce's
   // 'shop' on both score and specificity, and lost to whichever vertical was
   // declared first. "tire shop" outranks "shop" on its own merits.
+  pestcontrol: ['pest control', 'pest', 'exterminator', 'extermination', 'termite', 'rodent', 'bed bug', 'mosquito', 'wildlife removal', 'fumigation', 'insect', 'infestation'],
   cleaning: ['cleaning', 'cleaner', 'janitorial', 'maid', 'housekeeping', 'pressure wash', 'power wash', 'window cleaning', 'carpet cleaning', 'deep clean', 'move-out clean', 'disinfect', 'sanitiz', 'sanitis'],
   salon: ['salon', 'barber', 'barbershop', 'hair', 'hairdress', 'stylist', 'beauty', 'nails', 'nail salon', 'lash', 'brow', 'waxing', 'grooming', 'blowout', 'esthetician', 'day spa', 'med spa', 'spa'],
   automotive: ['auto', 'automotive', 'detailing', 'car wash', 'collision', 'body shop', 'tire shop', 'auto shop', 'repair shop', 'mechanic', 'tire', 'windshield', 'ceramic coating', 'paint correction', 'dealership', 'vehicle'],
@@ -1026,6 +1070,8 @@ const INDUSTRY_PALETTE_CHARACTER: Record<string, string> = {
     'Warm appetizing tones — burnt orange, deep cream, charcoal — paired with a single signal accent (oxblood, mustard, or olive). NEVER cold blue or grayscale palettes (kills appetite). Inspired by editorial food photography.',
   technology:
     'Confident contemporary palette: deep ink/charcoal as primary, off-white or warm bone as background, ONE saturated signal color (electric indigo, viridian, or coral) used sparingly on CTAs. Avoid stock SaaS blue.',
+  pestcontrol:
+    'Calm authority rather than alarm: deep navy, charcoal or dark olive as primary, generous light neutral as the base, ONE signal accent (leaf green, amber, or clear blue) on CTAs. It must read as a licensed professional protecting a home, not a horror poster. Avoid the landscaping green palette, and avoid red-and-black danger styling.',
   cleaning:
     'Crisp and reassuring: deep teal, slate or ink as primary, generous cool white and soft grey as the base, ONE bright accent (amber, citrus, or lime) on CTAs. It should read as dependable and organised. Avoid hospital blue-and-white, bleach-bottle green, and cartoon sparkle motifs.',
   salon:
