@@ -111,6 +111,20 @@ export function scrubFabricatedContacts<T extends { path: string; content: strin
       return PLACEHOLDER.phone;
     });
 
+    // A bare digit run inside tel: is unambiguously a phone number, so it can
+    // be matched where loose digits elsewhere cannot. The general pattern
+    // requires parens or separators to avoid rewriting timestamps, which left
+    // href="tel:2085551234" untouched and dialling an invented number.
+    content = content.replace(/href=(["'])tel:\s*\+?([\d\s().-]{7,})\1/g, (whole, quote, digits) => {
+      if (isKnown(String(digits), knownPhones)) return whole;
+      if (contact.phone) {
+        changes.push(`${file.path}: repointed tel: link to the owner's number`);
+        return `href=${quote}tel:${String(contact.phone).replace(/[^\d+]/g, '')}${quote}`;
+      }
+      changes.push(`${file.path}: removed invented tel: link "${String(digits).trim()}"`);
+      return 'href="#contact"';
+    });
+
     content = content.replace(EMAIL, (match) => {
       if (isKnown(match, knownEmails)) return match;
       if (contact.email) {

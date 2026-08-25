@@ -295,3 +295,26 @@ export async function repairDeadImageUrls(
     return content;
   }
 }
+
+/**
+ * A verified hero image for this trade, drawn from the same pools the dead-URL
+ * repair uses. Those ids are known-good, which matters because the models
+ * routinely cite Unsplash photos that no longer exist -- that is why the
+ * repair pass exists at all.
+ *
+ * Deterministic per business so a rebuild does not swap the hero photograph.
+ */
+export function pickHeroImage(industryText: string, seedSource = ''): string {
+  const pool =
+    FALLBACK_POOLS.find((entry) => entry.match.test(industryText)) ??
+    FALLBACK_POOLS[FALLBACK_POOLS.length - 1];
+
+  let hash = 0;
+  const seed = seedSource || industryText;
+  for (let i = 0; i < seed.length; i++) {
+    hash = Math.imul(hash, 31) + seed.charCodeAt(i);
+    hash |= 0;
+  }
+  const id = pool.ids[Math.abs(hash) % pool.ids.length];
+  return `https://images.unsplash.com/${id}?auto=format&fit=crop&w=2400&q=80`;
+}
