@@ -388,74 +388,54 @@ export default function DashboardPage() {
 
   return (
     <div className="pt-4 md:pt-8 max-w-7xl mx-auto">
-      {/* Mobbin-inspired command header: one primary action, supporting tools stay secondary. */}
-      <section className="premium-feature-card relative mb-6 overflow-hidden rounded-[26px] border border-white/10 bg-[#0d1220]/90 p-5 sm:p-7">
-        <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-violet-500/20 blur-3xl" />
+      {/* One screen, one primary action. The accent is spent here and
+          nowhere else on this page. */}
+      <section className="ios-card relative mb-5 overflow-hidden p-5 sm:p-7">
         <div className="relative flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[.16em] text-violet-300">
-              <Sparkles className="h-3.5 w-3.5" /> Sitecraft workspace
-            </div>
-            <h1 className="max-w-xl text-3xl font-semibold tracking-[-.045em] text-white sm:text-4xl">
-              What are we building today?
-            </h1>
-            <p className="mt-2 max-w-lg text-sm leading-6 text-white/45">
+            <h1 className="ios-title max-w-xl sm:text-[38px]">What are we building today?</h1>
+            <p className="ios-body mt-2 max-w-lg">
               Start with one idea. Sitecraft handles the structure, design, and business tools around it.
+            </p>
+            {/* Credits used to sit in an amber pill on a row of their own,
+                floating right with nothing to attach to. */}
+            <p className="ios-footnote mt-3 flex items-center gap-1.5">
+              <Sparkles className="h-3 w-3" />
+              <span>
+                <span className="tabular-nums">{credits >= 999999 ? '\u221e' : credits}</span> credits
+              </span>
+              {plan !== 'free' && <span className="ml-1">· {plan === 'pro' ? 'Pro' : 'Beta Pro'}</span>}
             </p>
           </div>
 
           <button
             onClick={createAndOpenProject}
             disabled={creating}
-            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-950 shadow-xl shadow-black/20 transition hover:-translate-y-0.5 hover:bg-violet-100 disabled:opacity-70 sm:w-auto"
+            className="ios-btn ios-btn-primary w-full shrink-0 disabled:opacity-70 sm:w-auto"
           >
             {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
             Create a website
-            {!creating && <ArrowRight className="h-4 w-4" />}
           </button>
         </div>
       </section>
 
-      <div className="mb-8 grid grid-cols-2 gap-3 sm:flex sm:items-center">
-        <Link href="/cards" className="flex min-h-14 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-4 text-sm font-medium text-white/75 transition hover:border-violet-400/30 hover:bg-white/[0.06]">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500/15 text-violet-300"><CreditCard className="h-4 w-4" /></span>
-          Business cards
+      {/* Grouped rows, the way iOS stacks secondary destinations. */}
+      <div className="ios-group mb-7">
+        <Link href="/cards" className="flex min-h-[54px] items-center gap-3 px-4 text-[15px] font-medium text-[color:var(--label)] transition active:bg-white/[0.04]">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] bg-[color:var(--surface-3)] text-[color:var(--label-2)]"><CreditCard className="h-4 w-4" /></span>
+          <span className="flex-1 truncate">Business cards</span>
+          <ArrowRight className="h-4 w-4 shrink-0 text-[color:var(--label-3)]" />
         </Link>
-        <Link href="/academy" className="flex min-h-14 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-4 text-sm font-medium text-white/75 transition hover:border-cyan-400/30 hover:bg-white/[0.06]">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-300"><GraduationCap className="h-4 w-4" /></span>
-          Academy
+        <Link href="/academy" className="flex min-h-[54px] items-center gap-3 px-4 text-[15px] font-medium text-[color:var(--label)] transition active:bg-white/[0.04]">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] bg-[color:var(--surface-3)] text-[color:var(--label-2)]"><GraduationCap className="h-4 w-4" /></span>
+          <span className="flex-1 truncate">Academy</span>
+          <ArrowRight className="h-4 w-4 shrink-0 text-[color:var(--label-3)]" />
         </Link>
-        <div className="col-span-2 ml-auto flex items-center gap-2">
-          <div
-            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-amber-400"
-            style={{ background: 'rgba(245,158,11,0.1)' }}
-          >
-            <Sparkles className="h-3 w-3" />
-            <span className="tabular-nums">
-              {credits >= 999999 ? '\u221e' : credits}
-            </span>
-          </div>
-          {plan !== 'free' && (
-            <div
-              className="hidden sm:flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium"
-              style={{
-                background: 'rgba(139,92,246,0.15)',
-                color: '#a78bfa',
-              }}
-            >
-              <Sparkles className="h-3 w-3" />
-              {plan === 'pro' ? 'Pro' : 'Beta Pro'}
-            </div>
-          )}
-        </div>
       </div>
 
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-white">Recent websites</h2>
-          <p className="mt-0.5 text-xs text-white/35">Continue where you left off</p>
-        </div>
-        <span className="text-xs text-white/30">{projects.length} total</span>
+      <div className="mb-3.5 flex items-end justify-between">
+        <h2 className="ios-title-2">Recent websites</h2>
+        <span className="ios-footnote">{projects.length} total</span>
       </div>
 
       {/* Projects grid */}
