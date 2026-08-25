@@ -40,6 +40,12 @@ const PALETTES: Record<string, ColorPalette[]> = {
     { name: 'Arctic Dawn', primary: '#0284c7', secondary: '#e2e8f0', accent: '#10b981', mood: 'clean' },
     { name: 'Gradient Sky', primary: '#7c3aed', secondary: '#2563eb', accent: '#f43f5e', mood: 'playful-tech' },
   ],
+  cleaning: [
+    { name: 'Fresh Slate', primary: '#0f766e', secondary: '#e7e5e4', accent: '#f59e0b', mood: 'crisp' },
+    { name: 'Deep Teal', primary: '#115e59', secondary: '#f5f5f4', accent: '#84cc16', mood: 'dependable' },
+    { name: 'Ink & Citrus', primary: '#1e293b', secondary: '#e2e8f0', accent: '#eab308', mood: 'brisk' },
+    { name: 'Soft Marine', primary: '#155e75', secondary: '#f0fdfa', accent: '#f97316', mood: 'reassuring' },
+  ],
   salon: [
     { name: 'Warm Clay', primary: '#7c2d12', secondary: '#d6d3d1', accent: '#c9a227', mood: 'tactile' },
     { name: 'Soft Plaster', primary: '#292524', secondary: '#e7e5e4', accent: '#c58b7a', mood: 'calm' },
@@ -382,6 +388,15 @@ const INDUSTRY_PROFILES: Record<string, IndustryProfile> = {
     navbarStyles: ['glassmorphism', 'solid-white', 'transparent-hero'],
     visualNotes: 'Use nature imagery placeholders. Emphasize outdoor/green spaces.',
   },
+  cleaning: {
+    paletteGroup: 'cleaning',
+    fontVibes: ['friendly', 'contemporary', 'bold'],
+    heroStyles: ['split-image', 'angled-bg', 'gradient-bold', 'spotlight'],
+    sectionLayouts: ['cards-grid', 'alternating-rows', 'centered-stack'],
+    testimonialStyles: ['cards-row', 'masonry'],
+    navbarStyles: ['solid-white', 'glassmorphism', 'transparent-hero'],
+    visualNotes: 'Before/after and the finished room carry the page. Real spaces, not gloved hands on a white background.',
+  },
   salon: {
     paletteGroup: 'salon',
     fontVibes: ['elegant', 'contemporary', 'friendly'],
@@ -509,6 +524,13 @@ const INDUSTRY_VISUAL_DNA: Record<string, IndustryVisualDNA> = {
     contentDirection: 'Emphasize curb appeal, outdoor living, low-maintenance beauty, native planting, drainage, maintenance plans, and local climate expertise.',
     avoid: 'Avoid generic office/team imagery, tech gradients, neon colors, construction-only yellow/black palettes, and icon-card grids without landscape photography.',
   },
+  cleaning: {
+    paletteDirection: 'Cool, clean and organised: deep teal or slate against generous white, with one bright accent reserved for CTAs. Calm rather than clinical.',
+    imageryDirection: 'Use real before/after of actual rooms, the finished space in natural light, and the crew at work in uniform. Avoid gloved hands on white backgrounds, spray bottles, and sparkle graphics.',
+    layoutDirection: 'Use a before/after slider as the primary proof, a clear checklist of what is included per visit, one-off versus recurring plans side by side, service-area coverage, and a booking or quote path from every screen.',
+    contentDirection: 'Emphasize exactly what is cleaned, how long it takes, whether products are supplied, whether the team is background-checked and insured, recurring versus one-off pricing, and how to book.',
+    avoid: 'Avoid hospital blue-and-white, bleach-bottle green, cartoon sparkles, stock gloved hands, and vague promises of quality with no checklist of what is actually done.',
+  },
   salon: {
     paletteDirection: 'Warm neutral base -- bone, plaster, clay -- with one muted accent. Restraint reads as expensive here; saturation reads as a chain.',
     imageryDirection: 'Use real finished work in close-up: hair after a cut and colour, hands, brows, skin. Show the room, the chair, the light. Never stock models with perfect studio lighting.',
@@ -624,6 +646,27 @@ const REFERENCE_STYLES: Record<string, ReferenceStyle> = {
       'Gradient backgrounds — landscaping needs real photography',
       'Three-up icon-text feature cards (the AI default)',
       'Dark hero with neon accent lines — feels tech, not horticultural',
+    ],
+  },
+  cleaning: {
+    references: [
+      'Homeaglow and Tidy -- plain pricing, obvious booking path',
+      'Independent commercial janitorial firms -- checklist-led, photographic proof',
+      'Local domestic services on Squarespace -- before/after led',
+    ],
+    designMoves: [
+      'Before/after of a real room as the hero, ideally an interactive slider',
+      'A literal checklist of what is included, per room or per visit',
+      'Recurring and one-off plans compared side by side with real prices',
+      'Trust markers stated plainly: insured, background-checked, products supplied',
+      'Service-area coverage shown as a list or map rather than claimed vaguely',
+      'A booking or quote CTA that follows the visitor down the page',
+    ],
+    antiPatterns: [
+      'Stock gloved hands and spray bottles on a white background',
+      'Cartoon sparkle and bubble motifs, which read as a franchise flyer',
+      'Hospital blue-and-white palettes that feel clinical rather than domestic',
+      'Quality claims with no checklist, no prices and no booking path',
     ],
   },
   salon: {
@@ -952,6 +995,7 @@ const INDUSTRY_KEYWORDS: Record<string, string[]> = {
   // Multi-word entries earn their length: "Tire Shop" tied with ecommerce's
   // 'shop' on both score and specificity, and lost to whichever vertical was
   // declared first. "tire shop" outranks "shop" on its own merits.
+  cleaning: ['cleaning', 'cleaner', 'janitorial', 'maid', 'housekeeping', 'pressure wash', 'power wash', 'window cleaning', 'carpet cleaning', 'deep clean', 'move-out clean', 'disinfect', 'sanitiz', 'sanitis'],
   salon: ['salon', 'barber', 'barbershop', 'hair', 'hairdress', 'stylist', 'beauty', 'nails', 'nail salon', 'lash', 'brow', 'waxing', 'grooming', 'blowout', 'esthetician', 'day spa', 'med spa', 'spa'],
   automotive: ['auto', 'automotive', 'detailing', 'car wash', 'collision', 'body shop', 'tire shop', 'auto shop', 'repair shop', 'mechanic', 'tire', 'windshield', 'ceramic coating', 'paint correction', 'dealership', 'vehicle'],
   finance: ['finance', 'accounting', 'bank', 'investment', 'insurance', 'tax', 'wealth', 'financial'],
@@ -982,6 +1026,8 @@ const INDUSTRY_PALETTE_CHARACTER: Record<string, string> = {
     'Warm appetizing tones — burnt orange, deep cream, charcoal — paired with a single signal accent (oxblood, mustard, or olive). NEVER cold blue or grayscale palettes (kills appetite). Inspired by editorial food photography.',
   technology:
     'Confident contemporary palette: deep ink/charcoal as primary, off-white or warm bone as background, ONE saturated signal color (electric indigo, viridian, or coral) used sparingly on CTAs. Avoid stock SaaS blue.',
+  cleaning:
+    'Crisp and reassuring: deep teal, slate or ink as primary, generous cool white and soft grey as the base, ONE bright accent (amber, citrus, or lime) on CTAs. It should read as dependable and organised. Avoid hospital blue-and-white, bleach-bottle green, and cartoon sparkle motifs.',
   salon:
     'Warm tactile neutrals: bone, plaster, clay and soft taupe as the base, with ONE muted metallic or warm accent (brass, terracotta, dusty rose) used sparingly. It should feel like a considered room, not a spa brochure. Avoid lavender-and-white wellness cliches, hot pink, and gold-on-black glamour.',
   automotive:
