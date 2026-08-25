@@ -208,30 +208,34 @@ export async function POST(request: NextRequest) {
                       }
                     }
                     // Persist each file eagerly to prevent data loss on timeout.
-                    // Re-emitted files (post-generation injection passes) update
-                    // their existing row instead of duplicating it.
+                    //
+                    // Upsert rather than choosing insert or update from a set of
+                    // seen paths. That bookkeeping decided wrong for any file
+                    // first written outside this loop: a post-pass re-emitting
+                    // it took the insert branch, hit the UNIQUE
+                    // (version_id, file_path) constraint, failed, and left the
+                    // original content in place. It cost a heading rewrite and a
+                    // contact scrub on the same file in one build, while the
+                    // same passes persisted fine for every other file.
+                    //
+                    // The table has that unique constraint, so an upsert is
+                    // idempotent and correct whether this is the first write or
+                    // the third.
                     try {
-                      if (persistedPaths.has(event.file.path)) {
-                        await retryDatabaseWrite(`update ${event.file.path}`, async () =>
-                          supabase
-                            .from('generated_files')
-                            .update({ content: event.file!.content })
-                            .eq('version_id', version.id)
-                            .eq('file_path', event.file!.path)
-                        );
-                      } else {
-                        await retryDatabaseWrite(`save ${event.file.path}`, async () =>
-                          supabase.from('generated_files').insert({
+                      await retryDatabaseWrite(`save ${event.file.path}`, async () =>
+                        supabase.from('generated_files').upsert(
+                          {
                             project_id: projectId,
                             version_id: version.id,
                             file_path: event.file!.path,
                             content: event.file!.content,
                             file_type: inferFileType(event.file!.path),
                             section_type: inferSectionType(event.file!.path),
-                          })
-                        );
-                        persistedPaths.add(event.file.path);
-                      }
+                          },
+                          { onConflict: 'version_id,file_path' }
+                        )
+                      );
+                      persistedPaths.add(event.file.path);
                     } catch (e) {
                       console.error('Failed to persist file:', event.file.path, e);
                       persistenceFailures.push(event.file.path);
