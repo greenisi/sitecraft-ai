@@ -1009,3 +1009,28 @@ html:has(.ios-app),
 body:has(.ios-app) {
   background-color: #0b0b0d;
 }
+
+/* Text fields still resolved to the old navy --background, so on the new
+   neutral cards every input read as a panel from a different app. Typed
+   inputs only: colour swatches, checkboxes, ranges and file pickers keep
+   whatever their control needs. */
+.ios-app :is(
+  input[type='text'],
+  input[type='email'],
+  input[type='password'],
+  input[type='search'],
+  input[type='tel'],
+  input[type='url'],
+  input[type='number'],
+  input:not([type]),
+  textarea,
+  select
+) {
+  background-color: var(--surface-2);
+  border-color: var(--hairline-strong);
+  color: var(--label);
+}
+
+.ios-app :is(input, textarea)::placeholder {
+  color: var(--label-3);
+}
