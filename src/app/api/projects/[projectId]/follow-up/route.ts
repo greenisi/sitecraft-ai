@@ -95,9 +95,13 @@ export async function POST(
     }
   }
 
+  // Merged, not replaced. Callers send only the answers they collected -- the
+  // logo card sends a logo and nothing else -- and a wholesale write would
+  // discard everything answered elsewhere.
+  const previous = (project as { follow_up_answers?: Record<string, string> }).follow_up_answers || {};
   await supabase
     .from('projects')
-    .update({ follow_up_answers: answers })
+    .update({ follow_up_answers: { ...previous, ...answers } })
     .eq('id', projectId);
 
   // Anything a visitor would notice is worth rebuilding for; a lead email
