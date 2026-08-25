@@ -87,6 +87,7 @@ import { createColorContract, formatColorContract } from './color-contract';
 import { createMotionContract, formatMotionContract } from './motion-contract';
 import { evaluateDesignQuality } from './design-quality-gate';
 import { scrubFabricatedContacts } from './fabrication-scrub';
+import { scrubFormulaicHeadings } from './heading-scrub';
 
 // --------------------------------------------------------------------------
 // Stage 1: Assemble Config
@@ -1116,6 +1117,41 @@ async function* generateComponents(
     }
   } catch (scrubError) {
     console.error('[fabrication-scrub] skipped:', scrubError);
+  }
+
+  // Formulaic headings get the same treatment as invented contact details, and
+  // for the same reason: the prompt ban bends the distribution but does not
+  // hold. Four builds from one brief produced 1, 0, 0 and 2 formula hits.
+  //
+  // Re-emitting is not optional -- rows are written as component-complete
+  // events arrive, so a pass that only mutates this array changes nothing that
+  // was saved.
+  try {
+    const headings = scrubFormulaicHeadings(
+      allFiles,
+      artDirection.industry,
+      config.business?.name || ''
+    );
+    if (headings.changes.length > 0) {
+      console.warn('[heading-scrub]', { edits: headings.changes.length, changes: headings.changes.slice(0, 10) });
+      const previousHeadings = new Map(allFiles.map((file) => [file.path, file.content]));
+      allFiles.length = 0;
+      allFiles.push(...headings.files);
+
+      for (const file of allFiles) {
+        if (previousHeadings.get(file.path) === file.content) continue;
+        yield {
+          type: 'component-complete',
+          stage: 'components',
+          componentName: extractComponentName(file.path) ?? file.path,
+          file: { path: file.path, content: file.content },
+          totalFiles: totalExpected,
+          completedFiles: completedCount,
+        };
+      }
+    }
+  } catch (headingError) {
+    console.error('[heading-scrub] skipped:', headingError);
   }
 
   const quality = evaluateDesignQuality(allFiles, artDirection, {
