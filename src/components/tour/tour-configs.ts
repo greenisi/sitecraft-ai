@@ -53,7 +53,7 @@ export const dashboardTour: TourConfig = {
 // ── Project Editor Tour ───────────────────────────────────────────────
 export const editorTour: TourConfig = {
   id: 'editor',
-  welcomeTitle: 'Your Website Editor \u{1F3A8}',
+  welcomeTitle: 'Your website editor',
   welcomeDescription:
     'This is where the magic happens! Chat with AI to build and edit your website, preview changes in real-time, and publish when ready.',
   steps: [
@@ -119,7 +119,7 @@ export const editorTour: TourConfig = {
 // ── Visual Editor Tour ────────────────────────────────────────────────
 export const visualEditorTour: TourConfig = {
   id: 'visual-editor',
-  welcomeTitle: 'Visual Editor \u{1F58C}\uFE0F',
+  welcomeTitle: 'The visual editor',
   welcomeDescription:
     'Click any element to select it, then use the properties panel to customize every detail. Double-click text to edit it inline!',
   steps: [
@@ -169,7 +169,7 @@ export const visualEditorTour: TourConfig = {
 // ── Templates Tour ────────────────────────────────────────────────────
 export const templatesTour: TourConfig = {
   id: 'templates',
-  welcomeTitle: 'Template Gallery \u{1F5BC}\uFE0F',
+  welcomeTitle: 'Template gallery',
   welcomeDescription:
     'Browse our collection of professionally designed templates. Each one is fully customizable with AI to match your brand.',
   steps: [
@@ -195,7 +195,7 @@ export const templatesTour: TourConfig = {
 // ── Settings Tour ─────────────────────────────────────────────────────
 export const settingsTour: TourConfig = {
   id: 'settings',
-  welcomeTitle: 'Account Settings \u2699\uFE0F',
+  welcomeTitle: 'Account settings',
   welcomeDescription:
     'Manage your profile and subscription details from here.',
   steps: [
