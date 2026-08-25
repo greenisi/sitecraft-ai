@@ -40,6 +40,12 @@ const PALETTES: Record<string, ColorPalette[]> = {
     { name: 'Arctic Dawn', primary: '#0284c7', secondary: '#e2e8f0', accent: '#10b981', mood: 'clean' },
     { name: 'Gradient Sky', primary: '#7c3aed', secondary: '#2563eb', accent: '#f43f5e', mood: 'playful-tech' },
   ],
+  moving: [
+    { name: 'Kraft & Ink', primary: '#1c1917', secondary: '#e7e5e4', accent: '#c2703d', mood: 'steady' },
+    { name: 'Haul Navy', primary: '#1e3a5f', secondary: '#f1f5f9', accent: '#f59e0b', mood: 'dependable' },
+    { name: 'Route Green', primary: '#14532d', secondary: '#f5f5f4', accent: '#d97706', mood: 'practical' },
+    { name: 'Slate Cargo', primary: '#334155', secondary: '#e2e8f0', accent: '#ca8a04', mood: 'organised' },
+  ],
   pestcontrol: [
     { name: 'Guard Navy', primary: '#1e293b', secondary: '#e2e8f0', accent: '#65a30d', mood: 'protective' },
     { name: 'Charcoal Signal', primary: '#27272a', secondary: '#d4d4d8', accent: '#f59e0b', mood: 'technical' },
@@ -394,6 +400,15 @@ const INDUSTRY_PROFILES: Record<string, IndustryProfile> = {
     navbarStyles: ['glassmorphism', 'solid-white', 'transparent-hero'],
     visualNotes: 'Use nature imagery placeholders. Emphasize outdoor/green spaces.',
   },
+  moving: {
+    paletteGroup: 'moving',
+    fontVibes: ['bold', 'friendly', 'contemporary'],
+    heroStyles: ['split-image', 'angled-bg', 'spotlight', 'gradient-bold'],
+    sectionLayouts: ['cards-grid', 'alternating-rows', 'centered-stack'],
+    testimonialStyles: ['cards-row', 'masonry'],
+    navbarStyles: ['solid-white', 'transparent-hero', 'glassmorphism'],
+    visualNotes: 'Crews, trucks and wrapped furniture carry the page. Real loading, not a stock couple holding a box.',
+  },
   pestcontrol: {
     paletteGroup: 'pestcontrol',
     fontVibes: ['bold', 'contemporary', 'technical'],
@@ -539,6 +554,13 @@ const INDUSTRY_VISUAL_DNA: Record<string, IndustryVisualDNA> = {
     contentDirection: 'Emphasize curb appeal, outdoor living, low-maintenance beauty, native planting, drainage, maintenance plans, and local climate expertise.',
     avoid: 'Avoid generic office/team imagery, tech gradients, neon colors, construction-only yellow/black palettes, and icon-card grids without landscape photography.',
   },
+  moving: {
+    paletteDirection: 'Deep ink, navy or forest against warm paper neutrals, with one kraft-orange or amber accent taken from tape and cardboard.',
+    imageryDirection: 'Use the real crew loading, furniture wrapped and strapped, the truck at a kerb, boxes labelled in a hallway, and a settled room at the other end. Avoid stock couples holding a single box and avoid empty white rooms.',
+    layoutDirection: 'Use a quote form or estimate CTA above the fold, local versus long-distance split clearly, what is included per service, a plain move-day sequence, coverage or route area, and insurance and licensing stated near the CTA.',
+    contentDirection: 'Emphasize how the estimate is produced and whether it is binding, what insurance covers, crew size and timing, whether packing materials are included, storage between dates, and how stairs, lifts and long carries are handled.',
+    avoid: 'Avoid red-and-yellow rental-truck styling, stock couples with a cardboard box, vague "stress-free" promises with no pricing detail, and hiding how the estimate is calculated.',
+  },
   pestcontrol: {
     paletteDirection: 'Deep navy, charcoal or olive against a light neutral base, with one signal accent on CTAs. Calm authority, never alarm.',
     imageryDirection: 'Use the uniformed technician at a property, treatment equipment handled properly, sealed entry points, and clean protected homes. NEVER macro insect photography -- it repels the visitor at the exact moment they are deciding to call.',
@@ -668,6 +690,27 @@ const REFERENCE_STYLES: Record<string, ReferenceStyle> = {
       'Gradient backgrounds — landscaping needs real photography',
       'Three-up icon-text feature cards (the AI default)',
       'Dark hero with neon accent lines — feels tech, not horticultural',
+    ],
+  },
+  moving: {
+    references: [
+      'Bellhop and Piece of Cake -- estimate-first, plain pricing language',
+      'Independent local firms -- crew photography, licence and insurance shown',
+      'Modern logistics sites -- route and coverage treated as real content',
+    ],
+    designMoves: [
+      'Estimate or quote CTA above the fold, since these visitors are comparing on a deadline',
+      'Local and long-distance presented as two clear paths, not one blurred service',
+      'Move-day sequence as a numbered timeline: survey, pack, load, transit, place',
+      'What is included stated as text -- materials, wrapping, disassembly, stairs, storage',
+      'Crew and truck photography rather than stock lifestyle imagery',
+      'Insurance, licence and coverage area stated plainly near the booking path',
+    ],
+    antiPatterns: [
+      'Red-and-yellow rental-truck styling, which reads as a hire depot not a crew',
+      'Stock couples smiling with one cardboard box in an empty white room',
+      '"Stress-free" and "trusted" with no estimate detail behind them',
+      'Hiding how the estimate is calculated until a phone call',
     ],
   },
   pestcontrol: {
@@ -1038,6 +1081,7 @@ const INDUSTRY_KEYWORDS: Record<string, string[]> = {
   // Multi-word entries earn their length: "Tire Shop" tied with ecommerce's
   // 'shop' on both score and specificity, and lost to whichever vertical was
   // declared first. "tire shop" outranks "shop" on its own merits.
+  moving: ['moving company', 'movers', 'mover', 'moving', 'relocation', 'removals', 'long distance moving', 'packing service', 'self storage', 'storage unit', 'van line', 'junk removal'],
   pestcontrol: ['pest control', 'pest', 'exterminator', 'extermination', 'termite', 'rodent', 'bed bug', 'mosquito', 'wildlife removal', 'fumigation', 'insect', 'infestation'],
   cleaning: ['cleaning', 'cleaner', 'janitorial', 'maid', 'housekeeping', 'pressure wash', 'power wash', 'window cleaning', 'carpet cleaning', 'deep clean', 'move-out clean', 'disinfect', 'sanitiz', 'sanitis'],
   salon: ['salon', 'barber', 'barbershop', 'hair', 'hairdress', 'stylist', 'beauty', 'nails', 'nail salon', 'lash', 'brow', 'waxing', 'grooming', 'blowout', 'esthetician', 'day spa', 'med spa', 'spa'],
@@ -1070,6 +1114,8 @@ const INDUSTRY_PALETTE_CHARACTER: Record<string, string> = {
     'Warm appetizing tones — burnt orange, deep cream, charcoal — paired with a single signal accent (oxblood, mustard, or olive). NEVER cold blue or grayscale palettes (kills appetite). Inspired by editorial food photography.',
   technology:
     'Confident contemporary palette: deep ink/charcoal as primary, off-white or warm bone as background, ONE saturated signal color (electric indigo, viridian, or coral) used sparingly on CTAs. Avoid stock SaaS blue.',
+  moving:
+    'Steady and practical: deep ink, navy or forest as primary, warm paper neutrals as the base, ONE warm accent (kraft orange, amber, or ochre) drawn from tape and cardboard. It should feel like a crew that shows up on time, not a discount broker. Avoid the red-and-yellow rental-truck look and avoid stock-corporate blue-and-grey.',
   pestcontrol:
     'Calm authority rather than alarm: deep navy, charcoal or dark olive as primary, generous light neutral as the base, ONE signal accent (leaf green, amber, or clear blue) on CTAs. It must read as a licensed professional protecting a home, not a horror poster. Avoid the landscaping green palette, and avoid red-and-black danger styling.',
   cleaning:
