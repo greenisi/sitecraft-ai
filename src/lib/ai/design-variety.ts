@@ -40,6 +40,12 @@ const PALETTES: Record<string, ColorPalette[]> = {
     { name: 'Arctic Dawn', primary: '#0284c7', secondary: '#e2e8f0', accent: '#10b981', mood: 'clean' },
     { name: 'Gradient Sky', primary: '#7c3aed', secondary: '#2563eb', accent: '#f43f5e', mood: 'playful-tech' },
   ],
+  salon: [
+    { name: 'Warm Clay', primary: '#7c2d12', secondary: '#d6d3d1', accent: '#c9a227', mood: 'tactile' },
+    { name: 'Soft Plaster', primary: '#292524', secondary: '#e7e5e4', accent: '#c58b7a', mood: 'calm' },
+    { name: 'Brass & Bone', primary: '#1c1917', secondary: '#f5f5f4', accent: '#b08d57', mood: 'refined' },
+    { name: 'Dusk Rose', primary: '#4c1d24', secondary: '#e8dcd4', accent: '#a8927e', mood: 'intimate' },
+  ],
   automotive: [
     { name: 'Lacquer Black', primary: '#0c0a09', secondary: '#44403c', accent: '#dc2626', mood: 'showroom' },
     { name: 'Chrome & Graphite', primary: '#1c1917', secondary: '#a8a29e', accent: '#0ea5e9', mood: 'precision' },
@@ -376,6 +382,15 @@ const INDUSTRY_PROFILES: Record<string, IndustryProfile> = {
     navbarStyles: ['glassmorphism', 'solid-white', 'transparent-hero'],
     visualNotes: 'Use nature imagery placeholders. Emphasize outdoor/green spaces.',
   },
+  salon: {
+    paletteGroup: 'salon',
+    fontVibes: ['elegant', 'contemporary', 'friendly'],
+    heroStyles: ['split-image', 'magazine-layout', 'spotlight', 'dark-hero'],
+    sectionLayouts: ['alternating-rows', 'centered-stack', 'bento-grid'],
+    testimonialStyles: ['cards-row', 'masonry'],
+    navbarStyles: ['transparent-hero', 'solid-white', 'glassmorphism'],
+    visualNotes: 'Real client work and the room itself carry the page. Close-ups of finished hair, hands and skin, never stock models.',
+  },
   automotive: {
     paletteGroup: 'automotive',
     fontVibes: ['bold', 'contemporary', 'technical'],
@@ -494,6 +509,13 @@ const INDUSTRY_VISUAL_DNA: Record<string, IndustryVisualDNA> = {
     contentDirection: 'Emphasize curb appeal, outdoor living, low-maintenance beauty, native planting, drainage, maintenance plans, and local climate expertise.',
     avoid: 'Avoid generic office/team imagery, tech gradients, neon colors, construction-only yellow/black palettes, and icon-card grids without landscape photography.',
   },
+  salon: {
+    paletteDirection: 'Warm neutral base -- bone, plaster, clay -- with one muted accent. Restraint reads as expensive here; saturation reads as a chain.',
+    imageryDirection: 'Use real finished work in close-up: hair after a cut and colour, hands, brows, skin. Show the room, the chair, the light. Never stock models with perfect studio lighting.',
+    layoutDirection: 'Use an image-led hero, a clear service-and-price list, stylist or team introductions with real faces, a booking path visible from every screen, and a gallery of actual work.',
+    contentDirection: 'Emphasize what a first visit is like, how long treatments take, who the stylists are, what is included, and how to book. Price transparency builds more trust here than adjectives.',
+    avoid: 'Avoid lavender-and-white wellness cliches, hot pink, gold-on-black glamour, stock model headshots, and vague luxury language with no service list or prices.',
+  },
   automotive: {
     paletteDirection: 'Dark and reflective: lacquer black, graphite, gunmetal and chrome, with ONE signal accent (signal red, amber or electric cyan). The page should feel like a lit detailing bay, not a forecourt.',
     imageryDirection: 'Use macro shots of paint, water beading on a finish, reflections and clear-coat depth, wheels and trim close up, before/after panels, and the car half-lit in a dark bay. Show surfaces, not showrooms.',
@@ -602,6 +624,27 @@ const REFERENCE_STYLES: Record<string, ReferenceStyle> = {
       'Gradient backgrounds — landscaping needs real photography',
       'Three-up icon-text feature cards (the AI default)',
       'Dark hero with neon accent lines — feels tech, not horticultural',
+    ],
+  },
+  salon: {
+    references: [
+      'Hershesons (hershesons.com) -- editorial, real client work',
+      'Blue Tit London -- confident type, unpolished real photography',
+      'Independent studios on Squarespace -- price list front and centre',
+    ],
+    designMoves: [
+      'Image-led hero showing the room or a finished client, not a stock model',
+      'Service and price list treated as a designed element, not hidden in a PDF',
+      'Stylist introductions with real photographs and a line about what they do best',
+      'Gallery of actual work, close-cropped, in a masonry or offset grid',
+      'Booking CTA persistently reachable, including a sticky bar on mobile',
+      'Generous whitespace and one warm accent; restraint reads as expensive',
+    ],
+    antiPatterns: [
+      'Lavender-and-white gradients (the wellness-template default)',
+      'Stock model headshots with studio lighting -- instantly reads as fake',
+      'Luxury adjectives with no prices, no service list and no booking path',
+      'Three-up icon cards for services instead of a real menu',
     ],
   },
   automotive: {
@@ -909,6 +952,7 @@ const INDUSTRY_KEYWORDS: Record<string, string[]> = {
   // Multi-word entries earn their length: "Tire Shop" tied with ecommerce's
   // 'shop' on both score and specificity, and lost to whichever vertical was
   // declared first. "tire shop" outranks "shop" on its own merits.
+  salon: ['salon', 'barber', 'barbershop', 'hair', 'hairdress', 'stylist', 'beauty', 'nails', 'nail salon', 'lash', 'brow', 'waxing', 'grooming', 'blowout', 'esthetician', 'day spa', 'med spa', 'spa'],
   automotive: ['auto', 'automotive', 'detailing', 'car wash', 'collision', 'body shop', 'tire shop', 'auto shop', 'repair shop', 'mechanic', 'tire', 'windshield', 'ceramic coating', 'paint correction', 'dealership', 'vehicle'],
   finance: ['finance', 'accounting', 'bank', 'investment', 'insurance', 'tax', 'wealth', 'financial'],
 };
@@ -938,6 +982,8 @@ const INDUSTRY_PALETTE_CHARACTER: Record<string, string> = {
     'Warm appetizing tones — burnt orange, deep cream, charcoal — paired with a single signal accent (oxblood, mustard, or olive). NEVER cold blue or grayscale palettes (kills appetite). Inspired by editorial food photography.',
   technology:
     'Confident contemporary palette: deep ink/charcoal as primary, off-white or warm bone as background, ONE saturated signal color (electric indigo, viridian, or coral) used sparingly on CTAs. Avoid stock SaaS blue.',
+  salon:
+    'Warm tactile neutrals: bone, plaster, clay and soft taupe as the base, with ONE muted metallic or warm accent (brass, terracotta, dusty rose) used sparingly. It should feel like a considered room, not a spa brochure. Avoid lavender-and-white wellness cliches, hot pink, and gold-on-black glamour.',
   automotive:
     'Deep lacquer black or graphite as primary, chrome and cool grey as neutrals, ONE signal accent (signal red, amber, or electric cyan) used on CTAs and nowhere else. The palette should read like a detailing bay under lights: dark, reflective, precise. Avoid dealership blue-and-silver and avoid safety-yellow construction palettes.',
   healthcare:
