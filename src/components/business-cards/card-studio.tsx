@@ -180,15 +180,15 @@ export function CardStudio({ cardId }: { cardId?: string }) {
           <button onClick={() => save()} disabled={saving || !dirty} className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10 disabled:opacity-45 sm:py-2.5">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save
           </button>
-          <button onClick={publish} disabled={saving} className="flex items-center justify-center gap-2 rounded-xl bg-violet-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-500/20 transition hover:bg-violet-400 disabled:opacity-60 sm:py-2.5">
+          <button onClick={publish} disabled={saving} className="ios-btn ios-btn-primary disabled:opacity-60">
             <Send className="h-4 w-4" /> Publish
           </button>
         </div>
       </div>
 
-      <div className="grid min-h-0 overflow-hidden rounded-[22px] border border-white/10 bg-[#0d111b]/90 shadow-2xl sm:rounded-[28px] lg:min-h-[720px] lg:grid-cols-[400px_minmax(0,1fr)]">
-        <aside className="order-2 border-t border-white/10 bg-[#0a0d15] lg:order-1 lg:border-r lg:border-t-0">
-          <div className="sticky top-0 z-20 grid grid-cols-3 border-b border-white/10 bg-[#0a0d15]/95 p-2 backdrop-blur-xl">
+      <div className="grid min-h-0 overflow-hidden rounded-[22px] border border-[color:var(--hairline)] bg-[color:var(--surface-1)] sm:rounded-[28px] lg:min-h-[720px] lg:grid-cols-[400px_minmax(0,1fr)]">
+        <aside className="order-2 border-t border-[color:var(--hairline)] bg-[color:var(--app-bg)] lg:order-1 lg:border-r lg:border-t-0">
+          <div className="sticky top-0 z-20 grid grid-cols-3 border-b border-[color:var(--hairline)] bg-[color:var(--app-bg)]/95 p-2 backdrop-blur-xl">
             {tabs.map(({ id, label, icon: Icon }) => (
               <button key={id} onClick={() => setPanel(id)} className={`flex items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-xs font-semibold transition ${panel === id ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/70'}`}><Icon className="h-3.5 w-3.5" />{label}</button>
             ))}
@@ -232,7 +232,7 @@ export function CardStudio({ cardId }: { cardId?: string }) {
                 <section><h2 className="text-sm font-semibold text-white">Choose a direction</h2><p className="mt-1 text-xs leading-5 text-white/40">Every template stays fully editable.</p></section>
                 <div className="grid grid-cols-2 gap-2">
                   {CARD_TEMPLATES.map((template) => (
-                    <button key={template.id} onClick={() => patchDesign({ template: template.id, ...template.design })} className={`rounded-2xl border p-2 text-left transition ${card.design.template === template.id ? 'border-violet-400/70 bg-violet-400/10' : 'border-white/10 bg-white/[0.025] hover:border-white/25'}`}>
+                    <button key={template.id} onClick={() => patchDesign({ template: template.id, ...template.design })} className={`rounded-2xl border p-2 text-left transition ${card.design.template === template.id ? 'border-[color:var(--accent)] bg-[color:var(--accent)]/10' : 'border-[color:var(--hairline)] bg-white/[0.025]'}`}>
                       <div className="h-16 rounded-xl" style={{ background: template.design.background === 'gradient' ? `linear-gradient(135deg, ${template.design.primaryColor}, ${template.design.accentColor})` : template.design.primaryColor }} />
                       <p className="mt-2 text-xs font-semibold text-white">{template.name}</p><p className="mt-0.5 text-[10px] text-white/35">{template.description}</p>
                     </button>
@@ -253,7 +253,7 @@ export function CardStudio({ cardId }: { cardId?: string }) {
             {panel === 'share' && (
               <div className="space-y-5">
                 <section><h2 className="text-sm font-semibold text-white">Publish everywhere</h2><p className="mt-1 text-xs leading-5 text-white/40">One design becomes your digital profile, contact file, QR, and Wallet pass.</p></section>
-                {card.status === 'published' && card.slug ? <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.07] p-4"><p className="flex items-center gap-2 text-xs font-semibold text-emerald-300"><Check className="h-3.5 w-3.5" /> Live and shareable</p><p className="mt-2 break-all text-xs text-white/45">{publicUrl}</p></div> : <button onClick={publish} className="w-full rounded-xl bg-violet-500 px-4 py-3 text-sm font-semibold text-white">Publish this card</button>}
+                {card.status === 'published' && card.slug ? <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.07] p-4"><p className="flex items-center gap-2 text-xs font-semibold text-emerald-300"><Check className="h-3.5 w-3.5" /> Live and shareable</p><p className="mt-2 break-all text-xs text-white/45">{publicUrl}</p></div> : <button onClick={publish} className="ios-btn ios-btn-primary w-full">Publish this card</button>}
                 <button onClick={share} className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left hover:bg-white/[0.07]"><Share2 className="h-5 w-5 text-violet-300" /><span><span className="block text-sm font-semibold text-white">Share card link</span><span className="mt-0.5 block text-xs text-white/35">Text, email, AirDrop, or copy</span></span></button>
                 <button onClick={addToWallet} disabled={walletLoading} className="flex w-full items-center gap-3 rounded-2xl bg-white p-4 text-left text-black transition hover:bg-white/90 disabled:opacity-60">{walletLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Apple className="h-5 w-5" />}<span><span className="block text-sm font-semibold">Add to Apple Wallet</span><span className="mt-0.5 block text-xs text-black/50">Carry the card on iPhone and Apple Watch</span></span></button>
                 {card.status === 'published' && <a href={`/card/${card.slug}`} target="_blank" className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left hover:bg-white/[0.07]"><ExternalLink className="h-5 w-5 text-cyan-300" /><span><span className="block text-sm font-semibold text-white">Open public profile</span><span className="mt-0.5 block text-xs text-white/35">See what new contacts see</span></span></a>}

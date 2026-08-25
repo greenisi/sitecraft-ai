@@ -3,9 +3,9 @@ import type { TourConfig } from '@/stores/tour-store';
 // ── Dashboard Tour ────────────────────────────────────────────────────
 export const dashboardTour: TourConfig = {
   id: 'dashboard',
-  welcomeTitle: 'Welcome to Innovated Marketing! \u2728',
+  welcomeTitle: 'Welcome to Innovated Marketing',
   welcomeDescription:
-    'Let us show you around your new AI-powered website builder. This quick tour will help you get started in no time.',
+    'A short walk through where things are, so you can get your first site up.',
   steps: [
     {
       target: '[data-tour="new-project-btn"]',

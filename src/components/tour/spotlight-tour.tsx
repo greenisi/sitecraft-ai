@@ -260,28 +260,33 @@ export function SpotlightTour() {
         }}
       >
         {showWelcome ? (
-          <div className="rounded-2xl bg-card border border-border/50 shadow-2xl p-4 sm:p-6 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-violet-500/30">
-              <Sparkles className="h-8 w-8 text-white animate-pulse" />
+          /* This is the first thing a new account sees, and on iOS it is
+             the first thing in the app at all. It used to open with a
+             pulsing gradient badge and an exclamation mark. */
+          <div className="rounded-[20px] border border-[color:var(--hairline-strong,rgba(255,255,255,.13))] bg-[color:var(--surface-2,#1b1b20)] p-5 shadow-[0_20px_60px_rgba(0,0,0,.55)] sm:p-6">
+            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-[13px] bg-[color:var(--surface-3,#24242b)] text-[color:var(--accent,#7c5cff)]">
+              <Sparkles className="h-5 w-5" />
             </div>
-            <h2 className="text-xl font-bold mb-2">{currentTour.welcomeTitle}</h2>
-            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+            <h2 className="text-[19px] font-semibold tracking-[-0.02em] text-[color:var(--label,#f5f5f7)]">
+              {currentTour.welcomeTitle}
+            </h2>
+            <p className="mt-2 text-[14px] leading-relaxed text-[color:var(--label-2,rgba(235,235,245,.6))]">
               {currentTour.welcomeDescription}
             </p>
-            <div className="flex gap-3">
+            <div className="mt-6 flex items-center gap-2">
               <Button
                 variant="ghost"
                 onClick={skipTour}
-                className="flex-1 text-muted-foreground"
+                className="text-[color:var(--label-2,rgba(235,235,245,.6))]"
               >
-                Skip Tour
+                Not now
               </Button>
               <Button
                 onClick={nextStep}
-                className="flex-1 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white border-0 shadow-lg shadow-violet-500/20"
+                className="ios-btn ios-btn-primary ml-auto border-0"
               >
-                Let&apos;s Go!
-                <ChevronRight className="h-4 w-4 ml-1" />
+                Show me around
+                <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
             </div>
           </div>

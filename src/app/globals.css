@@ -843,3 +843,169 @@ textarea {
   .pk-fade-up, .pk-scale-in { opacity: 1; transform: none; }
   .pk-card, .pk-card:hover, .pk-btn:hover:not(:disabled) { transform: none; transition: none; }
 }
+
+/* ===== iOS-NATIVE SURFACE SYSTEM =================================
+   The app ships inside a WKWebView, so the authenticated screens are
+   judged against native iOS apps rather than against other websites.
+   Two things gave away the wrapper: a starfield of ~330 animated
+   box-shadows repainting behind every scroll, and one flat saturated
+   violet used on every button at once.
+
+   These tokens are the fix. Surfaces are neutral and near-black, depth
+   comes from stacked elevation rather than glow, and the accent is
+   spent on the single primary action per screen. Label opacities are
+   Apple's own, so text weight reads correctly against a dark ground. */
+
+/* The tokens live on :root, not on .ios-app. Modals, toasts and the tour
+   render through portals attached to <body>, so a token scoped to the app
+   container resolved to nothing there and the primary button lost its
+   fill. */
+:root {
+  --app-bg: #0b0b0d;
+  --surface-1: #141417;
+  --surface-2: #1b1b20;
+  --surface-3: #24242b;
+  --hairline: rgba(255, 255, 255, 0.07);
+  --hairline-strong: rgba(255, 255, 255, 0.13);
+  --label: #f5f5f7;
+  --label-2: rgba(235, 235, 245, 0.6);
+  --label-3: rgba(235, 235, 245, 0.32);
+  --accent: #7c5cff;
+  --accent-pressed: #6a49f2;
+}
+
+.ios-app {
+  background: var(--app-bg);
+  color: var(--label);
+}
+
+/* Native apps do not rubber-band into a different colour, and they do
+   not show a text-selection callout when you hold a button. */
+.ios-app {
+  -webkit-touch-callout: none;
+  overscroll-behavior-y: none;
+}
+.ios-app :is(button, a, [role='button'], nav, header) {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ── Elevation ────────────────────────────────────────────────────── */
+.ios-card {
+  background: var(--surface-1);
+  border: 1px solid var(--hairline);
+  border-radius: 18px;
+}
+.ios-card-raised {
+  background: var(--surface-2);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 18px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+/* Grouped rows, the way Settings stacks them: one container, hairlines
+   between, no gap and no per-row border. */
+.ios-group {
+  background: var(--surface-1);
+  border: 1px solid var(--hairline);
+  border-radius: 18px;
+  overflow: hidden;
+}
+.ios-group > * + * {
+  border-top: 1px solid var(--hairline);
+}
+
+/* ── Type ─────────────────────────────────────────────────────────── */
+.ios-title {
+  font-size: 32px;
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -0.024em;
+  color: var(--label);
+}
+.ios-title-2 {
+  font-size: 21px;
+  line-height: 1.2;
+  font-weight: 650;
+  letter-spacing: -0.018em;
+  color: var(--label);
+}
+.ios-body {
+  font-size: 15px;
+  line-height: 1.47;
+  color: var(--label-2);
+}
+.ios-footnote {
+  font-size: 13px;
+  line-height: 1.38;
+  color: var(--label-3);
+}
+
+/* ── Controls ─────────────────────────────────────────────────────── */
+/* One primary per screen. The press state is a scale, not a colour
+   wash, because that is what a finger expects on iOS. */
+.ios-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+  padding: 0 22px;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: transform 0.14s cubic-bezier(0.2, 0, 0.2, 1), background-color 0.14s ease;
+}
+.ios-btn:active {
+  transform: scale(0.972);
+}
+.ios-btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.ios-btn-primary:active {
+  background: var(--accent-pressed);
+}
+.ios-btn-secondary {
+  background: var(--surface-2);
+  color: var(--label);
+  border: 1px solid var(--hairline-strong);
+}
+.ios-btn-plain {
+  color: var(--accent);
+  min-height: 44px;
+  padding: 0 4px;
+}
+
+/* ── Chrome ───────────────────────────────────────────────────────── */
+/* A hairline, not a drop shadow. iOS navigation bars separate with a
+   single pixel and let the blur do the rest. */
+.ios-navbar {
+  background: color-mix(in srgb, var(--app-bg) 78%, transparent);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid var(--hairline);
+}
+.ios-tabbar {
+  background: color-mix(in srgb, var(--app-bg) 82%, transparent);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-top: 1px solid var(--hairline);
+}
+
+@supports not (backdrop-filter: blur(20px)) {
+  .ios-navbar,
+  .ios-tabbar {
+    background: var(--app-bg);
+  }
+}
+
+/* The app ground must reach past the content, because iOS rubber-bands
+   beyond it. Without this the old navy body colour flashed at the top and
+   bottom of every overscroll. Scoped with :has() so the marketing pages
+   keep their own background. */
+html:has(.ios-app),
+body:has(.ios-app) {
+  background-color: #0b0b0d;
+}

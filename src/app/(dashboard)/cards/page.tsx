@@ -40,37 +40,94 @@ export default function BusinessCardsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl pb-8 pt-5 md:pt-8">
-      <section className="flex flex-col justify-between gap-5 md:flex-row md:items-center">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-[-.035em] text-white sm:text-3xl">Business cards</h1>
-            <p className="mt-1.5 text-sm text-white/45">Design, share, and add your card to Apple Wallet.</p>
-          </div>
-          <Link href="/cards/new" className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-violet-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-500/20 transition hover:bg-violet-400"><Plus className="h-4 w-4" /> New card</Link>
-      </section>
+    <div className="mx-auto max-w-7xl pb-8">
+      {/* A large left-anchored title, the way an iOS large-title screen
+          opens. The old version centred everything and repeated the page
+          name in the navigation bar directly above it. */}
+      <header className="flex flex-col gap-4 pt-2 md:flex-row md:items-end md:justify-between md:pt-0">
+        <div>
+          <h1 className="ios-title">Business cards</h1>
+          <p className="ios-body mt-1.5">Design, share, and add your card to Apple Wallet.</p>
+        </div>
+        {cards.length > 0 && (
+          <Link href="/cards/new" className="ios-btn ios-btn-primary hidden shrink-0 md:inline-flex">
+            <Plus className="h-4 w-4" /> New card
+          </Link>
+        )}
+      </header>
 
-      {loading ? <div className="flex min-h-72 items-center justify-center"><Loader2 className="h-7 w-7 animate-spin text-violet-400" /></div> : cards.length === 0 ? (
-        <section className="mt-8 flex min-h-[340px] flex-col items-center justify-center rounded-[24px] border border-dashed border-white/15 bg-white/[0.025] px-6 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-400/10 text-violet-300"><QrCode className="h-7 w-7" /></div>
-          <h2 className="mt-5 text-xl font-semibold text-white">Your first card starts with your brand</h2>
-          <p className="mt-2 max-w-md text-sm leading-6 text-white/45">Use your logo, photo, colors, contact details, and links. Sitecraft turns the finished design into every format you need.</p>
-          <Link href="/cards/new" className="mt-6 flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black"><Plus className="h-4 w-4" /> Start designing</Link>
+      {loading ? (
+        <div className="flex min-h-72 items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-[color:var(--label-3)]" />
+        </div>
+      ) : cards.length === 0 ? (
+        /* One primary action, not two. The previous empty state offered a
+           solid "New card" and a white "Start designing" sixty pixels
+           apart, both leading to the same screen. */
+        <section className="ios-card mt-7 px-6 py-11 text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[color:var(--surface-3)] text-[color:var(--accent)]">
+            <QrCode className="h-6 w-6" />
+          </div>
+          <h2 className="ios-title-2 mt-5">Your first card starts with your brand</h2>
+          <p className="ios-body mx-auto mt-2 max-w-sm">
+            Your logo, photo, colours, contact details, and links. Sitecraft turns the finished design
+            into every format you need.
+          </p>
+          <Link href="/cards/new" className="ios-btn ios-btn-primary mt-7 w-full sm:w-auto">
+            <Plus className="h-4 w-4" /> Start designing
+          </Link>
         </section>
       ) : (
-        <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-7 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {cards.map((card) => (
-            <article key={card.id} className="premium-feature-card group overflow-hidden rounded-[26px] border border-white/10 bg-[#101522] transition hover:-translate-y-0.5 hover:border-white/20">
-              <Link href={`/cards/${card.id}`} className="block bg-[#0a0d14] p-4"><BusinessCardPreview card={card} className="transition duration-300 group-hover:scale-[1.01]" /></Link>
-              <div className="flex items-center justify-between gap-3 p-4">
-                <div className="min-w-0"><p className="truncate text-sm font-semibold text-white">{card.name}</p><p className="mt-1 text-xs text-white/35">{card.status === 'published' ? `${card.view_count || 0} views · ${card.save_count || 0} saves` : 'Draft'}</p></div>
+            <article key={card.id} className="ios-card overflow-hidden transition active:scale-[0.985]">
+              <Link href={`/cards/${card.id}`} className="block bg-[color:var(--app-bg)] p-4">
+                <BusinessCardPreview card={card} />
+              </Link>
+              <div className="flex items-center justify-between gap-3 border-t border-[color:var(--hairline)] p-3.5">
+                <div className="min-w-0">
+                  <p className="truncate text-[15px] font-semibold text-[color:var(--label)]">{card.name}</p>
+                  <p className="ios-footnote mt-0.5">
+                    {card.status === 'published'
+                      ? `${card.view_count || 0} views · ${card.save_count || 0} saves`
+                      : 'Draft'}
+                  </p>
+                </div>
                 <div className="flex items-center gap-1">
-                  {card.status === 'published' && <a href={`/card/${card.slug}`} target="_blank" aria-label="Open public card" className="rounded-lg p-2 text-white/35 hover:bg-white/[0.06] hover:text-white"><ExternalLink className="h-4 w-4" /></a>}
-                  <button onClick={() => remove(card)} disabled={deleting === card.id} aria-label="Delete card" className="rounded-lg p-2 text-white/30 hover:bg-rose-400/10 hover:text-rose-300">{deleting === card.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}</button>
+                  {card.status === 'published' && (
+                    <a
+                      href={`/card/${card.slug}`}
+                      target="_blank"
+                      aria-label="Open public card"
+                      className="rounded-lg p-2.5 text-[color:var(--label-3)] transition active:scale-90 active:text-[color:var(--label)]"
+                    >
+                      <ExternalLink className="h-[18px] w-[18px]" />
+                    </a>
+                  )}
+                  <button
+                    onClick={() => remove(card)}
+                    disabled={deleting === card.id}
+                    aria-label="Delete card"
+                    className="rounded-lg p-2.5 text-[color:var(--label-3)] transition active:scale-90 active:text-rose-400"
+                  >
+                    {deleting === card.id ? <Loader2 className="h-[18px] w-[18px] animate-spin" /> : <Trash2 className="h-[18px] w-[18px]" />}
+                  </button>
                 </div>
               </div>
             </article>
           ))}
         </div>
+      )}
+
+      {/* On a phone the primary action sits above the tab bar within thumb
+          reach, rather than at the top of a scrolling list. */}
+      {cards.length > 0 && (
+        <Link
+          href="/cards/new"
+          className="ios-btn ios-btn-primary fixed inset-x-4 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-30 shadow-[0_10px_30px_rgba(0,0,0,0.45)] md:hidden"
+        >
+          <Plus className="h-4 w-4" /> New card
+        </Link>
       )}
     </div>
   );
