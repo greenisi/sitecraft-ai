@@ -85,7 +85,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm p-6 sm:p-8 shadow-xl shadow-black/5 card-alive">
+    <div className="card-alive">
       <div className="text-center mb-6 stagger-1">
         <h1 className="text-xl font-bold tracking-tight">Create your account</h1>
         <p className="text-sm text-muted-foreground mt-1">Get started with Innovated Marketing</p>
@@ -171,7 +171,7 @@ export default function SignupPage() {
           <div className="stagger-6">
             <Button
               type="submit"
-              className="w-full h-11 rounded-xl bg-foreground hover:bg-foreground/90 text-background border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:shadow-foreground/10 hover:-translate-y-0.5 active:translate-y-0"
+              className="ios-btn ios-btn-primary w-full border-0"
               disabled={isLoading}
             >
               {isLoading ? (
