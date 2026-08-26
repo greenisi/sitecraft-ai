@@ -73,9 +73,9 @@ const PLACEHOLDER_PROMPTS: Record<string, string[]> = {
 };
 
 const SITE_TYPES = [
-  { key: 'business', label: 'Business Website', icon: Globe },
-  { key: 'store', label: 'Online Store', icon: ShoppingBag },
-  { key: 'landing', label: 'Landing Page', icon: FileText },
+  { key: 'business', label: 'Business Website', short: 'Business', icon: Globe },
+  { key: 'store', label: 'Online Store', short: 'Store', icon: ShoppingBag },
+  { key: 'landing', label: 'Landing Page', short: 'Landing', icon: FileText },
 ] as const;
 
 export default function HomePage() {
@@ -288,7 +288,7 @@ export default function HomePage() {
       <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b border-white/[0.06]" style={{ background: 'rgba(5,8,16,0.85)' }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 h-14 sm:h-16">
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <Image src="/logo.png" alt="Innovated Marketing" width={844} height={563} className="brightness-0 invert" style={{ height: '80px', width: 'auto' }} priority />
+            <Image src="/logo.png" alt="Innovated Marketing" width={844} height={563} className="brightness-0 invert h-11 sm:h-20 w-auto" priority />
           </Link>
           <nav className="flex items-center gap-2 sm:gap-3">
             {userLoading ? (
@@ -356,19 +356,20 @@ export default function HomePage() {
                 style={{ background: 'rgba(10,15,30,0.95)', backdropFilter: 'blur(20px)' }}
               >
                 {/* Category tabs row */}
-                <div className="flex items-center gap-1 px-3 sm:px-4 pt-3 pb-2 border-b border-white/[0.06] overflow-x-auto scrollbar-hide">
+                <div className="flex items-center gap-1 px-3 sm:px-4 pt-3 pb-2 border-b border-white/[0.06] sm:overflow-x-auto sm:scrollbar-hide">
                   {SITE_TYPES.map((type) => (
                     <button
                       key={type.key}
                       onClick={() => setSiteType(type.key)}
-                      className={`flex items-center gap-1.5 px-4 py-3 sm:px-3 sm:py-1.5 rounded-lg text-sm sm:text-xs font-medium whitespace-nowrap transition-all duration-300 min-h-[44px] sm:min-h-0 ${
+                      className={`flex flex-1 sm:flex-none items-center justify-center gap-1.5 px-2 py-3 sm:px-3 sm:py-1.5 rounded-lg text-sm sm:text-xs font-medium whitespace-nowrap transition-all duration-300 min-h-[44px] sm:min-h-0 ${
                         siteType === type.key
                           ? 'bg-violet-500/15 text-violet-300 shadow-sm shadow-violet-500/10'
                           : 'text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]'
                       }`}
                     >
-                      <type.icon className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
-                      {type.label}
+                      <type.icon className="h-4 w-4 sm:h-3.5 sm:w-3.5 shrink-0" />
+                      <span className="sm:hidden">{type.short}</span>
+                      <span className="hidden sm:inline">{type.label}</span>
                     </button>
                   ))}
                 </div>
@@ -932,7 +933,7 @@ export default function HomePage() {
         href="https://helm.innovated.marketing/start?source=floating"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-5 right-5 z-50 group inline-flex items-center gap-2 px-4 py-3 rounded-full text-sm font-semibold text-white shadow-2xl transition-all hover:scale-105 hidden sm:inline-flex"
+        className="fixed bottom-5 right-5 z-50 group hidden sm:inline-flex items-center gap-2 px-4 py-3 rounded-full text-sm font-semibold text-white shadow-2xl transition-all hover:scale-105"
         style={{
           background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
           boxShadow: '0 14px 40px rgba(139,92,246,0.40)',

@@ -633,6 +633,22 @@ textarea {
     .dark .particle-light {
           background: rgba(255, 255, 255, 0.15);
     }
+
+    /* The starfield is desktop-only.
+       .stars-small and .stars-medium each carry ~200 and ~100 white
+       box-shadows, and each duplicates the whole list again in an ::after
+       for the seamless scroll — 600 shadows repainting on an infinite
+       translateY loop. The coordinates are spread across a ~1990px canvas,
+       so at phone width only the leftmost sliver shows: a sparse random
+       scatter that lands on top of the headings and reads as dust on the
+       screen, not as depth. The dashboard layout reached the same
+       conclusion and dropped its starfield for the iOS wrapper; the orbs
+       and gradients carry the atmosphere here without it. */
+    .stars-small,
+    .stars-medium,
+    .stars-large {
+          display: none;
+    }
 }
 
 /* Mobile-specific aurora mesh for auth backgrounds */
