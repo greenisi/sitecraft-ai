@@ -313,7 +313,7 @@ export default function HomePage() {
       </header>
 
       {/* HERO */}
-      <section ref={hero.ref} className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-32 sm:pt-40 md:pt-48 pb-24">
+      <section ref={hero.ref} className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-28 sm:pt-40 md:pt-48 pb-12 sm:pb-24">
           <div className="anim-up inline-flex items-center gap-2 px-4 py-2 rounded-full border border-violet-500/30 mb-8" style={{ background: 'rgba(139,92,246,0.08)' }}>
             <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" /></span>
             <span className="text-sm text-gray-300 font-medium">Now in Public Beta</span>
@@ -429,7 +429,7 @@ export default function HomePage() {
           </div>
 
           {/* Journey ad — vertical phone-shape autoplay reel */}
-          <div className="anim-up-4 mt-12 sm:mt-16 w-full max-w-md mx-auto relative">
+          <div className="anim-up-4 mt-8 sm:mt-16 w-full max-w-md mx-auto relative">
             <div
               className="absolute -inset-6 sm:-inset-10 rounded-[48px] opacity-60 blur-2xl sm:blur-3xl"
               style={{ background: 'radial-gradient(circle at 50% 50%, rgba(139,92,246,0.45), rgba(59,130,246,0.18) 60%, transparent 80%)' }}
@@ -462,24 +462,24 @@ export default function HomePage() {
 
 
       {/* HOW IT WORKS */}
-      <section id="how-it-works" ref={howItWorks.ref} className="relative z-10 py-24 px-4">
+      <section id="how-it-works" ref={howItWorks.ref} className="relative z-10 py-14 sm:py-24 px-4">
         <div className="max-w-6xl mx-auto">
           {howItWorks.inView && (<>
-            <div className="text-center mb-16 anim-up">
+            <div className="text-center mb-10 sm:mb-16 anim-up">
               <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-violet-400 border border-violet-500/30 mb-4" style={{ background: 'rgba(139,92,246,0.1)' }}>HOW IT WORKS</span>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">Three steps. That&apos;s it.</h2>
               <p className="mt-4 text-gray-500 max-w-lg mx-auto">From idea to live website in minutes, not months.</p>
             </div>
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-3 gap-5 sm:gap-8">
               {[
                 { icon: MessageSquare, num: '01', title: 'Describe Your Vision', desc: 'Tell our AI about your business in plain English. What you do, your style, and what pages you need.', color: '#3b82f6', delay: 'anim-up-1' },
                 { icon: Sparkles, num: '02', title: 'AI Builds It Live', desc: 'Watch as your complete multi-page website is generated in real-time. Preview instantly and refine with chat.', color: '#8b5cf6', delay: 'anim-up-2' },
                 { icon: Rocket, num: '03', title: 'Publish & Grow', desc: 'Hit publish and your site goes live. Manage content with your built-in CMS and connect a custom domain.', color: '#ec4899', delay: 'anim-up-3' },
               ].map((step) => (
-                <div key={step.num} className={`${step.delay} group relative rounded-2xl p-8 border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2`} style={{ background: 'rgba(15,23,42,0.5)' }}>
+                <div key={step.num} className={`${step.delay} group relative rounded-2xl p-6 sm:p-8 border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2`} style={{ background: 'rgba(15,23,42,0.5)' }}>
                   <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: `linear-gradient(135deg, ${step.color}08, transparent)` }} />
                   <div className="relative">
-                    <div className="text-5xl font-extrabold mb-6" style={{ color: `${step.color}20` }}>{step.num}</div>
+                    <div className="text-4xl sm:text-5xl font-extrabold mb-4 sm:mb-6" style={{ color: `${step.color}38` }}>{step.num}</div>
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ background: `${step.color}15` }}>
                       <step.icon className="h-6 w-6" style={{ color: step.color }} />
                     </div>
@@ -494,10 +494,10 @@ export default function HomePage() {
       </section>
 
       {/* FEATURES */}
-      <section ref={features.ref} className="relative z-10 py-24 px-4" style={{ background: 'linear-gradient(180deg, transparent, rgba(139,92,246,0.03), transparent)' }}>
+      <section ref={features.ref} className="relative z-10 py-14 sm:py-24 px-4" style={{ background: 'linear-gradient(180deg, transparent, rgba(139,92,246,0.03), transparent)' }}>
         <div className="max-w-6xl mx-auto">
           {features.inView && (<>
-            <div className="text-center mb-16 anim-up">
+            <div className="text-center mb-10 sm:mb-16 anim-up">
               <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-violet-400 border border-violet-500/30 mb-4" style={{ background: 'rgba(139,92,246,0.1)' }}>FEATURES</span>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">Everything you need.<br /><span className="text-gray-500">Nothing you don&apos;t.</span></h2>
             </div>
@@ -525,10 +525,10 @@ export default function HomePage() {
       </section>
 
       {/* SHOWCASE */}
-      <section ref={showcase.ref} className="relative z-10 py-24 px-4">
+      <section ref={showcase.ref} className="relative z-10 py-14 sm:py-24 px-4">
         <div className="max-w-6xl mx-auto">
           {showcase.inView && (<>
-            <div className="text-center mb-16 anim-up">
+            <div className="text-center mb-10 sm:mb-16 anim-up">
               <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-violet-400 border border-violet-500/30 mb-4" style={{ background: 'rgba(139,92,246,0.1)' }}>BUILT WITH INNOVATED</span>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">Real sites. Real businesses.</h2>
               <p className="mt-4 text-gray-500 max-w-lg mx-auto">Every site below was generated by AI from a simple text description.</p>
@@ -884,7 +884,7 @@ export default function HomePage() {
       </section>
 
       {/* FINAL CTA */}
-      <section ref={cta.ref} className="relative z-10 py-24 px-4">
+      <section ref={cta.ref} className="relative z-10 py-14 sm:py-24 px-4">
         {cta.inView && (
           <div className="max-w-4xl mx-auto text-center anim-up">
             <div className="relative rounded-3xl p-12 md:p-16 overflow-hidden border border-violet-500/20" style={{ background: 'rgba(15,23,42,0.6)' }}>
