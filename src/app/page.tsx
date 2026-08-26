@@ -438,13 +438,18 @@ export default function HomePage() {
               className="relative rounded-[44px] overflow-hidden border border-white/10 shadow-2xl shadow-violet-500/20"
               style={{ aspectRatio: '9 / 16', background: '#050810' }}
             >
+              {/* preload="none" with a poster, not preload="auto".
+                  journey.mp4 is 8.2MB and sits below the fold, so autoloading
+                  it spent the phone's data before the visitor had scrolled to
+                  it. The 20KB poster holds the frame until playback starts. */}
               <video
                 src="/journey.mp4"
+                poster="/journey-poster.jpg"
                 autoPlay
                 muted
                 loop
                 playsInline
-                preload="auto"
+                preload="none"
                 className="w-full h-full object-cover"
               />
             </div>
