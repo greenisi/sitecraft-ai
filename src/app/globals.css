@@ -998,6 +998,17 @@ textarea {
 /* A hairline, not a drop shadow. iOS navigation bars separate with a
    single pixel and let the blur do the rest. */
 .ios-navbar {
+  /* The wrapper runs fullscreen with contentInsetAdjustmentBehavior = .never
+     and layout.tsx sets viewportFit: 'cover', so the page draws behind the
+     status bar and the Dynamic Island. The tab bar below already pads for
+     env(safe-area-inset-bottom); this is the same thing at the top, which was
+     missed — the navbar's icon, title and account button sat under the Island
+     in the app.
+
+     Safari hides this completely: its own chrome pushes the page down, so the
+     bar looks correctly placed in a browser and only the wrapper shows it.
+     Zero on every device without an inset, so desktop is unaffected. */
+  padding-top: env(safe-area-inset-top);
   background: color-mix(in srgb, var(--app-bg) 78%, transparent);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
