@@ -8,43 +8,44 @@ import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/lib/hooks/use-user';
 
 /**
- * Sections start rendered.
+ * Reveal a section when it is reached, without gating whether it exists.
  *
- * Each section below is written as `{x.inView && (...)}`, so this hook used
- * to decide whether the content existed at all. It started false and flipped
- * when the section reached the viewport, which cost three things:
+ * The section content is always rendered — it server-renders, anchors land on
+ * it, and the page height does not change as you scroll. Only the animation
+ * waits. `pending` is written to the section as data-reveal, and the CSS below
+ * holds that section's anim-up children at their start state until it clears.
  *
- *  - a section you scrolled into was blank until the observer caught up, and
- *    the content then appeared underneath you;
- *  - the page height jumped as each section mounted, so the scrollbar and the
- *    scroll position moved while you were reading;
- *  - an anchor link landed in the wrong place, because the target was still
- *    an unmounted stub when the browser jumped to it and the sections above
- *    it then mounted and pushed it down.
+ * Three ways this fails open, because anim-up-N starts at opacity:0 and a
+ * section stuck pending would be invisible rather than merely unanimated:
  *
- * What it cost: the `anim-up` / `anim-up-N` classes ARE real — they are
- * defined in this file's own inline <style> block below (slide-up keyframes,
- * staggered 0.15s-0.6s delays), so mounting on scroll is what made each
- * section slide up as you reached it. Those animations now all run at page
- * load instead, and anything below the fold has settled by the time you
- * scroll to it. The reveal is gone; so are the three problems above.
- *
- * To bring the reveal back, keep the content rendered and apply the
- * animation class on intersection rather than gating the content. It has to
- * fail open: anim-up-N starts at opacity:0, so an observer that never fires
- * would leave the section permanently invisible.
+ *  1. `armed` only becomes true inside the effect, so server-rendered output
+ *     and any client where JS never runs carry no data-reveal at all and the
+ *     animations simply play.
+ *  2. A failsafe timer reveals the section regardless after 3s, covering
+ *     environments that do not deliver intersection callbacks — a hidden
+ *     document or a background tab will not fire them, which is exactly what
+ *     happens in a headless preview pane.
+ *  3. prefers-reduced-motion is honoured in the CSS rule itself.
  */
 function useInView(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
-  const [inView, setInView] = useState(true);
+  const [armed, setArmed] = useState(false);
+  const [inView, setInView] = useState(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setInView(true); obs.disconnect(); } }, { threshold });
+    setArmed(true);
+    const reveal = () => setInView(true);
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { reveal(); obs.disconnect(); }
+    }, { threshold });
     obs.observe(el);
-    return () => obs.disconnect();
+    const failsafe = setTimeout(reveal, 3000);
+    return () => { obs.disconnect(); clearTimeout(failsafe); };
   }, [threshold]);
-  return { ref, inView };
+  // 'pending' only while JS is armed and the section has not been reached.
+  const revealState = armed && !inView ? 'pending' : undefined;
+  return { ref, inView, revealState };
 }
 
 function Typewriter({ words, className }: { words: string[]; className?: string }) {
@@ -272,6 +273,22 @@ export default function HomePage() {
         .animate-float-slow { animation: float-slow 8s ease-in-out infinite; }
         .animate-float-medium { animation: float-medium 6s ease-in-out infinite; }
         .animate-gradient-x { animation: gradient-x 6s ease infinite; background-size: 200% 200%; }
+        /* Held until the section is reached; see useInView above. Scoped to
+           data-reveal="pending", which is only ever set once JS is running,
+           so server-rendered and no-JS output animates normally instead of
+           being stuck invisible. */
+        [data-reveal="pending"] .anim-up,
+        [data-reveal="pending"] .anim-up-1,
+        [data-reveal="pending"] .anim-up-2,
+        [data-reveal="pending"] .anim-up-3,
+        [data-reveal="pending"] .anim-up-4 { opacity: 0; animation-play-state: paused; }
+        @media (prefers-reduced-motion: reduce) {
+          [data-reveal="pending"] .anim-up,
+          [data-reveal="pending"] .anim-up-1,
+          [data-reveal="pending"] .anim-up-2,
+          [data-reveal="pending"] .anim-up-3,
+          [data-reveal="pending"] .anim-up-4 { opacity: 1; animation: none; }
+        }
         .anim-up { animation: slide-up 0.8s ease-out forwards; }
         .anim-up-1 { animation: slide-up 0.8s ease-out 0.15s forwards; opacity: 0; }
         .anim-up-2 { animation: slide-up 0.8s ease-out 0.3s forwards; opacity: 0; }
@@ -340,7 +357,7 @@ export default function HomePage() {
       </header>
 
       {/* HERO */}
-      <section ref={hero.ref} className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-[calc(7rem+env(safe-area-inset-top))] sm:pt-40 md:pt-48 pb-12 sm:pb-24">
+      <section ref={hero.ref} data-reveal={hero.revealState} className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-[calc(7rem+env(safe-area-inset-top))] sm:pt-40 md:pt-48 pb-12 sm:pb-24">
           <div className="anim-up inline-flex items-center gap-2 px-4 py-2 rounded-full border border-violet-500/30 mb-8" style={{ background: 'rgba(139,92,246,0.08)' }}>
             <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" /></span>
             <span className="text-sm text-gray-300 font-medium">Now in Public Beta</span>
@@ -489,9 +506,8 @@ export default function HomePage() {
 
 
       {/* HOW IT WORKS */}
-      <section id="how-it-works" ref={howItWorks.ref} className="relative z-10 py-14 sm:py-24 px-4">
+      <section id="how-it-works" ref={howItWorks.ref} data-reveal={howItWorks.revealState} className="relative z-10 py-14 sm:py-24 px-4">
         <div className="max-w-6xl mx-auto">
-          {howItWorks.inView && (<>
             <div className="text-center mb-10 sm:mb-16 anim-up">
               <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-violet-400 border border-violet-500/30 mb-4" style={{ background: 'rgba(139,92,246,0.1)' }}>HOW IT WORKS</span>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">Three steps. That&apos;s it.</h2>
@@ -516,14 +532,12 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
-          </>)}
         </div>
       </section>
 
       {/* FEATURES */}
-      <section id="features" ref={features.ref} className="relative z-10 py-14 sm:py-24 px-4" style={{ background: 'linear-gradient(180deg, transparent, rgba(139,92,246,0.03), transparent)' }}>
+      <section id="features" ref={features.ref} data-reveal={features.revealState} className="relative z-10 py-14 sm:py-24 px-4" style={{ background: 'linear-gradient(180deg, transparent, rgba(139,92,246,0.03), transparent)' }}>
         <div className="max-w-6xl mx-auto">
-          {features.inView && (<>
             <div className="text-center mb-10 sm:mb-16 anim-up">
               <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-violet-400 border border-violet-500/30 mb-4" style={{ background: 'rgba(139,92,246,0.1)' }}>FEATURES</span>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">Everything you need.<br /><span className="text-gray-500">Nothing you don&apos;t.</span></h2>
@@ -547,14 +561,12 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
-          </>)}
         </div>
       </section>
 
       {/* SHOWCASE */}
-      <section id="showcase" ref={showcase.ref} className="relative z-10 py-14 sm:py-24 px-4">
+      <section id="showcase" ref={showcase.ref} data-reveal={showcase.revealState} className="relative z-10 py-14 sm:py-24 px-4">
         <div className="max-w-6xl mx-auto">
-          {showcase.inView && (<>
             <div className="text-center mb-10 sm:mb-16 anim-up">
               <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-violet-400 border border-violet-500/30 mb-4" style={{ background: 'rgba(139,92,246,0.1)' }}>BUILT WITH INNOVATED</span>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">Real sites. Real businesses.</h2>
@@ -807,7 +819,6 @@ export default function HomePage() {
               </div>
 
             </div>
-          </>)}
         </div>
       </section>
 
@@ -911,8 +922,7 @@ export default function HomePage() {
       </section>
 
       {/* FINAL CTA */}
-      <section id="get-started" ref={cta.ref} className="relative z-10 py-14 sm:py-24 px-4">
-        {cta.inView && (
+      <section id="get-started" ref={cta.ref} data-reveal={cta.revealState} className="relative z-10 py-14 sm:py-24 px-4">
           <div className="max-w-4xl mx-auto text-center anim-up">
             <div className="relative rounded-3xl p-6 sm:p-12 md:p-16 overflow-hidden border border-violet-500/20" style={{ background: 'rgba(15,23,42,0.6)' }}>
               <div className="absolute inset-0 opacity-30" style={{ background: 'radial-gradient(ellipse at center, rgba(139,92,246,0.15), transparent 70%)' }} />
@@ -936,7 +946,6 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-        )}
       </section>
 
       {/* FOOTER */}
