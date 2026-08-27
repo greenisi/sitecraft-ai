@@ -7,9 +7,33 @@ import { ArrowRight, Zap, Globe, Sparkles, MessageSquare, Palette, Rocket, Check
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/lib/hooks/use-user';
 
+/**
+ * Sections start rendered.
+ *
+ * Each section below is written as `{x.inView && (...)}`, so this hook used
+ * to decide whether the content existed at all. It started false and flipped
+ * when the section reached the viewport, which cost three things:
+ *
+ *  - a section you scrolled into was blank until the observer caught up, and
+ *    the content then appeared underneath you;
+ *  - the page height jumped as each section mounted, so the scrollbar and the
+ *    scroll position moved while you were reading;
+ *  - an anchor link landed in the wrong place, because the target was still
+ *    an unmounted stub when the browser jumped to it and the sections above
+ *    it then mounted and pushed it down.
+ *
+ * It bought nothing in return: the staggered `anim-up` / `anim-up-N` classes
+ * that gating was built to drive are not defined in any stylesheet in this
+ * repo and do not appear in the compiled CSS. There is no animation to
+ * stagger.
+ *
+ * The observer still runs, so `inView` stays available if a real reveal
+ * animation is added later — it simply no longer decides whether the content
+ * is there.
+ */
 function useInView(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
-  const [inView, setInView] = useState(false);
+  const [inView, setInView] = useState(true);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -785,7 +809,7 @@ export default function HomePage() {
       </section>
 
       {/* CUSTOM BUILD — for prospects beyond $25/mo self-serve */}
-      <section className="relative z-10 py-20 px-4">
+      <section className="relative z-10 py-12 sm:py-20 px-4">
         <div className="max-w-5xl mx-auto">
           <div
             className="relative rounded-3xl p-10 md:p-14 overflow-hidden border"
@@ -887,11 +911,11 @@ export default function HomePage() {
       <section id="get-started" ref={cta.ref} className="relative z-10 py-14 sm:py-24 px-4">
         {cta.inView && (
           <div className="max-w-4xl mx-auto text-center anim-up">
-            <div className="relative rounded-3xl p-12 md:p-16 overflow-hidden border border-violet-500/20" style={{ background: 'rgba(15,23,42,0.6)' }}>
+            <div className="relative rounded-3xl p-6 sm:p-12 md:p-16 overflow-hidden border border-violet-500/20" style={{ background: 'rgba(15,23,42,0.6)' }}>
               <div className="absolute inset-0 opacity-30" style={{ background: 'radial-gradient(ellipse at center, rgba(139,92,246,0.15), transparent 70%)' }} />
               <div className="relative">
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight">
-                  Ready to build something<br /><span className="bg-clip-text text-transparent animate-gradient-x" style={{ backgroundImage: 'linear-gradient(135deg, #a78bfa, #818cf8, #c084fc, #a78bfa)' }}>extraordinary?</span>
+                  Ready to build something<br className="hidden sm:inline" /> <span className="bg-clip-text text-transparent animate-gradient-x" style={{ backgroundImage: 'linear-gradient(135deg, #a78bfa, #818cf8, #c084fc, #a78bfa)' }}>extraordinary?</span>
                 </h2>
                 <p className="mt-6 text-gray-400 max-w-lg mx-auto text-lg">Join hundreds of businesses who launched their website in minutes, not months.</p>
                 <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -913,10 +937,10 @@ export default function HomePage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="relative z-10 border-t border-white/5 py-12 px-4">
+      <footer id="footer" className="relative z-10 border-t border-white/5 py-8 sm:py-12 px-4">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <Image src="/logo.png" alt="Innovated Marketing" width={844} height={563} className="brightness-0 invert w-auto" style={{ height: '36px' }} />
-          <div className="flex items-center gap-4 text-sm text-gray-600">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-gray-600">
             <Link href="/pricing" className="hover:text-gray-400 transition-colors py-2 px-1 min-h-[44px] flex items-center">Pricing</Link>
             <Link
               href="https://helm.innovated.marketing/start?source=footer"
