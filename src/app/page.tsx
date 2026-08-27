@@ -285,7 +285,7 @@ export default function HomePage() {
       </div>
 
       {/* Navbar */}
-      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b border-white/[0.06]" style={{ background: 'rgba(5,8,16,0.85)' }}>
+      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b border-white/[0.06] pt-[env(safe-area-inset-top)]" style={{ background: 'rgba(5,8,16,0.85)' }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 h-14 sm:h-16">
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
             <Image src="/logo.png" alt="Innovated Marketing" width={844} height={563} className="brightness-0 invert h-11 sm:h-20 w-auto" priority />
@@ -313,7 +313,7 @@ export default function HomePage() {
       </header>
 
       {/* HERO */}
-      <section ref={hero.ref} className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-28 sm:pt-40 md:pt-48 pb-12 sm:pb-24">
+      <section ref={hero.ref} className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-[calc(7rem+env(safe-area-inset-top))] sm:pt-40 md:pt-48 pb-12 sm:pb-24">
           <div className="anim-up inline-flex items-center gap-2 px-4 py-2 rounded-full border border-violet-500/30 mb-8" style={{ background: 'rgba(139,92,246,0.08)' }}>
             <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" /></span>
             <span className="text-sm text-gray-300 font-medium">Now in Public Beta</span>
