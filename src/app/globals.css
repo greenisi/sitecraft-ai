@@ -1050,3 +1050,35 @@ body:has(.ios-app) {
 .ios-app :is(input, textarea)::placeholder {
   color: var(--label-3);
 }
+
+
+/* ===== SHOWCASE REPLICAS =========================================
+   The three "Real sites. Real businesses." cards are hand-built HTML
+   replicas of desktop layouts, authored oversized and scaled down to fit
+   a 16:9 card. The ratio was fixed at 300% authored width / scale(0.333)
+   at every viewport.
+
+   That ratio is what makes them unreadable on a phone. The replica's own
+   type is sized for a desktop page — an 11px nav label lands at 3.7px
+   once scaled — and on a phone the card spans the full width, so this is
+   the largest thing on screen and none of it can be read. The bottom of
+   each replica is mostly empty background too, so the wasted space is
+   spent on nothing.
+
+   Phones therefore author at 200% and scale by 0.5: same fitted width,
+   type 1.5x larger, and the empty lower third cropped away by the card's
+   existing overflow-hidden. Desktop keeps the wider view, where three
+   cards sit side by side and the whole layout is the point. */
+.showcase-replica {
+  width: 200%;
+  height: 200%;
+  transform: scale(0.5);
+}
+
+@media (min-width: 640px) {
+  .showcase-replica {
+    width: 300%;
+    height: 300%;
+    transform: scale(0.333);
+  }
+}

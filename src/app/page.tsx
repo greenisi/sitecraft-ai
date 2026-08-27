@@ -494,7 +494,7 @@ export default function HomePage() {
       </section>
 
       {/* FEATURES */}
-      <section ref={features.ref} className="relative z-10 py-14 sm:py-24 px-4" style={{ background: 'linear-gradient(180deg, transparent, rgba(139,92,246,0.03), transparent)' }}>
+      <section id="features" ref={features.ref} className="relative z-10 py-14 sm:py-24 px-4" style={{ background: 'linear-gradient(180deg, transparent, rgba(139,92,246,0.03), transparent)' }}>
         <div className="max-w-6xl mx-auto">
           {features.inView && (<>
             <div className="text-center mb-10 sm:mb-16 anim-up">
@@ -525,7 +525,7 @@ export default function HomePage() {
       </section>
 
       {/* SHOWCASE */}
-      <section ref={showcase.ref} className="relative z-10 py-14 sm:py-24 px-4">
+      <section id="showcase" ref={showcase.ref} className="relative z-10 py-14 sm:py-24 px-4">
         <div className="max-w-6xl mx-auto">
           {showcase.inView && (<>
             <div className="text-center mb-10 sm:mb-16 anim-up">
@@ -538,7 +538,7 @@ export default function HomePage() {
               {/* Card 1 — Greenscape Pros (Landscaping) */}
               <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-emerald-500/10 cursor-pointer">
                 <div className="relative aspect-video overflow-hidden">
-                  <div className="w-[300%] h-[300%] origin-top-left pointer-events-none" style={{ transform: 'scale(0.333)' }}>
+                  <div className="showcase-replica origin-top-left pointer-events-none">
                     <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif', background: '#0c1a0e', overflow: 'hidden' }}>
                       {/* Full-bleed hero photo */}
                       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '72%' }}>
@@ -611,7 +611,7 @@ export default function HomePage() {
               {/* Card 2 — LUXE Collective (E-commerce Lifestyle) */}
               <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-orange-500/10 cursor-pointer">
                 <div className="relative aspect-video overflow-hidden">
-                  <div className="w-[300%] h-[300%] origin-top-left pointer-events-none" style={{ transform: 'scale(0.333)' }}>
+                  <div className="showcase-replica origin-top-left pointer-events-none">
                     <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif', background: '#faf8f5', overflow: 'hidden' }}>
                       {/* Nav */}
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', background: '#fff', borderBottom: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
@@ -697,7 +697,7 @@ export default function HomePage() {
               {/* Card 3 — Bella Cucina (Italian Restaurant) — SPLIT LAYOUT: text left, photo mosaic right */}
               <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-amber-500/10 cursor-pointer">
                 <div className="relative aspect-video overflow-hidden">
-                  <div className="w-[300%] h-[300%] origin-top-left pointer-events-none" style={{ transform: 'scale(0.333)' }}>
+                  <div className="showcase-replica origin-top-left pointer-events-none">
                     <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'Georgia, serif', background: '#faf6f0', overflow: 'hidden' }}>
                       {/* Nav — warm cream/elegant */}
                       <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', background: '#fff', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
@@ -884,7 +884,7 @@ export default function HomePage() {
       </section>
 
       {/* FINAL CTA */}
-      <section ref={cta.ref} className="relative z-10 py-14 sm:py-24 px-4">
+      <section id="get-started" ref={cta.ref} className="relative z-10 py-14 sm:py-24 px-4">
         {cta.inView && (
           <div className="max-w-4xl mx-auto text-center anim-up">
             <div className="relative rounded-3xl p-12 md:p-16 overflow-hidden border border-violet-500/20" style={{ background: 'rgba(15,23,42,0.6)' }}>
