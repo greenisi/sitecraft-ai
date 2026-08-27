@@ -22,14 +22,17 @@ import { useUser } from '@/lib/hooks/use-user';
  *    an unmounted stub when the browser jumped to it and the sections above
  *    it then mounted and pushed it down.
  *
- * It bought nothing in return: the staggered `anim-up` / `anim-up-N` classes
- * that gating was built to drive are not defined in any stylesheet in this
- * repo and do not appear in the compiled CSS. There is no animation to
- * stagger.
+ * What it cost: the `anim-up` / `anim-up-N` classes ARE real — they are
+ * defined in this file's own inline <style> block below (slide-up keyframes,
+ * staggered 0.15s-0.6s delays), so mounting on scroll is what made each
+ * section slide up as you reached it. Those animations now all run at page
+ * load instead, and anything below the fold has settled by the time you
+ * scroll to it. The reveal is gone; so are the three problems above.
  *
- * The observer still runs, so `inView` stays available if a real reveal
- * animation is added later — it simply no longer decides whether the content
- * is there.
+ * To bring the reveal back, keep the content rendered and apply the
+ * animation class on intersection rather than gating the content. It has to
+ * fail open: anim-up-N starts at opacity:0, so an observer that never fires
+ * would leave the section permanently invisible.
  */
 function useInView(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
