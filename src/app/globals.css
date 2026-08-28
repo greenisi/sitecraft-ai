@@ -633,6 +633,22 @@ textarea {
     .dark .particle-light {
           background: rgba(255, 255, 255, 0.15);
     }
+
+    /* The starfield is desktop-only.
+       .stars-small and .stars-medium each carry ~200 and ~100 white
+       box-shadows, and each duplicates the whole list again in an ::after
+       for the seamless scroll — 600 shadows repainting on an infinite
+       translateY loop. The coordinates are spread across a ~1990px canvas,
+       so at phone width only the leftmost sliver shows: a sparse random
+       scatter that lands on top of the headings and reads as dust on the
+       screen, not as depth. The dashboard layout reached the same
+       conclusion and dropped its starfield for the iOS wrapper; the orbs
+       and gradients carry the atmosphere here without it. */
+    .stars-small,
+    .stars-medium,
+    .stars-large {
+          display: none;
+    }
 }
 
 /* Mobile-specific aurora mesh for auth backgrounds */
@@ -982,6 +998,16 @@ textarea {
 /* A hairline, not a drop shadow. iOS navigation bars separate with a
    single pixel and let the blur do the rest. */
 .ios-navbar {
+  /* No top safe-area padding here, deliberately.
+     SitecraftView.swift applies .ignoresSafeArea(edges: .bottom) to the web
+     view — bottom only. SwiftUI insets the top, so the web content never
+     draws under the status bar or Dynamic Island and env(safe-area-inset-top)
+     resolves to 0 inside the WKWebView. Verified by A/B on a booted device:
+     the navbar renders identically with and without the padding.
+
+     The tab bar's pb-[max(.45rem,env(safe-area-inset-bottom))] is NOT the
+     matching half of a pair — it is required precisely because the bottom is
+     the edge the wrapper does ignore. */
   background: color-mix(in srgb, var(--app-bg) 78%, transparent);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
@@ -1033,4 +1059,36 @@ body:has(.ios-app) {
 
 .ios-app :is(input, textarea)::placeholder {
   color: var(--label-3);
+}
+
+
+/* ===== SHOWCASE REPLICAS =========================================
+   The three "Real sites. Real businesses." cards are hand-built HTML
+   replicas of desktop layouts, authored oversized and scaled down to fit
+   a 16:9 card. The ratio was fixed at 300% authored width / scale(0.333)
+   at every viewport.
+
+   That ratio is what makes them unreadable on a phone. The replica's own
+   type is sized for a desktop page — an 11px nav label lands at 3.7px
+   once scaled — and on a phone the card spans the full width, so this is
+   the largest thing on screen and none of it can be read. The bottom of
+   each replica is mostly empty background too, so the wasted space is
+   spent on nothing.
+
+   Phones therefore author at 200% and scale by 0.5: same fitted width,
+   type 1.5x larger, and the empty lower third cropped away by the card's
+   existing overflow-hidden. Desktop keeps the wider view, where three
+   cards sit side by side and the whole layout is the point. */
+.showcase-replica {
+  width: 200%;
+  height: 200%;
+  transform: scale(0.5);
+}
+
+@media (min-width: 640px) {
+  .showcase-replica {
+    width: 300%;
+    height: 300%;
+    transform: scale(0.333);
+  }
 }
