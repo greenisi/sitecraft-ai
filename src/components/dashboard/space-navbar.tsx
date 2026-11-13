@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/lib/hooks/use-user';
+import { InnovatedLauncher } from '@/components/dashboard/innovated-launcher';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -133,6 +134,7 @@ export function SpaceNavbar() {
                 <span>{credits >= 999999 ? '∞' : credits}</span>
               </div>
             )}
+            <InnovatedLauncher />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex h-9 w-9 items-center justify-center rounded-full border border-[color:var(--hairline-strong)] bg-white/[0.05] text-[color:var(--label-2)] transition active:scale-95 md:h-10 md:w-10" aria-label="Account menu">
