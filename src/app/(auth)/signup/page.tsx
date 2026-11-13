@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Loader2, User, Mail, Lock } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { GoogleButton, OrDivider } from '@/components/auth/google-button';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -97,6 +98,11 @@ export default function SignupPage() {
             {error}
           </div>
         )}
+
+        <div className="space-y-4 stagger-2">
+          <GoogleButton label="Sign up with Google" onError={setError} />
+          <OrDivider />
+        </div>
 
         <form onSubmit={handleEmailSignup} className="space-y-4">
           <div className="space-y-2 stagger-2">

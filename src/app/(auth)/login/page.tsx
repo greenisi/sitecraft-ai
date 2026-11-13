@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, Mail, Lock } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { GoogleButton, OrDivider } from '@/components/auth/google-button';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -127,6 +128,11 @@ function LoginForm() {
             {error}
           </div>
         )}
+
+        <div className="space-y-4 stagger-2">
+          <GoogleButton redirectTo={redirectTo} onError={setError} />
+          <OrDivider />
+        </div>
 
         <form onSubmit={handleEmailLogin} className="space-y-4">
           <div className="space-y-2 stagger-2">
