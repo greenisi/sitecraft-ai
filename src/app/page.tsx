@@ -7,17 +7,45 @@ import { ArrowRight, Zap, Globe, Sparkles, MessageSquare, Palette, Rocket, Check
 import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/lib/hooks/use-user';
 
+/**
+ * Reveal a section when it is reached, without gating whether it exists.
+ *
+ * The section content is always rendered — it server-renders, anchors land on
+ * it, and the page height does not change as you scroll. Only the animation
+ * waits. `pending` is written to the section as data-reveal, and the CSS below
+ * holds that section's anim-up children at their start state until it clears.
+ *
+ * Three ways this fails open, because anim-up-N starts at opacity:0 and a
+ * section stuck pending would be invisible rather than merely unanimated:
+ *
+ *  1. `armed` only becomes true inside the effect, so server-rendered output
+ *     and any client where JS never runs carry no data-reveal at all and the
+ *     animations simply play.
+ *  2. A failsafe timer reveals the section regardless after 3s, covering
+ *     environments that do not deliver intersection callbacks — a hidden
+ *     document or a background tab will not fire them, which is exactly what
+ *     happens in a headless preview pane.
+ *  3. prefers-reduced-motion is honoured in the CSS rule itself.
+ */
 function useInView(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
+  const [armed, setArmed] = useState(false);
   const [inView, setInView] = useState(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setInView(true); obs.disconnect(); } }, { threshold });
+    setArmed(true);
+    const reveal = () => setInView(true);
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { reveal(); obs.disconnect(); }
+    }, { threshold });
     obs.observe(el);
-    return () => obs.disconnect();
+    const failsafe = setTimeout(reveal, 3000);
+    return () => { obs.disconnect(); clearTimeout(failsafe); };
   }, [threshold]);
-  return { ref, inView };
+  // 'pending' only while JS is armed and the section has not been reached.
+  const revealState = armed && !inView ? 'pending' : undefined;
+  return { ref, inView, revealState };
 }
 
 function Typewriter({ words, className }: { words: string[]; className?: string }) {
@@ -73,9 +101,9 @@ const PLACEHOLDER_PROMPTS: Record<string, string[]> = {
 };
 
 const SITE_TYPES = [
-  { key: 'business', label: 'Business Website', icon: Globe },
-  { key: 'store', label: 'Online Store', icon: ShoppingBag },
-  { key: 'landing', label: 'Landing Page', icon: FileText },
+  { key: 'business', label: 'Business Website', short: 'Business', icon: Globe },
+  { key: 'store', label: 'Online Store', short: 'Store', icon: ShoppingBag },
+  { key: 'landing', label: 'Landing Page', short: 'Landing', icon: FileText },
 ] as const;
 
 export default function HomePage() {
@@ -245,6 +273,22 @@ export default function HomePage() {
         .animate-float-slow { animation: float-slow 8s ease-in-out infinite; }
         .animate-float-medium { animation: float-medium 6s ease-in-out infinite; }
         .animate-gradient-x { animation: gradient-x 6s ease infinite; background-size: 200% 200%; }
+        /* Held until the section is reached; see useInView above. Scoped to
+           data-reveal="pending", which is only ever set once JS is running,
+           so server-rendered and no-JS output animates normally instead of
+           being stuck invisible. */
+        [data-reveal="pending"] .anim-up,
+        [data-reveal="pending"] .anim-up-1,
+        [data-reveal="pending"] .anim-up-2,
+        [data-reveal="pending"] .anim-up-3,
+        [data-reveal="pending"] .anim-up-4 { opacity: 0; animation-play-state: paused; }
+        @media (prefers-reduced-motion: reduce) {
+          [data-reveal="pending"] .anim-up,
+          [data-reveal="pending"] .anim-up-1,
+          [data-reveal="pending"] .anim-up-2,
+          [data-reveal="pending"] .anim-up-3,
+          [data-reveal="pending"] .anim-up-4 { opacity: 1; animation: none; }
+        }
         .anim-up { animation: slide-up 0.8s ease-out forwards; }
         .anim-up-1 { animation: slide-up 0.8s ease-out 0.15s forwards; opacity: 0; }
         .anim-up-2 { animation: slide-up 0.8s ease-out 0.3s forwards; opacity: 0; }
@@ -288,7 +332,7 @@ export default function HomePage() {
       <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b border-white/[0.06]" style={{ background: 'rgba(5,8,16,0.85)' }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 h-14 sm:h-16">
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <Image src="/logo.png" alt="Innovated Marketing" width={844} height={563} className="brightness-0 invert" style={{ height: '80px', width: 'auto' }} priority />
+            <Image src="/logo.png" alt="Innovated Marketing" width={844} height={563} className="brightness-0 invert h-11 sm:h-20 w-auto" priority />
           </Link>
           <nav className="flex items-center gap-2 sm:gap-3">
             {userLoading ? (
@@ -313,7 +357,7 @@ export default function HomePage() {
       </header>
 
       {/* HERO */}
-      <section ref={hero.ref} className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-32 sm:pt-40 md:pt-48 pb-24">
+      <section ref={hero.ref} data-reveal={hero.revealState} className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-28 sm:pt-40 md:pt-48 pb-12 sm:pb-24">
           <div className="anim-up inline-flex items-center gap-2 px-4 py-2 rounded-full border border-violet-500/30 mb-8" style={{ background: 'rgba(139,92,246,0.08)' }}>
             <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" /></span>
             <span className="text-sm text-gray-300 font-medium">Now in Public Beta</span>
@@ -356,19 +400,20 @@ export default function HomePage() {
                 style={{ background: 'rgba(10,15,30,0.95)', backdropFilter: 'blur(20px)' }}
               >
                 {/* Category tabs row */}
-                <div className="flex items-center gap-1 px-3 sm:px-4 pt-3 pb-2 border-b border-white/[0.06] overflow-x-auto scrollbar-hide">
+                <div className="flex items-center gap-1 px-3 sm:px-4 pt-3 pb-2 border-b border-white/[0.06] sm:overflow-x-auto sm:scrollbar-hide">
                   {SITE_TYPES.map((type) => (
                     <button
                       key={type.key}
                       onClick={() => setSiteType(type.key)}
-                      className={`flex items-center gap-1.5 px-4 py-3 sm:px-3 sm:py-1.5 rounded-lg text-sm sm:text-xs font-medium whitespace-nowrap transition-all duration-300 min-h-[44px] sm:min-h-0 ${
+                      className={`flex flex-1 sm:flex-none items-center justify-center gap-1.5 px-2 py-3 sm:px-3 sm:py-1.5 rounded-lg text-sm sm:text-xs font-medium whitespace-nowrap transition-all duration-300 min-h-[44px] sm:min-h-0 ${
                         siteType === type.key
                           ? 'bg-violet-500/15 text-violet-300 shadow-sm shadow-violet-500/10'
                           : 'text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]'
                       }`}
                     >
-                      <type.icon className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
-                      {type.label}
+                      <type.icon className="h-4 w-4 sm:h-3.5 sm:w-3.5 shrink-0" />
+                      <span className="sm:hidden">{type.short}</span>
+                      <span className="hidden sm:inline">{type.label}</span>
                     </button>
                   ))}
                 </div>
@@ -428,7 +473,7 @@ export default function HomePage() {
           </div>
 
           {/* Journey ad — vertical phone-shape autoplay reel */}
-          <div className="anim-up-4 mt-12 sm:mt-16 w-full max-w-md mx-auto relative">
+          <div className="anim-up-4 mt-8 sm:mt-16 w-full max-w-md mx-auto relative">
             <div
               className="absolute -inset-6 sm:-inset-10 rounded-[48px] opacity-60 blur-2xl sm:blur-3xl"
               style={{ background: 'radial-gradient(circle at 50% 50%, rgba(139,92,246,0.45), rgba(59,130,246,0.18) 60%, transparent 80%)' }}
@@ -437,13 +482,18 @@ export default function HomePage() {
               className="relative rounded-[44px] overflow-hidden border border-white/10 shadow-2xl shadow-violet-500/20"
               style={{ aspectRatio: '9 / 16', background: '#050810' }}
             >
+              {/* preload="none" with a poster, not preload="auto".
+                  journey.mp4 is 8.2MB and sits below the fold, so autoloading
+                  it spent the phone's data before the visitor had scrolled to
+                  it. The 20KB poster holds the frame until playback starts. */}
               <video
                 src="/journey.mp4"
+                poster="/journey-poster.jpg"
                 autoPlay
                 muted
                 loop
                 playsInline
-                preload="auto"
+                preload="none"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -456,24 +506,23 @@ export default function HomePage() {
 
 
       {/* HOW IT WORKS */}
-      <section id="how-it-works" ref={howItWorks.ref} className="relative z-10 py-24 px-4">
+      <section id="how-it-works" ref={howItWorks.ref} data-reveal={howItWorks.revealState} className="relative z-10 py-14 sm:py-24 px-4">
         <div className="max-w-6xl mx-auto">
-          {howItWorks.inView && (<>
-            <div className="text-center mb-16 anim-up">
+            <div className="text-center mb-10 sm:mb-16 anim-up">
               <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-violet-400 border border-violet-500/30 mb-4" style={{ background: 'rgba(139,92,246,0.1)' }}>HOW IT WORKS</span>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">Three steps. That&apos;s it.</h2>
               <p className="mt-4 text-gray-500 max-w-lg mx-auto">From idea to live website in minutes, not months.</p>
             </div>
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-3 gap-5 sm:gap-8">
               {[
                 { icon: MessageSquare, num: '01', title: 'Describe Your Vision', desc: 'Tell our AI about your business in plain English. What you do, your style, and what pages you need.', color: '#3b82f6', delay: 'anim-up-1' },
                 { icon: Sparkles, num: '02', title: 'AI Builds It Live', desc: 'Watch as your complete multi-page website is generated in real-time. Preview instantly and refine with chat.', color: '#8b5cf6', delay: 'anim-up-2' },
                 { icon: Rocket, num: '03', title: 'Publish & Grow', desc: 'Hit publish and your site goes live. Manage content with your built-in CMS and connect a custom domain.', color: '#ec4899', delay: 'anim-up-3' },
               ].map((step) => (
-                <div key={step.num} className={`${step.delay} group relative rounded-2xl p-8 border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2`} style={{ background: 'rgba(15,23,42,0.5)' }}>
+                <div key={step.num} className={`${step.delay} group relative rounded-2xl p-6 sm:p-8 border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2`} style={{ background: 'rgba(15,23,42,0.5)' }}>
                   <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: `linear-gradient(135deg, ${step.color}08, transparent)` }} />
                   <div className="relative">
-                    <div className="text-5xl font-extrabold mb-6" style={{ color: `${step.color}20` }}>{step.num}</div>
+                    <div className="text-4xl sm:text-5xl font-extrabold mb-4 sm:mb-6" style={{ color: `${step.color}38` }}>{step.num}</div>
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ background: `${step.color}15` }}>
                       <step.icon className="h-6 w-6" style={{ color: step.color }} />
                     </div>
@@ -483,15 +532,13 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
-          </>)}
         </div>
       </section>
 
       {/* FEATURES */}
-      <section ref={features.ref} className="relative z-10 py-24 px-4" style={{ background: 'linear-gradient(180deg, transparent, rgba(139,92,246,0.03), transparent)' }}>
+      <section id="features" ref={features.ref} data-reveal={features.revealState} className="relative z-10 py-14 sm:py-24 px-4" style={{ background: 'linear-gradient(180deg, transparent, rgba(139,92,246,0.03), transparent)' }}>
         <div className="max-w-6xl mx-auto">
-          {features.inView && (<>
-            <div className="text-center mb-16 anim-up">
+            <div className="text-center mb-10 sm:mb-16 anim-up">
               <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-violet-400 border border-violet-500/30 mb-4" style={{ background: 'rgba(139,92,246,0.1)' }}>FEATURES</span>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">Everything you need.<br /><span className="text-gray-500">Nothing you don&apos;t.</span></h2>
             </div>
@@ -514,15 +561,13 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
-          </>)}
         </div>
       </section>
 
       {/* SHOWCASE */}
-      <section ref={showcase.ref} className="relative z-10 py-24 px-4">
+      <section id="showcase" ref={showcase.ref} data-reveal={showcase.revealState} className="relative z-10 py-14 sm:py-24 px-4">
         <div className="max-w-6xl mx-auto">
-          {showcase.inView && (<>
-            <div className="text-center mb-16 anim-up">
+            <div className="text-center mb-10 sm:mb-16 anim-up">
               <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-violet-400 border border-violet-500/30 mb-4" style={{ background: 'rgba(139,92,246,0.1)' }}>BUILT WITH INNOVATED</span>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">Real sites. Real businesses.</h2>
               <p className="mt-4 text-gray-500 max-w-lg mx-auto">Every site below was generated by AI from a simple text description.</p>
@@ -532,7 +577,7 @@ export default function HomePage() {
               {/* Card 1 — Greenscape Pros (Landscaping) */}
               <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-emerald-500/10 cursor-pointer">
                 <div className="relative aspect-video overflow-hidden">
-                  <div className="w-[300%] h-[300%] origin-top-left pointer-events-none" style={{ transform: 'scale(0.333)' }}>
+                  <div className="showcase-replica origin-top-left pointer-events-none">
                     <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif', background: '#0c1a0e', overflow: 'hidden' }}>
                       {/* Full-bleed hero photo */}
                       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '72%' }}>
@@ -605,7 +650,7 @@ export default function HomePage() {
               {/* Card 2 — LUXE Collective (E-commerce Lifestyle) */}
               <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-orange-500/10 cursor-pointer">
                 <div className="relative aspect-video overflow-hidden">
-                  <div className="w-[300%] h-[300%] origin-top-left pointer-events-none" style={{ transform: 'scale(0.333)' }}>
+                  <div className="showcase-replica origin-top-left pointer-events-none">
                     <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'system-ui, sans-serif', background: '#faf8f5', overflow: 'hidden' }}>
                       {/* Nav */}
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', background: '#fff', borderBottom: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
@@ -691,7 +736,7 @@ export default function HomePage() {
               {/* Card 3 — Bella Cucina (Italian Restaurant) — SPLIT LAYOUT: text left, photo mosaic right */}
               <div className="group relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-amber-500/10 cursor-pointer">
                 <div className="relative aspect-video overflow-hidden">
-                  <div className="w-[300%] h-[300%] origin-top-left pointer-events-none" style={{ transform: 'scale(0.333)' }}>
+                  <div className="showcase-replica origin-top-left pointer-events-none">
                     <div style={{ width: '100%', height: '100%', position: 'relative', fontFamily: 'Georgia, serif', background: '#faf6f0', overflow: 'hidden' }}>
                       {/* Nav — warm cream/elegant */}
                       <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 32px', background: '#fff', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
@@ -774,12 +819,11 @@ export default function HomePage() {
               </div>
 
             </div>
-          </>)}
         </div>
       </section>
 
       {/* CUSTOM BUILD — for prospects beyond $25/mo self-serve */}
-      <section className="relative z-10 py-20 px-4">
+      <section className="relative z-10 py-12 sm:py-20 px-4">
         <div className="max-w-5xl mx-auto">
           <div
             className="relative rounded-3xl p-10 md:p-14 overflow-hidden border"
@@ -878,14 +922,13 @@ export default function HomePage() {
       </section>
 
       {/* FINAL CTA */}
-      <section ref={cta.ref} className="relative z-10 py-24 px-4">
-        {cta.inView && (
+      <section id="get-started" ref={cta.ref} data-reveal={cta.revealState} className="relative z-10 py-14 sm:py-24 px-4">
           <div className="max-w-4xl mx-auto text-center anim-up">
-            <div className="relative rounded-3xl p-12 md:p-16 overflow-hidden border border-violet-500/20" style={{ background: 'rgba(15,23,42,0.6)' }}>
+            <div className="relative rounded-3xl p-6 sm:p-12 md:p-16 overflow-hidden border border-violet-500/20" style={{ background: 'rgba(15,23,42,0.6)' }}>
               <div className="absolute inset-0 opacity-30" style={{ background: 'radial-gradient(ellipse at center, rgba(139,92,246,0.15), transparent 70%)' }} />
               <div className="relative">
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight">
-                  Ready to build something<br /><span className="bg-clip-text text-transparent animate-gradient-x" style={{ backgroundImage: 'linear-gradient(135deg, #a78bfa, #818cf8, #c084fc, #a78bfa)' }}>extraordinary?</span>
+                  Ready to build something<br className="hidden sm:inline" /> <span className="bg-clip-text text-transparent animate-gradient-x" style={{ backgroundImage: 'linear-gradient(135deg, #a78bfa, #818cf8, #c084fc, #a78bfa)' }}>extraordinary?</span>
                 </h2>
                 <p className="mt-6 text-gray-400 max-w-lg mx-auto text-lg">Join hundreds of businesses who launched their website in minutes, not months.</p>
                 <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -903,14 +946,13 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-        )}
       </section>
 
       {/* FOOTER */}
-      <footer className="relative z-10 border-t border-white/5 py-12 px-4">
+      <footer id="footer" className="relative z-10 border-t border-white/5 py-8 sm:py-12 px-4">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <Image src="/logo.png" alt="Innovated Marketing" width={844} height={563} className="brightness-0 invert w-auto" style={{ height: '36px' }} />
-          <div className="flex items-center gap-4 text-sm text-gray-600">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-gray-600">
             <Link href="/pricing" className="hover:text-gray-400 transition-colors py-2 px-1 min-h-[44px] flex items-center">Pricing</Link>
             <Link
               href="https://helm.innovated.marketing/start?source=footer"
@@ -932,7 +974,7 @@ export default function HomePage() {
         href="https://helm.innovated.marketing/start?source=floating"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-5 right-5 z-50 group inline-flex items-center gap-2 px-4 py-3 rounded-full text-sm font-semibold text-white shadow-2xl transition-all hover:scale-105 hidden sm:inline-flex"
+        className="fixed bottom-5 right-5 z-50 group hidden sm:inline-flex items-center gap-2 px-4 py-3 rounded-full text-sm font-semibold text-white shadow-2xl transition-all hover:scale-105"
         style={{
           background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
           boxShadow: '0 14px 40px rgba(139,92,246,0.40)',
